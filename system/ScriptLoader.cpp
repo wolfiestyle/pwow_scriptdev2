@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software licensed under GPL version 2
 * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -216,6 +216,7 @@ extern void AddSC_razorfen_downs();
 extern void AddSC_boss_ayamiss();                           //ruins_of_ahnqiraj
 extern void AddSC_boss_kurinnaxx();
 extern void AddSC_boss_moam();
+extern void AddSC_ruins_of_ahnqiraj();
 extern void AddSC_boss_cthun();                             //temple_of_ahnqiraj
 extern void AddSC_boss_fankriss();
 extern void AddSC_boss_huhuran();
@@ -309,7 +310,8 @@ extern void AddSC_instance_halls_of_lightning();
 extern void AddSC_boss_maiden_of_grief();                   //Ulduar, halls_of_stone
 extern void AddSC_boss_sjonnir();
 extern void AddSC_halls_of_stone();
-extern void AddSC_boss_algalon();                                  //ulduar
+extern void AddSC_instance_halls_of_stone();
+extern void AddSC_boss_algalon();                           //ulduar
 extern void AddSC_boss_assembly_of_iron();
 extern void AddSC_boss_auriaya();
 extern void AddSC_boss_deconstructor();
@@ -646,6 +648,7 @@ void AddScripts()
     AddSC_boss_ayamiss();                                   //ruins_of_ahnqiraj
     AddSC_boss_kurinnaxx();
     AddSC_boss_moam();
+    AddSC_ruins_of_ahnqiraj();
     AddSC_boss_cthun();                                     //temple_of_ahnqiraj
     AddSC_boss_fankriss();
     AddSC_boss_huhuran();
@@ -739,6 +742,7 @@ void AddScripts()
     AddSC_boss_maiden_of_grief();                           //Ulduar, halls_of_stone
     AddSC_boss_sjonnir();
     AddSC_halls_of_stone();
+    AddSC_instance_halls_of_stone();
     AddSC_boss_algalon();                                   //ulduar
     AddSC_boss_assembly_of_iron();
     AddSC_boss_auriaya();

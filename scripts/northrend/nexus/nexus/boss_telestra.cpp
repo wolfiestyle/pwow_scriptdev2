@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,16 +16,16 @@
 
 /* ScriptData
 SDName: Boss_Telestra
-SD%Complete: 10%
-SDComment:
+SD%Complete: 80%
+SDComment: script depend on database spell support and eventAi for clones. transition to phase 2 also not fully implemented
 SDCategory: Nexus
 EndScriptData */
 
 #include "precompiled.h"
+#include "nexus.h"
 
 enum
 {
-    //Grand Magus Telestra
     SAY_AGGRO               = -1576000,
     SAY_SPLIT_1             = -1576001,
     SAY_SPLIT_2             = -1576002,
@@ -35,9 +35,12 @@ enum
 
     SPELL_FIREBOMB          = 47773,
     SPELL_FIREBOMB_H        = 56934,
+
     SPELL_ICE_NOVA          = 47772,
     SPELL_ICE_NOVA_H        = 56935,
+
     SPELL_GRAVITY_WELL      = 47756,
+
     SPELL_SUMMON_CLONES     = 47710,
 
     SPELL_ARCANE_VISUAL     = 47704,
@@ -48,7 +51,7 @@ enum
     SPELL_SUMMON_ARCANE     = 47708,
     SPELL_SUMMON_FROST      = 47709,
 
-    SPELL_FIRE_DIES         = 47711,
+    SPELL_FIRE_DIES         = 47711,                        // cast by clones at their death
     SPELL_ARCANE_DIES       = 47713,
     SPELL_FROST_DIES        = 47712,
 
@@ -58,21 +61,10 @@ enum
     NPC_TELEST_ARCANE       = 26929,
     NPC_TELEST_FROST        = 26930,
 
-    //Fire Clone
-    SPELL_SCORCH            = 47723,
-    SPELL_SCORCH_H          = 56938,
-    SPELL_FIREBLAST         = 47721,
-    SPELL_FIREBLAST_H       = 56939,
-
-    //Arcane Clone
-    SPELL_CRITTER           = 47731,
-    SPELL_TIMESTOP          = 47736,
-
-    //Frost Clone
-    SPELL_BLIZZARD          = 47727,
-    SPELL_BLIZZARD_H        = 56936,
-    SPELL_ICEBARB           = 47729,
-    SPELL_ICEBARB_H         = 56937
+    PHASE_1                 = 1,
+    PHASE_2                 = 2,
+    PHASE_3                 = 3,
+    PHASE_4                 = 4
 };
 
 /*######
@@ -91,41 +83,38 @@ struct MANGOS_DLL_DECL boss_telestraAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-    uint32 phase;
-    uint32 IceNova_Timer;
-    uint32 GravityWell_Timer;
-    uint32 Firebomb_Timer;
+    uint8 m_uiPhase;
+    uint8 m_uiCloneDeadCount;
 
-    uint64 FireCloneGUID;
-    uint64 ArcaneCloneGUID;
-    uint64 FrostCloneGUID;
-
-    bool FireClone_Dead;
-    bool ArcaneClone_Dead;
-    bool FrostClone_Dead;
+    uint32 m_uiFirebombTimer;
+    uint32 m_uiIceNovaTimer;
+    uint32 m_uiGravityWellTimer;
 
     void Reset()
     {
-        phase = 1;
-        IceNova_Timer = 15000;                //15 seconds
-        GravityWell_Timer = 40000;            //40 seconds
-        Firebomb_Timer = 1500 + rand()%500;   //1.5-2 seconds
+        m_uiPhase = PHASE_1;
+        m_uiCloneDeadCount = 0;
 
-        FireClone_Dead = false;
-        ArcaneClone_Dead = false;
-        FrostClone_Dead = false;
+        m_uiFirebombTimer = urand(2000, 4000);
+        m_uiIceNovaTimer = urand(8000, 12000);
+        m_uiGravityWellTimer = urand(15000, 25000);
+    }
 
-        //Make visible
-        if (m_creature->GetVisibility() == VISIBILITY_OFF)
-            m_creature->SetVisibility(VISIBILITY_ON);
+    void JustReachedHome()
+    {
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    }
 
-        //Remove flags
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+    void AttackStart(Unit* pWho)
+    {
+        if (m_creature->Attack(pWho, true))
+        {
+            m_creature->AddThreat(pWho);
+            m_creature->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(m_creature);
+
+            m_creature->GetMotionMaster()->MoveChase(pWho, 15.0f);
+        }
     }
 
     void Aggro(Unit* pWho)
@@ -136,6 +125,9 @@ struct MANGOS_DLL_DECL boss_telestraAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_TELESTRA, DONE);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -144,9 +136,44 @@ struct MANGOS_DLL_DECL boss_telestraAI : public ScriptedAI
             DoScriptText(SAY_KILL, m_creature);
     }
 
-    void JustSummoned(Creature* summoned)
+    void SpellHit(Unit* pCaster, const SpellEntry *pSpell)
     {
-        summoned->TauntApply(m_creature->getVictim());
+        switch(pSpell->Id)
+        {
+            // eventAi must make sure clones cast spells when each of them die
+            case SPELL_FIRE_DIES:
+            case SPELL_ARCANE_DIES:
+            case SPELL_FROST_DIES:
+            {
+                ++m_uiCloneDeadCount;
+
+                if (m_uiCloneDeadCount == 3 || m_uiCloneDeadCount == 6)
+                {
+                    m_creature->RemoveAurasDueToSpell(SPELL_SUMMON_CLONES);
+                    m_creature->CastSpell(m_creature, SPELL_SPAWN_BACK_IN, false);
+
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+                    DoScriptText(SAY_MERGE, m_creature);
+
+                    m_uiPhase = m_uiCloneDeadCount == 3 ? PHASE_3 : PHASE_4;
+                }
+                break;
+            }
+            case SPELL_SUMMON_CLONES:
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                break;
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        switch(pSummoned->GetEntry())
+        {
+            case NPC_TELEST_FIRE: pSummoned->CastSpell(pSummoned, SPELL_FIRE_VISUAL, true); break;
+            case NPC_TELEST_ARCANE: pSummoned->CastSpell(pSummoned, SPELL_ARCANE_VISUAL, true); break;
+            case NPC_TELEST_FROST: pSummoned->CastSpell(pSummoned, SPELL_FROST_VISUAL, true); break;
+        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -154,113 +181,64 @@ struct MANGOS_DLL_DECL boss_telestraAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Phase 1
-        if (phase == 1)
+        switch(m_uiPhase)
         {
-            //Summon clones at 50% HP
-            if (m_creature->GetHealth() <= (int)(m_creature->GetMaxHealth() / 2))
+            case PHASE_1:
+            case PHASE_3:
+            case PHASE_4:
             {
-                //Say some stuff
-                 switch(rand()%2)
+                if (!m_creature->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                 {
-                    case 0: DoScriptText(SAY_SPLIT_1, m_creature); break;
-                    case 1: DoScriptText(SAY_SPLIT_2, m_creature); break;
+                    if (m_uiFirebombTimer < uiDiff)
+                    {
+                        if (DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FIREBOMB : SPELL_FIREBOMB_H) == CAST_OK)
+                            m_uiFirebombTimer = urand(4000, 6000);
+                    }
+                    else
+                        m_uiFirebombTimer -= uiDiff;
+
+                    if (m_uiIceNovaTimer < uiDiff)
+                    {
+                        if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_ICE_NOVA : SPELL_ICE_NOVA_H) == CAST_OK)
+                            m_uiIceNovaTimer = urand(10000, 15000);
+                    }
+                    else
+                        m_uiIceNovaTimer -= uiDiff;
+
+                    if (m_uiPhase == PHASE_1 && m_creature->GetHealth()*100 < m_creature->GetMaxHealth()*50)
+                    {
+                        if (DoCastSpellIfCan(m_creature, SPELL_SUMMON_CLONES, CAST_INTURRUPT_PREVIOUS) == CAST_OK)
+                        {
+                            DoScriptText(urand(0, 1) ? SAY_SPLIT_1 : SAY_SPLIT_2, m_creature);
+                            m_uiPhase = PHASE_2;
+                        }
+                    }
+
+                    if (m_uiPhase == PHASE_3 && !m_bIsRegularMode && m_creature->GetHealth()*100 < m_creature->GetMaxHealth()*15)
+                    {
+                        if (DoCastSpellIfCan(m_creature, SPELL_SUMMON_CLONES, CAST_INTURRUPT_PREVIOUS) == CAST_OK)
+                        {
+                            DoScriptText(urand(0, 1) ? SAY_SPLIT_1 : SAY_SPLIT_2, m_creature);
+                            m_uiPhase = PHASE_2;
+                        }
+                    }
+
+                    DoMeleeAttackIfReady();
                 }
 
-                //Summon clones
-                FireCloneGUID = (m_creature->SummonCreature(NPC_TELEST_FIRE,m_creature->GetPositionX()+rand()%6-2.5,m_creature->GetPositionY()+rand()%6-2.5,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))->GetGUID();
-                ArcaneCloneGUID = (m_creature->SummonCreature(NPC_TELEST_ARCANE,m_creature->GetPositionX()+rand()%6-2.5,m_creature->GetPositionY()+rand()%6-2.5,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))->GetGUID();
-                FrostCloneGUID = (m_creature->SummonCreature(NPC_TELEST_FROST,m_creature->GetPositionX()+rand()%6-2.5,m_creature->GetPositionY()+rand()%6-2.5,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))->GetGUID();
+                if (m_uiGravityWellTimer < uiDiff)
+                {
+                    if (DoCastSpellIfCan(m_creature, SPELL_GRAVITY_WELL) == CAST_OK)
+                        m_uiGravityWellTimer = urand(15000, 30000);
+                }
+                else
+                    m_uiGravityWellTimer -= uiDiff;
 
-                //Make invisible
-                m_creature->SetVisibility(VISIBILITY_OFF);
-
-                //Set flags
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-
-                //Remove auras
-                m_creature->RemoveAllAuras();
-
-                //Change to Phase 2
-                phase = 2;
-
-                //Terminate Phase 1
-                return;
+                break;
             }
-        }
-
-        //Phase 1 and 3
-        if (phase == 1 || phase == 3)
-        {
-            //Spell Gravity Well timer
-            if (GravityWell_Timer < uiDiff)
+            case PHASE_2:
             {
-                //Cast spell one on our current target.
-                DoCast(m_creature,SPELL_GRAVITY_WELL);
-
-                GravityWell_Timer = 40000;
-            }else GravityWell_Timer -= uiDiff;
-
-            //Spell Ice Nova timer
-            if (IceNova_Timer < uiDiff)
-            {
-                //Cast spell one on our current target.
-                DoCast(m_creature, m_bIsRegularMode ? SPELL_ICE_NOVA : SPELL_ICE_NOVA_H);
-
-                IceNova_Timer = 15000;
-            }else IceNova_Timer -= uiDiff;
-
-            //Uses Firebomb as a main attack
-            if (Firebomb_Timer < uiDiff)
-            {
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FIREBOMB : SPELL_FIREBOMB_H);
-
-                Firebomb_Timer = 1500 + rand()%500;
-            }else Firebomb_Timer -= uiDiff;
-        }
-
-        //Phase 2
-        if (phase == 2)
-        {
-            if (!FireClone_Dead)
-            {
-                Creature* FireClone = (Creature*)Unit::GetUnit(*m_creature, FireCloneGUID);
-                if (FireClone->isDead() || !FireClone)
-                    FireClone_Dead = true;
-            }
-            if (!ArcaneClone_Dead)
-            {
-                Creature* ArcaneClone = (Creature*)Unit::GetUnit(*m_creature, ArcaneCloneGUID);
-                if (ArcaneClone->isDead() || !ArcaneClone)
-                    ArcaneClone_Dead = true;
-            }
-            if (!FrostClone_Dead)
-            {
-                Creature* FrostClone = (Creature*)Unit::GetUnit(*m_creature, FrostCloneGUID);
-                if (FrostClone->isDead() || !FrostClone)
-                    FrostClone_Dead = true;
-            }
-
-            if (FireClone_Dead && ArcaneClone_Dead && FrostClone_Dead)
-            {
-                //Set health
-                m_creature->SetHealth((int) (m_creature->GetMaxHealth() * 0.25));
-
-                //Remove flags
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-
-                //Make visible
-                m_creature->SetVisibility(VISIBILITY_ON);
-
-                //Change to Phase 3
-                phase = 3;
-
-                //Terminate Phase 2
-                return;
+                break;
             }
         }
     }
@@ -271,169 +249,6 @@ CreatureAI* GetAI_boss_telestra(Creature* pCreature)
     return new boss_telestraAI(pCreature);
 }
 
-/*######
-## Fire Clone
-######*/
-
-struct MANGOS_DLL_DECL boss_telestra_fireAI : public ScriptedAI
-{
-    boss_telestra_fireAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-
-    uint32 FireBlast_Timer;
-    uint32 Scorch_Timer;
-
-    void Reset() 
-    {
-        FireBlast_Timer = 15000;            //15 seconds
-        Scorch_Timer = 1000 + rand()%500;   //1-1.5 seconds
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        //Spell Fire Blast timer
-        if (FireBlast_Timer < diff)
-        {
-            //Cast spell one on our current target.
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FIREBLAST  : SPELL_FIREBLAST_H);
-
-            FireBlast_Timer = 15000;
-        }else FireBlast_Timer -= diff;
-
-        //Uses Scorch as a main attack
-        if (Scorch_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SCORCH : SPELL_SCORCH_H);
-
-            Scorch_Timer = 1000 + rand()%500;
-        }else Scorch_Timer -= diff;
-    }
-};
-
-CreatureAI* GetAI_boss_telestra_fire(Creature* pCreature)
-{
-    return new boss_telestra_fireAI(pCreature);
-}
-
-/*######
-## Arcane Clone
-######*/
-
-struct MANGOS_DLL_DECL boss_telestra_arcaneAI : public ScriptedAI
-{
-    boss_telestra_arcaneAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-    
-    uint32 TimeStop_Timer;
-    uint32 Critter_Timer;
-
-    void Reset() 
-    {
-        TimeStop_Timer = 15000;              //15 seconds
-        Critter_Timer = 1500 + rand()%500;   //1.5-2 seconds
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        //Spell Time Stop timer
-        if (TimeStop_Timer < diff)
-        {
-            //Cast spell one on our current target.
-            DoCast(m_creature,SPELL_TIMESTOP);
-
-            TimeStop_Timer = 15000;
-        }else TimeStop_Timer -= diff;
-
- 
-        //Uses Critter as a main attack
-        if (Critter_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_CRITTER);
-
-            Critter_Timer = 1500 + rand()%500;
-        }else Critter_Timer -= diff;
-    }
-};
-
-CreatureAI* GetAI_boss_telestra_arcane(Creature* pCreature)
-{
-    return new boss_telestra_arcaneAI(pCreature);
-}
-
-/*######
-## Frost Clone
-######*/
-
-struct MANGOS_DLL_DECL boss_telestra_frostAI : public ScriptedAI
-{
-    boss_telestra_frostAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-
-    uint32 IceBarb_Timer;
-    uint32 Blizzard_Timer;
-
-    void Reset() 
-    {
-        IceBarb_Timer = 15000;                //15 seconds
-        Blizzard_Timer = 6000 + rand()%500;   //6-6.5 seconds
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        //Spell Ice Barb timer
-        if (IceBarb_Timer < diff)
-        {
-            //Cast spell one on our current target.
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ICEBARB : SPELL_ICEBARB_H);
-
-            IceBarb_Timer = 15000;
-        }else IceBarb_Timer -= diff;
-
-         //Uses Blizzard as a main attack
-        if (Blizzard_Timer < diff)
-        {
-            DoCast(m_creature, m_bIsRegularMode ? SPELL_BLIZZARD : SPELL_BLIZZARD_H);
-
-            Blizzard_Timer = 6000 + rand()%500;
-        }else Blizzard_Timer -= diff;
-    }
-};
-
-CreatureAI* GetAI_boss_telestra_frost(Creature* pCreature)
-{
-    return new boss_telestra_frostAI(pCreature);
-}
-
 void AddSC_boss_telestra()
 {
     Script *newscript;
@@ -441,20 +256,5 @@ void AddSC_boss_telestra()
     newscript = new Script;
     newscript->Name = "boss_telestra";
     newscript->GetAI = &GetAI_boss_telestra;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "boss_telestra_fire";
-    newscript->GetAI = &GetAI_boss_telestra_fire;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "boss_telestra_arcane";
-    newscript->GetAI = &GetAI_boss_telestra_arcane;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "boss_telestra_frost";
-    newscript->GetAI = &GetAI_boss_telestra_frost;
     newscript->RegisterSelf();
 }

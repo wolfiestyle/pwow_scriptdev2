@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -193,7 +193,7 @@ struct MANGOS_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if (uiGuid)
         {
             if (m_lSorcerersGUIDList.empty())
-                error_log("SD2: boss_shade_of_akamaAI attempt to remove guid %u from Sorcerers list but list is already empty", uiGuid);
+                error_log("SD2: boss_shade_of_akamaAI attempt to remove guid " UI64FMTD " from Sorcerers list but list is already empty", uiGuid);
             else
                 m_lSorcerersGUIDList.remove(uiGuid);
         }
@@ -284,7 +284,7 @@ struct MANGOS_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             for(std::list<Creature*>::iterator itr = lChannelerList.begin(); itr != lChannelerList.end(); ++itr)
             {
                 m_lChannelersGUIDList.push_back((*itr)->GetGUID());
-                debug_log("SD2: boss_shade_of_akamaAI found channeler %u. Adding to list", (*itr)->GetGUID());
+                debug_log("SD2: boss_shade_of_akamaAI found channeler " UI64FMTD ". Adding to list", (*itr)->GetGUID());
 
                 (*itr)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }

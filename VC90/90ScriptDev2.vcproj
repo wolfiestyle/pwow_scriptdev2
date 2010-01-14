@@ -1042,6 +1042,18 @@
 				<Filter
 					Name="sunken_temple"
 					>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\instance_sunken_temple.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\sunken_temple.h"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\sunken_temple.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="sunwell_plateau"
@@ -1475,11 +1487,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.cpp"
+						>
+					</File>                    
+					<File
 						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\instance_ruins_of_ahnqiraj.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\instance_ruins_of_ahnqiraj.h"
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.h"
 						>
 					</File>
 				</Filter>
@@ -1919,6 +1935,14 @@
 						</File>
 						<File
 							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.h"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\instance_halls_of_stone.cpp"
 							>
 						</File>
 					</Filter>

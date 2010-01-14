@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -68,20 +68,20 @@ struct MANGOS_DLL_DECL instance_gundrak : public ScriptedInstance
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
-        m_uiEckDoorGUID = 0;
+        m_uiEckDoorGUID           = 0;
         m_uiEckUnderwaterDoorGUID = 0;
-        m_uiGaldarahDoorGUID = 0;
-        m_uiExitDoorLeftGUID = 0;
-        m_uiExitDoorRightGUID = 0;
-        m_uiAltarOfSladranGUID = 0;
-        m_uiAltarOfMoorabiGUID = 0;
-        m_uiAltarOfColossusGUID = 0;
-        m_uiSnakeKeyGUID = 0;
-        m_uiTrollKeyGUID = 0;
-        m_uiMammothKeyGUID = 0;
-        m_uiBridgeGUID = 0;
+        m_uiGaldarahDoorGUID      = 0;
+        m_uiExitDoorLeftGUID      = 0;
+        m_uiExitDoorRightGUID     = 0;
+        m_uiAltarOfSladranGUID    = 0;
+        m_uiAltarOfMoorabiGUID    = 0;
+        m_uiAltarOfColossusGUID   = 0;
+        m_uiSnakeKeyGUID          = 0;
+        m_uiTrollKeyGUID          = 0;
+        m_uiMammothKeyGUID        = 0;
+        m_uiBridgeGUID            = 0;
 
-        m_uiSladranGUID = 0;
+        m_uiSladranGUID           = 0;
     }
 
     void OnCreatureCreate(Creature* pCreature)

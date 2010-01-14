@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -83,17 +83,11 @@ struct MANGOS_DLL_DECL boss_anomalusAI : public ScriptedAI
         m_uiCreateRiftTimer = 25000;
         m_uiChaoticRiftGUID = 0;
         m_uiShieldCount = 3;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ANOMALUS, NOT_STARTED);
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ANOMALUS, IN_PROGRESS);
     }
 
     void JustDied(Unit* pKiller)

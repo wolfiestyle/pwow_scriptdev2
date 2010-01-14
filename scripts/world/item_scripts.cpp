@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -121,7 +121,7 @@ bool ItemUse_item_flying_machine(Player* pPlayer, Item* pItem, const SpellCastTa
             return false;
 
     debug_log("SD2: Player attempt to use item %u, but did not meet riding requirement",itemId);
-    pPlayer->SendEquipError(EQUIP_ERR_ERR_CANT_EQUIP_SKILL, pItem, NULL);
+    pPlayer->SendEquipError(EQUIP_ERR_CANT_EQUIP_SKILL, pItem, NULL);
     return true;
 }
 
@@ -143,6 +143,35 @@ bool ItemUse_item_gor_dreks_ointment(Player* pPlayer, Item* pItem, const SpellCa
 
         if (const SpellEntry* pSpellInfo = GetSpellStore()->LookupEntry(SPELL_GORDREKS_OINTMENT))
             Spell::SendCastResult(pPlayer, pSpellInfo, 1, SPELL_FAILED_TARGET_AURASTATE);
+
+        return true;
+    }
+
+    return false;
+}
+
+/*#####
+# item_petrov_cluster_bombs
+#####*/
+
+enum
+{
+    SPELL_PETROV_BOMB           = 42406,
+    AREA_ID_SHATTERED_STRAITS   = 4064,
+    ZONE_ID_HOWLING             = 495
+};
+
+bool ItemUse_item_petrov_cluster_bombs(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
+{
+    if (pPlayer->GetZoneId() != ZONE_ID_HOWLING)
+        return false;
+
+    if (!pPlayer->GetTransport() || pPlayer->GetAreaId() != AREA_ID_SHATTERED_STRAITS)
+    {
+        pPlayer->SendEquipError(EQUIP_ERR_NONE, pItem, NULL);
+
+        if (const SpellEntry* pSpellInfo = GetSpellStore()->LookupEntry(SPELL_PETROV_BOMB))
+            Spell::SendCastResult(pPlayer, pSpellInfo, 1, SPELL_FAILED_NOT_HERE);
 
         return true;
     }
@@ -177,5 +206,10 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name = "item_gor_dreks_ointment";
     newscript->pItemUse = &ItemUse_item_gor_dreks_ointment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "item_petrov_cluster_bombs";
+    newscript->pItemUse = &ItemUse_item_petrov_cluster_bombs;
     newscript->RegisterSelf();
 }

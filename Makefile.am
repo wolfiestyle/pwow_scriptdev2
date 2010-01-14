@@ -192,6 +192,9 @@ scripts/eastern_kingdoms/stratholme/boss_timmy_the_cruel.cpp \
 scripts/eastern_kingdoms/stratholme/instance_stratholme.cpp \
 scripts/eastern_kingdoms/stratholme/stratholme.cpp \
 scripts/eastern_kingdoms/stratholme/stratholme.h \
+scripts/eastern_kingdoms/sunken_temple/instance_sunken_temple.cpp \
+scripts/eastern_kingdoms/sunken_temple/sunken_temple.h \
+scripts/eastern_kingdoms/sunken_temple/sunken_temple.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/boss_brutallus.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/boss_kalecgos.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/instance_sunwell_plateau.cpp \
@@ -282,6 +285,7 @@ scripts/kalimdor/ruins_of_ahnqiraj/boss_moam.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/boss_ossirian.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/boss_rajaxx.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/instance_ruins_of_ahnqiraj.cpp \
+scripts/kalimdor/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/ruins_of_ahnqiraj.h \
 scripts/kalimdor/temple_of_ahnqiraj/boss_bug_trio.cpp \
 scripts/kalimdor/temple_of_ahnqiraj/boss_cthun.cpp \
@@ -372,6 +376,8 @@ scripts/northrend/ulduar/halls_of_lightning/instance_halls_of_lightning.cpp \
 scripts/northrend/ulduar/halls_of_stone/boss_maiden_of_grief.cpp \
 scripts/northrend/ulduar/halls_of_stone/boss_sjonnir.cpp \
 scripts/northrend/ulduar/halls_of_stone/halls_of_stone.cpp \
+scripts/northrend/ulduar/halls_of_stone/instance_halls_of_stone.cpp \
+scripts/northrend/ulduar/halls_of_stone/halls_of_stone.h \
 scripts/northrend/ulduar/ulduar/boss_algalon.cpp \
 scripts/northrend/ulduar/ulduar/boss_assembly.cpp \
 scripts/northrend/ulduar/ulduar/boss_auriaya.cpp \

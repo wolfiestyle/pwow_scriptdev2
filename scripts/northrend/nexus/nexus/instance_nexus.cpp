@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -39,8 +39,7 @@ bool GOHello_go_containment_sphere(Player* pPlayer, GameObject* pGo)
     }
 
     pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
-    pGo->SetGoState(GO_STATE_ACTIVE);
-    return true;
+    return false;
 }
 
 struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
@@ -50,10 +49,8 @@ struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string strInstData;
 
-    uint64 m_uiTelestraGUID;
     uint64 m_uiAnomalusGUID;
-    uint64 m_uiOrmorokGUID;
-    uint64 m_uiKeristraszaGUID;
+    uint64 m_uiKeristrazaGUID;
 
     uint64 m_uiTelestrasContainmentSphereGUID;
     uint64 m_uiAnomalusContainmentSphereGUID;
@@ -63,10 +60,8 @@ struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
-        m_uiTelestraGUID = 0;
         m_uiAnomalusGUID = 0;
-        m_uiOrmorokGUID = 0;
-        m_uiKeristraszaGUID = 0;
+        m_uiKeristrazaGUID = 0;
 
         m_uiTelestrasContainmentSphereGUID = 0;
         m_uiAnomalusContainmentSphereGUID = 0;
@@ -110,17 +105,11 @@ struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
     {
         switch(pCreature->GetEntry())
         {
-            case NPC_TELESTRA:
-                m_uiTelestraGUID = pCreature->GetGUID();
-                break;
             case NPC_ANOMALUS:
                 m_uiAnomalusGUID = pCreature->GetGUID();
                 break;
-            case NPC_ORMOROK:
-                m_uiOrmorokGUID = pCreature->GetGUID();
-                break;
             case NPC_KERISTRASZA:
-                m_uiKeristraszaGUID = pCreature->GetGUID();
+                m_uiKeristrazaGUID = pCreature->GetGUID();
                 break;
         }
     }
@@ -129,14 +118,8 @@ struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
     {
         switch(uiType)
         {
-            case NPC_TELESTRA:
-                return m_uiTelestraGUID;
             case NPC_ANOMALUS:
                 return m_uiAnomalusGUID;
-            case NPC_ORMOROK:
-                return m_uiOrmorokGUID;
-            case NPC_KERISTRASZA:
-                return m_uiKeristraszaGUID;
         }
 
         return 0;
@@ -200,6 +183,13 @@ struct MANGOS_DLL_DECL instance_nexus : public ScriptedInstance
         if (m_auiEncounter[0] == SPECIAL && m_auiEncounter[1] == SPECIAL && m_auiEncounter[2] == SPECIAL)
         {
             // release Keristrasza from her prison here
+            m_auiEncounter[3] = SPECIAL;
+
+            if (Creature* pCreature = instance->GetCreature(m_uiKeristrazaGUID))
+            {
+                if (pCreature->isAlive())
+                    pCreature->RemoveAurasDueToSpell(SPELL_FROZEN_PRISON);
+            }
         }
 
         if (uiData == DONE)

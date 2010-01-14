@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Keristrasza
-SD%Complete: 10%
-SDComment:
+SD%Complete: 65%
+SDComment: timers tuning, add achievement
 SDCategory: Nexus
 EndScriptData */
 
@@ -32,16 +32,16 @@ enum
     SAY_KILL                    = -1576019,
     SAY_DEATH                   = -1576020,
 
+    SPELL_INTENSE_COLD          = 48094,
+
     SPELL_CRYSTALFIRE_BREATH    = 48096,
     SPELL_CRYSTALFIRE_BREATH_H  = 57091,
 
     SPELL_CRYSTALLIZE           = 48179,
 
     SPELL_CRYSTAL_CHAINS        = 50997,
-    SPELL_CRYSTAL_CHAINS_H      = 57050,
 
     SPELL_TAIL_SWEEP            = 50155,
-    SPELL_INTENSE_COLD          = 48094,
 
     SPELL_ENRAGE                = 8599
 };
@@ -56,47 +56,51 @@ struct MANGOS_DLL_DECL boss_keristraszaAI : public ScriptedAI
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Unlocked = false;
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
-    bool Unlocked;
 
-    uint32 IntenseCold_Timer;
-    uint32 CrystalChains_Timer;
-    uint32 CrystalfireBreath_Timer;
-    uint32 TailSweep_Timer;
-    uint32 Crystallize_Timer;
-    bool Enraged;
+    uint32 uiCrystalChainTimer;
+    uint32 uiTailSweepTimer;
+    uint32 uiCrystalfireBreathTimer;
+    uint32 uiCrystallizeTimer;
 
-    uint64 TelestraGUID;
-    uint64 AnomalusGUID;
-    uint64 OrmorokGUID;
+    bool m_bIsEnraged;
 
     void Reset()
     {
-        IntenseCold_Timer = 1000;           //1 second
-        CrystalChains_Timer = 8000;         //8 seconds
-        CrystalfireBreath_Timer = 15000;    //15 seconds
-        TailSweep_Timer = 30000;            //30 seconds
-        Crystallize_Timer = 40000;          //40 seconds
-        Enraged = false;
+        uiCrystalChainTimer = 30000;
+        uiTailSweepTimer = urand(5000, 7500);
+        uiCrystalfireBreathTimer = urand(10000, 20000);
+        uiCrystallizeTimer = urand(20000, 30000);
 
-        TelestraGUID = 0;
-        AnomalusGUID = 0;
-        OrmorokGUID = 0;
+        m_bIsEnraged = false;
+
+        if (!m_pInstance)
+            return;
+
+        if (m_creature->isAlive())
+        {   
+            if (m_pInstance->GetData(TYPE_KERISTRASZA) != SPECIAL)
+                m_creature->CastSpell(m_creature, SPELL_FROZEN_PRISON, true);
+        }
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+
+        m_creature->CastSpell(m_creature, SPELL_INTENSE_COLD, true);
     }
 
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_KERISTRASZA, DONE);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -107,94 +111,94 @@ struct MANGOS_DLL_DECL boss_keristraszaAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_pInstance)
-        {
-            if (!TelestraGUID)
-                TelestraGUID = m_pInstance->GetData64(NPC_TELESTRA);
-            if (!AnomalusGUID)
-                AnomalusGUID = m_pInstance->GetData64(NPC_ANOMALUS);
-            if (!OrmorokGUID)
-                OrmorokGUID = m_pInstance->GetData64(NPC_ORMOROK);
-        }
-
-        //Unlock if all 3 bosses are dead
-        if (!Unlocked && TelestraGUID && AnomalusGUID && OrmorokGUID)
-        {
-            Creature* Telestra = ((Creature*)Unit::GetUnit((*m_creature), TelestraGUID));
-            Creature* Anomalus = ((Creature*)Unit::GetUnit((*m_creature), AnomalusGUID));
-            Creature* Ormorok = ((Creature*)Unit::GetUnit((*m_creature), OrmorokGUID));
-            if (Telestra && Anomalus && Ormorok && Telestra->isDead() && Anomalus->isDead() && Ormorok->isDead())
-            {
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_9);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
-                Unlocked = true;
-            }
-        }
-
-        //Return since boss is locked
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE))
-            return;
-
-        //Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Enrage at 25% HP
-        if ((int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) <= 25 && !Enraged)
+        if (!m_bIsEnraged && m_creature->GetHealth()*100 < m_creature->GetMaxHealth()*25)
         {
-            DoScriptText(SAY_ENRAGE, m_creature);
-            DoCast(m_creature,SPELL_ENRAGE);
-            Enraged = true;
+            if (!m_creature->IsNonMeleeSpellCasted(false))
+            {
+                m_bIsEnraged = true;
+                DoScriptText(SAY_ENRAGE, m_creature);
+                DoCast(m_creature, SPELL_ENRAGE);
+            }
         }
 
-        //Crystallize timer
+        if (uiCrystalChainTimer < uiDiff)
+        {
+            if (!m_creature->IsNonMeleeSpellCasted(false))
+            {
+                if (m_bIsRegularMode)
+                {
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                    {
+                        if (Player* pPlayer = pTarget->GetCharmerOrOwnerPlayerOrPlayerItself())
+                            DoCast(pPlayer, SPELL_CRYSTAL_CHAINS);
+
+                        uiCrystalChainTimer = 30000;
+                    }
+                }
+                else
+                {
+                    if (Unit* pSource = m_creature->getVictim())
+                    {
+                        uiCrystalChainTimer = 15000;
+
+                        Player* pPlayer = pSource->GetCharmerOrOwnerPlayerOrPlayerItself();
+
+                        if (!pPlayer)
+                            return;
+
+                        if (Group* pGroup = pPlayer->GetGroup())
+                        {
+                            for(GroupReference* pRef = pGroup->GetFirstMember(); pRef != NULL; pRef = pRef->next())
+                            {
+                                if (Player* pMember = pRef->getSource())
+                                {
+                                    if (pMember->isAlive() && pMember->IsWithinDistInMap(m_creature, 50.0f))
+                                        m_creature->CastSpell(pMember, SPELL_CRYSTAL_CHAINS, true);
+                                }
+                            }
+                        }
+                        else
+                            m_creature->CastSpell(pPlayer, SPELL_CRYSTAL_CHAINS, false);
+                    }
+                }
+            }
+        }
+        else
+            uiCrystalChainTimer -= uiDiff;
+
+        if (uiTailSweepTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, SPELL_TAIL_SWEEP) == CAST_OK)
+                uiTailSweepTimer = urand(2500, 7500);
+        }
+        else
+            uiCrystalChainTimer -= uiDiff;
+
+        if (uiCrystalfireBreathTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_CRYSTALFIRE_BREATH : SPELL_CRYSTALFIRE_BREATH_H) == CAST_OK)
+                uiCrystalfireBreathTimer = urand(15000, 20000);
+        }
+        else
+            uiCrystalfireBreathTimer -= uiDiff;
+
         if (!m_bIsRegularMode)
         {
-            if (Crystallize_Timer < uiDiff)
+            if (uiCrystallizeTimer < uiDiff)
             {
-                DoScriptText(SAY_CRYSTAL_NOVA, m_creature);
-                DoCast(m_creature,SPELL_CRYSTALLIZE);
-
-                Crystallize_Timer = 40000;
-            }else Crystallize_Timer -= uiDiff;
+                if (DoCastSpellIfCan(m_creature, SPELL_CRYSTALLIZE) == CAST_OK)
+                {
+                    uiCrystallizeTimer = urand(15000, 25000);
+                    DoScriptText(SAY_CRYSTAL_NOVA, m_creature);
+                }
+            }
+            else
+                uiCrystallizeTimer -= uiDiff;
         }
 
-        //Tail Sweep timer
-        if (TailSweep_Timer < uiDiff)
-        {
-            DoCast(m_creature,SPELL_TAIL_SWEEP);
-
-            TailSweep_Timer = 30000;
-        }else TailSweep_Timer -= uiDiff;
-
-        //Crystalfire Breath timer
-        if (CrystalfireBreath_Timer < uiDiff)
-        {
-            DoCast(m_creature, m_bIsRegularMode ? SPELL_CRYSTALFIRE_BREATH : SPELL_CRYSTALFIRE_BREATH_H);
-
-            CrystalfireBreath_Timer = 15000;
-        }else CrystalfireBreath_Timer -= uiDiff;
-
-        //Crystal Chains timer
-        if (CrystalChains_Timer < uiDiff)
-        {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, m_bIsRegularMode ? SPELL_CRYSTAL_CHAINS : SPELL_CRYSTAL_CHAINS_H);
-
-            CrystalChains_Timer = 8000;
-        }else CrystalChains_Timer -= uiDiff;
-/*
-        //Intense Cold timer
-        if (IntenseCold_Timer < uiDiff)
-        {
-            DoCast(m_creature,SPELL_INTENSE_COLD);
-
-            IntenseCold_Timer = 1000;
-        }else IntenseCold_Timer -= uiDiff;
-*/
         DoMeleeAttackIfReady();
     }
 };
