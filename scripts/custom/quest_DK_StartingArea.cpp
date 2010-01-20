@@ -56,7 +56,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI : public ScriptedAI
             m_creature->MonsterWhisper("The Eye of Acherus is now in your control",pOwner->GetGUID(),true);
             m_creature->CastSpell(m_creature,51890,true);
             ((Player*)pOwner)->SetClientControl(m_creature,true);
-            m_creature->SetSpeed(MOVE_WALK,4,true);
+            m_creature->SetSpeedRate(MOVE_WALK,4,true);
             stage=2;
         }
     }
@@ -92,7 +92,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI : public ScriptedAI
             case 0:
                 m_creature->MonsterWhisper("The Eye of Acherus launches towards its destination",pOwner->GetGUID(),true);
                 ((Player*)pOwner)->SetClientControl(m_creature,false);
-                m_creature->SetSpeed(MOVE_WALK,8,true);
+                m_creature->SetSpeedRate(MOVE_WALK,8,true);
                 m_creature->GetMotionMaster()->MovePoint(0, 1780,-5882,149); //(real destination)
                 //m_creature->GetMotionMaster()->MovePoint(0, 2309,-5695,437); //test destination
                 stage=1;
@@ -300,8 +300,8 @@ bool GossipSelect_npc_havenshire_horse(Player *player, Creature *_Creature, uint
 			player->Mount(10670);
 			_Creature->setDeathState(DEAD);
 
-			player->SetSpeed(MOVE_RUN,1.2);
-			player->SetSpeed(MOVE_SWIM,1.2);
+			player->SetSpeedRate(MOVE_RUN,1.2);
+			player->SetSpeedRate(MOVE_SWIM,1.2);
 
 			if(!player->GetReqKillOrCastCurrentCount(QUEST_GRAND_THEFT_PALOMINO,28767))
 				player->KilledMonsterCredit(28767,_Creature->GetGUID());
@@ -353,8 +353,8 @@ bool QuestChooseReward_npc_salanar_the_horseman(Player* pPlayer, Creature* pCrea
 	{
 		pPlayer->Unmount();
 		pPlayer->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
-		pPlayer->SetSpeed(MOVE_RUN,1);
-		pPlayer->SetSpeed(MOVE_SWIM,1);
+		pPlayer->SetSpeedRate(MOVE_RUN,1);
+		pPlayer->SetSpeedRate(MOVE_SWIM,1);
 	}
 
 	if (pQuest->GetQuestId() == QUEST_INTO_THE_REALM_OF_SHADOWS)
