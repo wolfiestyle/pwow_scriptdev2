@@ -129,6 +129,12 @@ enum Phases
     PHASE_DESPAWN
 };
 
+enum SummonLimits
+{
+    MAX_STARS = 4,
+    MAX_CONSTELLATIONS = 10
+};
+
 #define BERSERK_TIMER               6*MINUTE*IN_MILISECONDS
 #define QUANTUM_STRIKE_TIMER        urand(3, 5)*IN_MILISECONDS
 #define PHASE_PUNCH_TIMER           urand(14, 15)*IN_MILISECONDS
@@ -138,6 +144,9 @@ enum Phases
 #define SUMMON_STARS_TIMER          15*IN_MILISECONDS
 #define SUMMON_CONSTELLATION_TIMER  urand(50, 60)*IN_MILISECONDS
 #define DARK_MATTER_TIMER           30*IN_MILISECONDS
+
+typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
+typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 
 struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
 {
@@ -152,9 +161,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
     bool IsPhase2;
     bool CombatStopped;
 
-    std::list<uint64> CurrStars;
-    std::list<uint64> CurrConstellations;
-    std::list<uint64> CurrBlackHoles;
+    GuidMap CurrSummons;    //generalized summon storage
 
     boss_algalonAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -191,15 +198,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
     {
         if(victim->GetTypeId() != TYPEID_PLAYER)
             return;
-        switch (urand(0, 1))
-        {
-            case 0:
-                DoScriptText(SAY_KILLED_PLAYER_1, m_creature);
-                break;
-            case 1:
-                DoScriptText(SAY_KILLED_PLAYER_2, m_creature);
-                break;
-        }
+        DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER_1 : SAY_KILLED_PLAYER_2, m_creature);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -208,8 +207,8 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
         {
             SayEvents.Reset();
             SayEvents.ScheduleEvent(SAYEVENT_ENTER1, 0);
-            SayEvents.ScheduleEvent(SAYEVENT_ENTER2, 7*IN_MILISECONDS);
-            SayEvents.ScheduleEvent(SAYEVENT_ENTER3, (7+5)*IN_MILISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_ENTER2, 8*IN_MILISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_ENTER3, (8+6)*IN_MILISECONDS);
             HasSaidBeginningStuff = true;
         }
     }
@@ -262,10 +261,40 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
 
+    void JustSummoned(Creature *pSummon)
+    {
+        if (!pSummon)
+            return;
+        CurrSummons.insert(std::make_pair(pSummon->GetEntry(), pSummon->GetGUID()));
+        if (pSummon->GetEntry() == NPC_LIVING_CONSTELLATION)
+            pSummon->SetInCombatWithZone();
+    }
+
+    void SummonedCreatureJustDied(Creature *pSummon)
+    {
+        if (!pSummon)
+            return;
+        GuidMapRange range = CurrSummons.equal_range(pSummon->GetEntry());
+        if (range.first == range.second)
+            return;
+        uint64 guid = pSummon->GetGUID();
+        for (GuidMap::iterator i = range.first; i != range.second; ++i)
+            if (i->second == guid)
+            {
+                CurrSummons.erase(i);
+                break;
+            }
+    }
+
+    void SummonedCreatureDespawn(Creature *pSummon)
+    {
+        SummonedCreatureJustDied(pSummon);
+    }
+
     void GetRandomPointInCircle(float max_rad, float &x, float &y)
     {
         float ang = 2*M_PI * rand_norm();
-        float rad = max_rad * rand_norm();
+        float rad = max_rad * sqrt(rand_norm());
         x = rad * cos(ang);
         y = rad * sin(ang);
     }
@@ -287,8 +316,8 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                 //schedule says
                 SayEvents.Reset();
                 SayEvents.ScheduleEvent(SAYEVENT_END1, 0);
-                SayEvents.ScheduleEvent(SAYEVENT_END2, 10*IN_MILISECONDS);
-                SayEvents.ScheduleEvent(SAYEVENT_END3, 18*IN_MILISECONDS);
+                SayEvents.ScheduleEvent(SAYEVENT_END2, (10)*IN_MILISECONDS);
+                SayEvents.ScheduleEvent(SAYEVENT_END3, (10+8)*IN_MILISECONDS);
             }
             else
                 m_uiDespawnTimer -= uiDiff;
@@ -361,23 +390,9 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                 UnSummonAllCreatures();
 
                 //4 black holes in square pattern
-                Creature* summ = NULL;
-
-                summ = DoSpawnCreature(NPC_BLACK_HOLE,10,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-                if(summ)
-                    CurrBlackHoles.push_back(summ->GetGUID());
-
-                summ = DoSpawnCreature(NPC_BLACK_HOLE,-10,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-                if(summ)
-                    CurrBlackHoles.push_back(summ->GetGUID());
-
-                summ = DoSpawnCreature(NPC_BLACK_HOLE,0,10,0,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-                if(summ)
-                    CurrBlackHoles.push_back(summ->GetGUID());
-
-                summ = DoSpawnCreature(NPC_BLACK_HOLE,0,-10,0,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-                if(summ)
-                    CurrBlackHoles.push_back(summ->GetGUID());
+                const float pos[4][2] = {{10,0}, {-10,0}, {0,10}, {0,-10}};
+                for (int i = 0; i < 4; i++)
+                    DoSpawnCreature(NPC_BLACK_HOLE, pos[i][0], pos[i][1], 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
 
                 DoScriptText(SAY_SUMMON_STARS, m_creature);
                 events.ScheduleEvent(EVENT_SUMMON_STARS,SUMMON_STARS_TIMER);
@@ -419,24 +434,28 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                 case EVENT_SUMMON_STARS:
                     if(!IsPhase2)
                     {
-                        for(int i=0; i<4; i++)
+                        size_t n_stars = CurrSummons.count(NPC_COLLAPSING_STAR);
+                        if (n_stars > MAX_STARS) //shouldnt happen
+                            break;
+                        for(size_t i = 0; i < MAX_STARS-n_stars; i++) //respawn missing stars
                         {
                             float x, y;
                             GetRandomPointInCircle(30.0f, x, y);
-                            if(Creature *summ = DoSpawnCreature(NPC_COLLAPSING_STAR, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 100))
-                                CurrStars.push_back(summ->GetGUID());
+                            DoSpawnCreature(NPC_COLLAPSING_STAR, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                         }
-                        DoScriptText(SAY_SUMMON_STARS, m_creature);
+                        if (MAX_STARS-n_stars > 0) //summoned at least one
+                            DoScriptText(SAY_SUMMON_STARS, m_creature);
                         events.ScheduleEvent(EVENT_SUMMON_STARS, SUMMON_STARS_TIMER);
                     }
                     break;
                 case EVENT_SUMMON_CONSTELLATION:
+                    if (CurrSummons.count(NPC_LIVING_CONSTELLATION) > MAX_CONSTELLATIONS) //just to avoid infinite summons
+                        break;
                     for(int i=0; i<3; i++)
                     {
                         float x, y;
                         GetRandomPointInCircle(30.0f, x, y);
-                        if(Creature *summ = DoSpawnCreature(NPC_LIVING_CONSTELLATION, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
-                            CurrConstellations.push_back(summ->GetGUID());
+                        DoSpawnCreature(NPC_LIVING_CONSTELLATION, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                     }
                     events.ScheduleEvent(EVENT_SUMMON_CONSTELLATION, SUMMON_CONSTELLATION_TIMER);
                     break;
@@ -464,61 +483,28 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
 
     void UnSummonAllCreatures()
     {
-        for (std::list<uint64>::const_iterator i = CurrStars.begin(); i != CurrStars.end(); i++)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+        for (GuidMap::const_iterator i = CurrSummons.begin(); i != CurrSummons.end(); ++i)
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(i->second))
                 pSummon->ForcedDespawn();
-        CurrStars.clear();
-        for (std::list<uint64>::const_iterator i = CurrBlackHoles.begin(); i != CurrBlackHoles.end(); i++)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                pSummon->ForcedDespawn();
-        CurrBlackHoles.clear();
-        for (std::list<uint64>::const_iterator i = CurrConstellations.begin(); i != CurrConstellations.end(); i++)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                pSummon->ForcedDespawn();
-        CurrConstellations.clear();
-        
+        CurrSummons.clear();
+
+        //not summoned by Algalon himself
         std::list<Creature*> DarkMatter;
         GetCreatureListWithEntryInGrid(DarkMatter, m_creature, NPC_UNLEASHED_DARK_MATTER, 100.0f);
-        for (std::list<Creature*>::const_iterator i = DarkMatter.begin(); i!= DarkMatter.end(); i++)
+        for (std::list<Creature*>::const_iterator i = DarkMatter.begin(); i!= DarkMatter.end(); ++i)
             (*i)->ForcedDespawn();
-    }
-
-    void UnSummonCreature(Creature *pSummon)
-    {
-        if (!pSummon)
-            return;
-        uint64 guid = pSummon->GetGUID();
-        switch (pSummon->GetEntry())
-        {
-            case NPC_COLLAPSING_STAR:
-                CurrStars.remove(guid);
-                break;
-            case NPC_BLACK_HOLE:
-                CurrBlackHoles.remove(guid);
-                break;
-            case NPC_LIVING_CONSTELLATION:
-                CurrConstellations.remove(guid);
-                break;
-            default:
-                return;
-        }
-        pSummon->ForcedDespawn();
     }
 
     void CreateBlackHole(Creature* Star)
     {
-        Creature *BlackHole = m_creature->SummonCreature(NPC_BLACK_HOLE, Star->GetPositionX(), Star->GetPositionY(), Star->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-        if (BlackHole)
-        {
-            CurrBlackHoles.push_back(BlackHole->GetGUID());
-            UnSummonCreature(Star);
-        }
+        if (Creature *BlackHole = m_creature->SummonCreature(NPC_BLACK_HOLE, Star->GetPositionX(), Star->GetPositionY(), Star->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 1000))
+            Star->ForcedDespawn();
     }
 
     void CancelBlackHole(Creature* Constellation, Creature* BlackHole)
     {
-        UnSummonCreature(Constellation);
-        UnSummonCreature(BlackHole);
+        Constellation->ForcedDespawn();
+        BlackHole->ForcedDespawn();
     }
 };
 
@@ -604,7 +590,7 @@ struct MANGOS_DLL_DECL mob_black_holeAI : public ScriptedAI
 
     mob_black_holeAI(Creature* pCreature):
         ScriptedAI(pCreature),
-    AlgalonAI(NULL)
+        AlgalonAI(NULL)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
@@ -618,6 +604,12 @@ struct MANGOS_DLL_DECL mob_black_holeAI : public ScriptedAI
     {
         IsPhase2 = AlgalonAI ? AlgalonAI->IsPhase2 : false;
         UnleashedDarkMatterTimer = 10*IN_MILISECONDS;
+    }
+
+    void JustSummoned(Creature *pSummon)
+    {
+        if (pSummon)
+            pSummon->SetInCombatWithZone();
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -634,9 +626,10 @@ struct MANGOS_DLL_DECL mob_black_holeAI : public ScriptedAI
         }
         else if (AlgalonAI)
         {
-            for(std::list<uint64>::const_iterator i = AlgalonAI->CurrConstellations.begin(); i != AlgalonAI->CurrConstellations.end(); i++)
+            GuidMapRange constellations = AlgalonAI->CurrSummons.equal_range(NPC_LIVING_CONSTELLATION);
+            for (GuidMap::const_iterator i = constellations.first; i != constellations.second; ++i)
             {
-                Creature *who = m_creature->GetMap()->GetCreature(*i);
+                Creature *who = m_creature->GetMap()->GetCreature(i->second);
                 if(who && m_creature->IsWithinDistInMap(who, 3.0f))
                 {
                     AlgalonAI->CancelBlackHole(who, m_creature);
