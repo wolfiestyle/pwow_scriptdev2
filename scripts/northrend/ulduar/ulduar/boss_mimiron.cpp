@@ -88,6 +88,12 @@ struct MANGOS_DLL_DECL boss_mimironAI: public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         DoMeleeAttackIfReady();
     }
 };

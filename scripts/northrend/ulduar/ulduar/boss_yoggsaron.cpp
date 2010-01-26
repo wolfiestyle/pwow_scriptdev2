@@ -135,7 +135,9 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
     EventMap events;
-    std::list<uint64> m_SummonList;
+
+    typedef std::list<uint64> GuidList;
+    GuidList m_SummonList;
 
     boss_yoggsaronAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -162,6 +164,26 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
             m_pInstance->SetData(m_uiBossEncounterId, DONE);
     }
 
+    void JustSummoned(Creature *pSummon)
+    {
+        if (pSummon)
+        {
+            m_SummonList.push_back(pSummon->GetGUID());
+            pSummon->SetInCombatWithZone();
+        }
+    }
+
+    void SummonedCreatureJustDied(Creature *pSummon)
+    {
+        if (pSummon)
+            m_SummonList.remove(pSummon->GetGUID());
+    }
+
+    void SummonedCreatureDespawn(Creature *pSummon)
+    {
+        SummonedCreatureJustDied(pSummon);
+    }
+
     void Aggro(Unit* pWho)
     {
         events.RescheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
@@ -181,6 +203,12 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         events.Update(uiDiff);
 
@@ -229,7 +257,7 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
 
     void UnSummonTentacles()
     {
-        for (std::list<uint64>::const_iterator i = m_SummonList.begin(); i != m_SummonList.end(); i++)
+        for (GuidList::const_iterator i = m_SummonList.begin(); i != m_SummonList.end(); ++i)
             if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
                 pSummon->ForcedDespawn();
         m_SummonList.clear();
@@ -241,24 +269,12 @@ struct MANGOS_DLL_DECL npc_yogg_tentacleAI: public Scripted_NoMovementAI
 {
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    boss_yoggsaronAI *YoggAI;
 
     npc_yogg_tentacleAI(Creature *pCreature):
-        Scripted_NoMovementAI(pCreature),
-        YoggAI(NULL)
+        Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        if (Creature *Yogg = GET_CREATURE(TYPE_YOGGSARON))
-            YoggAI = dynamic_cast<boss_yoggsaronAI*>(Yogg->AI());
-        if (YoggAI)
-            YoggAI->m_SummonList.push_back(m_creature->GetGUID());
-    }
-
-    void JustDied(Unit* pKiller)
-    {
-        if (YoggAI)
-            YoggAI->m_SummonList.remove(m_creature->GetGUID());
     }
 };
 
@@ -275,7 +291,6 @@ struct MANGOS_DLL_DECL npc_crusher_tentacleAI: public npc_yogg_tentacleAI
     void Reset()
     {
         casting = false;
-        m_creature->SetInCombatWithZone();
         DoCast(m_creature, SPELL_FOCUSED_ANGER, true);
         DoCast(m_creature, SPELL_ERUPT, true);
     }
@@ -308,7 +323,6 @@ struct MANGOS_DLL_DECL npc_corruptor_tentacleAI: public npc_yogg_tentacleAI
     void Reset()
     {
         m_uiCastTimer = 5*IN_MILISECONDS;
-        m_creature->SetInCombatWithZone();
         DoCast(m_creature, SPELL_ERUPT, true);
     }
 
@@ -343,7 +357,6 @@ struct MANGOS_DLL_DECL npc_constrictor_tentacleAI: public npc_yogg_tentacleAI
     void Reset()
     {
         target = NULL;
-        m_creature->SetInCombatWithZone();
     }
 
     void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)

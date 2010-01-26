@@ -129,6 +129,12 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         //While in hearth phase
         if (HearthPhase)
         {

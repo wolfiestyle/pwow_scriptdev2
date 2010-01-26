@@ -377,6 +377,12 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
         if (CombatStopped || !m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         //check for phase 2 at 20% health
         if(!IsPhase2)
         {

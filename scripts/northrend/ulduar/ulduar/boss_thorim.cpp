@@ -31,7 +31,7 @@ enum Spells
     SPELL_CHAIN_LIGHTNING_H     = 64390,
     SPELL_UNBALANCING_STRIKE    = 62130,
     SPELL_LIGHTNING_CHARGE_BUFF = 62279,
-    SPELL_LIGHTNING_CHARGE_DMG  = 62466
+    SPELL_LIGHTNING_CHARGE_DMG  = 62466     //incorrect one, its a more complex sequence
 };
 
 enum Events
@@ -122,6 +122,12 @@ struct MANGOS_DLL_DECL boss_thorimAI: public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         events.Update(uiDiff);
 
         while (uint32 eventId = events.ExecuteEvent())
@@ -141,7 +147,7 @@ struct MANGOS_DLL_DECL boss_thorimAI: public ScriptedAI
                     break;
                 case EVENT_LIGHTNING_CHARGE:
                     DoCast(m_creature, SPELL_LIGHTNING_CHARGE_BUFF, true);
-                    DoCast(m_creature->getVictim(), SPELL_LIGHTNING_CHARGE_DMG);
+                    //DoCast(m_creature->getVictim(), SPELL_LIGHTNING_CHARGE_DMG);
                     events.ScheduleEvent(EVENT_LIGHTNING_CHARGE, LIGHTNING_CHARGE_TIMER);
                     break;
                 default:

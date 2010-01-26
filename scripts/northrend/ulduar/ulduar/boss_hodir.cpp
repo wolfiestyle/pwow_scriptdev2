@@ -122,6 +122,12 @@ struct MANGOS_DLL_DECL boss_hodirAI: public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         m_uiHardModeTimer += uiDiff;
 
         events.Update(uiDiff);

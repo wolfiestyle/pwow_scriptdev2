@@ -2010,6 +2010,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\ulduar.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\ulduar.h"
 							>
                         </File>

@@ -129,6 +129,12 @@ struct MANGOS_DLL_DECL boss_freyaAI: public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         events.Update(uiDiff);
 
         while (uint32 eventId = events.ExecuteEvent())

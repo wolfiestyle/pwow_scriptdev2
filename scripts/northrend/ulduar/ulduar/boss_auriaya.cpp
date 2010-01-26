@@ -150,10 +150,22 @@ struct MANGOS_DLL_DECL boss_auriayaAI: public ScriptedAI
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
 
+    void JustSummoned(Creature *pSummon)
+    {
+        if (pSummon)
+            pSummon->SetInCombatWithZone();
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         events.Update(uiDiff);
 
@@ -178,7 +190,10 @@ struct MANGOS_DLL_DECL boss_auriayaAI: public ScriptedAI
                     break;
                 case EVENT_GUARDIAN_SWARM:
                     if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    {
+                        UnSummonGuardianSwarm();
                         DoCast(target, SPELL_GUARDIAN_SWARM);
+                    }
                     events.ScheduleEvent(EVENT_GUARDIAN_SWARM, GUARDIAN_SWARM_TIMER);
                     break;
                 case EVENT_SUMMON_DEFENDER:
@@ -191,15 +206,20 @@ struct MANGOS_DLL_DECL boss_auriayaAI: public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
+    void UnSummonGuardianSwarm()
+    {
+        std::list<Creature*> SwarmingGuardian;
+        GetCreatureListWithEntryInGrid(SwarmingGuardian, m_creature, NPC_SWARMING_GUARDIAN, 100.0f);
+        for (std::list<Creature*>::const_iterator i = SwarmingGuardian.begin(); i != SwarmingGuardian.end(); ++i)
+            (*i)->ForcedDespawn();
+    }
+
     void UnSummonAdds()
     {
         if (Creature *FeralDefender = GetClosestCreatureWithEntry(m_creature, NPC_FERAL_DEFENDER, 100.0f))
             FeralDefender->ForcedDespawn();
 
-        std::list<Creature*> SwarmingGuardian;
-        GetCreatureListWithEntryInGrid(SwarmingGuardian, m_creature, NPC_SWARMING_GUARDIAN, 100.0f);
-        for (std::list<Creature*>::const_iterator i = SwarmingGuardian.begin(); i != SwarmingGuardian.end(); i++)
-            (*i)->ForcedDespawn();
+        UnSummonGuardianSwarm();
     }
 };
 

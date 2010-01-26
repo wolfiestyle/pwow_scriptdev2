@@ -69,10 +69,10 @@ enum Says
 #define TARGET_TIMER            30*IN_MILISECONDS
 
 static const float Turret_Pos[4][2] = {
-    {218, -17},
-    {218, -49},
-    {238, -17},
-    {238, -49}
+    {-10, -16},
+    {-10,  16},
+    { 10, -16},
+    { 10,  16}
 };
 
 struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
@@ -95,9 +95,10 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
     uint32 BatteringRam_Timer;
     uint32 GatheringSpeed_Timer;
     uint32 Target_Timer;
-    std::vector<uint64> Turret_GUID;
-    std::bitset<4> Turret_Alive;
     bool SystemsShutdown;
+
+    typedef std::list<uint64> GuidList;
+    GuidList m_Turrets;
 
     void Reset() 
     {
@@ -106,10 +107,9 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
         BatteringRam_Timer = BATTERING_RAM_TIMER;
         GatheringSpeed_Timer = GATHERING_SPEED_TIMER;
         Target_Timer = TARGET_TIMER;
-
-        Turret_GUID.assign(4, 0);
-        Turret_Alive.reset();
         SystemsShutdown = true;
+
+        UnSummonTurrets();
 
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, NOT_STARTED);
@@ -122,19 +122,38 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
             m_pInstance->SetData(m_uiBossEncounterId, DONE);
     }
 
+    void JustSummoned(Creature *pSummon)
+    {
+        if (pSummon && pSummon->GetEntry() == NPC_DEFENSE_TURRET)
+        {
+            m_Turrets.push_back(pSummon->GetGUID());
+            pSummon->SetInCombatWithZone();
+        }
+    }
+
+    void SummonedCreatureJustDied(Creature *pSummon)
+    {
+        if (pSummon && pSummon->GetEntry() == NPC_DEFENSE_TURRET)
+            for (GuidList::iterator i = m_Turrets.begin(); i != m_Turrets.end(); ++i)
+                if ((*i) == pSummon->GetGUID())
+                {
+                    m_Turrets.erase(i);
+                    break;
+                }
+    }
+
+    void SummonedCreatureDespawn(Creature *pSummon)
+    {
+        SummonedCreatureJustDied(pSummon);
+    }
+
     void Aggro(Unit* pWho)
     {
         // Summon turrets
         for (size_t i = 0; i < HEROIC(2, 4); i++)
-        {
-            Creature *Turret = m_creature->SummonCreature(NPC_DEFENSE_TURRET,
-                    Turret_Pos[i][0], Turret_Pos[i][1],
-                    m_creature->GetPositionZ(), m_creature->GetOrientation(),
+            Creature *Turret = DoSpawnCreature(NPC_DEFENSE_TURRET,
+                    Turret_Pos[i][0], Turret_Pos[i][1], 0, m_creature->GetOrientation(),
                     TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*IN_MILISECONDS);
-            Turret_GUID[i] = Turret->GetGUID();
-            Turret_Alive[i] = true;
-            Turret->AddThreat(pWho);
-        }
         DoScriptText(SAY_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
@@ -152,20 +171,14 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Handle Turrets
-        for (size_t i = 0; i < HEROIC(2, 4); i++)
+        if (IsOutOfCombatArea(m_creature))
         {
-            if (Creature *Turret = m_creature->GetMap()->GetCreature(Turret_GUID[i]))
-                if (Turret->isAlive())
-                {
-                    //Turret->GetMotionMaster()->MovePoint(0, Turret_Pos[i][0], Turret_Pos[i][1], m_creature->GetPositionZ());
-                    continue;
-                }
-            Turret_Alive[i] = false;
+            EnterEvadeMode();
+            return;
         }
 
         //Systems Shutdown
-        if (SystemsShutdown && Turret_Alive.none())
+        if (SystemsShutdown && m_Turrets.empty())
         {
             DoScriptText(SAY_NO_TOWERS, m_creature);
             DoCast(m_creature, SPELL_SYSTEMS_SHUTDOWN, true);
@@ -221,6 +234,14 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
         }else MissileBarrage_Timer -= diff;
 
         DoMeleeAttackIfReady();
+    }
+
+    void UnSummonTurrets()
+    {
+        for (GuidList::const_iterator i = m_Turrets.begin(); i != m_Turrets.end(); ++i)
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+                pSummon->ForcedDespawn();
+        m_Turrets.clear();
     }
 };
 

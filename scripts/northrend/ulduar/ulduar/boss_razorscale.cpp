@@ -41,20 +41,23 @@ enum Spells
 
 enum Says
 {
-    //commanders
-    SAY_INTRO1              = -1300032,
-    //engineer
-    SAY_AGGRO1              = -1300033,
-    //commander
-    SAY_AGGRO2              = -1300034,
-    ///engineer
-    SAY_AGGRO3              = -1300035,
-    //commander
-    SAY_GROUND_PHASE        = -1300036,
+    SAY_INTRO1              = -1300032, // commanders
+    SAY_AGGRO1              = -1300033, // engineer
+    SAY_AGGRO2              = -1300034, // commander
+    SAY_AGGRO3              = -1300035, // engineer
+    SAY_GROUND_PHASE        = -1300036, // commander
 
     EMOTE_FLAME_BREATH      = -1300037,
     SAY_FIRE_EXTINGUISHED   = -1300038
 };
+
+#define BERKSERK_TIMER          10*MINUTE*IN_MILISECONDS
+#define FIREBALL_TIMER          15*IN_MILISECONDS
+#define WING_BUFFET_TIMER       40*IN_MILISECONDS
+#define FLAME_BREATH_TIMER      (Phase==1 ? 30 : 40)*IN_MILISECONDS
+#define FLAME_BUFFET_TIMER      8*IN_MILISECONDS
+#define DEVOURING_FAME_TIMER    (Phase==1 ? 8 : 15)*IN_MILISECONDS
+#define FUSE_ARMOR_TIMER        30*IN_MILISECONDS
 
 struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 {
@@ -71,29 +74,25 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-	uint8 Phase;
-	uint32 DevouringFlame_Timer;
+    uint32 Phase;
+    uint32 DevouringFlame_Timer;
     uint32 Fireball_Timer;
-	uint32 FlameBreath_Timer;
-	uint32 WingBuffet_Timer;
-	uint32 FlameBuffet_Timer;
-	uint32 FuseArmor_Timer;
-	uint32 Berserk_Timer;
+    uint32 FlameBreath_Timer;
+    uint32 WingBuffet_Timer;
+    uint32 FlameBuffet_Timer;
+    uint32 FuseArmor_Timer;
+    uint32 Berserk_Timer;
 
     void Reset() 
     {
-		Phase = 1;
-		DevouringFlame_Timer = 8000;    //8 seconds
-		Fireball_Timer = 15000;         //15 seconds
-		FlameBreath_Timer = 30000;      //30 seconds
-		WingBuffet_Timer = 40000;       //40 seconds
-		FlameBuffet_Timer = 8000;       //8 seconds
-		FuseArmor_Timer = 30000;        //30 seconds
-		Berserk_Timer = 600000;         //10 minutes
-
-        m_creature->GetMotionMaster()->Clear(false);
-        m_creature->GetMotionMaster()->MoveIdle();
-        m_creature->SetHover(true);
+        Phase = 1;
+        DevouringFlame_Timer = DEVOURING_FAME_TIMER;
+        Fireball_Timer = FIREBALL_TIMER;
+        FlameBreath_Timer = FLAME_BREATH_TIMER;
+        WingBuffet_Timer = WING_BUFFET_TIMER;
+        FlameBuffet_Timer = FLAME_BUFFET_TIMER;
+        FuseArmor_Timer = FUSE_ARMOR_TIMER;
+        Berserk_Timer = BERKSERK_TIMER;
 
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, NOT_STARTED);
@@ -107,6 +106,10 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
+        //m_creature->GetMotionMaster()->Clear(false);
+        //m_creature->GetMotionMaster()->MoveIdle();
+        m_creature->SetHover(true);
+
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -116,103 +119,105 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-		//Phase 1
-		if (Phase == 1)
-		{
-			if ((int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) <= 50)
-			{
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
+        //Berserk timer
+        if (Berserk_Timer < diff)
+        {
+            DoCast(m_creature,SPELL_BERSERK);
+            Berserk_Timer = BERKSERK_TIMER;
+        }
+        else
+            Berserk_Timer -= diff;
+
+        //Phase 1
+        if (Phase == 1)
+        {
+            if (float(m_creature->GetHealth()) / float(m_creature->GetMaxHealth()) <= 0.5f)
+            {
                 m_creature->SetHover(false);
                 m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
 
-				Phase = 2;
+                Phase = 2;
                 return;
-			}
+            }
 
-			//Wing Buffet timer
-			if (WingBuffet_Timer < diff)
-			{
-			    DoCast(m_creature,SPELL_WING_BUFFET);
+            //Wing Buffet timer
+            if (WingBuffet_Timer < diff)
+            {
+                DoCast(m_creature, SPELL_WING_BUFFET);
+                WingBuffet_Timer = WING_BUFFET_TIMER;
+            }
+            else
+                WingBuffet_Timer -= diff;
 
-			    WingBuffet_Timer = 40000;
-			}else WingBuffet_Timer -= diff;
+            //Fireball timer
+            if (Fireball_Timer < diff)
+            {
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    DoCast(target, HEROIC(SPELL_FIREBALL, SPELL_FIREBALL_H));
+                Fireball_Timer = FIREBALL_TIMER;
+            }
+            else
+                Fireball_Timer -= diff;
+        }
 
-			//Flame Breath timer
-			if (FlameBreath_Timer < diff)
-			{
+        //Phase 1 and 2
+        if (Phase == 1 || Phase == 2)
+        {
+            //Flame Breath timer
+            if (FlameBreath_Timer < diff)
+            {
                 DoScriptText(EMOTE_FLAME_BREATH, m_creature);
-			    DoCast(m_creature, HEROIC(SPELL_FLAME_BREATH, SPELL_FLAME_BREATH_H));
+                DoCast(m_creature, HEROIC(SPELL_FLAME_BREATH, SPELL_FLAME_BREATH_H));
+                FlameBreath_Timer = FLAME_BREATH_TIMER;
+            }
+            else
+                FlameBreath_Timer -= diff;
 
-			    FlameBreath_Timer = 30000;
-			}else FlameBreath_Timer -= diff;
+            //Devouring Flame timer
+            if (DevouringFlame_Timer < diff)
+            {
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    DoCast(target, HEROIC(SPELL_DEVOURING_FLAME, SPELL_DEVOURING_FLAME_H));
+                DevouringFlame_Timer = DEVOURING_FAME_TIMER;
+            }
+            else
+                DevouringFlame_Timer -= diff;
+        }
 
-			//Fireball timer
-			if (Fireball_Timer < diff)
-			{
-			    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-			        DoCast(target, HEROIC(SPELL_FIREBALL, SPELL_FIREBALL_H));
+        //Phase 2
+        if (Phase == 2)
+        {
+            //Fuse Armor timer
+            if (FuseArmor_Timer < diff)
+            {
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    DoCast(target,SPELL_FUSE_ARMOR);
+                FuseArmor_Timer = FUSE_ARMOR_TIMER;
+            }
+            else
+                FuseArmor_Timer -= diff;
 
-			    Fireball_Timer = 15000;
-			}else Fireball_Timer -= diff;
+            //Flame Buffet timer
+            if (FlameBuffet_Timer < diff)
+            {
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    DoCast(target, HEROIC(SPELL_FLAME_BUFFET, SPELL_FLAME_BUFFET_H));
 
-			//Devouring Flame timer
-			if (DevouringFlame_Timer < diff)
-			{
-			    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-			        DoCast(target, HEROIC(SPELL_DEVOURING_FLAME, SPELL_DEVOURING_FLAME_H));
+                FlameBuffet_Timer = FLAME_BUFFET_TIMER;
+            }
+            else
+                FlameBuffet_Timer -= diff;
+        }
 
-			    DevouringFlame_Timer = 8000;
-			}else DevouringFlame_Timer -= diff;
-		}
-
-		//Phase 2
-		if (Phase == 2)
-		{
-			//Flame Breath timer
-			if (FlameBreath_Timer < diff)
-			{
-                DoScriptText(EMOTE_FLAME_BREATH, m_creature);
-				DoCast(m_creature, HEROIC(SPELL_FLAME_BREATH, SPELL_FLAME_BREATH_H));
-
-			    FlameBreath_Timer = 40000;
-			}else FlameBreath_Timer -= diff;
-
-			//Fuse Armor timer
-			if (FuseArmor_Timer < diff)
-			{
-			    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-					DoCast(target,SPELL_FUSE_ARMOR);
-
-			    FuseArmor_Timer = 30000;
-			}else FuseArmor_Timer -= diff;
-
-			//Devouring Flame timer
-			if (DevouringFlame_Timer < diff)
-			{
-				DoCast(m_creature->getVictim(), HEROIC(SPELL_DEVOURING_FLAME, SPELL_DEVOURING_FLAME_H));
-
-			    DevouringFlame_Timer = 15000;
-			}else DevouringFlame_Timer -= diff;
-
-			//Flame Buffet timer
-			if (FlameBuffet_Timer < diff)
-			{
-			    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-			        DoCast(target, HEROIC(SPELL_FLAME_BUFFET, SPELL_FLAME_BUFFET_H));
-
-			    FlameBuffet_Timer = 8000;
-			}else FlameBuffet_Timer -= diff;
-
-			DoMeleeAttackIfReady();
-		}
-
-		//Berserk timer
-		if (Berserk_Timer < diff)
-		{
-			DoCast(m_creature,SPELL_BERSERK);
-
-			Berserk_Timer = 300000;
-		}else Berserk_Timer -= diff;
+        //if (phase == 2)   //re-enable this when fly phase works properly
+            DoMeleeAttackIfReady();
     }
 };
 

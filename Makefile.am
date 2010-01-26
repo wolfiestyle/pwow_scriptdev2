@@ -393,6 +393,7 @@ scripts/northrend/ulduar/ulduar/boss_thorim.cpp \
 scripts/northrend/ulduar/ulduar/boss_vezax.cpp \
 scripts/northrend/ulduar/ulduar/boss_yoggsaron.cpp \
 scripts/northrend/ulduar/ulduar/instance_ulduar.cpp \
+scripts/northrend/ulduar/ulduar/ulduar.cpp \
 scripts/northrend/ulduar/ulduar/ulduar.h \
 scripts/northrend/ulduar/ulduar/ulduar_teleporter.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_ingvar.cpp \
