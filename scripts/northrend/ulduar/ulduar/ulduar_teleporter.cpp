@@ -26,32 +26,41 @@ enum
 #define G_SPARK_OF_IMAGINATION  "Spark of Imagination"
 #define G_PRISON_OF_YOGG_SARON  "Prison of Yogg-Saron"
 
-#define BOSS_DONE(x) (pInstance->GetData(x) == DONE)
-
 bool GOHello_ulduar_teleporter(Player *pPlayer, GameObject *pGo)
 {
     ScriptedInstance *pInstance = dynamic_cast<ScriptedInstance*>(pGo->GetInstanceData());
     if (!pInstance)
         return true;
-    std::bitset<32> bossEngaged(pInstance->GetData(DATA_BOSS_ENGAGED));
+    std::bitset<16> bossEngaged(pInstance->GetData(DATA_BOSS_ENGAGED));
+    std::bitset<16> bossDone(pInstance->GetData(DATA_BOSS_DONE));
     bool skipCheck = pPlayer->isGameMaster();  // allow GM to teleport anywhere
+
+    if (!skipCheck && pPlayer->isInCombat())   // dont allow using in combat
+    {
+        WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
+        data << uint8(0);
+        data << uint32(7791);
+        data << uint8(SPELL_FAILED_AFFECTING_COMBAT);
+        pPlayer->GetSession()->SendPacket(&data);
+        return true;
+    }
 
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_EXPEDITION_BASE_CAMP,  GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     if (skipCheck || bossEngaged[TYPE_LEVIATHAN])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_FORMATION_GROUNDS,     GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-    if (skipCheck || BOSS_DONE(TYPE_LEVIATHAN) || bossEngaged[TYPE_IGNIS] || bossEngaged[TYPE_RAZORSCALE] || bossEngaged[TYPE_XT002])
+    if (skipCheck || bossDone[TYPE_LEVIATHAN] || bossEngaged[TYPE_IGNIS] || bossEngaged[TYPE_RAZORSCALE] || bossEngaged[TYPE_XT002])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_COLOSSAL_FORGE,        GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-    if (skipCheck || BOSS_DONE(TYPE_XT002))
+    if (skipCheck || bossDone[TYPE_XT002])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_SCRAPYARD,             GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-    if (skipCheck || BOSS_DONE(TYPE_IGNIS) || BOSS_DONE(TYPE_RAZORSCALE) || BOSS_DONE(TYPE_XT002))
+    if (skipCheck || bossDone[TYPE_IGNIS] || bossDone[TYPE_RAZORSCALE] || bossDone[TYPE_XT002])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_ANTECHAMBER_OF_ULDUAR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
-    if (skipCheck || BOSS_DONE(TYPE_KOLOGARN) || bossEngaged[TYPE_AURIAYA] || bossEngaged[TYPE_HODIR] || bossEngaged[TYPE_VEZAX])
+    if (skipCheck || bossDone[TYPE_KOLOGARN] || bossEngaged[TYPE_AURIAYA] || bossEngaged[TYPE_HODIR] || bossEngaged[TYPE_VEZAX])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_SHATTERED_WALKWAY,     GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
-    if (skipCheck || BOSS_DONE(TYPE_AURIAYA) || bossEngaged[TYPE_FREYA] || bossEngaged[TYPE_THORIM])
+    if (skipCheck || bossDone[TYPE_AURIAYA] || bossEngaged[TYPE_FREYA] || bossEngaged[TYPE_THORIM])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_CONSERVATORY_OF_LIFE,  GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
     if (skipCheck || bossEngaged[TYPE_MIMIRON])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_SPARK_OF_IMAGINATION,  GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
-    if (skipCheck || BOSS_DONE(TYPE_VEZAX) || bossEngaged[TYPE_YOGGSARON])
+    if (skipCheck || bossDone[TYPE_VEZAX] || bossEngaged[TYPE_YOGGSARON])
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_PRISON_OF_YOGG_SARON,  GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
 
     pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, pGo->GetGUID());

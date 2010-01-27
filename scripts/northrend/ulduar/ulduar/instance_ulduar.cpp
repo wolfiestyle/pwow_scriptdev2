@@ -35,12 +35,12 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
     GuidMap m_guidsStore;
 
     uint32 m_uiNumSentries;
-    uint32 m_uiBossEngaged;
+    uint32 m_uiTeleporterData;
 
     void Initialize()
     {
-        m_uiNumSentries = 0;
-        m_uiBossEngaged = 0;
+        m_uiNumSentries     = 0;
+        m_uiTeleporterData  = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -205,8 +205,15 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
             case TYPE_YOGGSARON:
             case TYPE_ALGALON:
                 m_auiEncounter[uiType] = uiData;
-                if (uiData == IN_PROGRESS)
-                    m_uiBossEngaged |= (1 << uiType);
+                switch (uiData)
+                {
+                    case IN_PROGRESS:
+                        m_uiTeleporterData |= 1 << uiType;
+                        break;
+                    case DONE:
+                        m_uiTeleporterData |= 0x10000 << uiType;
+                        break;
+                }
                 break;
         }
 
@@ -214,7 +221,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
 
         for(size_t i = 0; i < MAX_ENCOUNTER; ++i)
             saveStream << m_auiEncounter[i] << " ";
-        saveStream << m_uiBossEngaged;
+        saveStream << m_uiTeleporterData;
 
         m_strInstData = saveStream.str();
 
@@ -254,7 +261,9 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
             case TYPE_ALGALON:
                 return m_auiEncounter[uiType];
             case DATA_BOSS_ENGAGED:
-                return m_uiBossEngaged;
+                return m_uiTeleporterData & 0xFFFF;
+            case DATA_BOSS_DONE:
+                return m_uiTeleporterData >> 16;
         }
 
         return 0;
@@ -284,7 +293,9 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
             if (m_auiEncounter[i] == IN_PROGRESS)
                 m_auiEncounter[i] = NOT_STARTED;
         }
-        loadStream >> m_uiBossEngaged;
+        uint32 tp_data;
+        loadStream >> tp_data;
+        m_uiTeleporterData |= tp_data;
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }

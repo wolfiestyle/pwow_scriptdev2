@@ -47,6 +47,7 @@ enum
     DATA_HODIR_DOOR             = 61,
     DATA_VEZAX_DOOR             = 62,
     DATA_BOSS_ENGAGED           = 70,
+    DATA_BOSS_DONE              = 71,
 
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
