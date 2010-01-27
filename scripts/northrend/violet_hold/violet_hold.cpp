@@ -192,8 +192,8 @@ struct MANGOS_DLL_DECL npc_sinclariAI : public ScriptedAI
     {
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
         m_uiNextPortal_Timer = 5000;
-        if (m_pInstance)
-            m_pInstance->DoUseDoorOrButton(m_pInstance->GetData64(DATA_SEAL_DOOR));
+        /*if (m_pInstance)
+            m_pInstance->DoUseDoorOrButton(m_pInstance->GetData64(DATA_SEAL_DOOR));*/
     }
 
     void DoSpawnPortal()

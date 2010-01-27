@@ -215,8 +215,8 @@ struct MANGOS_DLL_DECL instance_violet_hold : public ScriptedInstance
                     ++m_uiRiftPortalCount;
                 else if (uiData == IN_PROGRESS)
                     bIsInBoss = true;
-                else
-                    DoUseDoorOrButton(m_uiSealDoorGUID);
+                /*else
+                    DoUseDoorOrButton(m_uiSealDoorGUID);*/
 
                 m_auiEncounter[1] = uiData;
                 break;
