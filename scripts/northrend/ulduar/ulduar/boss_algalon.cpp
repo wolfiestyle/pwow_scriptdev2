@@ -22,7 +22,6 @@ SDCategory: Ulduar
 EndScriptData */
 
 // NOT DONE: 
-//Cosmic Smash (what spell it is), 
 //Big Bang (entire sequence(timer,spell,black hole hiding plyrs etc.)), 
 //'star effect' at beginning, remove at end
 
@@ -37,14 +36,15 @@ enum Spells
     SPELL_QUANTUM_STRIKE    = 64395,
     SPELL_QUANTUM_STRIKE_H  = 64592,
     SPELL_PHASE_PUNCH       = 64412,
-    SPELL_COSMIC_SMASH      = 62301,  // need to find correct way of doing this
-    SPELL_COSMIC_SMASH_H    = 64598,
+    SPELL_COSMIC_SMASH      = 62304,  // need to find correct way of doing this
+    SPELL_COSMIC_SMASH_H    = 64597,
 
     // Collapsing Star
     BLACK_HOLE_EXPLOSION    = 64122,
     BLACK_HOLE_EXPLOSION_H  = 65108,
 
     // Black Hole
+    SPELL_BLACK_HOLE_VISUAL = 62003,  // explosion effect
     SPELL_SUMMON_UNLEASHED_DARK_MATTER = 64450
 };
 
@@ -55,6 +55,7 @@ enum Events
     EVENT_QUANTUM_STRIKE,
     EVENT_PHASE_PUNCH,
     EVENT_COSMIC_SMASH,
+    EVENT_COSMIC_SMASH_EFFECT,
     EVENT_SUMMON_STARS, //(only phase 1)
     EVENT_SUMMON_CONSTELLATION
 };
@@ -466,18 +467,19 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                     events.ScheduleEvent(EVENT_SUMMON_CONSTELLATION, SUMMON_CONSTELLATION_TIMER);
                     break;
                 case EVENT_COSMIC_SMASH:
-                    /*DoScriptText(EMOTE_COSMIC_SMASH, m_creature);
-                    if(m_bIsRegularMode)  //still no idea what sequence of spells this is
+                    //TODO: mark destination point (don't know the spell)
+                    DoScriptText(EMOTE_COSMIC_SMASH, m_creature);
+                    events.ScheduleEvent(EVENT_COSMIC_SMASH_EFFECT, 2*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_COSMIC_SMASH, COSMIC_SMASH_TIMER);
+                    break;
+                case EVENT_COSMIC_SMASH_EFFECT:
+                    for (int i = 0; i < HEROIC(1, 3); i++)
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), HEROIC(SPELL_COSMIC_SMASH, SPELL_COSMIC_SMASH_H));
+                        float x, y;
+                        GetRandomPointInCircle(30.0f, x, y);
+                        m_creature->CastSpell(m_creature->GetPositionX()+x, m_creature->GetPositionY()+y, m_creature->GetPositionZ()+0.5f,
+                                HEROIC(SPELL_COSMIC_SMASH, SPELL_COSMIC_SMASH_H), true);
                     }
-                    else //3 targets in 25 man mode
-                    {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), HEROIC(SPELL_COSMIC_SMASH, SPELL_COSMIC_SMASH_H));
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), HEROIC(SPELL_COSMIC_SMASH, SPELL_COSMIC_SMASH_H));
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), HEROIC(SPELL_COSMIC_SMASH, SPELL_COSMIC_SMASH_H));
-                    }
-                    events.ScheduleEvent(EVENT_COSMIC_SMASH, COSMIC_SMASH_TIMER);*/
                     break;
                 default:
                     break;
@@ -610,6 +612,7 @@ struct MANGOS_DLL_DECL mob_black_holeAI : public ScriptedAI
     {
         IsPhase2 = AlgalonAI ? AlgalonAI->IsPhase2 : false;
         UnleashedDarkMatterTimer = 10*IN_MILISECONDS;
+        DoCast(m_creature, SPELL_BLACK_HOLE_VISUAL, true);
     }
 
     void JustSummoned(Creature *pSummon)
