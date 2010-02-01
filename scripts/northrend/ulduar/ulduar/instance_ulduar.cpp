@@ -293,7 +293,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
             if (m_auiEncounter[i] == IN_PROGRESS)
                 m_auiEncounter[i] = NOT_STARTED;
         }
-        uint32 tp_data;
+        uint32 tp_data = 0;
         loadStream >> tp_data;
         m_uiTeleporterData |= tp_data;
 
