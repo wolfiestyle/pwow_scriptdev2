@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -55,14 +55,14 @@ struct MANGOS_DLL_DECL boss_moraggAI : public ScriptedAI
         m_uiOpticLink_Timer = urand(25000, 30000);
         m_uiRay_Timer = urand(2000, 7000);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_MORAGG, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_MORAGG, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_MORAGG, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_MORAGG, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -119,8 +119,8 @@ struct MANGOS_DLL_DECL boss_moraggAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_MORAGG, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_MORAGG, DONE);*/
     }
 };
 

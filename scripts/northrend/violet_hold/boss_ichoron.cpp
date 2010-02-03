@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 
 struct Locations
@@ -98,16 +98,16 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_ON);
         DespawnWaterElements();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ICHORON, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ICHORON, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ICHORON, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ICHORON, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -249,8 +249,8 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         DespawnWaterElements();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ICHORON, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ICHORON, DONE);*/
     }
 
     void KilledUnit(Unit* pVictim)
@@ -293,7 +293,7 @@ struct MANGOS_DLL_DECL mob_ichor_globuleAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                if (Creature* pIchoron = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_ICHORON))))
+                if (Creature *pIchoron = GetClosestCreatureWithEntry(m_creature, NPC_ICHORON, 100.0f))
                 {
                     float fDistance = m_creature->GetDistance2d(pIchoron);
                     if (fDistance <= 2)

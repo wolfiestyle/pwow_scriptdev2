@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -59,14 +59,14 @@ struct MANGOS_DLL_DECL boss_lavanthorAI : public ScriptedAI
         m_uiFlameBreath_Timer = urand(15000, 16000);
         m_uiFirebolt_Timer = urand(10000, 11000);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_LAVANTHOR, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_LAVANTHOR, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_LAVANTHOR, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_LAVANTHOR, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -129,8 +129,8 @@ struct MANGOS_DLL_DECL boss_lavanthorAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_LAVANTHOR, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_LAVANTHOR, DONE);*/
     }
 };
 

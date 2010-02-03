@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -59,6 +59,7 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
     	m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
     	Reset();
     }
+
     ScriptedInstance *m_pInstance;
 
     bool m_bIsRegularMode;
@@ -89,16 +90,16 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
             if (*iter && (*iter)->isDead())
                 (*iter)->Respawn();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_EREKEM, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_EREKEM, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -196,8 +197,8 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_EREKEM, DONE);*/
     }
 
     void KilledUnit(Unit* pVictim)
@@ -285,7 +286,7 @@ struct MANGOS_DLL_DECL mob_erekem_guardAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (m_pInstance)
-            if (Creature* pErekem = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_EREKEM))))
+            if (Creature *pErekem = GetClosestCreatureWithEntry(m_creature, NPC_EREKEM, 100.0f))
                 if (pErekem->isAlive())
                 {
                     DoScriptText(SAY_ADD_KILED, pErekem);

@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -77,16 +77,16 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
         m_uiArcaneBuffet_Timer = m_uiSummonEtherealSphere_Timer + urand(5000, 6000);
         DespawnSphere();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_XEVOZZ, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_XEVOZZ, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -172,8 +172,8 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         DespawnSphere();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_XEVOZZ, DONE);*/
     }
 
     void KilledUnit(Unit* pVictim)
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL mob_ethereal_sphereAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                if (Creature* pXevozz = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_XEVOZZ))))
+                if (Creature *pXevozz = GetClosestCreatureWithEntry(m_creature, NPC_XEVOZZ, 100.0f))
                 {
                     float fDistance = m_creature->GetDistance2d(pXevozz);
                     if (fDistance <= 3)

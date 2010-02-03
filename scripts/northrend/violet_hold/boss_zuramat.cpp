@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -73,16 +73,16 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
         m_uiSummonVoidSentry_Timer = urand(5000, 10000);
         m_uiVoidShift_Timer = 10000;
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ZURAMAT, NOT_STARTED);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ZURAMAT, NOT_STARTED);*/
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ZURAMAT, IN_PROGRESS);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ZURAMAT, IN_PROGRESS);*/
     }
 
     void AttackStart(Unit* pWho)
@@ -166,8 +166,8 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         DespawnSentry();
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_ZURAMAT, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_ZURAMAT, DONE);*/
     }
 
     void KilledUnit(Unit* pVictim)

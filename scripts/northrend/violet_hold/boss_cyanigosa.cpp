@@ -23,7 +23,7 @@ SDCategory: The Violet Hold
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_violet_hold.h"
+#include "violet_hold.h"
 
 enum
 {
@@ -139,8 +139,8 @@ struct MANGOS_DLL_DECL boss_cyanigosaAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_RIFT, DONE);
+        /*if (m_pInstance)
+            m_pInstance->SetData(TYPE_RIFT, DONE);*/
     }
 
     void KilledUnit(Unit* pVictim)
