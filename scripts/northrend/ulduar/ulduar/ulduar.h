@@ -62,6 +62,9 @@ enum
     NPC_AURIAYA                 = 33515,
     NPC_SANCTUM_SENTRY          = 34014,
     NPC_MIMIRON                 = 33350,
+    NPC_LEVIATHAN_MKII          = 33432,    //mimiron miniboss
+    NPC_VX001                   = 33651,    //mimiron miniboss
+    NPC_AERIAL_COMMAND_UNIT     = 33670,    //mimiron miniboss
     NPC_HODIR                   = 32845,
     NPC_THORIM                  = 32865,
     NPC_FREYA                   = 32906,

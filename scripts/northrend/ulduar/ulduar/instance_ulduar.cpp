@@ -156,7 +156,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
                 //loot_id = DATA_KOLOGARN_CHEST;
                 break;
             case TYPE_MIMIRON:
-                //loot_id = DATA_MIMIRON_CHEST;
+                loot_id = DATA_MIMIRON_CHEST;
                 break;
             case TYPE_HODIR:
                 //loot_id = DATA_HODIR_CHEST;

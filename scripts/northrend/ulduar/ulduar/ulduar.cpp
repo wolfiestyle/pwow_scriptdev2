@@ -28,6 +28,9 @@ bool IsOutOfCombatArea(Creature *pCreature)
         case NPC_AURIAYA:
             return z < 400.0f || !pCreature->IsWithinDist2d(1981.5f, -28.5f, 120.0f);
         case NPC_MIMIRON:
+        case NPC_LEVIATHAN_MKII:
+        case NPC_VX001:
+        case NPC_AERIAL_COMMAND_UNIT:
             return !pCreature->IsWithinDist2d(2744.1f, 2569.1f, 100.0f);
         case NPC_HODIR:
             return !pCreature->IsWithinDist2d(2000.7f, -233.7f, 70.0f);
