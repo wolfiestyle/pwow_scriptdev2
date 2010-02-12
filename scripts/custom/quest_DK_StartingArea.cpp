@@ -105,6 +105,9 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI : public ScriptedAI
                     case 4377: //New Avalon Forge
                     case 4346: //New Avalon Town Hall
                     case 4352: //Chapel of the Crimson Flame
+                    case 4360: //Scarlet Overlook
+                    case 4345: //New Avalon Orchard
+                    case 4358: //Tyr's Hand
                         break;
                     default:
                         JustDied(NULL);
