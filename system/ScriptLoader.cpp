@@ -266,6 +266,15 @@ extern void AddSC_boss_black_knight();
 extern void AddSC_boss_grand_champions();
 extern void AddSC_instance_trial_of_the_champion();
 extern void AddSC_trial_of_the_champion();
+extern void AddSC_boss_anubarak_toc();                      //trial_of_the_crusader
+extern void AddSC_boss_gormok();
+extern void AddSC_boss_icehowl();
+extern void AddSC_boss_jaraxxus();
+extern void AddSC_boss_jormungar_twins();
+extern void AddSC_twin_valkyr();
+extern void AddSC_bosses_faction_champions();
+extern void AddSC_instance_trial_of_the_crusader();
+extern void AddSC_npc_barrett_ramsey();
 extern void AddSC_boss_novos();                             //draktharon_keep
 extern void AddSC_boss_tharonja();
 extern void AddSC_boss_trollgore();
@@ -703,6 +712,15 @@ void AddScripts()
     AddSC_boss_grand_champions();
     AddSC_instance_trial_of_the_champion();
     AddSC_trial_of_the_champion();
+    AddSC_boss_anubarak_toc();                              //trial_of_the_crusader
+    AddSC_boss_gormok();
+    AddSC_boss_icehowl();
+    AddSC_boss_jaraxxus();
+    AddSC_boss_jormungar_twins();
+    AddSC_twin_valkyr();
+    AddSC_bosses_faction_champions();
+    AddSC_instance_trial_of_the_crusader();
+    AddSC_npc_barrett_ramsey();
     AddSC_boss_novos();                                     //draktharon_keep
     AddSC_boss_tharonja();
     AddSC_boss_trollgore();
