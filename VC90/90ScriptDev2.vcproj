@@ -2732,6 +2732,14 @@
 				RelativePath="..\include\sc_instance.h"
 				>
 			</File>
+			<File
+				RelativePath="..\include\sc_utility.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\sc_utility.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="system"

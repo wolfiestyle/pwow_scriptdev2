@@ -47,6 +47,8 @@ include/sc_grid_searchers.cpp \
 include/sc_grid_searchers.h \
 include/sc_instance.cpp \
 include/sc_instance.h \
+include/sc_utility.cpp \
+include/sc_utility.h \
 scripts/battlegrounds/battleground.cpp \
 scripts/custom/deathknight.cpp \
 scripts/custom/mage_mirror_imageAI.cpp \
