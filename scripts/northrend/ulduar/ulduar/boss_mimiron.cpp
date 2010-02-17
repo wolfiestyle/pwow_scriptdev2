@@ -24,7 +24,6 @@ EndScriptData */
 #include "precompiled.h"
 #include "ulduar.h"
 #include "TemporarySummon.h"
-#include "NullCreatureAI.h"
 
 enum Says
 {
@@ -624,12 +623,13 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_burst_targetAI : public NullCreatureAI
+struct MANGOS_DLL_DECL mob_burst_targetAI: public CreatureAI
 {
     mob_VX001_AI *VX001_AI;
     uint64 VX001_GUID;
     uint32 LaserStartAngle;
-    mob_burst_targetAI(Creature *pCreature) : NullCreatureAI(pCreature) 
+
+    mob_burst_targetAI(Creature *pCreature): CreatureAI(pCreature)
     {
         /*
         //36.5257 is dist btw two points on perimeter of circle with radius 30, separated by 5pi/12 radians (75 degrees), 5 secs is time to be traversed in
@@ -670,10 +670,16 @@ struct MANGOS_DLL_DECL mob_burst_targetAI : public NullCreatureAI
     {
     }
 
-    void UpdateAI(const uint32 uiDiff)
-    {
-    }
+    // copied from NullCreatureAI, since gives linker errors using it from here
+    void MoveInLineOfSight(Unit*) {}
+    void AttackStart(Unit*) {}
+    void AttackedBy(Unit*) {}
+    void EnterEvadeMode() {}
 
+    bool IsVisible(Unit*) const { return false;  }
+
+    void UpdateAI(const uint32) {}
+    static int Permissible(const Creature*) { return PERMIT_BASE_IDLE;  }
 };
 
 struct MANGOS_DLL_DECL mob_aerial_command_unitAI : public VoltronPieceAI
