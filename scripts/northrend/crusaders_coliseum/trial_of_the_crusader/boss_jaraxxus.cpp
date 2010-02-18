@@ -23,7 +23,8 @@ struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
         while(uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-                
+                default:
+                    break;
             }
 
         DoMeleeAttackIfReady();

@@ -23,10 +23,7 @@ enum BeastsOfNortherendPhases
 #define GOSSIP_START_NEXT_BOSS  "We are ready to begin the next challenge."  //not the actual text, but I cant find a source for it. If you know them, change it
 #define GOSSIP_TEXT_ID          45323
 
-#define SUMMON_POSITION         562, 182, 395, 0    //FIXME: it should be different spawn positions when multiple bosses spawned at once
 #define DESPAWN_TIME            4*MINUTE*IN_MILISECONDS
-#define AUTOSUMMON(C_ID)        m_creature->SummonCreature(C_ID, SUMMON_POSITION, TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
-
 #define SUMMON_TIMER            3*MINUTE*IN_MILISECONDS
 
 struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
@@ -118,6 +115,13 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             summons.push_back(pSummon->GetGUID());
     }
 
+    void SpawnBoss(uint32 entry, int32 slot = 0)
+    {
+        static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
+        int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
+        m_creature->SummonCreature(entry, summon_pos[0] + float(x*2), summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+    }
+
     void SummonedCreatureJustDied(Creature *who)
     {
         if (!m_pInstance)
@@ -139,14 +143,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_GORMOK:
                 if(!m_bIsHeroic)
                 {
-                    AUTOSUMMON(NPC_ACIDMAW);
-                    AUTOSUMMON(NPC_DREADSCALE);
+                    SpawnBoss(NPC_ACIDMAW, 1);
+                    SpawnBoss(NPC_DREADSCALE, 2);
                 }
                 break;
             case NPC_ACIDMAW:
             case NPC_DREADSCALE:
                 if(!m_bIsHeroic && !m_pInstance->IsEncounterInProgress())
-                    AUTOSUMMON(NPC_ICEHOWL);
+                    SpawnBoss(NPC_ICEHOWL);
                 break;
             case NPC_FJOLA_LIGHTBANE:
             case NPC_EYDIS_DARKBANE:
@@ -202,32 +206,32 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     CurrBeastOfNortherendPhase = PHASE_GORMOK;
                     uiSummonTimer = SUMMON_TIMER;
                 }
-                AUTOSUMMON(NPC_GORMOK);
+                SpawnBoss(NPC_GORMOK);
                 break;
             case PHASE_JARAXXUS:
-                AUTOSUMMON(NPC_JARAXXUS);   //not really how it starts
+                SpawnBoss(NPC_JARAXXUS);   //not really how it starts
                 break;
             case PHASE_FACTION_CHAMPIONS:
                 if(!IS_HORDE)
-                    for(uint32 i = 34441; i <= 34459; i++) //the NPC ids are rather close together
+                    for(uint32 i = 34441, j = 0; i <= 34459; i++) //the NPC ids are rather close together
                     {
                         if(i == 34442 || i == 34443 || i==34446 || i== 34452)
                             continue;
 
-                        AUTOSUMMON(i);
+                        SpawnBoss(i, j++);
                     }
                 else
-                    for(uint32 i = 34460; i <= 34475; i++)
+                    for(uint32 i = 34460, j = 0; i <= 34475; i++)
                     {
                         if(i == 34462 || i == 34464)
                             continue;
 
-                        AUTOSUMMON(i);
+                        SpawnBoss(i, j++);
                     }
                 break;
             case PHASE_TWIN_VALKYR:
-                AUTOSUMMON(NPC_FJOLA_LIGHTBANE);
-                AUTOSUMMON(NPC_EYDIS_DARKBANE);
+                SpawnBoss(NPC_FJOLA_LIGHTBANE, 1);
+                SpawnBoss(NPC_EYDIS_DARKBANE, 2);
                 break;
             case PHASE_ANUBARAK:
                 if(m_pInstance && pFloor)
@@ -249,12 +253,12 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 switch (CurrBeastOfNortherendPhase)
                 {
                     case PHASE_JORMUNGAR_TWINS:
-                        AUTOSUMMON(NPC_ACIDMAW);
-                        AUTOSUMMON(NPC_DREADSCALE);
+                        SpawnBoss(NPC_ACIDMAW, 1);
+                        SpawnBoss(NPC_DREADSCALE, 2);
                         uiSummonTimer = SUMMON_TIMER;
                         break;
                     case PHASE_ICEHOWL:
-                        AUTOSUMMON(NPC_ICEHOWL);
+                        SpawnBoss(NPC_ICEHOWL);
                         uiSummonTimer = SUMMON_TIMER;
                         break;
                     default:
