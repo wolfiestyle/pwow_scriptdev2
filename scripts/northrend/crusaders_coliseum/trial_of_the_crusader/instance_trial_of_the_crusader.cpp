@@ -63,7 +63,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         switch (uiType)
         {
             case TYPE_ANUBARAK:
-                loot_id = TYPE_ANUBARAK_CHEST;
+                //loot_id = TYPE_ANUBARAK_CHEST;
                 break;
             case TYPE_GORGRIM_SHADOWCLEAVE:
             case TYPE_BIRANA_STORMHOOF:

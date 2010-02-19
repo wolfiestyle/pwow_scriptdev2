@@ -6,9 +6,11 @@
 struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_trial_of_the_crusaderAI
 {
     boss_toc_deathknightAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)         
-    { //do any init here, instance stuff in parent class 
-    } //DO NOT CALL Reset() or creature will despawn                                             
+        boss_trial_of_the_crusaderAI(pCreature)
+    {
+        //do any init here, instance stuff in parent class
+        ////DO NOT CALL Reset() or creature will despawn
+    }
 
     // only should be called on wipe, creature WILL BE DESTROYED upon wipe, definition in boss_trial_of_the_crusaderAI
     // if defining a reset function, remember to call boss_trial_of_the_crusaderAI::Reset() after all of it

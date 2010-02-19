@@ -37,6 +37,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     uint32 uiSummonTimer;
     bool m_bCombatStart;
     uint32 m_uiAggroTimer;
+    uint32 m_uiBeastsDead;
 
     typedef std::list<uint64> GuidList;
     GuidList summons;
@@ -65,6 +66,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         uiSummonTimer = 0;
         m_bCombatStart = false;
         m_uiAggroTimer = 0;
+        m_uiBeastsDead = 0;
         Reset();
     }
 
@@ -94,6 +96,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     m_pInstance->SetData(TYPE_ACIDMAW, NOT_STARTED);
                     m_pInstance->SetData(TYPE_DREADSCALE, NOT_STARTED);
                     m_pInstance->SetData(TYPE_ICEHOWL, NOT_STARTED);
+                    m_uiBeastsDead = 0;
                     break;
                 case PHASE_FACTION_CHAMPIONS:
                     for (uint32 i = FACTION_CHAMPION_START; i <= FACTION_CHAMPION_END; i++)
@@ -133,6 +136,12 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_creature->SummonCreature(entry, summon_pos[0] + float(x*2), summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
 
+    void NorthrendBeastsEncounterCheck()
+    {
+        if (++m_uiBeastsDead >= 4)
+            EncounterInProgress = false;
+    }
+
     void SummonedCreatureJustDied(Creature *who)
     {
         if (!who || !m_pInstance)
@@ -147,7 +156,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 EncounterInProgress = false;
                 CurrPhase = PHASE_DONE;
                 break;
-            case NPC_ICEHOWL:
             case NPC_JARAXXUS:
                 EncounterInProgress = false;
                 break;
@@ -157,11 +165,15 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     SpawnBoss(NPC_ACIDMAW, 1);
                     SpawnBoss(NPC_DREADSCALE, 2);
                 }
+                NorthrendBeastsEncounterCheck();
                 break;
             case NPC_ACIDMAW:
             case NPC_DREADSCALE:
                 if (!m_bIsHeroic && !m_pInstance->IsEncounterInProgress())
                     SpawnBoss(NPC_ICEHOWL);
+                // (no break)
+            case NPC_ICEHOWL:
+                NorthrendBeastsEncounterCheck();
                 break;
             case NPC_FJOLA_LIGHTBANE:
             case NPC_EYDIS_DARKBANE:
@@ -199,7 +211,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 break;
         }
 
-        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        if (!EncounterInProgress)
+            m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
     void StartNextPhase()

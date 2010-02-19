@@ -22,6 +22,7 @@ enum
     TYPE_ACIDMAW                = 1,
     TYPE_DREADSCALE             = 2,
     TYPE_ICEHOWL                = 3,
+    // jaraxxus
     TYPE_JARAXXUS               = 4,
     // faction champions of alliance
     TYPE_TYRIUS_DUSKBLADE       = 5,
