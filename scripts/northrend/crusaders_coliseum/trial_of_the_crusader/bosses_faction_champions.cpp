@@ -1,3 +1,43 @@
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/* ScriptData
+SDName: Bosses Faction Champions
+SD%Complete: 0
+SDComment:
+SDCategory: Trial of the Crusader
+EndScriptData */
+
+/* ContentData
+boss_toc_deathknight
+boss_toc_caster_druid
+boss_toc_heal_druid
+boss_toc_hunter
+boss_toc_mage
+boss_toc_heal_paladin
+boss_toc_ret_paladin
+boss_toc_disc_priest
+boss_toc_shadow_priest
+boss_toc_rogue
+boss_toc_magic_shaman
+boss_toc_melee_shaman
+boss_toc_warlock
+boss_toc_warrior
+EndContentData */
+
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
