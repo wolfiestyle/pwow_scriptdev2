@@ -16,7 +16,7 @@ enum Spells
     SPELL_PARALYTIC_SPRAY_N10   = 66901,
     SPELL_PARALYTIC_SPRAY_N25   = 67615,
     SPELL_PARALYTIC_SPRAY_H10   = 67616,
-    SPELL_PARALYTIC_SPRAY_h25   = 67617,
+    SPELL_PARALYTIC_SPRAY_H25   = 67617,
     // Dreadscale
     SPELL_MOLTEN_SPEW           = 66821,    //triggers 66820, related and unused 67635, 67636, 67637
     SPELL_BURNING_BITE_N10      = 66879,
@@ -37,8 +37,8 @@ enum Spells
     SPELL_SLIME_POOL_H10        = 67642,
     SPELL_SLIME_POOL_H25        = 67643,
     SPELL_SWEEP_N10             = 66794,
-    SPELL_SWEEP_H10             = 67644,
-    SPELL_SWEEP_N25             = 67645,
+    SPELL_SWEEP_N25             = 67644,
+    SPELL_SWEEP_H10             = 67645,
     SPELL_SWEEP_H25             = 67646,
     SPELL_ENRAGE                = 68335,
 };
