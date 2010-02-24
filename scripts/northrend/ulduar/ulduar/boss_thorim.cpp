@@ -146,7 +146,7 @@ struct MANGOS_DLL_DECL boss_thorimAI: public ScriptedAI
                     events.ScheduleEvent(EVENT_UNBALANCING_STRIKE, UNBALANCING_STRIKE_TIMER);
                     break;
                 case EVENT_LIGHTNING_CHARGE:
-                    DoCast(m_creature, SPELL_LIGHTNING_CHARGE_BUFF, true);
+                    //DoCast(m_creature, SPELL_LIGHTNING_CHARGE_BUFF, true);
                     //DoCast(m_creature->getVictim(), SPELL_LIGHTNING_CHARGE_DMG);
                     events.ScheduleEvent(EVENT_LIGHTNING_CHARGE, LIGHTNING_CHARGE_TIMER);
                     break;

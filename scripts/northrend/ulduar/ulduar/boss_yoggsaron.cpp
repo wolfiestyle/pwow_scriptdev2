@@ -58,6 +58,13 @@ enum Events
     EVENT_DEAFENING_ROAR
 };
 
+enum AddIds
+{
+    NPC_CRUSHER_TENTACLE        = 33966,
+    NPC_CORRUPTOR_TENTACLE      = 33985,
+    NPC_CONSTRICTOR_TENTACLE    = 33983
+};
+
 enum Says
 {
     SAY_PHASE1_1        = -1300161,
@@ -120,7 +127,10 @@ enum Says
 #define EMPOWERING_SHADOWS_TIMER    urand(30, 40)*IN_MILISECONDS
 #define DEAFENING_ROAR_TIMER        urand(50, 60)*IN_MILISECONDS
 
-#define MAX_TENTACLES               HEROIC(5, 10)
+#define MAX_TENTACLES               5
+#define SUMMON_RADIUS               38.0f
+
+static const float RoomCenter[3] = {1981.5f, -28.5f, 325.0f};
 
 static const uint32 CorruptorSpells[4] = {
     SPELL_APATHY,
@@ -199,6 +209,15 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
 
+    void GetRandomPointInCircle(float max_rad, float &x, float &y, float &z)
+    {
+        float ang = 2*M_PI * rand_norm();
+        float rad = max_rad * sqrt(rand_norm());
+        x = rad * cos(ang) + RoomCenter[0];
+        y = rad * sin(ang) + RoomCenter[1];
+        z = RoomCenter[2];
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
@@ -221,17 +240,29 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
                     break;
                 case EVENT_SUMMON_CRUSHER:
                     if (m_SummonList.size() < MAX_TENTACLES)
-                        DoCast(m_creature, SPELL_CRUSHER_TENTACLE);
+                    {
+                        float x, y, z;
+                        GetRandomPointInCircle(SUMMON_RADIUS, x, y, z);
+                        m_creature->SummonCreature(NPC_CRUSHER_TENTACLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
+                    }
                     events.ScheduleEvent(EVENT_SUMMON_CRUSHER, SUMMON_CRUSHER_TIMER);
                     break;
                 case EVENT_SUMMON_CORRUPTOR:
                     if (m_SummonList.size() < MAX_TENTACLES)
-                        DoCast(m_creature, SPELL_CORRUPTOR_TENTACLE);
+                    {
+                        float x, y, z;
+                        GetRandomPointInCircle(SUMMON_RADIUS, x, y, z);
+                        m_creature->SummonCreature(NPC_CORRUPTOR_TENTACLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
+                    }
                     events.ScheduleEvent(EVENT_SUMMON_CORRUPTOR, SUMMON_CORRUPTOR_TIMER);
                     break;
                 case EVENT_SUMMON_CONSTRICTOR:
                     if (m_SummonList.size() < MAX_TENTACLES)
-                        DoCast(m_creature, SPELL_CONSTRICTOR_TENTACLE);
+                    {
+                        float x, y, z;
+                        GetRandomPointInCircle(SUMMON_RADIUS, x, y, z);
+                        m_creature->SummonCreature(NPC_CONSTRICTOR_TENTACLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
+                    }
                     events.ScheduleEvent(EVENT_SUMMON_CONSTRICTOR, SUMMON_CONSTRICTOR_TIMER);
                     break;
                 case EVENT_LUNATIC_GAZE:
