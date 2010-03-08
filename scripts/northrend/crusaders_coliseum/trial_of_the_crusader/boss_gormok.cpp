@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss Gormok
-SD%Complete: 0
-SDComment:
+SD%Complete: 10
+SDComment: vehicle support is needed to properly implement the 'throw snobold' event
 SDCategory: Trial of the Crusader
 EndScriptData */
 
@@ -39,9 +39,9 @@ enum Spells
     SPELL_STAGGERING_STOMP_N25  = 67647,
     SPELL_STAGGERING_STOMP_H10  = 67648,
     SPELL_STAGGERING_STOMP_H25  = 67649,
-    SPELL_RISING_ANGER          = 66636,
-    SPELL_SNOBOLLED             = 66406,    // dummy effect
     // Snobold Vassal
+    SPELL_SNOBOLLED             = 66406,    // dummy effect, target vehicle
+    SPELL_RISING_ANGER          = 66636,    // target Gormok
     SPELL_BATTER                = 66408,
     SPELL_FIRE_BOMB             = 66313,
     SPELL_HEAD_CRACK            = 66407,
@@ -52,17 +52,59 @@ enum AddIds
     NPC_SNOBOLD_VASSAL          = 34800,
 };
 
+enum Events
+{
+    // Gormok
+    EVENT_IMPALE = 1,
+    EVENT_STAGGERING_STOMP,
+    EVENT_THROW_SNOBOLD,
+    // Snobold Vassal
+    EVENT_BATTER,
+    EVENT_FIRE_BOMB,
+    EVENT_HEAD_CRACK,
+};
+
+#define TIMER_IMPALE            10*IN_MILISECONDS
+#define TIMER_STAGGERING_STOMP  urand(20, 25)*IN_MILISECONDS
+#define TIMER_THROW_SNOBOLD     urand(20, 45)*IN_MILISECONDS
+
+#define MAX_SNOBOLD             5
+
 struct MANGOS_DLL_DECL boss_toc_gormokAI: public boss_trial_of_the_crusaderAI
 {
+    uint32 m_uiSnoboldCount;
+
+    typedef std::list<uint64> GuidList;
+    GuidList m_Snobolds;
+
     boss_toc_gormokAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_trial_of_the_crusaderAI(pCreature),
+        m_uiSnoboldCount(0)
     {
+    }
+
+    void Reset()
+    {
+        DespawnSummons();
+        boss_trial_of_the_crusaderAI::Reset();
     }
 
     void Aggro(Unit *pWho)
     {
+        Events.RescheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
+        Events.RescheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
+        Events.RescheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+    }
+
+    void JustSummoned(Creature *pSummon)
+    {
+        if (pSummon && pSummon->GetEntry() == NPC_SNOBOLD_VASSAL)
+        {
+            m_Snobolds.push_back(pSummon->GetGUID());
+            pSummon->SetInCombatWithZone();
+        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -71,14 +113,36 @@ struct MANGOS_DLL_DECL boss_toc_gormokAI: public boss_trial_of_the_crusaderAI
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
+                case EVENT_IMPALE:
+                    DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_IMPALE));
+                    Events.ScheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
+                    break;
+                case EVENT_STAGGERING_STOMP:
+                    DoCast(m_creature, DIFFICULTY(SPELL_STAGGERING_STOMP));
+                    Events.ScheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
+                    break;
+                case EVENT_THROW_SNOBOLD:
+                    DoSpawnCreature(NPC_SNOBOLD_VASSAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+                    if (++m_uiSnoboldCount < MAX_SNOBOLD)
+                        Events.ScheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
+                    break;
                 default:
                     break;
             }
 
         DoMeleeAttackIfReady();
+    }
+
+    void DespawnSummons()
+    {
+        for (GuidList::const_iterator i = m_Snobolds.begin(); i != m_Snobolds.end(); ++i)
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+                pSummon->ForcedDespawn();
+        m_Snobolds.clear();
+        m_uiSnoboldCount = 0;
     }
 };
 
