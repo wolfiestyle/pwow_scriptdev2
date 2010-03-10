@@ -90,7 +90,7 @@ struct MANGOS_DLL_DECL boss_toc_acidmawAI: public boss_trial_of_the_crusaderAI
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 default:
@@ -120,7 +120,7 @@ struct MANGOS_DLL_DECL boss_toc_dreadscaleAI: public boss_trial_of_the_crusaderA
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 default:

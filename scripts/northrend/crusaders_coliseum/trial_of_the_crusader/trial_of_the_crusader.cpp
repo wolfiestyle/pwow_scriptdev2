@@ -42,6 +42,9 @@ uint32 toc_GetType(Creature *pCreature)
         case NPC_EYDIS_DARKBANE          : return TYPE_EYDIS_DARKBANE;
         case NPC_ANUBARAK                : return TYPE_ANUBARAK;
         case NPC_BARRETT_RAMSAY          : return TYPE_BARRETT_RAMSAY;
+        case NPC_VARIAN_WYRM             : return TYPE_VARIAN_WYRM;
+        case NPC_GARROSH_HELLSCREAM      : return TYPE_GARROSH_HELLSCREAM;
+        case NPC_TIRION_FORDRING         : return TYPE_TIRION_FORDRING;
 
         default:
             return 0;
@@ -65,7 +68,7 @@ void boss_trial_of_the_crusaderAI::Reset()
 {
     if (m_pInstance)
         m_pInstance->SetData(m_uiBossEncounterId, NOT_STARTED);
-    if(Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
+    if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
         if(ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
 }

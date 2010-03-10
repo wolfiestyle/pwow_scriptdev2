@@ -58,6 +58,17 @@ enum Spells
     SPELL_NETHER_POWER          = 67009,
 };
 
+enum Says
+{
+    SAY_AGGRO                   = -1300311,
+    SAY_INCINERATE              = -1300312,
+    SAY_SUMMON_MISTRESS_OF_PAIN = -1300313,
+    SAY_SUMMON_INFERNO          = -1300314,
+    SAY_KILLED_PLAYER1          = -1300315,
+    SAY_KILLED_PLAYER2          = -1300316,
+    SAY_DEATH                   = -1300317,
+};
+
 struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
     boss_toc_jaraxxusAI(Creature* pCreature):
@@ -67,8 +78,16 @@ struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        DoScriptText(SAY_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+        DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -77,7 +96,7 @@ struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 default:
@@ -85,6 +104,11 @@ struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
             }
 
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit *killer)
+    {
+        DoScriptText(SAY_DEATH, m_creature);
     }
 };
 

@@ -52,6 +52,24 @@ enum AddIds
     NPC_SWARM_SCARAB            = 34605,
 };
 
+enum Says
+{
+    SAY_AGGRO                   = -1300355,
+    SAY_SUBMERGE                = -1300356,
+    SAY_LEECHING_SWARM          = -1300357,
+    SAY_KILLED_PLAYER1          = -1300358,
+    SAY_KILLED_PLAYER2          = -1300359,
+    SAY_DEATH                   = -1300360,
+    SAY_BERSERK                 = -1300361,
+};
+
+enum Events
+{
+    EVENT_BERSERK = 1,
+};
+
+#define TIMER_BERSERK           10*MINUTE*IN_MILISECONDS
+
 struct MANGOS_DLL_DECL boss_toc_anubarakAI: public boss_trial_of_the_crusaderAI
 {
     boss_toc_anubarakAI(Creature* pCreature):
@@ -61,8 +79,17 @@ struct MANGOS_DLL_DECL boss_toc_anubarakAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
+        DoScriptText(SAY_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+        DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -71,9 +98,14 @@ struct MANGOS_DLL_DECL boss_toc_anubarakAI: public boss_trial_of_the_crusaderAI
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
+                case EVENT_BERSERK:
+                    m_creature->InterruptNonMeleeSpells(false);
+                    DoScriptText(SAY_BERSERK, m_creature);
+                    DoCast(m_creature, SPELL_BERSERK);
+                    break;
                 default:
                     break;
             }
@@ -83,6 +115,7 @@ struct MANGOS_DLL_DECL boss_toc_anubarakAI: public boss_trial_of_the_crusaderAI
 
     void JustDied(Unit *pKiller)
     {
+        DoScriptText(SAY_DEATH, m_creature);
         //only non-summoned boss, so to streamline things its easier to do this
         if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
             if(barrett->AI())

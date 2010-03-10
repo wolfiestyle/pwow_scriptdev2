@@ -47,12 +47,55 @@ enum BeastsOfNortherendPhases
     PHASE_ICEHOWL
 };
 
+enum Says
+{
+    // Northrend Beasts
+    SAY_TIRION_GORMOK_SPAWN                         = -1300299,
+    SAY_TIRION_TWIN_JORMUNGAR_SPAWN                 = -1300300,
+    SAY_TIRION_ICEHOWL_SPAWN                        = -1300301,
+    SAY_TIRION_BEASTS_OF_NORTHREND_WIPE             = -1300302,
+    SAY_TIRION_BEASTS_OF_NOTHREND_DEFEATED          = -1300303,
+    // Jaraxxus
+    SAY_TIRION_JARAXXUS_INTRO1                      = -1300304,
+    SAY_WILFRED_JARAXXUS_INTRO2                     = -1300305,
+    SAY_WILFRED_JARAXXUS_INTRO3                     = -1300306,
+    SAY_WILFRED_JARAXXUS_INTRO4                     = -1300307,
+    SAY_JARAXXUS_INTRO5                             = -1300308,
+    SAY_WILFRED_JARAXXUS_INTRO6                     = -1300309,
+    SAY_TIRION_JARAXXUS_INTRO7                      = -1300310,
+    SAY_TIRION_JARAXXUS_OUTRO1                      = -1300318,
+    SAY_GARROSH_JARAXXUS_HORDE_OUTRO2               = -1300319,
+    SAY_VARIAN_JARAXXUS_HORDE_OUTRO3                = -1300320,
+    SAY_TIRION_JARAXXUS_HORDE_OUTRO4                = -1300321,
+    // Faction champions
+    SAY_TIRION_FACTION_CHAMPIONS_INTRO1             = -1300322,
+    SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO2   = -1300323,
+    SAY_TIRION_FACTION_CHAMPIONS_INTRO3             = -1300324,
+    SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO4   = -1300325,
+    SAY_VARIAN_FACTION_CHAMPIONS_HORDE_INTRO2       = -1300326,
+    SAY_VARIAN_FACTION_CHAMPIONS_HORDE_INTRO4       = -1300327,
+    SAY_VARIAN_ALLIANCE_VICTORY                     = -1300336,
+    SAY_GARROSH_HORDE_VICTORY                       = -1300337,
+    SAY_TIRION_OUTRO                                = -1300338,
+    // Valkyr twins
+    SAY_TIRION_TWIN_VALKYR_INTRO                    = -1300339,
+    SAY_GARROSH_TWIN_VALKYR_OUTRO                   = -1300348,
+    // Anub'arak
+    SAY_TIRION_ANUBARAK_INTRO1                      = -1300349,
+    SAY_LICHKING_ANUBARAK_INTRO2                    = -1300350,
+    SAY_TIRION_ANUBARAK_INTRO3                      = -1300351,
+    SAY_LICHKING_ANUBARAK_INTRO4                    = -1300352,
+    SAY_LICHKING_ANUBARAK_INTRO5                    = -1300353,
+    SAY_ANUBARAK_ANUBARAK_INTRO6                    = -1300354,
+    SAY_TIRION_ANUBARACK_OUTRO                      = -1300362,
+};
+
 #define GOSSIP_START_NEXT_BOSS  "We are ready to begin the next challenge."  //not the actual text, but I cant find a source for it. If you know them, change it
 #define GOSSIP_TEXT_ID          45323
 
 #define DESPAWN_TIME            4*MINUTE*IN_MILISECONDS
 #define SUMMON_TIMER            3*MINUTE*IN_MILISECONDS
-#define AGGRO_TIMER             urand(5, 10)*IN_MILISECONDS
+#define AGGRO_TIMER             urand(10, 15)*IN_MILISECONDS
 
 struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 {
@@ -112,8 +155,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
     void Reset()    //called when any creature wipes group
     {
-        if (CurrPhase)
-            CurrPhase--;
         if (m_pInstance)
         {
             switch (CurrPhase)
@@ -124,6 +165,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     m_pInstance->SetData(TYPE_DREADSCALE, NOT_STARTED);
                     m_pInstance->SetData(TYPE_ICEHOWL, NOT_STARTED);
                     m_uiBeastsDead = 0;
+                    if (Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
+                        DoScriptText(SAY_TIRION_BEASTS_OF_NORTHREND_WIPE, fordring);
                     break;
                 case PHASE_FACTION_CHAMPIONS:
                     for (uint32 i = FACTION_CHAMPION_START; i <= FACTION_CHAMPION_END; i++)
@@ -136,6 +179,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     break;
             }
         }
+        if (CurrPhase)
+            CurrPhase--;
         CurrBeastOfNortherendPhase = PHASE_NONE;
         EncounterInProgress = false;
 
@@ -161,12 +206,41 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
         m_creature->SummonCreature(entry, summon_pos[0] + float(x*2), summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+        SayBossSpawned(entry);
+    }
+
+    void SayBossSpawned(uint32 entry)
+    {
+        Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING);
+        if (!fordring)
+            return;
+        switch (entry)
+        {
+            case NPC_GORMOK:
+                DoScriptText(SAY_TIRION_GORMOK_SPAWN, fordring);
+                break;
+            case NPC_ACIDMAW:
+                DoScriptText(SAY_TIRION_TWIN_JORMUNGAR_SPAWN, fordring);
+                break;
+            case NPC_ICEHOWL:
+                DoScriptText(SAY_TIRION_ICEHOWL_SPAWN, fordring);
+                break;
+            case NPC_FJOLA_LIGHTBANE:
+                DoScriptText(SAY_TIRION_TWIN_VALKYR_INTRO, fordring);
+                break;
+            default:
+                break;
+        }
     }
 
     void NorthrendBeastsEncounterCheck()
     {
         if (++m_uiBeastsDead >= 4)
+        {
             EncounterInProgress = false;
+            if (Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
+                DoScriptText(SAY_TIRION_BEASTS_OF_NOTHREND_DEFEATED, fordring);
+        }
     }
 
     void SummonedCreatureJustDied(Creature *who)

@@ -29,6 +29,18 @@ EndContentData */
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
+enum Says
+{
+    SAY_TWIN_VALKYR_AGGRO           = -1300340,
+    SAY_TWIN_VALKYR_BERSERK         = -1300341,
+    SAY_TWIN_VALKYR_TWIN_PACT       = -1300342,
+    SAY_TWIN_VALKYR_DEATH           = -1300343,
+    SAY_TWIN_VALKYR_KILLED_PLAYER1  = -1300344,
+    SAY_TWIN_VALKYR_KILLED_PLAYER2  = -1300345,
+    SAY_TWIN_VALKYR_DARK_VORTEX     = -1300346,
+    SAY_TWIN_VALKYR_LIGHT_VORTEX    = -1300347,
+};
+
 struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusaderAI
 {
     boss_toc_eydis_darkbaneAI(Creature* pCreature):
@@ -38,8 +50,16 @@ struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusa
 
     void Aggro(Unit *pWho)
     {
+        DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+        DoScriptText(urand(0,1) ? SAY_TWIN_VALKYR_KILLED_PLAYER1 : SAY_TWIN_VALKYR_KILLED_PLAYER2, m_creature);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -48,7 +68,7 @@ struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusa
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 default:
@@ -56,6 +76,11 @@ struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusa
             }
 
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit *killer)
+    {
+        DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
     }
 };
 
@@ -68,8 +93,16 @@ struct MANGOS_DLL_DECL boss_toc_fjola_lightbaneAI: public boss_trial_of_the_crus
 
     void Aggro(Unit *pWho)
     {
+        DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+        DoScriptText(urand(0,1) ? SAY_TWIN_VALKYR_KILLED_PLAYER1 : SAY_TWIN_VALKYR_KILLED_PLAYER2, m_creature);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -78,7 +111,7 @@ struct MANGOS_DLL_DECL boss_toc_fjola_lightbaneAI: public boss_trial_of_the_crus
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 default:
@@ -86,6 +119,11 @@ struct MANGOS_DLL_DECL boss_toc_fjola_lightbaneAI: public boss_trial_of_the_crus
             }
 
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit *killer)
+    {
+        DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
     }
 };
 

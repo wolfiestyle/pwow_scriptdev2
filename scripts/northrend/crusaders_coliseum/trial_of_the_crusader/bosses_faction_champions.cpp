@@ -43,10 +43,62 @@ EndContentData */
 
 //28 champions, divided equally between horde/alliance, each pair sharing AIs
 
-struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_trial_of_the_crusaderAI
+enum Says
+{
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED1 = -1300328,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED2 = -1300329,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED3 = -1300330,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED4 = -1300331,
+    SAY_VARIAN_HORDE_PLAYER_KILLED1     = -1300332,
+    SAY_VARIAN_HORDE_PLAYER_KILLED2     = -1300333,
+    SAY_VARIAN_HORDE_PLAYER_KILLED3     = -1300334,
+    SAY_VARIAN_HORDE_PLAYER_KILLED4     = -1300335,
+};
+
+static int32 KilledPlayerSays[8] = {
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED1,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED2,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED3,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED4,
+    SAY_VARIAN_HORDE_PLAYER_KILLED1,
+    SAY_VARIAN_HORDE_PLAYER_KILLED2,
+    SAY_VARIAN_HORDE_PLAYER_KILLED3,
+    SAY_VARIAN_HORDE_PLAYER_KILLED4
+};
+
+// common parts for all faction champions
+struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusaderAI
+{
+    boss_faction_championAI(Creature *pCreature):
+        boss_trial_of_the_crusaderAI(pCreature)
+    {
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+        bool isHorde = IS_HORDE;
+        Creature *source = GET_CREATURE(isHorde ? TYPE_VARIAN_WYRM : TYPE_GARROSH_HELLSCREAM);
+        if (!source)
+            return;
+        DoScriptText(KilledPlayerSays[urand(0,3) + (isHorde ? 4 : 0)], source);
+    }
+
+    void JustDied(Unit *killer)
+    {
+        bool isHorde = IS_HORDE;
+        Creature *source = GET_CREATURE(isHorde ? TYPE_GARROSH_HELLSCREAM : TYPE_VARIAN_WYRM);
+        if (!source)
+            return;
+        DoScriptText(KilledPlayerSays[urand(0,3) + (isHorde ? 0 : 4)], source);
+    }
+};
+
+struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_faction_championAI
 {
     boss_toc_deathknightAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
         //do any init here, instance stuff in parent class
         ////DO NOT CALL Reset() or creature will despawn
@@ -80,18 +132,12 @@ struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_trial_of_the_crusader
 
         DoMeleeAttackIfReady();
     }
-
-    void JustDied(Unit *pKiller)
-    {
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, DONE);
-    }
 };
 
-struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_faction_championAI
 {
     boss_toc_caster_druidAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -118,10 +164,10 @@ struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_trial_of_the_crusade
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
 {
     boss_toc_heal_druidAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -148,10 +194,10 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_trial_of_the_crusaderA
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_faction_championAI
 {
     boss_toc_hunterAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -178,10 +224,10 @@ struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_faction_championAI
 {
     boss_toc_mageAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -208,10 +254,10 @@ struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_faction_championAI
 {
     boss_toc_heal_paladinAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -238,10 +284,10 @@ struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_trial_of_the_crusade
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
 {
     boss_toc_ret_paladinAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -268,10 +314,10 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_trial_of_the_crusader
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
 {
     boss_toc_disc_priestAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -298,10 +344,10 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_trial_of_the_crusader
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
 {
     boss_toc_shadow_priestAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -328,10 +374,10 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_trial_of_the_crusad
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
 {
     boss_toc_rogueAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -358,10 +404,10 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
 {
     boss_toc_magic_shamanAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -388,10 +434,10 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_trial_of_the_crusade
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_faction_championAI
 {
     boss_toc_melee_shamanAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -418,10 +464,10 @@ struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_trial_of_the_crusade
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
 {
     boss_toc_warlockAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 
@@ -448,10 +494,10 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-struct MANGOS_DLL_DECL boss_toc_warriorAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_toc_warriorAI: public boss_faction_championAI
 {
     boss_toc_warriorAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_faction_championAI(pCreature)
     {
     }
 

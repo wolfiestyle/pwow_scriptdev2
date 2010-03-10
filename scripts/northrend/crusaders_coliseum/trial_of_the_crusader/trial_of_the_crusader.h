@@ -62,6 +62,10 @@ enum
     // controller guy
     TYPE_BARRETT_RAMSAY         = 22,
 
+    TYPE_VARIAN_WYRM            = 23,
+    TYPE_GARROSH_HELLSCREAM     = 24,
+    TYPE_TIRION_FORDRING        = 25,
+
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST         = 41,
     TYPE_FACTION_CHAMPION_CHEST = 42,
@@ -106,6 +110,9 @@ enum
     NPC_ANUBARAK                = 34564, // 'suprise' boss
 
     NPC_BARRETT_RAMSAY          = 34816,
+    NPC_VARIAN_WYRM             = 34990,
+    NPC_GARROSH_HELLSCREAM      = 34995,
+    NPC_TIRION_FORDRING         = 34996,
 
     GO_COLISEUM_FLOOR           = 195527,
     GO_ANUBARAK_CHEST           = 195665,

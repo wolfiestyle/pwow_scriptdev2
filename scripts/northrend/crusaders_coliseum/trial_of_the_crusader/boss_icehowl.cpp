@@ -30,7 +30,7 @@ EndContentData */
 
 enum Spells
 {
-    SPELL_BERKSERK              = 26662,
+    SPELL_BERSERK               = 26662,
     SPELL_FEROCIOUS_BUTT_N10    = 66770,
     SPELL_FEROCIOUS_BUTT_N25    = 67654,
     SPELL_FEROCIOUS_BUTT_H10    = 67655,
@@ -55,6 +55,13 @@ enum Spells
     SPELL_STAGGERED_DAZE        = 66758,    // part of the Trample effect
 };
 
+enum Events
+{
+    EVENT_BERSERK = 1,
+};
+
+#define TIMER_BERSERK           15*MINUTE*IN_MILISECONDS
+
 struct MANGOS_DLL_DECL boss_toc_icehowlAI: public boss_trial_of_the_crusaderAI
 {
     boss_toc_icehowlAI(Creature* pCreature):
@@ -64,6 +71,7 @@ struct MANGOS_DLL_DECL boss_toc_icehowlAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -74,9 +82,13 @@ struct MANGOS_DLL_DECL boss_toc_icehowlAI: public boss_trial_of_the_crusaderAI
             return;
 
         Events.Update(uiDiff);
-        while(uint32 uiEventId = Events.ExecuteEvent())
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
+                case EVENT_BERSERK:
+                    m_creature->InterruptNonMeleeSpells(false);
+                    DoCast(m_creature, SPELL_BERSERK);
+                    break;
                 default:
                     break;
             }
