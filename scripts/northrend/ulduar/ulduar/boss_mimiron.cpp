@@ -230,7 +230,7 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         if (Creature *Mimiron = GET_CREATURE(TYPE_MIMIRON))
             MimironGUID = Mimiron->GetGUID();
-        Reset();    //note: will call subclass function first
+        Reset();    //note: static call to current class only
     }
 
     void Reset()
@@ -343,11 +343,11 @@ struct MANGOS_DLL_DECL mob_leviathan_mk_II_AI : public VoltronPieceAI
 
     mob_leviathan_mk_II_AI(Creature *pCreature) : VoltronPieceAI(pCreature) 
     {
+        Reset();
     }
 
     void Reset()
     {
-        VoltronPieceAI::Reset();
         SetCombatMovement(true);
         Events.Reset();
     }
@@ -520,7 +520,6 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
 
     void Reset()
     {
-        VoltronPieceAI::Reset();
         DoCast(m_creature, SPELL_HEAT_WAVE, true);
         SetCombatMovement(false);
         LaserTar = NULL;
@@ -693,7 +692,6 @@ struct MANGOS_DLL_DECL mob_aerial_command_unitAI : public VoltronPieceAI
 
     void Reset()
     {
-        VoltronPieceAI::Reset();
         IsOnGround = false;
         m_creature->SetMonsterMoveFlags(MONSTER_MOVE_FLY);
         SetCombatMovement(true);
