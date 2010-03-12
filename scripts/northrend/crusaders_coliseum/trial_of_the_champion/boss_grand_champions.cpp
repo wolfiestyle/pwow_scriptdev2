@@ -87,7 +87,7 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
                 pTemp->RemoveArenaAuras(true);
                 pTemp->SetHealth(pTemp->GetMaxHealth());
             }
-            pTemp->SendMonsterMove(738.665771, 661.031433, 412.394623, 4.698702, pTemp->GetMonsterMoveFlags(), 1);
+            pTemp->SendMonsterMove(738.665771, 661.031433, 412.394623, 4.698702, pTemp->GetSplineFlags(), 1);
             pTemp->GetMap()->CreatureRelocation(pTemp, 738.665771, 661.031433, 412.394623, 4.698702);
         }
 
@@ -100,7 +100,7 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
                 pTemp->RemoveArenaAuras(true);
                 pTemp->SetHealth(pTemp->GetMaxHealth());
             }
-            pTemp->SendMonsterMove(746.864441, 660.918762, 411.695465, 4.698700, pTemp->GetMonsterMoveFlags(), 1);
+            pTemp->SendMonsterMove(746.864441, 660.918762, 411.695465, 4.698700, pTemp->GetSplineFlags(), 1);
             pTemp->GetMap()->CreatureRelocation(pTemp, 746.864441, 660.918762, 411.695465, 4.698700);
         }
 
@@ -113,7 +113,7 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
                 pTemp->RemoveArenaAuras(true);
                 pTemp->SetHealth(pTemp->GetMaxHealth());
             }
-            pTemp->SendMonsterMove(754.360779, 660.816162, 412.395996, 4.698700, pTemp->GetMonsterMoveFlags(), 1);
+            pTemp->SendMonsterMove(754.360779, 660.816162, 412.395996, 4.698700, pTemp->GetSplineFlags(), 1);
             pTemp->GetMap()->CreatureRelocation(pTemp, 754.360779, 660.816162, 412.395996, 4.698700);
         }
     }

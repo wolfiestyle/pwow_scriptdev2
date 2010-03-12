@@ -27,7 +27,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI : public ScriptedAI
     }
 
     void JustRespawned() { //called on spawn
-        m_creature->SetMonsterMoveFlags(MONSTER_MOVE_SPLINE_FLY);
+        m_creature->SetSplineFlags(SplineFlags(SPLINEFLAG_WALKMODE | SPLINEFLAG_FLYING));
         // allow fly
         DoCast(m_creature,51923,true);
     }

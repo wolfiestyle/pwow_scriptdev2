@@ -600,7 +600,7 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
                         Creature *RocketTar = m_creature->SummonCreature(NPC_ROCKET_STRIKE_TARGET, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60*IN_MILISECONDS);
                         if(RocketTar)
                         {
-                            RocketTar->SetMonsterMoveFlags(MONSTER_MOVE_NONE);
+                            RocketTar->SetSplineFlags(SPLINEFLAG_NONE);
                             RocketTar->CastSpell(RocketTar, SPELL_ROCKET_STRIKE, false);
                         }
                     }
@@ -693,7 +693,7 @@ struct MANGOS_DLL_DECL mob_aerial_command_unitAI : public VoltronPieceAI
     void Reset()
     {
         IsOnGround = false;
-        m_creature->SetMonsterMoveFlags(MONSTER_MOVE_FLY);
+        m_creature->SetSplineFlags(SPLINEFLAG_UNKNOWN7);    // Fly
         SetCombatMovement(true);
     }
 
