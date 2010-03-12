@@ -49,7 +49,7 @@ struct MANGOS_DLL_DECL boss_lordalexeibarovAI : public ScriptedAI
             pInstance->SetData(TYPE_ALEXEIBAROV, DONE);
 
             if (pInstance->GetData(TYPE_GANDLING) == SPECIAL)
-                m_creature->SummonCreature(1853, 180.73, -9.43856, 75.507, 1.61399, TEMPSUMMON_DEAD_DESPAWN, 0);
+                m_creature->SummonCreature(1853, 180.73f, -9.43856f, 75.507f, 1.61399f, TEMPSUMMON_DEAD_DESPAWN, 0);
         }
     }
 
@@ -63,7 +63,7 @@ struct MANGOS_DLL_DECL boss_lordalexeibarovAI : public ScriptedAI
         {
             Unit* target = NULL;
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
-            if (target) DoCast(target,SPELL_IMMOLATE);
+            if (target) DoCastSpellIfCan(target,SPELL_IMMOLATE);
 
             Immolate_Timer = 12000;
         }else Immolate_Timer -= diff;
@@ -71,7 +71,7 @@ struct MANGOS_DLL_DECL boss_lordalexeibarovAI : public ScriptedAI
         //VeilofShadow_Timer
         if (VeilofShadow_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_VEILOFSHADOW);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_VEILOFSHADOW);
             VeilofShadow_Timer = 20000;
         }else VeilofShadow_Timer -= diff;
 

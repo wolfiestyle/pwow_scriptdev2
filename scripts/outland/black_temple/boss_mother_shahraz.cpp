@@ -67,13 +67,13 @@ struct Locations
 
 static Locations TeleportPoint[]=
 {
-    {959.996, 212.576, 193.843},
-    {932.537, 231.813, 193.838},
-    {958.675, 254.767, 193.822},
-    {946.955, 201.316, 192.535},
-    {944.294, 149.676, 197.551},
-    {930.548, 284.888, 193.367},
-    {965.997, 278.398, 195.777}
+    {959.996f, 212.576f, 193.843f},
+    {932.537f, 231.813f, 193.838f},
+    {958.675f, 254.767f, 193.822f},
+    {946.955f, 201.316f, 192.535f},
+    {944.294f, 149.676f, 197.551f},
+    {930.548f, 284.888f, 193.367f},
+    {965.997f, 278.398f, 195.777f}
 };
 
 struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
@@ -175,7 +175,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !Enraged)
         {
             Enraged = true;
-            DoCast(m_creature, SPELL_ENRAGE, true);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE, CAST_TRIGGERED);
             DoScriptText(SAY_ENRAGE, m_creature);
         }
 
@@ -191,16 +191,16 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
             switch(CurrentBeam)
             {
                 case 0:
-                    DoCast(target, SPELL_BEAM_SINISTER);
+                    DoCastSpellIfCan(target, SPELL_BEAM_SINISTER);
                     break;
                 case 1:
-                    DoCast(target, SPELL_BEAM_VILE);
+                    DoCastSpellIfCan(target, SPELL_BEAM_VILE);
                     break;
                 case 2:
-                    DoCast(target, SPELL_BEAM_WICKED);
+                    DoCastSpellIfCan(target, SPELL_BEAM_WICKED);
                     break;
                 case 3:
-                    DoCast(target, SPELL_BEAM_SINFUL);
+                    DoCastSpellIfCan(target, SPELL_BEAM_SINFUL);
                     break;
             }
             ++BeamCount;
@@ -217,7 +217,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             uint32 random = urand(0, 5);
             if (PrismaticAuras[random])
-                DoCast(m_creature, PrismaticAuras[random]);
+                DoCastSpellIfCan(m_creature, PrismaticAuras[random]);
             PrismaticShieldTimer = 15000;
         }else PrismaticShieldTimer -= diff;
 
@@ -263,7 +263,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (ShriekTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
             ShriekTimer = 30000;
         }else ShriekTimer -= diff;
 
@@ -272,7 +272,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             if (EnrageTimer < diff)
             {
-                DoCast(m_creature, SPELL_BERSERK);
+                DoCastSpellIfCan(m_creature, SPELL_BERSERK);
                 DoScriptText(SAY_ENRAGE, m_creature);
             }else EnrageTimer -= diff;
         }

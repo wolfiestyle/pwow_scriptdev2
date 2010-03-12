@@ -56,7 +56,7 @@ struct MANGOS_DLL_DECL boss_herodAI : public ScriptedAI
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
-        DoCast(m_creature,SPELL_RUSHINGCHARGE);
+        DoCastSpellIfCan(m_creature,SPELL_RUSHINGCHARGE);
     }
 
     void KilledUnit(Unit *victim)
@@ -67,7 +67,7 @@ struct MANGOS_DLL_DECL boss_herodAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         for(uint8 i = 0; i < 20; ++i)
-            m_creature->SummonCreature(ENTRY_SCARLET_TRAINEE, 1939.18, -431.58, 17.09, 6.22, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+            m_creature->SummonCreature(ENTRY_SCARLET_TRAINEE, 1939.18f, -431.58f, 17.09f, 6.22f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -80,21 +80,21 @@ struct MANGOS_DLL_DECL boss_herodAI : public ScriptedAI
         {
             DoScriptText(EMOTE_ENRAGE, m_creature);
             DoScriptText(SAY_ENRAGE, m_creature);
-            DoCast(m_creature,SPELL_FRENZY);
+            DoCastSpellIfCan(m_creature,SPELL_FRENZY);
             Enrage = true;
         }
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 12000;
         }else Cleave_Timer -= diff;
 
         if (Whirlwind_Timer < diff)
         {
             DoScriptText(SAY_WHIRLWIND, m_creature);
-            DoCast(m_creature->getVictim(),SPELL_WHIRLWIND);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_WHIRLWIND);
             Whirlwind_Timer = 30000;
         }else Whirlwind_Timer -= diff;
 

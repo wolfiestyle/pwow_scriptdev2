@@ -102,6 +102,12 @@ UPDATE creature_template SET ScriptName='npc_sayge' WHERE entry=14822;
 UPDATE creature_template SET ScriptName='npc_tabard_vendor' WHERE entry=28776;
 UPDATE creature_template SET ScriptName='npc_locksmith' WHERE entry IN (29665,29725,29728);
 
+/* SPELL */
+UPDATE creature_template SET ScriptName='npc_liquid_fire_of_elune' WHERE entry IN (26616,26643);
+UPDATE creature_template SET ScriptName='npc_nestlewood_owlkin' WHERE entry=16518;
+UPDATE creature_template SET ScriptName='npc_robot_reprogrammed' WHERE entry IN (25793,25758,25752,25792,25753);
+UPDATE creature_template SET ScriptName='npc_woodlands_walker' WHERE entry=26421;
+
 /*  */
 /* ZONE */
 /* */
@@ -182,7 +188,6 @@ UPDATE creature_template SET ScriptName='npc_draenei_survivor' WHERE entry=16483
 UPDATE creature_template SET ScriptName='npc_engineer_spark_overgrind' WHERE entry=17243;
 UPDATE creature_template SET ScriptName='npc_injured_draenei' WHERE entry=16971;
 UPDATE creature_template SET ScriptName='npc_magwin' WHERE entry=17312;
-UPDATE creature_template SET ScriptName='npc_nestlewood_owlkin' WHERE entry=16518;
 UPDATE creature_template SET ScriptName='npc_susurrus' WHERE entry=17435;
 
 /* BADLANDS */
@@ -311,7 +316,6 @@ UPDATE creature_template SET ScriptName='npc_captured_sunhawk_agent' WHERE entry
 UPDATE creature_template SET ScriptName='npc_fizzcrank_fullthrottle' WHERE entry=25590;
 UPDATE creature_template SET ScriptName='npc_iruk' WHERE entry=26219;
 UPDATE creature_template SET ScriptName='npc_kara_thricestar' WHERE entry=26602;
-UPDATE creature_template SET ScriptName='npc_robot_reprogrammed' WHERE entry IN (25793,25758,25752,25792,25753);
 UPDATE creature_template SET ScriptName='npc_surristrasz' WHERE entry=24795;
 UPDATE creature_template SET ScriptName='npc_tiare' WHERE entry=30051;
 
@@ -429,10 +433,8 @@ UPDATE creature_template SET ScriptName='npc_aged_dying_ancient_kodo' WHERE entr
 /* DRAGONBLIGHT */
 UPDATE creature_template SET ScriptName='npc_afrasastrasz' WHERE entry=27575;
 UPDATE creature_template SET ScriptName='npc_alexstrasza_wr_gate' WHERE entry=31333;
-UPDATE creature_template SET ScriptName='npc_liquid_fire_of_elune' WHERE entry IN (26616,26643);
 UPDATE creature_template SET ScriptName='npc_tariolstrasz' WHERE entry=26443;
 UPDATE creature_template SET ScriptName='npc_torastrasza' WHERE entry=26949;
-UPDATE creature_template SET ScriptName='npc_woodlands_walker' WHERE entry=26421;
 
 /* DRAK'THARON KEEP */
 UPDATE creature_template SET ScriptName='boss_novos' WHERE entry=26631;
@@ -481,6 +483,7 @@ UPDATE creature_template SET ScriptName='npc_henze_faulk' WHERE entry=6172;
 UPDATE creature_template SET ScriptName='npc_kelerun_bloodmourn' WHERE entry=17807;
 UPDATE gameobject_template SET ScriptName='go_harbinger_second_trial' WHERE entry=182052;
 UPDATE creature_template SET ScriptName='npc_prospector_anvilward' WHERE entry=15420;
+UPDATE creature_template SET ScriptName='npc_apprentice_mirveda' WHERE entry=15402;
 
 /* FELWOOD */
 UPDATE creature_template SET ScriptName='npc_kitten' WHERE entry=9937;
@@ -827,6 +830,10 @@ UPDATE creature_template SET ScriptName='npc_zamael_lunthistle' WHERE entry=8436
 /* SHADOWFANG KEEP */
 UPDATE instance_template SET script='instance_shadowfang_keep' WHERE map=33;
 UPDATE creature_template SET ScriptName='npc_shadowfang_prisoner' WHERE entry IN (3849,3850);
+UPDATE creature_template SET ScriptName='npc_arugal' WHERE entry=10000;
+UPDATE creature_template SET ScriptName='npc_deathstalker_vincent' WHERE entry=4444;
+UPDATE creature_template SET ScriptName='mob_arugal_voidwalker' WHERE entry=4627;
+UPDATE creature_template SET ScriptName='boss_arugal' WHERE entry=4275;
 
 /* SHADOWMOON VALLEY */
 UPDATE creature_template SET ScriptName='boss_doomwalker' WHERE entry=17711;
@@ -866,6 +873,7 @@ UPDATE creature_template SET ScriptName='npc_blood_knight_stillblade' WHERE entr
 /* SILVERPINE FOREST */
 UPDATE creature_template SET ScriptName='npc_astor_hadren' WHERE entry=6497;
 UPDATE creature_template SET ScriptName='npc_deathstalker_erland' WHERE entry=1978;
+UPDATE creature_template SET ScriptName='npc_deathstalker_faerleia' WHERE entry=2058;
 
 /* STOCKADES */
 

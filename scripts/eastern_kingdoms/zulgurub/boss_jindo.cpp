@@ -77,14 +77,14 @@ struct MANGOS_DLL_DECL boss_jindoAI : public ScriptedAI
         //BrainWashTotem_Timer
         if (BrainWashTotem_Timer < diff)
         {
-            DoCast(m_creature, SPELL_BRAINWASHTOTEM);
+            DoCastSpellIfCan(m_creature, SPELL_BRAINWASHTOTEM);
             BrainWashTotem_Timer = urand(18000, 26000);
         }else BrainWashTotem_Timer -= diff;
 
         //HealingWard_Timer
         if (HealingWard_Timer < diff)
         {
-            //DoCast(m_creature, SPELL_POWERFULLHEALINGWARD);
+            //DoCastSpellIfCan(m_creature, SPELL_POWERFULLHEALINGWARD);
             m_creature->SummonCreature(14987, m_creature->GetPositionX()+3, m_creature->GetPositionY()-2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
             HealingWard_Timer = urand(14000, 20000);
         }else HealingWard_Timer -= diff;
@@ -92,7 +92,7 @@ struct MANGOS_DLL_DECL boss_jindoAI : public ScriptedAI
         //Hex_Timer
         if (Hex_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_HEX);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_HEX);
 
             if (m_creature->getThreatManager().getThreat(m_creature->getVictim()))
                 m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(),-80);
@@ -105,7 +105,7 @@ struct MANGOS_DLL_DECL boss_jindoAI : public ScriptedAI
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
             {
-                DoCast(target, SPELL_DELUSIONSOFJINDO);
+                DoCastSpellIfCan(target, SPELL_DELUSIONSOFJINDO);
 
                 Creature *Shade = m_creature->SummonCreature(14986, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
                 if (Shade)
@@ -122,7 +122,7 @@ struct MANGOS_DLL_DECL boss_jindoAI : public ScriptedAI
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
             if (target && target->GetTypeId() == TYPEID_PLAYER)
             {
-                DoTeleportPlayer(target, -11583.7783,-1249.4278,77.5471,4.745);
+                DoTeleportPlayer(target, -11583.7783f, -1249.4278f, 77.5471f, 4.745f);
 
                 if (m_creature->getThreatManager().getThreat(m_creature->getVictim()))
                     m_creature->getThreatManager().modifyThreatPercent(target,-100);
@@ -189,11 +189,17 @@ struct MANGOS_DLL_DECL mob_healing_wardAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                Unit *pJindo = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_JINDO));
-                DoCast(pJindo, SPELL_HEAL);
+                if (Unit *pJindo = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_JINDO)))
+                {
+                    if (pJindo->isAlive())
+                        DoCastSpellIfCan(pJindo, SPELL_HEAL);
+                }
             }
             Heal_Timer = 3000;
         }else Heal_Timer -= diff;
+
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
 
         DoMeleeAttackIfReady();
     }
@@ -220,11 +226,13 @@ struct MANGOS_DLL_DECL mob_shade_of_jindoAI : public ScriptedAI
 
     void UpdateAI (const uint32 diff)
     {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
 
         //ShadowShock_Timer
         if (ShadowShock_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOWSHOCK);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHADOWSHOCK);
             ShadowShock_Timer = 2000;
         }else ShadowShock_Timer -= diff;
 

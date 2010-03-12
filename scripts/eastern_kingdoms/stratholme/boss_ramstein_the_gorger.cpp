@@ -51,7 +51,7 @@ struct MANGOS_DLL_DECL boss_ramstein_the_gorgerAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         for(uint8 i = 0; i < 30; ++i)
-            m_creature->SummonCreature(C_MINDLESS_UNDEAD,3969.35,-3391.87,119.11,5.91,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
+            m_creature->SummonCreature(C_MINDLESS_UNDEAD, 3969.35f, -3391.87f, 119.11f, 5.91f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_RAMSTEIN,DONE);
@@ -65,14 +65,14 @@ struct MANGOS_DLL_DECL boss_ramstein_the_gorgerAI : public ScriptedAI
         //Trample
         if (Trample_Timer < diff)
         {
-            DoCast(m_creature,SPELL_TRAMPLE);
+            DoCastSpellIfCan(m_creature,SPELL_TRAMPLE);
             Trample_Timer = 7000;
         }else Trample_Timer -= diff;
 
         //Knockout
         if (Knockout_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_KNOCKOUT);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_KNOCKOUT);
             Knockout_Timer = 10000;
         }else Knockout_Timer -= diff;
 

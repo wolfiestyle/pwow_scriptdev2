@@ -28,15 +28,15 @@ EndScriptData */
 #define SPELL_CLEAVE            20691
 #define SPELL_KNOCKAWAY         20686
 
-#define ADD_1X -39.355381
-#define ADD_1Y -513.456482
-#define ADD_1Z 88.472046
-#define ADD_1O 4.679872
+#define ADD_1X -39.355381f
+#define ADD_1Y -513.456482f
+#define ADD_1Z 88.472046f
+#define ADD_1O 4.679872f
 
-#define ADD_2X -49.875881
-#define ADD_2Y -511.896942
-#define ADD_2Z 88.195160
-#define ADD_2O 4.613114
+#define ADD_2X -49.875881f
+#define ADD_2Y -511.896942f
+#define ADD_2Z 88.195160f
+#define ADD_2O 4.613114f
 
 struct MANGOS_DLL_DECL boss_overlordwyrmthalakAI : public ScriptedAI
 {
@@ -67,28 +67,28 @@ struct MANGOS_DLL_DECL boss_overlordwyrmthalakAI : public ScriptedAI
         //BlastWave_Timer
         if (BlastWave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_BLASTWAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_BLASTWAVE);
             BlastWave_Timer = 20000;
         }else BlastWave_Timer -= diff;
 
         //Shout_Timer
         if (Shout_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHOUT);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_SHOUT);
             Shout_Timer = 10000;
         }else Shout_Timer -= diff;
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 7000;
         }else Cleave_Timer -= diff;
 
         //Knockaway_Timer
         if (Knockaway_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_KNOCKAWAY);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_KNOCKAWAY);
             Knockaway_Timer = 14000;
         }else Knockaway_Timer -= diff;
 

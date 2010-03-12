@@ -46,13 +46,13 @@ EndContentData */
 
 float HighborneLoc[4][3]=
 {
-    {1285.41, 312.47, 0.51},
-    {1286.96, 310.40, 1.00},
-    {1289.66, 309.66, 1.52},
-    {1292.51, 310.50, 1.99},
+    {1285.41f, 312.47f, 0.51f},
+    {1286.96f, 310.40f, 1.00f},
+    {1289.66f, 309.66f, 1.52f},
+    {1292.51f, 310.50f, 1.99f},
 };
-#define HIGHBORNE_LOC_Y             -61.00
-#define HIGHBORNE_LOC_Y_NEW         -55.50
+#define HIGHBORNE_LOC_Y             -61.00f
+#define HIGHBORNE_LOC_Y_NEW         -55.50f
 
 struct MANGOS_DLL_DECL npc_lady_sylvanas_windrunnerAI : public ScriptedAI
 {
@@ -83,8 +83,7 @@ struct MANGOS_DLL_DECL npc_lady_sylvanas_windrunnerAI : public ScriptedAI
         {
             if (Creature* pBunny = (Creature*)Unit::GetUnit(*summoned,targetGUID))
             {
-                pBunny->SendMonsterMove(pBunny->GetPositionX(), pBunny->GetPositionY(), myZ+15.0f, 0, MONSTER_MOVE_NONE, 0);
-                pBunny->GetMap()->CreatureRelocation(pBunny, pBunny->GetPositionX(), pBunny->GetPositionY(), myZ+15.0f, 0);
+                pBunny->NearTeleportTo(pBunny->GetPositionX(), pBunny->GetPositionY(), myZ+15.0f, 0.0f);
                 summoned->CastSpell(pBunny,SPELL_RIBBON_OF_SOULS,false);
             }
 
@@ -168,7 +167,7 @@ struct MANGOS_DLL_DECL npc_highborne_lamenterAI : public ScriptedAI
         {
             if (EventMove_Timer < diff)
             {
-                m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                m_creature->AddSplineFlag(SPLINEFLAG_NO_SPLINE);
                 m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX(),m_creature->GetPositionY(),HIGHBORNE_LOC_Y_NEW,5000);
                 m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX(),m_creature->GetPositionY(),HIGHBORNE_LOC_Y_NEW,m_creature->GetOrientation());
                 EventMove = false;
@@ -178,7 +177,7 @@ struct MANGOS_DLL_DECL npc_highborne_lamenterAI : public ScriptedAI
         {
             if (EventCast_Timer < diff)
             {
-                DoCast(m_creature,SPELL_HIGHBORNE_AURA);
+                DoCastSpellIfCan(m_creature,SPELL_HIGHBORNE_AURA);
                 EventCast = false;
             }else EventCast_Timer -= diff;
         }

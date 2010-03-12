@@ -74,12 +74,12 @@ const uint32 m_auiRandSpawnEntry[]=
     NPC_ASH_SPIRITBIND
 };
 
-const float LOC_RAND_TO_CENTER_X        = 482.793182;
-const float LOC_RAND_TO_CENTER_Y        = 401.270172;
-const float LOC_RAND_TO_CENTER_Z        = 112.783928;
+const float LOC_RAND_TO_CENTER_X        = 482.793182f;
+const float LOC_RAND_TO_CENTER_Y        = 401.270172f;
+const float LOC_RAND_TO_CENTER_Z        = 112.783928f;
 
-const float LOC_PLATFORM_Z              = 118.537;
-const float LOC_LOW_Z                   = 112.784;
+const float LOC_PLATFORM_Z              = 118.537f;
+const float LOC_LOW_Z                   = 112.784f;
 
 struct Location
 {
@@ -88,31 +88,31 @@ struct Location
 
 Location m_afSpawnLoc[]=
 {
-    {498.652740, 461.728119, LOC_LOW_Z, 0.0},
-    {498.505003, 339.619324, LOC_LOW_Z, 0.0}
+    {498.652740f, 461.728119f, LOC_LOW_Z, 0.0f},
+    {498.505003f, 339.619324f, LOC_LOW_Z, 0.0f}
 };
 
 Location m_afAkamaWP[]=
 {
     //{516.885193, 400.836060, LOC_LOW_Z_SPAWN, 0.0},       //not used yet, he moves to here before start channel
-    {482.352448, 401.162720, LOC_LOW_Z, 0.0},
-    {469.597443, 402.264404, LOC_PLATFORM_Z, 0.0}
+    {482.352448f, 401.162720f, LOC_LOW_Z, 0.0f},
+    {469.597443f, 402.264404f, LOC_PLATFORM_Z, 0.0f}
 };
 
 Location m_afBrokenSpawnLoc[]=
 {
-    {541.375916, 401.439575, LOC_LOW_Z, M_PI},              // The place where Akama channels
-    {534.130005, 352.394531, LOC_LOW_Z, 2.164150},          // Behind a 'pillar' which is behind the east alcove
-    {499.621185, 341.534729, LOC_LOW_Z, 1.652856},          // East Alcove
-    {499.151093, 461.036438, LOC_LOW_Z, 4.770888}           // West Alcove
+    {541.375916f, 401.439575f, LOC_LOW_Z, M_PI_F},          // The place where Akama channels
+    {534.130005f, 352.394531f, LOC_LOW_Z, 2.164150f},       // Behind a 'pillar' which is behind the east alcove
+    {499.621185f, 341.534729f, LOC_LOW_Z, 1.652856f},       // East Alcove
+    {499.151093f, 461.036438f, LOC_LOW_Z, 4.770888f}        // West Alcove
 };
 
 Location m_afBrokenWP[]=
 {
-    {492.491638, 400.744690, LOC_LOW_Z, 3.122336},
-    {494.335724, 382.221771, LOC_LOW_Z, 2.676230},
-    {489.555939, 373.507202, LOC_LOW_Z, 2.416263},
-    {491.136353, 427.868774, LOC_LOW_Z, 3.519748}
+    {492.491638f, 400.744690f, LOC_LOW_Z, 3.122336f},
+    {494.335724f, 382.221771f, LOC_LOW_Z, 2.676230f},
+    {489.555939f, 373.507202f, LOC_LOW_Z, 2.416263f},
+    {491.136353f, 427.868774f, LOC_LOW_Z, 3.519748f}
 };
 
 struct MANGOS_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
@@ -210,7 +210,7 @@ struct MANGOS_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 m_afSpawnLoc[uiRand].m_fX, m_afSpawnLoc[uiRand].m_fY, m_afSpawnLoc[uiRand].m_fZ, m_afSpawnLoc[uiRand].m_fO,
                 TEMPSUMMON_DEAD_DESPAWN, 0))
             {
-                pSorcerer->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+                pSorcerer->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                 pSorcerer->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
                 pSorcerer->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
 
@@ -230,7 +230,7 @@ struct MANGOS_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     m_afSpawnLoc[uiRand].m_fX, m_afSpawnLoc[uiRand].m_fY, m_afSpawnLoc[uiRand].m_fZ, m_afSpawnLoc[uiRand].m_fO,
                     TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000))
                 {
-                    pSpawn->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+                    pSpawn->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                     pSpawn->GetMotionMaster()->MovePoint(0, LOC_RAND_TO_CENTER_X, LOC_RAND_TO_CENTER_Y, LOC_RAND_TO_CENTER_Z);
                 }
             }
@@ -492,7 +492,7 @@ struct MANGOS_DLL_DECL npc_akamaAI : public ScriptedAI
             case 1:
                 if (Unit* pShade = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_SHADEOFAKAMA)))
                 {
-                    DoCast(pShade, SPELL_AKAMA_SOUL_RETRIEVE);
+                    DoCastSpellIfCan(pShade, SPELL_AKAMA_SOUL_RETRIEVE);
                     m_uiEndingTalkCount = 0;
                     m_uiSoulRetrieveTimer = 16000;
                 }
@@ -526,7 +526,7 @@ struct MANGOS_DLL_DECL npc_akamaAI : public ScriptedAI
                     {
                         if (m_uiCastSoulRetrieveTimer < uiDiff)
                         {
-                            DoCast(pShade, SPELL_AKAMA_SOUL_CHANNEL);
+                            DoCastSpellIfCan(pShade, SPELL_AKAMA_SOUL_CHANNEL);
                             m_uiCastSoulRetrieveTimer = 500;
                         }
                         else
@@ -557,7 +557,7 @@ struct MANGOS_DLL_DECL npc_akamaAI : public ScriptedAI
                     {
                         m_bIsShadeDead = true;
                         m_uiWayPointId = 0;
-                        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
                         m_creature->GetMotionMaster()->MovePoint(m_uiWayPointId, m_afAkamaWP[0].m_fX, m_afAkamaWP[0].m_fY, m_afAkamaWP[0].m_fZ);
                     }
                 }
@@ -680,7 +680,7 @@ struct MANGOS_DLL_DECL npc_akamaAI : public ScriptedAI
             if (Unit* pShade = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if (pShade->isAlive())
-                    DoCast(pShade, SPELL_DESTRUCTIVE_POISON);
+                    DoCastSpellIfCan(pShade, SPELL_DESTRUCTIVE_POISON);
             }
 
             m_uiDestructivePoisonTimer = 15000;
@@ -690,7 +690,7 @@ struct MANGOS_DLL_DECL npc_akamaAI : public ScriptedAI
 
         if (m_uiLightningBoltTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_LIGHTNING_BOLT);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_LIGHTNING_BOLT);
             m_uiLightningBoltTimer = 10000;
         }
         else
@@ -836,7 +836,7 @@ struct MANGOS_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveIdle();
 
-                    DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL, true);
+                    DoCastSpellIfCan(pShade, SPELL_SHADE_SOUL_CHANNEL, CAST_TRIGGERED);
 
                     m_bStartBanishing = true;
                 }

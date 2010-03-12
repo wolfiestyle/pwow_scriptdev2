@@ -699,13 +699,13 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
             case 2:
                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                 //m_creature->UpdateEntry(NPC_KOLTIRA_ALT); //unclear if we must update or not
-                DoCast(m_creature, SPELL_KOLTIRA_TRANSFORM);
+                DoCastSpellIfCan(m_creature, SPELL_KOLTIRA_TRANSFORM);
                 break;
             case 3:
                 SetEscortPaused(true);
                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
                 DoScriptText(SAY_BREAKOUT2, m_creature);
-                DoCast(m_creature, SPELL_ANTI_MAGIC_ZONE);  // cast again that makes bubble up
+                DoCastSpellIfCan(m_creature, SPELL_ANTI_MAGIC_ZONE);  // cast again that makes bubble up
                 break;
             case 4:
                 SetRun(true);
@@ -734,7 +734,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
     void SummonAcolyte(uint32 uiAmount)
     {
         for(uint32 i = 0; i < uiAmount; ++i)
-            m_creature->SummonCreature(NPC_CRIMSON_ACOLYTE, 1642.329, -6045.818, 127.583, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            m_creature->SummonCreature(NPC_CRIMSON_ACOLYTE, 1642.329f, -6045.818f, 127.583f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
     }
 
     void UpdateEscortAI(const uint32 uiDiff)
@@ -762,7 +762,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
                         break;
                     case 3:
                         DoScriptText(SAY_BREAKOUT6, m_creature);
-                        m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329, -6045.818, 127.583, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
+                        m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329f, -6045.818f, 127.583f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
                         m_uiWave_Timer = 1000;
                         break;
                     case 4:
@@ -1032,25 +1032,25 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
             if (m_uiBloodStrike_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_BLOOD_STRIKE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_BLOOD_STRIKE);
                 m_uiBloodStrike_Timer = 9000;
             }else m_uiBloodStrike_Timer -= uiDiff;
 
             if (m_uiDeathCoil_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_DEATH_COIL);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_DEATH_COIL);
                 m_uiDeathCoil_Timer = 8000;
             }else m_uiDeathCoil_Timer -= uiDiff;
 
             if (m_uiIcyTouch_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_ICY_TOUCH);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_ICY_TOUCH);
                 m_uiIcyTouch_Timer = 8000;
             }else m_uiIcyTouch_Timer -= uiDiff;
 
             if (m_uiPlagueStrike_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_PLAGUE_STRIKE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_PLAGUE_STRIKE);
                 m_uiPlagueStrike_Timer = 8000;
             }else m_uiPlagueStrike_Timer -= uiDiff;
 

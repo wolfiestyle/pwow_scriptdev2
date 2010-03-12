@@ -129,31 +129,31 @@ struct Waypoint
 //each dragons special points. First where fly to before connect to connon, second where land point is.
 Waypoint m_aTene[]=
 {
-    {3212.854, 575.597, 109.856},                           //init
-    {3246.425, 565.367, 61.249}                             //end
+    {3212.854f, 575.597f, 109.856f},                        //init
+    {3246.425f, 565.367f, 61.249f}                          //end
 };
 
 Waypoint m_aShad[]=
 {
-    {3293.238, 472.223, 106.968},
-    {3271.669, 526.907, 61.931}
+    {3293.238f, 472.223f, 106.968f},
+    {3271.669f, 526.907f, 61.931f}
 };
 
 Waypoint m_aVesp[]=
 {
-    {3193.310, 472.861, 102.697},
-    {3227.268, 533.238, 59.995}
+    {3193.310f, 472.861f, 102.697f},
+    {3227.268f, 533.238f, 59.995f}
 };
 
 //points around raid "isle", counter clockwise. should probably be adjusted to be more alike
 Waypoint m_aDragonCommon[]=
 {
-    {3214.012, 468.932, 98.652},
-    {3244.950, 468.427, 98.652},
-    {3283.520, 496.869, 98.652},
-    {3287.316, 555.875, 98.652},
-    {3250.479, 585.827, 98.652},
-    {3209.969, 566.523, 98.652}
+    {3214.012f, 468.932f, 98.652f},
+    {3244.950f, 468.427f, 98.652f},
+    {3283.520f, 496.869f, 98.652f},
+    {3287.316f, 555.875f, 98.652f},
+    {3250.479f, 585.827f, 98.652f},
+    {3209.969f, 566.523f, 98.652f}
 };
 
 /*######
@@ -292,7 +292,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         }
 
         if (bCanUseWill)
-            DoCast(m_creature, SPELL_WILL_OF_SARTHARION);
+            DoCastSpellIfCan(m_creature, SPELL_WILL_OF_SARTHARION);
     }
 
     void CallDragon(uint32 uiDataId)
@@ -303,8 +303,8 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
 
             if (pTemp && pTemp->isAlive() && !pTemp->getVictim())
             {
-                if (pTemp->HasMonsterMoveFlag(MONSTER_MOVE_WALK))
-                    pTemp->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+                if (pTemp->HasSplineFlag(SPLINEFLAG_WALKMODE))
+                    pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
 
                 if (pTemp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -361,7 +361,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (!m_bIsBerserk && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 35)
         {
             DoScriptText(SAY_SARTHARION_BERSERK, m_creature);
-            DoCast(m_creature, SPELL_BERSERK);
+            DoCastSpellIfCan(m_creature, SPELL_BERSERK);
             m_bIsBerserk = true;
         }
 
@@ -377,7 +377,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         {
             if (m_uiEnrageTimer < uiDiff)
             {
-                DoCast(m_creature, SPELL_PYROBUFFET, true);
+                DoCastSpellIfCan(m_creature, SPELL_PYROBUFFET, CAST_TRIGGERED);
                 m_bIsHardEnraged = true;
             }
             else
@@ -397,7 +397,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (m_uiFlameBreathTimer < uiDiff)
         {
             DoScriptText(SAY_SARTHARION_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FLAME_BREATH : SPELL_FLAME_BREATH_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FLAME_BREATH : SPELL_FLAME_BREATH_H);
             m_uiFlameBreathTimer = urand(25000, 35000);
         }
         else
@@ -406,7 +406,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         // Tail Sweep
         if (m_uiTailSweepTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_TAIL_LASH : SPELL_TAIL_LASH_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_TAIL_LASH : SPELL_TAIL_LASH_H);
             m_uiTailSweepTimer = urand(15000, 20000);
         }
         else
@@ -415,7 +415,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         // Cleave
         if (m_uiCleaveTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
             m_uiCleaveTimer = urand(7000, 10000);
         }
         else
@@ -426,7 +426,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
-                DoCast(pTarget, SPELL_LAVA_STRIKE);
+                DoCastSpellIfCan(pTarget, SPELL_LAVA_STRIKE);
 
                 switch(urand(0, 15))
                 {
@@ -734,7 +734,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_TENEBRON_AGGRO, m_creature);
-        DoCast(m_creature, SPELL_POWER_OF_TENEBRON);
+        DoCastSpellIfCan(m_creature, SPELL_POWER_OF_TENEBRON);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -755,7 +755,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
+                DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = urand(15000, 20000);
         }
@@ -766,7 +766,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_TENEBRON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = urand(20000, 25000);
         }
         else
@@ -809,7 +809,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_SHADRON_AGGRO,m_creature);
-        DoCast(m_creature, SPELL_POWER_OF_SHADRON);
+        DoCastSpellIfCan(m_creature, SPELL_POWER_OF_SHADRON);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -830,7 +830,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
+                DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = urand(15000, 20000);
         }
@@ -841,7 +841,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_SHADRON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = urand(20000, 25000);
         }
         else
@@ -878,7 +878,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_VESPERON_AGGRO,m_creature);
-        DoCast(m_creature, SPELL_POWER_OF_VESPERON);
+        DoCastSpellIfCan(m_creature, SPELL_POWER_OF_VESPERON);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -899,7 +899,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
+                DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = urand(15000, 20000);
         }
@@ -910,7 +910,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_VESPERON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = urand(20000, 25000);
         }
         else
@@ -945,9 +945,9 @@ struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
         {
             //if not solo figth, buff main boss, else place debuff on mini-boss. both spells TARGET_SCRIPT
             if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
-                DoCast(m_creature, SPELL_GIFT_OF_TWILIGTH_SAR);
+                DoCastSpellIfCan(m_creature, SPELL_GIFT_OF_TWILIGTH_SAR);
             else
-                DoCast(m_creature, SPELL_GIFT_OF_TWILIGTH_SHA);
+                DoCastSpellIfCan(m_creature, SPELL_GIFT_OF_TWILIGTH_SHA);
         }
     }
 
@@ -1006,7 +1006,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
 
     void Reset()
     {
-        DoCast(m_creature, SPELL_TWILIGHT_TORMENT_VESP_ACO);
+        DoCastSpellIfCan(m_creature, SPELL_TWILIGHT_TORMENT_VESP_ACO);
     }
 
     void JustDied(Unit* pKiller)
@@ -1080,7 +1080,7 @@ struct MANGOS_DLL_DECL mob_twilight_whelpAI : public ScriptedAI
         // twilight torment
         if (m_uiFadeArmorTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FADE_ARMOR);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FADE_ARMOR);
             m_uiFadeArmorTimer = urand(5000, 10000);
         }
         else

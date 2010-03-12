@@ -44,9 +44,9 @@ EndContentData */
 #define MOB_SHARPSHOOTER_GUARD          17622
 #define MOB_REAVER_GUARD                17623
 
-float AssassEntrance[3] = {275.136,-84.29,2.3}; // y -8
-float AssassExit[3] = {184.233,-84.29,2.3}; // y -8
-float AddsEntrance[3] = {306.036,-84.29,1.93};
+float AssassEntrance[3] = {275.136f, -84.29f, 2.3f};        // y -8
+float AssassExit[3] = {184.233f, -84.29f, 2.3f};            // y -8
+float AddsEntrance[3] = {306.036f, -84.29f, 1.93f};
 
 struct MANGOS_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
 {
@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             if (target_num > 0) // to prevent loops
             {
                 Wait_Timer = 1;
-                DoCast(m_creature,SPELL_BLADE_DANCE,true);
+                DoCastSpellIfCan(m_creature, SPELL_BLADE_DANCE, CAST_TRIGGERED);
                 --target_num;
             }
         }
@@ -235,7 +235,9 @@ struct MANGOS_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             if (Charge_timer)
                 if (Charge_timer <= diff)
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM,0),H_SPELL_CHARGE);
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        DoCastSpellIfCan(pTarget, H_SPELL_CHARGE);
+
                     Charge_timer = 0;
                 }else Charge_timer -= diff;
 
@@ -243,13 +245,13 @@ struct MANGOS_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             {
                 Unit* target = NULL;
 
-                for(int i = 0; i < summoned; ++i)
+                for(uint32 i = 0; i < summoned; ++i)
                 {
                     switch(urand(0, 2))
                     {
-                        case 0: m_creature->SummonCreature(MOB_HEARTHEN_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
-                        case 1: m_creature->SummonCreature(MOB_SHARPSHOOTER_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
-                        case 2: m_creature->SummonCreature(MOB_REAVER_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
+                        case 0: m_creature->SummonCreature(MOB_HEARTHEN_GUARD, AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
+                        case 1: m_creature->SummonCreature(MOB_SHARPSHOOTER_GUARD, AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
+                        case 2: m_creature->SummonCreature(MOB_REAVER_GUARD, AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000); break;
                     }
                 }
 

@@ -47,7 +47,7 @@ struct MANGOS_DLL_DECL boss_ptheradrasAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        m_creature->SummonCreature(12238,28.067,61.875,-123.405,4.67,TEMPSUMMON_TIMED_DESPAWN,600000);
+        m_creature->SummonCreature(12238,28.067f, 61.875f, -123.405f, 4.67f, TEMPSUMMON_TIMED_DESPAWN, 600000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -58,7 +58,7 @@ struct MANGOS_DLL_DECL boss_ptheradrasAI : public ScriptedAI
         //Dustfield_Timer
         if (Dustfield_Timer < diff)
         {
-            DoCast(m_creature,SPELL_DUSTFIELD);
+            DoCastSpellIfCan(m_creature,SPELL_DUSTFIELD);
             Dustfield_Timer = 14000;
         }else Dustfield_Timer -= diff;
 
@@ -68,21 +68,21 @@ struct MANGOS_DLL_DECL boss_ptheradrasAI : public ScriptedAI
             Unit* target = NULL;
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
             if (target)
-                DoCast(target,SPELL_BOULDER);
+                DoCastSpellIfCan(target,SPELL_BOULDER);
             Boulder_Timer = 10000;
         }else Boulder_Timer -= diff;
 
         //RepulsiveGaze_Timer
         if (RepulsiveGaze_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_REPULSIVEGAZE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_REPULSIVEGAZE);
             RepulsiveGaze_Timer = 20000;
         }else RepulsiveGaze_Timer -= diff;
 
         //Thrash_Timer
         if (Thrash_Timer < diff)
         {
-            DoCast(m_creature,SPELL_THRASH);
+            DoCastSpellIfCan(m_creature,SPELL_THRASH);
             Thrash_Timer = 18000;
         }else Thrash_Timer -= diff;
 

@@ -63,25 +63,25 @@ struct SpawnLocations
 
 static SpawnLocations aSpirits[]=
 {
-    {-12150.9, -1956.24, 133.407, 2.57835},
-    {-12157.1, -1972.78, 133.947, 2.64903},
-    {-12172.3, -1982.63, 134.061, 1.48664},
-    {-12194,   -1979.54, 132.194, 1.45916},
-    {-12211.3, -1978.49, 133.58,  1.35705},
-    {-12228.4, -1977.1,  132.728, 1.25495},
-    {-12250,   -1964.78, 135.066, 0.92901},
-    {-12264,   -1953.08, 134.072, 0.626632},
-    {-12289,   -1924,    132.62,  5.37829},
-    {-12267.3, -1902.26, 131.328, 5.32724},
-    {-12255.3, -1893.53, 134.026, 5.06413},
-    {-12229.9, -1891.39, 134.704, 4.40047},
-    {-12215.9, -1889.09, 137.273, 4.70285},
-    {-12200.5, -1890.69, 135.777, 4.84422},
-    {-12186,   -1890.12, 134.261, 4.36513},
-    {-12246.3, -1890.09, 135.475, 4.73427},
-    {-12170.7, -1894.85, 133.852, 3.5169},
-    {-12279,   -1931.92, 136.13,  0.0415108},
-    {-12266.1, -1940.72, 132.606, 0.7091}
+    {-12150.9f, -1956.24f, 133.407f, 2.57835f},
+    {-12157.1f, -1972.78f, 133.947f, 2.64903f},
+    {-12172.3f, -1982.63f, 134.061f, 1.48664f},
+    {-12194.0f, -1979.54f, 132.194f, 1.45916f},
+    {-12211.3f, -1978.49f, 133.580f, 1.35705f},
+    {-12228.4f, -1977.10f, 132.728f, 1.25495f},
+    {-12250.0f, -1964.78f, 135.066f, 0.92901f},
+    {-12264.0f, -1953.08f, 134.072f, 0.62663f},
+    {-12289.0f, -1924.00f, 132.620f, 5.37829f},
+    {-12267.3f, -1902.26f, 131.328f, 5.32724f},
+    {-12255.3f, -1893.53f, 134.026f, 5.06413f},
+    {-12229.9f, -1891.39f, 134.704f, 4.40047f},
+    {-12215.9f, -1889.09f, 137.273f, 4.70285f},
+    {-12200.5f, -1890.69f, 135.777f, 4.84422f},
+    {-12186.0f, -1890.12f, 134.261f, 4.36513f},
+    {-12246.3f, -1890.09f, 135.475f, 4.73427f},
+    {-12170.7f, -1894.85f, 133.852f, 3.51690f},
+    {-12279.0f, -1931.92f, 136.130f, 0.04151f},
+    {-12266.1f, -1940.72f, 132.606f, 0.70910f}
 };
 
 
@@ -125,7 +125,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
         m_fTargetThreat = 0.0f;
         m_uiWatchTarget = 0;
 
-        DoCast(m_creature, SPELL_MOUNT);
+        DoCastSpellIfCan(m_creature, SPELL_MOUNT);
     }
 
     void JustReachedHome()
@@ -161,7 +161,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
                         if (jTemp->isAlive())
                             DoScriptText(SAY_GRATS_JINDO, jTemp);
 
-                DoCast(m_creature, SPELL_LEVEL_UP, true);
+                DoCastSpellIfCan(m_creature, SPELL_LEVEL_UP, CAST_TRIGGERED);
                 m_creature->SetLevel(m_creature->getLevel() + 1);
                 m_uiKillCount = 0;
             }
@@ -236,7 +236,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
                     if (!m_creature->IsWithinLOSInMap(pWatchTarget))
                         m_creature->CastSpell(pWatchTarget, SPELL_SUMMON_PLAYER, true);
 
-                    DoCast(pWatchTarget, SPELL_CHARGE);
+                    DoCastSpellIfCan(pWatchTarget, SPELL_CHARGE);
                 }
 
                 m_uiWatchTarget = 0;
@@ -260,7 +260,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
             //Cleave
             if (m_uiCleave_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
                 m_uiCleave_Timer = 7000;
             }
             else
@@ -269,7 +269,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
             //Whirlwind
             if (m_uiWhirlwind_Timer < uiDiff)
             {
-                DoCast(m_creature, SPELL_WHIRLWIND);
+                DoCastSpellIfCan(m_creature, SPELL_WHIRLWIND);
                 m_uiWhirlwind_Timer = 18000;
             }
             else
@@ -290,7 +290,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
                 }
 
                 if (uiTargetInRangeCount > 3)
-                    DoCast(m_creature->getVictim(), SPELL_FEAR);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEAR);
 
                 m_uiFear_Timer = 4000;
             }
@@ -302,7 +302,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
             {
                 if (m_uiMortalStrike_Timer < uiDiff)
                 {
-                    DoCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
                     m_uiMortalStrike_Timer = 15000;
                 }
                 else
@@ -313,7 +313,7 @@ struct MANGOS_DLL_DECL boss_mandokirAI : public ScriptedAI
         //Checking if Ohgan is dead. If yes Mandokir will enrage.
         if (!m_bRaptorDead && m_pInstance && m_pInstance->GetData(TYPE_OHGAN) == DONE)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
             DoScriptText(EMOTE_RAGE, m_creature);
             m_bRaptorDead = true;
         }
@@ -366,7 +366,7 @@ struct MANGOS_DLL_DECL mob_ohganAI : public ScriptedAI
         // SunderArmor
         if (m_uiSunderArmor_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SUNDERARMOR);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDERARMOR);
             m_uiSunderArmor_Timer = urand(10000, 15000);
         }
         else

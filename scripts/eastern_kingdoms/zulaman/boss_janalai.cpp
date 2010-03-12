@@ -81,15 +81,15 @@ const int area_dy = 51;
 
 float JanalainPos[1][3] =
 {
-    {-33.93, 1149.27, 19}
+    {-33.93f, 1149.27f, 19.0f}
 };
 
 float FireWallCoords[4][4] =
 {
-    {-10.13, 1149.27, 19, M_PI},
-    {-33.93, 1123.90, 19, 0.5*M_PI},
-    {-54.80, 1150.08, 19, 0},
-    {-33.93, 1175.68, 19, 1.5*M_PI}
+    {-10.13f, 1149.27f, 19.0f, M_PI_F},
+    {-33.93f, 1123.90f, 19.0f, 0.5f*M_PI_F},
+    {-54.80f, 1150.08f, 19.0f, 0.0f},
+    {-33.93f, 1175.68f, 19.0f, 1.5f*M_PI_F}
 };
 
 struct WaypointDef
@@ -99,40 +99,40 @@ struct WaypointDef
 
 WaypointDef m_aHatcherRight[]=
 {
-    {-86.203, 1136.834, 5.594},                             //this is summon point, not regular waypoint
-    {-74.783, 1145.827, 5.420},
-    {-56.957, 1146.713, 18.725},
-    {-45.428, 1141.697, 18.709},
-    {-34.002, 1124.427, 18.711},
-    {-34.085, 1106.158, 18.711}
+    {-86.203f, 1136.834f, 5.594f},                          //this is summon point, not regular waypoint
+    {-74.783f, 1145.827f, 5.420f},
+    {-56.957f, 1146.713f, 18.725f},
+    {-45.428f, 1141.697f, 18.709f},
+    {-34.002f, 1124.427f, 18.711f},
+    {-34.085f, 1106.158f, 18.711f}
 };
 
 WaypointDef m_aHatcherLeft[]=
 {
-    {-85.420, 1167.321, 5.594},                             //this is summon point, not regular waypoint
-    {-73.569, 1154.960, 5.510},
-    {-56.985, 1153.373, 18.608},
-    {-45.515, 1158.356, 18.709},
-    {-33.314, 1174.816, 18.709},
-    {-33.097, 1195.359, 18.709}
+    {-85.420f, 1167.321f, 5.594f},                          //this is summon point, not regular waypoint
+    {-73.569f, 1154.960f, 5.510f},
+    {-56.985f, 1153.373f, 18.608f},
+    {-45.515f, 1158.356f, 18.709f},
+    {-33.314f, 1174.816f, 18.709f},
+    {-33.097f, 1195.359f, 18.709f}
 };
 
 float hatcherway_l[5][3] =
 {
-    {-87.46,1170.09,6},
-    {-74.41,1154.75,6},
-    {-52.74,1153.32,19},
-    {-33.37,1172.46,19},
-    {-33.09,1203.87,19}
+    {-87.46f, 1170.09f, 6.0f},
+    {-74.41f, 1154.75f, 6.0f},
+    {-52.74f, 1153.32f, 19.0f},
+    {-33.37f, 1172.46f, 19.0f},
+    {-33.09f, 1203.87f, 19.0f}
 };
 
 float hatcherway_r[5][3] =
 {
-    {-86.57,1132.85,6},
-    {-73.94,1146.00,6},
-    {-52.29,1146.51,19},
-    {-33.57,1125.72,19},
-    {-34.29,1095.22,19}
+    {-86.57f, 1132.85f, 6.0f},
+    {-73.94f, 1146.00f, 6.0f},
+    {-52.29f, 1146.51f, 19.0f},
+    {-33.57f, 1125.72f, 19.0f},
+    {-34.29f, 1095.22f, 19.0f}
 };
 
 struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
@@ -405,7 +405,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
                     m_creature->GetMotionMaster()->MovementExpired();
 
                 //then teleport self
-                DoCast(m_creature,SPELL_TELETOCENTER,true);
+                DoCastSpellIfCan(m_creature, SPELL_TELETOCENTER, CAST_TRIGGERED);
 
                 //then players and create the firewall
                 TeleportPlayersOutOfRange();
@@ -429,7 +429,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
             if (fire_breath_timer < diff)
             {
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target,SPELL_FLAME_BREATH);
+                    DoCastSpellIfCan(target,SPELL_FLAME_BREATH);
                 fire_breath_timer = 8000;
             }else fire_breath_timer -=diff;
 
@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
                 DoScriptText(SAY_BERSERK, m_creature);
 
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_creature,SPELL_ENRAGE);
+                DoCastSpellIfCan(m_creature,SPELL_ENRAGE);
                 enraged = true;
             }
 
@@ -458,7 +458,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
                 if (m_creature->IsNonMeleeSpellCasted(false))
                     m_creature->InterruptNonMeleeSpells(false);
 
-                DoCast(m_creature, SPELL_HATCH_ALL_EGGS);
+                DoCastSpellIfCan(m_creature, SPELL_HATCH_ALL_EGGS);
 
                 DoHatchRemainingEggs();
             }
@@ -543,7 +543,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
         if (wipetimer < diff)
         {
             DoScriptText(SAY_BERSERK, m_creature);
-            DoCast(m_creature,SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature,SPELL_ENRAGE);
             wipetimer = 30000;
         }else wipetimer -=diff;
 
@@ -599,8 +599,8 @@ struct MANGOS_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
         m_bCanMoveNext = false;
         m_bWaypointEnd = false;
 
-        if (m_creature->HasMonsterMoveFlag(MONSTER_MOVE_WALK))
-            m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+        if (m_creature->HasSplineFlag(SPLINEFLAG_WALKMODE))
+            m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
     }
 
     void MoveInLineOfSight(Unit* pWho) {}
@@ -684,7 +684,7 @@ struct MANGOS_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
                 else if (m_uiHatchlingCount == uiEggsRemaining/2)
                     m_uiHatchlingCount = uiEggsRemaining;
 
-                DoCast(m_creature,SPELL_HATCH_EGG);
+                DoCastSpellIfCan(m_creature,SPELL_HATCH_EGG);
 
                 DoHatchEggs(m_uiHatchlingCount);
 
@@ -742,7 +742,7 @@ struct MANGOS_DLL_DECL mob_hatchlingAI : public ScriptedAI
         if (buffer_timer < diff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_FLAMEBUFFED);
+                DoCastSpellIfCan(target,SPELL_FLAMEBUFFED);
 
             buffer_timer = 7000;
         }else buffer_timer -=diff;

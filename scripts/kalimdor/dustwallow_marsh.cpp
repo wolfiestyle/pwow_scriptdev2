@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if (m_uiConsumeFlesh_Timer < uiDiff)
         {
             if (m_creature->GetEntry() == NPC_RISEN_HUSK)
-                DoCast(m_creature->getVictim(),SPELL_CONSUME_FLESH);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_CONSUME_FLESH);
 
             m_uiConsumeFlesh_Timer = 15000;
         }
@@ -107,7 +107,7 @@ struct MANGOS_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if (m_uiIntangiblePresence_Timer < uiDiff)
         {
             if (m_creature->GetEntry() == NPC_RISEN_SPIRIT)
-                DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
 
             m_uiIntangiblePresence_Timer = 20000;
         }
@@ -449,8 +449,8 @@ enum
     PHASE_COMPLETE                      = 3
 };
 
-static float m_afSpawn[]= {-3383.501953, -3203.383301, 36.149};
-static float m_afMoveTo[]= {-3371.414795, -3212.179932, 34.210};
+static float m_afSpawn[] = {-3383.501953f, -3203.383301f, 36.149f};
+static float m_afMoveTo[] = {-3371.414795f, -3212.179932f, 34.210f};
 
 struct MANGOS_DLL_DECL npc_ogronAI : public npc_escortAI
 {

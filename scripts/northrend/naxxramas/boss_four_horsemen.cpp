@@ -186,7 +186,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         // Mark of Blaumeux
         if (Mark_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_BLAUMEUX);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_MARK_OF_BLAUMEUX);
             Mark_Timer = 12000;
         }else Mark_Timer -= uiDiff;
 
@@ -195,7 +195,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         {
             if (ShieldWall1)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall1 = false;
             }
         }
@@ -203,7 +203,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         {
             if (ShieldWall2)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall2 = false;
             }
         }
@@ -211,7 +211,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         // Void Zone
         if (VoidZone_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),m_bIsRegularMode ? SPELL_VOIDZONE : H_SPELL_VOIDZONE);
+            DoCastSpellIfCan(m_creature->getVictim(),m_bIsRegularMode ? SPELL_VOIDZONE : H_SPELL_VOIDZONE);
             VoidZone_Timer = 15000;
         }else VoidZone_Timer -= uiDiff;
 
@@ -450,7 +450,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         // Mark of Korthazz
         if (Mark_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_KORTHAZZ);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_MARK_OF_KORTHAZZ);
             Mark_Timer = 12000;
         }else Mark_Timer -= uiDiff;
 
@@ -459,7 +459,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         {
             if (ShieldWall1)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall1 = false;
             }
         }
@@ -467,7 +467,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         {
             if (ShieldWall2)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall2 = false;
             }
         }
@@ -475,7 +475,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         // Meteor
         if (Meteor_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_METEOR);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_METEOR);
             Meteor_Timer = 15000;
         }else Meteor_Timer -= uiDiff;
 
@@ -578,7 +578,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         // Mark of Zeliek
         if (Mark_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_ZELIEK);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_MARK_OF_ZELIEK);
             Mark_Timer = 12000;
         }else Mark_Timer -= uiDiff;
 
@@ -587,7 +587,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         {
             if (ShieldWall1)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall1 = false;
             }
         }
@@ -595,7 +595,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         {
             if (ShieldWall2)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
+                DoCastSpellIfCan(m_creature,SPELL_SHIELDWALL);
                 ShieldWall2 = false;
             }
         }
@@ -604,7 +604,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         if (HolyWrath_Timer < uiDiff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, m_bIsRegularMode ? SPELL_HOLY_WRATH : H_SPELL_HOLY_WRATH);
+                DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_HOLY_WRATH : H_SPELL_HOLY_WRATH);
             HolyWrath_Timer = 15000;
         }else HolyWrath_Timer -= uiDiff;
 
