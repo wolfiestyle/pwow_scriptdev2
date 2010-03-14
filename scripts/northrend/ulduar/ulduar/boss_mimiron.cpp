@@ -258,7 +258,6 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
             m_creature->RemoveAllAttackers();
             IsInUse = false;
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             uiDamage = 0;
             if(IsVoltron)
             {
@@ -301,15 +300,8 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
 
         //needs vehicle support for proper animations + movements
         //for now, hacky fix
-        if (IsVoltron && IsInUse && m_creature->GetEntry() != NPC_LEVIATHAN_MKII)
-            if (Creature *Leviathan = GET_CREATURE_FROM_GUID(mimironAI->LeviathanGUID))
-            {
-                float x, y, z, o;
-                Leviathan->GetPosition(x, y, z);
-                o = Leviathan->GetOrientation();
-                z += m_creature->GetEntry() == NPC_VX001 ? 6 : 11;
-                m_creature->NearTeleportTo(x, y, z, o);
-            }
+        if (IsVoltron && IsInUse)
+            UpdateVoltronMovement();
     }
 
     virtual void StartVoltron()
@@ -324,15 +316,19 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
         m_creature->SetHealth(m_creature->GetMaxHealth()/2);
         Aggro(m_creature->getVictim());
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+        UpdateVoltronMovement();
+    }
+
+    void UpdateVoltronMovement()
+    {
+        GET_MIMIRON_AI;
         if (m_creature->GetEntry() != NPC_LEVIATHAN_MKII)
             if (Creature *Leviathan = GET_CREATURE_FROM_GUID(mimironAI->LeviathanGUID))
             {
-                float x, y, z, o;
+                float x, y, z;
                 Leviathan->GetPosition(x, y, z);
-                o = Leviathan->GetOrientation();
                 z += m_creature->GetEntry() == NPC_VX001 ? 6 : 11;
-                m_creature->NearTeleportTo(x, y, z, o);
+                m_creature->MonsterMove(x, y, z, 1);
             }
     }
 };
