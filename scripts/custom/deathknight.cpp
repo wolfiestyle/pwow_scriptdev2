@@ -2085,18 +2085,18 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 Creature* pTirion = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID));
 
                 DoScriptText(EMOTE_LIGHT_OF_DAWN05, m_creature);
-                if (m_creature->HasAura(SPELL_THE_LIGHT_OF_DAWN, 0))
+                if (m_creature->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                     m_creature->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                 {
-                    if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN, 0))
+                    if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                         pTemp->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[19].x, LightofDawnLoc[19].y, LightofDawnLoc[19].z);
                 }
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                 {
-                    if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN, 0))
+                    if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                         pTemp->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[21].x, LightofDawnLoc[21].y, LightofDawnLoc[21].z);
@@ -2679,7 +2679,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                             pGo->SetPhaseMask(128, true);
                         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
-                            if (pTemp->HasAura(SPELL_REBIRTH_OF_THE_ASHBRINGER, 0))
+                            if (pTemp->HasAura(SPELL_REBIRTH_OF_THE_ASHBRINGER))
                                 pTemp->RemoveAurasDueToSpell(SPELL_REBIRTH_OF_THE_ASHBRINGER);
                             pTemp->CastSpell(pTemp, 41542, false); // workarounds, light expoded, makes it cool
                             pTemp->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
@@ -2976,7 +2976,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 bIsBattle = false;
                 uiFight_duration = 300000;
 
-                if (m_creature->HasAura(SPELL_THE_MIGHT_OF_MOGRAINE, 0))
+                if (m_creature->HasAura(SPELL_THE_MIGHT_OF_MOGRAINE))
                     m_creature->RemoveAurasDueToSpell(SPELL_THE_MIGHT_OF_MOGRAINE);
                 m_creature->RemoveAllAuras();
                 m_creature->DeleteThreatList();

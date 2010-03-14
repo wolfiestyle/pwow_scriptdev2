@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
             {
                 if (!m_bIsExploded)
                 {
-                    if (!m_creature->HasAura(SPELL_PROTECTIVE_BUBBLE, 0))
+                    if (!m_creature->HasAura(SPELL_PROTECTIVE_BUBBLE))
                     {
                         DoCast(m_creature, m_bIsRegularMode ? SPELL_WATER_BLAST_H : SPELL_WATER_BLAST);
                         //DoCast(m_creature, SPELL_DRAINED);
