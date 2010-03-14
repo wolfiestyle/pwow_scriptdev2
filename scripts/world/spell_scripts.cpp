@@ -22,10 +22,14 @@ SDCategory: Spell
 EndScriptData */
 
 /* ContentData
-npc_nestlewood_owlkin
-npc_liquid_fire_of_elune
-npc_robot_reprogrammed
-npc_woodlands_walker
+spell 34665
+spell 19512
+spell 8913
+spell 29528
+spell 46770
+spell 46023
+spell 47575
+spell 50706
 EndContentData */
 
 #include "precompiled.h"
@@ -35,169 +39,284 @@ EndContentData */
 - always return true when the spell is handled by script
 */
 
-/*######
-## npc_nestlewood_owlkin
-######*/
-
 enum
 {
-    SPELL_INOCULATE_OWLKIN  = 29528,
-    ENTRY_OWLKIN            = 16518,
-    ENTRY_OWLKIN_INOC       = 16534,
+    // target hulking helboar
+    SPELL_ADMINISTER_ANTIDOTE           = 34665,
+    NPC_HELBOAR                         = 16880,
+    NPC_DREADTUSK                       = 16992,
+
+    // quest 6124/6129
+    SPELL_APPLY_SALVE                   = 19512,
+
+    NPC_SICKLY_DEER                     = 12298,
+    NPC_SICKLY_GAZELLE                  = 12296,
+
+    NPC_CURED_DEER                      = 12299,
+    NPC_CURED_GAZELLE                   = 12297,
+
+    // target morbent fel
+    SPELL_SACRED_CLEANSING              = 8913,
+    NPC_MORBENT                         = 1200,
+    NPC_WEAKENED_MORBENT                = 24782,
+
+    // quest 11515
+    SPELL_FEL_SIPHON_DUMMY              = 44936,
+    NPC_FELBLOOD_INITIATE               = 24918,
+    NPC_EMACIATED_FELBLOOD              = 24955,
+
+    // target nestlewood owlkin
+    SPELL_INOCULATE_OWLKIN              = 29528,
+    NPC_OWLKIN                          = 16518,
+    NPC_OWLKIN_INOC                     = 16534,
+
+    // target for quest 12166)
+    SPELL_LIQUID_FIRE                   = 46770,
+    SPELL_LIQUID_FIRE_AURA              = 47972,
+
+    NPC_ELK                             = 26616,
+    NPC_GRIZZLY                         = 26643,
+
+    NPC_ELK_BUNNY                       = 27111,
+    NPC_GRIZZLY_BUNNY                   = 27112,
+
+    // for quest 12516
+    SPELL_MODIFIED_MOJO                 = 50706,
+
+    NPC_PROPHET_OF_SSERATUS             = 28068,
+    NPC_WEAK_PROPHET_OF_SSERATUS        = 28151,
+
+    // for quest 12459
+    SPELL_SEEDS_OF_NATURES_WRATH        = 49587,
+
+    NPC_REANIMATED_FROSTWYRM            = 26841,
+    NPC_TURGID                          = 27808,
+    NPC_DEATHGAZE                       = 27122,
+
+    NPC_WEAK_REANIMATED_FROSTWYRM       = 27821,
+    NPC_WEAK_TURGID                     = 27809,
+    NPC_WEAK_DEATHGAZE                  = 27807,
+
+    // for quest 11730
+    SPELL_ULTRASONIC_SCREWDRIVER        = 46023,
+    SPELL_REPROGRAM_KILL_CREDIT         = 46027,
+
+    NPC_COLLECT_A_TRON                  = 25793,
+    SPELL_SUMMON_COLLECT_A_TRON         = 46034,
+
+    NPC_DEFENDO_TANK                    = 25758,
+    SPELL_SUMMON_DEFENDO_TANK           = 46058,
+
+    NPC_SCAVENGE_A8                     = 25752,
+    SPELL_SUMMON_SCAVENGE_A8            = 46063,
+
+    NPC_SCAVENGE_B6                     = 25792,
+    SPELL_SUMMON_SCAVENGE_B6            = 46066,
+
+    NPC_SENTRY_BOT                      = 25753,
+    SPELL_SUMMON_SENTRY_BOT             = 46068,
+
+    // target woodlands walker
+    SPELL_STRENGTH_ANCIENTS             = 47575,
+    SPELL_CREATE_BARK_WALKERS           = 47550,
+    FACTION_HOSTILE                     = 16,
+
+    EMOTE_AGGRO                         = -1000551,
+    EMOTE_CREATE                        = -1000552
 };
 
-bool EffectDummyCreature_npc_nestlewood_owlkin(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
-    if (uiSpellId == SPELL_INOCULATE_OWLKIN && uiEffIndex == EFFECT_INDEX_0)
+    switch(uiSpellId)
     {
-        if (pCreatureTarget->GetEntry() != ENTRY_OWLKIN)
-            return true;
-
-        pCreatureTarget->UpdateEntry(ENTRY_OWLKIN_INOC);
-
-        //set despawn timer, since we want to remove creature after a short time
-        pCreatureTarget->ForcedDespawn(15000);
-
-        return true;
-    }
-    return false;
-}
-
-/*######
-## npc_liquid_fire_of_elune (quest 12166)
-######*/
-
-enum
-{
-    NPC_ELK                 = 26616,
-    NPC_ELK_BUNNY           = 27111,
-    NPC_GRIZZLY             = 26643,
-    NPC_GRIZZLY_BUNNY       = 27112,
-
-    SPELL_LIQUID_FIRE       = 46770,
-    SPELL_LIQUID_FIRE_AURA  = 47972
-};
-
-bool EffectDummyCreature_npc_liquid_fire_of_elune(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
-{
-    if (uiSpellId == SPELL_LIQUID_FIRE && uiEffIndex == EFFECT_INDEX_0)
-    {
-        if (pCaster->GetTypeId() == TYPEID_PLAYER)
+        case SPELL_ADMINISTER_ANTIDOTE:
         {
-            if (pCreatureTarget->HasAura(SPELL_LIQUID_FIRE_AURA))
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->GetEntry() != NPC_HELBOAR)
+                    return true;
+
+                // possible needs check for quest state, to not have any effect when quest really complete
+
+                pCreatureTarget->UpdateEntry(NPC_DREADTUSK);
                 return true;
-
-            if (pCreatureTarget->GetEntry() == NPC_ELK)
-            {
-                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
-                ((Player*)pCaster)->KilledMonsterCredit(NPC_ELK_BUNNY, 0);
             }
-            else if (pCreatureTarget->GetEntry() == NPC_GRIZZLY)
-            {
-                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
-                ((Player*)pCaster)->KilledMonsterCredit(NPC_GRIZZLY_BUNNY, 0);
-            }
+            return true;
         }
-
-        return true;
-    }
-    return false;
-}
-
-/*######
-## npc_robot_reprogrammed
-######*/
-
-enum
-{
-    SPELL_ULTRASONIC_SCREWDRIVER    = 46023,
-    SPELL_REPROGRAM_KILL_CREDIT     = 46027,
-
-    NPC_COLLECT_A_TRON              = 25793,
-    SPELL_SUMMON_COLLECT_A_TRON     = 46034,
-
-    NPC_DEFENDO_TANK                = 25758,
-    SPELL_SUMMON_DEFENDO_TANK       = 46058,
-
-    NPC_SCAVENGE_A8                 = 25752,
-    SPELL_SUMMON_SCAVENGE_A8        = 46063,
-
-    NPC_SCAVENGE_B6                 = 25792,
-    SPELL_SUMMON_SCAVENGE_B6        = 46066,
-
-    NPC_SENTRY_BOT                  = 25753,
-    SPELL_SUMMON_SENTRY_BOT         = 46068
-};
-
-bool EffectDummyCreature_npc_robot_reprogrammed(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
-{
-    if (uiSpellId == SPELL_ULTRASONIC_SCREWDRIVER && uiEffIndex == EFFECT_INDEX_0)
-    {
-        if (pCreatureTarget->isDead())
+        case SPELL_APPLY_SALVE:
         {
-            uiSpellId = 0;
-
-            switch(pCreatureTarget->GetEntry())
+            if (uiEffIndex == EFFECT_INDEX_0)
             {
-                case NPC_COLLECT_A_TRON:    uiSpellId = SPELL_SUMMON_COLLECT_A_TRON; break;
-                case NPC_DEFENDO_TANK:      uiSpellId = SPELL_SUMMON_DEFENDO_TANK; break;
-                case NPC_SCAVENGE_A8:       uiSpellId = SPELL_SUMMON_SCAVENGE_A8; break;
-                case NPC_SCAVENGE_B6:       uiSpellId = SPELL_SUMMON_SCAVENGE_B6; break;
-                case NPC_SENTRY_BOT:        uiSpellId = SPELL_SUMMON_SENTRY_BOT; break;
+                if (pCaster->GetTypeId() != TYPEID_PLAYER)
+                    return true;
+
+                if (pCreatureTarget->GetEntry() == NPC_SICKLY_DEER && ((Player*)pCaster)->GetTeam() == ALLIANCE)
+                    pCreatureTarget->UpdateEntry(NPC_CURED_DEER);
+
+                if (pCreatureTarget->GetEntry() == NPC_SICKLY_GAZELLE && ((Player*)pCaster)->GetTeam() == HORDE)
+                    pCreatureTarget->UpdateEntry(NPC_CURED_GAZELLE);
+
+                return true;
             }
-
-            if (const SpellEntry* pSpell = GetSpellStore()->LookupEntry(uiSpellId))
-            {
-                pCaster->CastSpell(pCreatureTarget, pSpell->Id, true);
-
-                if (Pet* pPet = pCaster->FindGuardianWithEntry(pSpell->EffectMiscValue[uiEffIndex]))
-                    pPet->CastSpell(pCaster, SPELL_REPROGRAM_KILL_CREDIT, true);
-
-                pCreatureTarget->ForcedDespawn();
-            }
+            return true;
         }
-
-        return true;
-    }
-    return false;
-}
-
-/*######
-## npc_woodlands_walker
-######*/
-
-enum
-{
-    SPELL_STRENGTH_ANCIENTS     = 47575,
-    SPELL_CREATE_BARK_WALKERS   = 47550,
-    FACTION_HOSTILE             = 16,
-
-    EMOTE_AGGRO                 = -1000551,
-    EMOTE_CREATE                = -1000552
-};
-
-bool EffectDummyCreature_npc_woodlands_walker(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
-{
-    if (uiSpellId == SPELL_STRENGTH_ANCIENTS && uiEffIndex == EFFECT_INDEX_0)
-    {
-        if (pCaster->GetTypeId() == TYPEID_PLAYER)
+        case SPELL_INOCULATE_OWLKIN:
         {
-            if (urand(0, 1))
+            if (uiEffIndex == EFFECT_INDEX_0)
             {
-                DoScriptText(EMOTE_AGGRO, pCreatureTarget);
-                pCreatureTarget->setFaction(FACTION_HOSTILE);
-                pCreatureTarget->AI()->AttackStart(pCaster);
-            }
-            else
-            {
-                DoScriptText(EMOTE_CREATE, pCreatureTarget);
-                pCaster->CastSpell(pCaster, SPELL_CREATE_BARK_WALKERS, true);
-                pCreatureTarget->ForcedDespawn(5000);
-            }
-        }
+                if (pCreatureTarget->GetEntry() != NPC_OWLKIN)
+                    return true;
 
-        return true;
+                pCreatureTarget->UpdateEntry(NPC_OWLKIN_INOC);
+
+                //set despawn timer, since we want to remove creature after a short time
+                pCreatureTarget->ForcedDespawn(15000);
+
+                return true;
+            }
+            return true;
+        }
+        case SPELL_LIQUID_FIRE:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCaster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (pCreatureTarget->HasAura(SPELL_LIQUID_FIRE_AURA))
+                        return true;
+
+                    if (pCreatureTarget->GetEntry() == NPC_ELK)
+                    {
+                        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
+                        ((Player*)pCaster)->KilledMonsterCredit(NPC_ELK_BUNNY, 0);
+                    }
+                    else if (pCreatureTarget->GetEntry() == NPC_GRIZZLY)
+                    {
+                        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
+                        ((Player*)pCaster)->KilledMonsterCredit(NPC_GRIZZLY_BUNNY, 0);
+                    }
+                }
+                return true;
+            }
+            return true;
+        }
+        case SPELL_MODIFIED_MOJO:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->GetEntry() != NPC_PROPHET_OF_SSERATUS)
+                    return true;
+
+                // Apparently done before updateEntry, so need to make a way to handle that
+                // "Mmm, more mojo"
+                // "%s drinks the Mojo"
+                // "NOOOOOOOOOOOOooooooo...............!"
+
+                pCreatureTarget->UpdateEntry(NPC_WEAK_PROPHET_OF_SSERATUS);
+                return true;
+            }
+            return true;
+        }
+        case SPELL_FEL_SIPHON_DUMMY:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->GetEntry() != NPC_FELBLOOD_INITIATE)
+                    return true;
+
+                pCreatureTarget->UpdateEntry(NPC_EMACIATED_FELBLOOD);
+                return true;
+            }
+            return true;
+        }
+        case SPELL_SACRED_CLEANSING:
+        {
+            if (uiEffIndex == EFFECT_INDEX_1)
+            {
+                if (pCreatureTarget->GetEntry() != NPC_MORBENT)
+                    return true;
+
+                pCreatureTarget->UpdateEntry(NPC_WEAKENED_MORBENT);
+                return true;
+            }
+            return true;
+        }
+        case SPELL_SEEDS_OF_NATURES_WRATH:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                uint32 uiNewEntry = 0;
+
+                switch(pCreatureTarget->GetEntry())
+                {
+                    case NPC_REANIMATED_FROSTWYRM:  uiNewEntry = NPC_WEAK_REANIMATED_FROSTWYRM; break;
+                    case NPC_TURGID:                uiNewEntry = NPC_WEAK_TURGID; break;
+                    case NPC_DEATHGAZE:             uiNewEntry = NPC_WEAK_DEATHGAZE; break;
+                }
+
+                if (uiNewEntry)
+                    pCreatureTarget->UpdateEntry(uiNewEntry);
+
+                return true;
+            }
+            return true;
+        }
+        case SPELL_STRENGTH_ANCIENTS:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCaster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (urand(0, 1))
+                    {
+                        DoScriptText(EMOTE_AGGRO, pCreatureTarget);
+                        pCreatureTarget->setFaction(FACTION_HOSTILE);
+                        pCreatureTarget->AI()->AttackStart(pCaster);
+                    }
+                    else
+                    {
+                        DoScriptText(EMOTE_CREATE, pCreatureTarget);
+                        pCaster->CastSpell(pCaster, SPELL_CREATE_BARK_WALKERS, true);
+                        pCreatureTarget->ForcedDespawn(5000);
+                    }
+                }
+                return true;
+            }
+            return true;
+        }
+        case SPELL_ULTRASONIC_SCREWDRIVER:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->isDead())
+                {
+                    uint32 newSpellId = 0;
+
+                    switch(pCreatureTarget->GetEntry())
+                    {
+                        case NPC_COLLECT_A_TRON:    newSpellId = SPELL_SUMMON_COLLECT_A_TRON; break;
+                        case NPC_DEFENDO_TANK:      newSpellId = SPELL_SUMMON_DEFENDO_TANK; break;
+                        case NPC_SCAVENGE_A8:       newSpellId = SPELL_SUMMON_SCAVENGE_A8; break;
+                        case NPC_SCAVENGE_B6:       newSpellId = SPELL_SUMMON_SCAVENGE_B6; break;
+                        case NPC_SENTRY_BOT:        newSpellId = SPELL_SUMMON_SENTRY_BOT; break;
+                    }
+
+                    if (const SpellEntry* pSpell = GetSpellStore()->LookupEntry(newSpellId))
+                    {
+                        pCaster->CastSpell(pCreatureTarget, pSpell->Id, true);
+
+                        if (Pet* pPet = pCaster->FindGuardianWithEntry(pSpell->EffectMiscValue[uiEffIndex]))
+                            pPet->CastSpell(pCaster, SPELL_REPROGRAM_KILL_CREDIT, true);
+
+                        pCreatureTarget->ForcedDespawn();
+                    }
+                }
+                return true;
+            }
+            return true;
+        }
     }
+
     return false;
 }
 
@@ -206,22 +325,7 @@ void AddSC_spell_scripts()
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name = "npc_nestlewood_owlkin";
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_nestlewood_owlkin;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_liquid_fire_of_elune";
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_liquid_fire_of_elune;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_robot_reprogrammed";
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_robot_reprogrammed;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_woodlands_walker";
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_woodlands_walker;
+    newscript->Name = "spell_dummy_npc";
+    newscript->pEffectDummyCreature = &EffectDummyCreature_spell_dummy_npc;
     newscript->RegisterSelf();
 }

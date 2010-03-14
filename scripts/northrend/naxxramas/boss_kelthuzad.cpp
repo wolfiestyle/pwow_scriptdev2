@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         if (Phase == 2)
         {
             //When HP reaches 45% we move on to phase 3
-            if ((int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) <= 45)
+            if (m_creature->GetHealthPercent() <= 45.0f)
             {
                 DoScriptText(SAY_REQUEST_AID, m_creature);
                 DoScriptText(SAY_ANSWER_REQUEST, m_creature);

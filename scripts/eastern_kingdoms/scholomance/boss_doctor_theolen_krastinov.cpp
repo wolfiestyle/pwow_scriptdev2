@@ -83,13 +83,15 @@ struct MANGOS_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
             m_uiBackhand_Timer -= uiDiff;
 
         //Frenzy_Timer
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 26)
+        if (m_creature->GetHealthPercent() < 26.0f)
         {
             if (m_uiFrenzy_Timer < uiDiff)
             {
-                DoCastSpellIfCan(m_creature, SPELL_FRENZY);
-                DoScriptText(EMOTE_GENERIC_FRENZY_KILL, m_creature);
-                m_uiFrenzy_Timer = 120000;
+                if (DoCastSpellIfCan(m_creature, SPELL_FRENZY) == CAST_OK)
+                {
+                    DoScriptText(EMOTE_GENERIC_FRENZY_KILL, m_creature);
+                    m_uiFrenzy_Timer = 120000;
+                }
             }
             else
                 m_uiFrenzy_Timer -= uiDiff;

@@ -457,10 +457,13 @@ struct MANGOS_DLL_DECL boss_tinheadAI : public ScriptedAI
         {
             if (RustTimer < diff)
             {
-                ++RustCount;
-                DoScriptText(EMOTE_RUST, m_creature);
-                DoCastSpellIfCan(m_creature, SPELL_RUST);
-                RustTimer = 6000;
+                if (DoCastSpellIfCan(m_creature, SPELL_RUST) == CAST_OK)
+                {
+                    ++RustCount;
+
+                    DoScriptText(EMOTE_RUST, m_creature);
+                    RustTimer = 6000;
+                }
             }else RustTimer -= diff;
         }
 
@@ -658,7 +661,7 @@ struct MANGOS_DLL_DECL mob_cycloneAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->HasAura(SPELL_KNOCKBACK, 0))
+        if (!m_creature->HasAura(SPELL_KNOCKBACK, EFFECT_INDEX_0))
             DoCastSpellIfCan(m_creature, SPELL_KNOCKBACK, CAST_TRIGGERED);
 
         if (MoveTimer < diff)

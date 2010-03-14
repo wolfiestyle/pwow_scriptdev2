@@ -149,7 +149,7 @@ struct MANGOS_DLL_DECL boss_moroesAI : public ScriptedAI
 
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_GARROTE,0))
+                if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_GARROTE, EFFECT_INDEX_0))
                     i->getSource()->RemoveAurasDueToSpell(SPELL_GARROTE);
             }
         }
@@ -265,7 +265,7 @@ struct MANGOS_DLL_DECL boss_moroesAI : public ScriptedAI
         if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
             EnterEvadeMode();
 
-        if (!Enrage && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+        if (!Enrage && m_creature->GetHealthPercent() < 30.0f)
         {
             DoCastSpellIfCan(m_creature, SPELL_FRENZY);
             Enrage = true;

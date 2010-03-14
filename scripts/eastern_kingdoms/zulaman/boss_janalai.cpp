@@ -434,7 +434,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
             }else fire_breath_timer -=diff;
 
             //enrage if under 25% hp before 5 min.
-            if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25) && !enraged)
+            if (m_creature->GetHealthPercent() < 25.0f && !enraged)
             {
                 enragetime = true;
                 enrage_timer = 600000;
@@ -451,7 +451,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
             }
 
             //Hatch All
-            if (m_bIsEggRemaining && (m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 35)
+            if (m_bIsEggRemaining && m_creature->GetHealthPercent() < 35.0f)
             {
                 DoScriptText(SAY_ALL_EGGS, m_creature);
 
@@ -542,9 +542,11 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
         //WIPE after 10 minutes
         if (wipetimer < diff)
         {
-            DoScriptText(SAY_BERSERK, m_creature);
-            DoCastSpellIfCan(m_creature,SPELL_ENRAGE);
-            wipetimer = 30000;
+            if (DoCastSpellIfCan(m_creature,SPELL_ENRAGE) == CAST_OK)
+            {
+                DoScriptText(SAY_BERSERK, m_creature);
+                wipetimer = 30000;
+            }
         }else wipetimer -=diff;
 
         //check for reset ... exploit preventing ... pulled from his podest

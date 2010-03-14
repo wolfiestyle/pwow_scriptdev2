@@ -103,10 +103,7 @@ UPDATE creature_template SET ScriptName='npc_tabard_vendor' WHERE entry=28776;
 UPDATE creature_template SET ScriptName='npc_locksmith' WHERE entry IN (29665,29725,29728);
 
 /* SPELL */
-UPDATE creature_template SET ScriptName='npc_liquid_fire_of_elune' WHERE entry IN (26616,26643);
-UPDATE creature_template SET ScriptName='npc_nestlewood_owlkin' WHERE entry=16518;
-UPDATE creature_template SET ScriptName='npc_robot_reprogrammed' WHERE entry IN (25793,25758,25752,25792,25753);
-UPDATE creature_template SET ScriptName='npc_woodlands_walker' WHERE entry=26421;
+UPDATE creature_template SET ScriptName='spell_dummy_npc' WHERE entry IN (16880,1200,26616,26643,16518,25793,25758,25752,25792,25753,26421,26841,27808,27122,28068,12298,12296,24918);
 
 /*  */
 /* ZONE */
@@ -406,6 +403,7 @@ UPDATE creature_template SET ScriptName='mob_shield_generator_channel' WHERE ent
 
 
 /* DALARAN */
+UPDATE creature_template SET ScriptName='npc_dalaran_guardian_mage' WHERE entry IN (29255, 29254);
 UPDATE creature_template SET ScriptName='npc_zidormi' WHERE entry=31848;
 
 /* DARKSHORE */
@@ -593,6 +591,7 @@ UPDATE creature_template SET ScriptName='npc_mcgoyver' WHERE entry=24040;
 
 /* ICECROWN */
 UPDATE creature_template SET ScriptName='npc_arete' WHERE entry=29344;
+UPDATE creature_template SET ScriptName='npc_dame_evniki_kapsalis' WHERE entry=34885;
 
 /* IRONFORGE */
 UPDATE creature_template SET ScriptName='npc_royal_historian_archesonus' WHERE entry=8879;

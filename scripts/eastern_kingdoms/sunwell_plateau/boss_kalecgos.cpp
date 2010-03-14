@@ -189,7 +189,7 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if (pTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            if (pTarget->HasAura(SPELL_SPECTRAL_EXHAUSTION,0) || pTarget->HasAura(SPELL_SPECTRAL_REALM))
+            if (pTarget->HasAura(SPELL_SPECTRAL_EXHAUSTION, EFFECT_INDEX_0) || pTarget->HasAura(SPELL_SPECTRAL_REALM))
                 return;
 
             if (pTarget == m_creature->getVictim())
@@ -250,7 +250,7 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
         if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
-        if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10))
+        if (!m_bEnraged && m_creature->GetHealthPercent() < 10.0f)
         {
             if (Unit* pSathrovarr = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_SATHROVARR)))
             {
@@ -262,7 +262,7 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
             m_bEnraged = true;
         }
 
-        if (!m_bChecked && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 1))
+        if (!m_bChecked && m_creature->GetHealthPercent() < 1.0f)
         {
             m_bChecked = true;
 
@@ -294,22 +294,26 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
         if (m_uiArcaneBuffetTimer < diff)
         {
-            if (!urand(0, 2))
-                DoScriptText(SAY_EVIL_SPELL1, m_creature);
+            if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_ARCANE_BUFFET) == CAST_OK)
+            {
+                if (!urand(0, 2))
+                    DoScriptText(SAY_EVIL_SPELL1, m_creature);
 
-            DoCastSpellIfCan(m_creature->getVictim(), SPELL_ARCANE_BUFFET);
-            m_uiArcaneBuffetTimer = 20000;
+                m_uiArcaneBuffetTimer = 20000;
+            }
         }
         else
             m_uiArcaneBuffetTimer -= diff;
 
         if (m_uiFrostBreathTimer < diff)
         {
-            if (!urand(0, 1))
-                DoScriptText(SAY_EVIL_SPELL2, m_creature);
+            if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_FROST_BREATH) == CAST_OK)
+            {
+                if (!urand(0, 1))
+                    DoScriptText(SAY_EVIL_SPELL2, m_creature);
 
-            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FROST_BREATH);
-            m_uiFrostBreathTimer = 25000;
+                m_uiFrostBreathTimer = 25000;
+            }
         }
         else
             m_uiFrostBreathTimer -= diff;
@@ -414,7 +418,7 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
-        if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 10))
+        if (!m_bEnraged && m_creature->GetHealthPercent() < 10.0f)
         {
             if (Unit* pKalecgos = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_KALECGOS_DRAGON)))
             {
@@ -516,13 +520,13 @@ struct MANGOS_DLL_DECL boss_kalecgos_humanoidAI : public ScriptedAI
             HeroicStrikeTimer = 30000;
         }else HeroicStrikeTimer -= diff;
 
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) && !HasYelled20Percent)
+        if (m_creature->GetHealthPercent() < 20.0f && !HasYelled20Percent)
         {
             DoScriptText(SAY_GOOD_NEAR_DEATH, m_creature);
             HasYelled20Percent = true;
         }
 
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !HasYelled10Percent)
+        if (m_creature->GetHealthPercent() < 10.0f && !HasYelled10Percent)
         {
             DoScriptText(SAY_GOOD_NEAR_DEATH2, m_creature);
             HasYelled10Percent = true;
@@ -537,7 +541,7 @@ bool GOHello_go_spectral_rift(Player* pPlayer, GameObject* pGo)
 
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {
-        if (pPlayer->HasAura(SPELL_SPECTRAL_EXHAUSTION, 0))
+        if (pPlayer->HasAura(SPELL_SPECTRAL_EXHAUSTION, EFFECT_INDEX_0))
             return true;
 
         // Make them able to see Sathrovarr (he's invisible for some reason). Also, when this buff wears off, they get teleported back to Normal Realm (this is handled by Instance Script)
