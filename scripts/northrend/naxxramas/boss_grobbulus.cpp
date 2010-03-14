@@ -113,7 +113,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                 DoCast(target,SPELL_MUTATINGINJECTION);
 
-            MutatingInjection_Timer = 10000 + (int) (m_creature->GetHealth()*10000 / m_creature->GetMaxHealth());    //10-20 seconds
+            MutatingInjection_Timer = 10000 + int(m_creature->GetHealthPercent()*100.0f);    //10-20 seconds
         }else MutatingInjection_Timer -= diff;
 
         //Berserk timer

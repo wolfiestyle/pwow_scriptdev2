@@ -118,7 +118,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
         if (phase == 1)
         {
 			/*
-            if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > 10)
+            if (m_creature->GetHealthPercent() > 10.0f)
             {
                 if (Phase1to2_Timer < uiDiff)
                 {

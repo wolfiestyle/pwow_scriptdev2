@@ -3,9 +3,11 @@
 
 bool IsOutOfCombatArea(Creature *pCreature)
 {
-    float x, y, z;
-    pCreature->GetPosition(x, y, z);
-    uint32 areaId = pCreature->GetMap()->GetAreaId(x, y, z);
+    if (pCreature->GetMapId() != 603)   // invalid check outside Ulduar
+        return false;
+
+    float z = pCreature->GetPositionZ();
+    uint32 areaId = pCreature->GetAreaId();
 
     switch (pCreature->GetEntry())
     {

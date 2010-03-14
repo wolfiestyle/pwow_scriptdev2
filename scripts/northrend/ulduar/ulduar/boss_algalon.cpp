@@ -387,8 +387,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
         //check for phase 2 at 20% health
         if(!IsPhase2)
         {
-            float percent = float(m_creature->GetHealth()) / float(m_creature->GetMaxHealth());
-            if(percent < 0.2f)
+            if(m_creature->GetHealthPercent() < 20.0f)
             {
                 IsPhase2 = true;
                 DoScriptText(SAY_START_PHASE_2, m_creature);

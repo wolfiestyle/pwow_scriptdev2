@@ -254,7 +254,7 @@ struct MANGOS_DLL_DECL boss_gothikAI : public ScriptedAI
         //Phase 2
         if (phase == 2)
         {
-            if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > 30)
+            if (m_creature->GetHealthPercent() > 30.0f)
             {
                 if (Side_Timer < diff)
                 {

@@ -154,7 +154,7 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
         }
 
         //HP at 75%, 50%, 25%
-        if (HP_Counter > 0 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= (25 * HP_Counter))
+        if (HP_Counter > 0 && m_creature->GetHealthPercent() <= float(25 * HP_Counter))
         {
             if (Creature *Hearth = m_creature->SummonCreature(NPC_HEARTH_OF_DECONST,
                     m_creature->GetPositionX()+rand()%11-5,

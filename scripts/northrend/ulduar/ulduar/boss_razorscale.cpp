@@ -137,7 +137,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         //Phase 1
         if (Phase == 1)
         {
-            if (float(m_creature->GetHealth()) / float(m_creature->GetMaxHealth()) <= 0.5f)
+            if (m_creature->GetHealthPercent() <= 50.0f)
             {
                 m_creature->SetHover(false);
                 m_creature->GetMotionMaster()->Clear(false);

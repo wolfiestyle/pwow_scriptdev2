@@ -332,7 +332,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         }else Mark_Timer -= uiDiff;
 
         // Shield Wall - All 4 horsemen will shield wall at 50% hp and 20% hp for 20 seconds
-        if (ShieldWall1 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+        if (ShieldWall1 && m_creature->GetHealthPercent() < 50.0f)
         {
             if (ShieldWall1)
             {
@@ -340,7 +340,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
                 ShieldWall1 = false;
             }
         }
-        if (ShieldWall2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)
+        if (ShieldWall2 && m_creature->GetHealthPercent() < 20.0f)
         {
             if (ShieldWall2)
             {
