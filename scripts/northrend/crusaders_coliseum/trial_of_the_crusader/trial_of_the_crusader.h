@@ -4,10 +4,14 @@
 // this appends the difficulty suffix for each mode, so all of them must be defined in enum
 // so you declare:      enum { SPELL_TEST_N10, SPELL_TEST_N25, SPELL_TEST_H10, SPELL_TEST_H25 };
 // to cast the spell:   DoCast(target, DIFFICULTY(SPELL_TEST));
-#define DIFFICULTY(SP)      (m_bIs10Man ? (m_bIsHeroic ? SP##_H10 : SP##_N10) : (m_bIsHeroic ? SP##_H25 : SP##_N25))
+#define DIFF_SELECT(N10, N25, H10, H25) (m_bIs10Man ? (m_bIsHeroic ? H10 : N10) : (m_bIsHeroic ? H25 : N25))
+#define DIFFICULTY(SP)      DIFF_SELECT(SP##_N10, SP##_N25, SP##_H10, SP##_H25)
 
 #define GET_CREATURE(C)     (m_pInstance ? m_creature->GetMap()->GetCreature(m_pInstance->GetData64(C)) : NULL)
 #define GET_GAMEOBJECT(G)   (m_pInstance ? m_creature->GetMap()->GetGameObject(m_pInstance->GetData64(G)) : NULL)
+
+// schedules an event
+#define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
 
 #define IS_HORDE            bool(m_pInstance ? m_pInstance->GetData(DATA_FACTION) : false)
 
@@ -65,6 +69,7 @@ enum
     TYPE_VARIAN_WYRM            = 23,
     TYPE_GARROSH_HELLSCREAM     = 24,
     TYPE_TIRION_FORDRING        = 25,
+    TYPE_LICH_KING              = 26,
 
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST         = 41,
@@ -113,6 +118,7 @@ enum
     NPC_VARIAN_WYRM             = 34990,
     NPC_GARROSH_HELLSCREAM      = 34995,
     NPC_TIRION_FORDRING         = 34996,
+    NPC_LICH_KING               = 35877, // used for start of anub'arak encounter
 
     GO_COLISEUM_FLOOR           = 195527,
     GO_ANUBARAK_CHEST           = 195665,

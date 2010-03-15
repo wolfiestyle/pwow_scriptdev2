@@ -41,7 +41,7 @@ enum Phases
 
 enum BeastsOfNortherendPhases
 {
-    PHASE_NONE,
+    PHASE_BEASTS_NONE,
     PHASE_GORMOK,
     PHASE_JORMUNGAR_TWINS,
     PHASE_ICEHOWL
@@ -86,7 +86,6 @@ enum Says
     SAY_TIRION_ANUBARAK_INTRO3                      = -1300351,
     SAY_LICHKING_ANUBARAK_INTRO4                    = -1300352,
     SAY_LICHKING_ANUBARAK_INTRO5                    = -1300353,
-    SAY_ANUBARAK_ANUBARAK_INTRO6                    = -1300354,
     SAY_TIRION_ANUBARACK_OUTRO                      = -1300362,
 };
 
@@ -96,6 +95,8 @@ enum Says
 #define DESPAWN_TIME            4*MINUTE*IN_MILISECONDS
 #define SUMMON_TIMER            3*MINUTE*IN_MILISECONDS
 #define AGGRO_TIMER             urand(10, 15)*IN_MILISECONDS
+
+static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
 
 struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 {
@@ -108,15 +109,27 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     bool m_bCombatStart;
     uint32 m_uiAggroTimer;
     uint32 m_uiBeastsDead;
+    bool m_bIsInTalkPhase;
+    uint32 m_uiTalkTimer;
+    uint32 m_uiTalkCounter;
 
     typedef std::list<uint64> GuidList;
     GuidList summons;
 
     npc_barrett_ramseyAI(Creature* pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        CurrPhase(PHASE_NOT_STARTED),
+        CurrBeastOfNortherendPhase(PHASE_BEASTS_NONE),
+        EncounterInProgress(false),
+        uiSummonTimer(0),
+        m_bCombatStart(false),
+        m_uiAggroTimer(0),
+        m_uiBeastsDead(0),
+        m_bIsInTalkPhase(false),
+        m_uiTalkTimer(0),
+        m_uiTalkCounter(0)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        CurrPhase = PHASE_NOT_STARTED;
         if (m_pInstance)    //choose correct phase, in case of d/c or something happens and barrett is respawned
         {
             if (m_pInstance->GetData(TYPE_ANUBARAK) == DONE)
@@ -130,13 +143,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             else if (m_pInstance->GetData(TYPE_ICEHOWL) == DONE)
                 CurrPhase = PHASE_BEASTS_OF_NORTHEREND;
         }
-        CurrBeastOfNortherendPhase = PHASE_NONE;
-        EncounterInProgress = false;
+        if (CurrPhase == PHASE_TWIN_VALKYR)
+            DestroyFloor();
         m_bIsHeroic = pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC;
-        uiSummonTimer = 0;
-        m_bCombatStart = false;
-        m_uiAggroTimer = 0;
-        m_uiBeastsDead = 0;
         Reset();
     }
 
@@ -151,6 +160,12 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             if (Creature *summ = m_creature->GetMap()->GetCreature(*i))
                 summ->ForcedDespawn();
         summons.clear();
+    }
+
+    void DestroyFloor()
+    {
+        if (GameObject *pFloor = GET_GAMEOBJECT(TYPE_COLISEUM_FLOOR))
+            pFloor->Delete();   //hacky fix, type 33 (destructable building) not implemented
     }
 
     void Reset()    //called when any creature wipes group
@@ -179,14 +194,15 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     break;
             }
         }
-        if (CurrPhase)
+        if (CurrPhase && CurrPhase != PHASE_ANUBARAK)
             CurrPhase--;
-        CurrBeastOfNortherendPhase = PHASE_NONE;
+        CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
 
         RemoveAllSummons();
 
-        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        if(CurrPhase != PHASE_ANUBARAK)
+            m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
     void JustSummoned(Creature *pSummon)
@@ -199,38 +215,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             m_bCombatStart = true;
             m_uiAggroTimer = AGGRO_TIMER;
         }
+        if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && CurrBeastOfNortherendPhase != PHASE_BEASTS_NONE)
+            m_bIsInTalkPhase = true;    // do intro for individual beasts
     }
 
     void SpawnBoss(uint32 entry, int32 slot = 0)
     {
-        static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
         m_creature->SummonCreature(entry, summon_pos[0] + float(x*2), summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
-        SayBossSpawned(entry);
-    }
-
-    void SayBossSpawned(uint32 entry)
-    {
-        Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING);
-        if (!fordring)
-            return;
-        switch (entry)
-        {
-            case NPC_GORMOK:
-                DoScriptText(SAY_TIRION_GORMOK_SPAWN, fordring);
-                break;
-            case NPC_ACIDMAW:
-                DoScriptText(SAY_TIRION_TWIN_JORMUNGAR_SPAWN, fordring);
-                break;
-            case NPC_ICEHOWL:
-                DoScriptText(SAY_TIRION_ICEHOWL_SPAWN, fordring);
-                break;
-            case NPC_FJOLA_LIGHTBANE:
-                DoScriptText(SAY_TIRION_TWIN_VALKYR_INTRO, fordring);
-                break;
-            default:
-                break;
-        }
     }
 
     void NorthrendBeastsEncounterCheck()
@@ -251,7 +243,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (boss_trial_of_the_crusaderAI *bossAI = dynamic_cast<boss_trial_of_the_crusaderAI*>(who->AI()))
             m_pInstance->SetData(bossAI->m_uiBossEncounterId, DONE);
 
-        switch(who->GetEntry())
+        switch (who->GetEntry())
         {
             case NPC_ANUBARAK:  //called directly from JustDied in anub'arak's AI
                 EncounterInProgress = false;
@@ -263,6 +255,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_GORMOK:
                 if (!m_bIsHeroic)
                 {
+                    CurrBeastOfNortherendPhase = PHASE_JORMUNGAR_TWINS;
                     SpawnBoss(NPC_ACIDMAW, 1);
                     SpawnBoss(NPC_DREADSCALE, 2);
                 }
@@ -271,7 +264,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_ACIDMAW:
             case NPC_DREADSCALE:
                 if (!m_bIsHeroic && !m_pInstance->IsEncounterInProgress())
+                {
+                    CurrBeastOfNortherendPhase = PHASE_ICEHOWL;
                     SpawnBoss(NPC_ICEHOWL);
+                }
                 // (no break)
             case NPC_ICEHOWL:
                 NorthrendBeastsEncounterCheck();
@@ -318,25 +314,29 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
     void StartNextPhase()
     {
-        EncounterInProgress = true;
         CurrPhase++;
+        EncounterInProgress = true;
+        m_uiTalkCounter = 0;
+        m_uiTalkTimer = 0;
+        m_bIsInTalkPhase = true;
+        if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
+            uiSummonTimer = 0;
+    }
 
+    void StartNextBoss()
+    {
         //remove corpses
         RemoveAllSummons();
 
         switch (CurrPhase)
         {
             case PHASE_BEASTS_OF_NORTHEREND:
-                if (m_bIsHeroic)            //start timed summons
-                {
-                    CurrBeastOfNortherendPhase = PHASE_GORMOK;
-                    uiSummonTimer = 0;
-                }
-                else                        //summon each one after the previous died
+                CurrBeastOfNortherendPhase = PHASE_GORMOK;
+                if (!m_bIsHeroic)               //summon each one after the previous died
                     SpawnBoss(NPC_GORMOK);
                 break;
             case PHASE_JARAXXUS:
-                SpawnBoss(NPC_JARAXXUS);    //not really how it starts
+                SpawnBoss(NPC_JARAXXUS);
                 break;
             case PHASE_FACTION_CHAMPIONS:
                 if (!IS_HORDE)
@@ -360,18 +360,108 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 SpawnBoss(NPC_FJOLA_LIGHTBANE, 1);
                 SpawnBoss(NPC_EYDIS_DARKBANE, 2);
                 break;
-            case PHASE_ANUBARAK:
-                if (GameObject *pFloor = GET_GAMEOBJECT(TYPE_COLISEUM_FLOOR))
-                    pFloor->Delete();   //hacky fix, type 33 (destructable building) not implemented
-                break;
             default:
                 CurrPhase = PHASE_NOT_STARTED;
                 break;
         }
     }
 
+    void UpdateIntros(const uint32 uiDiff)
+    {
+        if (m_uiTalkTimer < uiDiff)
+        {
+            Creature *Fordring = GET_CREATURE(TYPE_TIRION_FORDRING);
+            switch (CurrPhase)
+            {
+                case PHASE_ANUBARAK:
+                    switch (m_uiTalkCounter)
+                    {
+                        case 0:
+                            RemoveAllSummons();
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_ANUBARAK_INTRO1, Fordring);
+                            m_uiTalkTimer = 19*IN_MILISECONDS;
+                            break;
+                        case 1:
+                            Creature *LichKing;
+                            if (Fordring)   //cant use m_creature to summon king, otherwise lich king will be considered as a boss and it will get complicated
+                                LichKing = Fordring->SummonCreature(NPC_LICH_KING, summon_pos[0], summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            if (LichKing)
+                                DoScriptText(SAY_LICHKING_ANUBARAK_INTRO2, LichKing);
+                            m_uiTalkTimer = 5*IN_MILISECONDS;
+                            break;
+                        case 2:
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_ANUBARAK_INTRO3, Fordring);
+                            m_uiTalkTimer = 7*IN_MILISECONDS;
+                            break;
+                        case 3:
+                            if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
+                                DoScriptText(SAY_LICHKING_ANUBARAK_INTRO4, LichKing);
+                            m_uiTalkTimer = 20*IN_MILISECONDS;
+                            break;
+                        case 4:
+                            if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
+                                DoScriptText(SAY_LICHKING_ANUBARAK_INTRO5, LichKing);
+                            DestroyFloor();
+                            m_uiTalkTimer = 9*IN_MILISECONDS;
+                            break;
+                        case 5:
+                            if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
+                                LichKing->ForcedDespawn();
+                            m_bIsInTalkPhase = false;
+                            break;
+                        default:
+                            m_bIsInTalkPhase = false;
+                            break;
+                    }
+                    m_uiTalkCounter++;
+                    break;
+                case PHASE_FACTION_CHAMPIONS:
+                case PHASE_JARAXXUS:
+                    m_bIsInTalkPhase = false;
+                    StartNextBoss();
+                    break;
+                case PHASE_BEASTS_OF_NORTHEREND:
+                    switch (CurrBeastOfNortherendPhase)
+                    {
+                        case PHASE_BEASTS_NONE:
+                        case PHASE_GORMOK:
+                            if(!m_bIsHeroic)
+                                StartNextBoss();
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_GORMOK_SPAWN, Fordring);
+                            break;
+                        case PHASE_JORMUNGAR_TWINS:
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_TWIN_JORMUNGAR_SPAWN, Fordring);
+                            break;
+                        case PHASE_ICEHOWL:
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_ICEHOWL_SPAWN, Fordring);
+                            break;
+                    }
+                    m_bIsInTalkPhase = false;
+                    break;
+                case PHASE_TWIN_VALKYR:
+                    if (Fordring)
+                        DoScriptText(SAY_TIRION_TWIN_VALKYR_INTRO, Fordring);
+                    StartNextBoss();
+                    m_bIsInTalkPhase = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+            m_uiTalkTimer -= uiDiff;
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
+        if (m_bIsInTalkPhase)
+            UpdateIntros(uiDiff);
+
         if (m_bCombatStart)
         {
             if (m_uiAggroTimer < uiDiff)
@@ -386,27 +476,26 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 m_uiAggroTimer -= uiDiff;
         }
 
-        if (m_bIsHeroic && CurrBeastOfNortherendPhase != PHASE_NONE)
+        if (m_bIsHeroic && CurrPhase == PHASE_BEASTS_OF_NORTHEREND)
         {
             if (uiSummonTimer < uiDiff)
             {
                 switch (CurrBeastOfNortherendPhase)
                 {
-                    case PHASE_GORMOK:
+                    case PHASE_BEASTS_NONE:
                         SpawnBoss(NPC_GORMOK);
                         uiSummonTimer = SUMMON_TIMER;
                         break;
-                    case PHASE_JORMUNGAR_TWINS:
+                    case PHASE_GORMOK:
                         SpawnBoss(NPC_ACIDMAW, 1);
                         SpawnBoss(NPC_DREADSCALE, 2);
                         uiSummonTimer = SUMMON_TIMER;
                         break;
-                    case PHASE_ICEHOWL:
+                    case PHASE_JORMUNGAR_TWINS:
                         SpawnBoss(NPC_ICEHOWL);
                         uiSummonTimer = SUMMON_TIMER;
                         break;
                     default:
-                        CurrBeastOfNortherendPhase = PHASE_NONE;
                         return;
                 }
                 CurrBeastOfNortherendPhase++;
