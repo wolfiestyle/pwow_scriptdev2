@@ -41,6 +41,21 @@ EndContentData */
 
 enum
 {
+    // quest 9629
+    SPELL_TAG_MURLOC                    = 30877,
+    SPELL_TAG_MURLOC_PROC               = 30875,
+    NPC_BLACKSILT_MURLOC                = 17326,
+    NPC_TAGGED_MURLOC                   = 17654,
+
+    // quest 9447
+    SPELL_HEALING_SALVE                 = 29314,
+    SPELL_HEALING_SALVE_DUMMY           = 29319,
+    NPC_MAGHAR_GRUNT                    = 16846,
+
+    // quest 10190
+    SPELL_RECHARGING_BATTERY            = 34219,
+    NPC_DRAINED_PHASE_HUNTER            = 19595,
+
     // target hulking helboar
     SPELL_ADMINISTER_ANTIDOTE           = 34665,
     NPC_HELBOAR                         = 16880,
@@ -54,6 +69,15 @@ enum
 
     NPC_CURED_DEER                      = 12299,
     NPC_CURED_GAZELLE                   = 12297,
+
+    // quest 12906/13422
+    SPELL_DISCIPLINING_ROD              = 56033,
+    SAY_RAND_WORK1                      = -1000555,
+    SAY_RAND_WORK2                      = -1000556,
+    SAY_RAND_WORK3                      = -1000557,
+    SAY_RAND_ATTACK1                    = -1000558,
+    SAY_RAND_ATTACK2                    = -1000559,
+    SAY_RAND_ATTACK3                    = -1000560,
 
     // target morbent fel
     SPELL_SACRED_CLEANSING              = 8913,
@@ -97,6 +121,14 @@ enum
     NPC_WEAK_TURGID                     = 27809,
     NPC_WEAK_DEATHGAZE                  = 27807,
 
+    // quest 11982
+    SPELL_THROW_BOULDER                 = 47005,
+    SPELL_BOULBER_IMPACT                = 47007,
+    SPELL_BOULDER_TOSS_CREDIT           = 47009,
+
+    NPC_IRON_RUNESHAPER                 = 26270,
+    NPC_RUNE_REAVER                     = 26268,
+
     // for quest 11730
     SPELL_ULTRASONIC_SCREWDRIVER        = 46023,
     SPELL_REPROGRAM_KILL_CREDIT         = 46027,
@@ -124,6 +156,83 @@ enum
     EMOTE_AGGRO                         = -1000551,
     EMOTE_CREATE                        = -1000552
 };
+
+bool EffectAuraDummy_spell_aura_dummy_npc(const Aura* pAura, bool bApply)
+{
+    switch(pAura->GetId())
+    {
+        case SPELL_HEALING_SALVE:
+        {
+            if (pAura->GetEffIndex() != EFFECT_INDEX_0)
+                return true;
+
+            if (bApply)
+            {
+                if (Unit* pCaster = pAura->GetCaster())
+                    pCaster->CastSpell(pAura->GetTarget(), SPELL_HEALING_SALVE_DUMMY, true);
+            }
+
+            return true;
+        }
+        case SPELL_HEALING_SALVE_DUMMY:
+        {
+            if (pAura->GetEffIndex() != EFFECT_INDEX_0)
+                return true;
+
+            if (!bApply)
+            {
+                Creature* pCreature = (Creature*)pAura->GetTarget();
+
+                pCreature->UpdateEntry(NPC_MAGHAR_GRUNT);
+
+                if (pCreature->getStandState() == UNIT_STAND_STATE_KNEEL)
+                    pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+
+                pCreature->ForcedDespawn(60*IN_MILISECONDS);
+            }
+
+            return true;
+        }
+        case SPELL_RECHARGING_BATTERY:
+        {
+            if (pAura->GetEffIndex() != EFFECT_INDEX_0)
+                return true;
+
+            if (!bApply)
+            {
+                if (pAura->GetTarget()->HasAuraState(AURA_STATE_HEALTHLESS_20_PERCENT))
+                    ((Creature*)pAura->GetTarget())->UpdateEntry(NPC_DRAINED_PHASE_HUNTER);
+            }
+
+            return true;
+        }
+        case SPELL_TAG_MURLOC:
+        {
+            Creature* pCreature = (Creature*)pAura->GetTarget();
+
+            if (pAura->GetEffIndex() != EFFECT_INDEX_0)
+                return true;
+
+            if (bApply)
+            {
+                if (pCreature->GetEntry() == NPC_BLACKSILT_MURLOC)
+                {
+                    if (Unit* pCaster = pAura->GetCaster())
+                        pCaster->CastSpell(pCreature, SPELL_TAG_MURLOC_PROC, true);
+                }
+            }
+            else
+            {
+                if (pCreature->GetEntry() == NPC_TAGGED_MURLOC)
+                    pCreature->ForcedDespawn();
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
 
 bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
@@ -155,6 +264,47 @@ bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellE
 
                 if (pCreatureTarget->GetEntry() == NPC_SICKLY_GAZELLE && ((Player*)pCaster)->GetTeam() == HORDE)
                     pCreatureTarget->UpdateEntry(NPC_CURED_GAZELLE);
+
+                return true;
+            }
+            return true;
+        }
+        case SPELL_DISCIPLINING_ROD:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->getStandState() == UNIT_STAND_STATE_STAND)
+                    return true;
+
+                switch(urand(1,2))
+                {
+                    case 1:
+                    {
+                        switch(urand(1,3))
+                        {
+                            case 1: DoScriptText(SAY_RAND_ATTACK1, pCreatureTarget); break;
+                            case 2: DoScriptText(SAY_RAND_ATTACK2, pCreatureTarget); break;
+                            case 3: DoScriptText(SAY_RAND_ATTACK3, pCreatureTarget); break;
+                        }
+
+                        pCreatureTarget->SetStandState(UNIT_STAND_STATE_STAND);
+                        pCreatureTarget->AI()->AttackStart(pCaster);
+                        break;
+                    }
+                    case 2:
+                    {
+                        switch(urand(1,3))
+                        {
+                            case 1: DoScriptText(SAY_RAND_WORK1, pCreatureTarget); break;
+                            case 2: DoScriptText(SAY_RAND_WORK2, pCreatureTarget); break;
+                            case 3: DoScriptText(SAY_RAND_WORK3, pCreatureTarget); break;
+                        }
+
+                        pCreatureTarget->SetStandState(UNIT_STAND_STATE_STAND);
+                        pCreatureTarget->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK);
+                        break;
+                    }
+                }
 
                 return true;
             }
@@ -284,6 +434,32 @@ bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellE
             }
             return true;
         }
+        case SPELL_TAG_MURLOC_PROC:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCreatureTarget->GetEntry() == NPC_BLACKSILT_MURLOC)
+                    pCreatureTarget->UpdateEntry(NPC_TAGGED_MURLOC);
+            }
+            return true;
+        }
+        case SPELL_THROW_BOULDER:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCaster->GetTypeId() != TYPEID_PLAYER)
+                    return true;
+
+                if (pCreatureTarget->GetEntry() != NPC_IRON_RUNESHAPER && pCreatureTarget->GetEntry() != NPC_RUNE_REAVER)
+                    return true;
+
+                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_BOULBER_IMPACT, true);
+                pCaster->CastSpell(pCaster, SPELL_BOULDER_TOSS_CREDIT, true);
+
+                return true;
+            }
+            return true;
+        }
         case SPELL_ULTRASONIC_SCREWDRIVER:
         {
             if (uiEffIndex == EFFECT_INDEX_0)
@@ -327,5 +503,6 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_dummy_npc";
     newscript->pEffectDummyCreature = &EffectDummyCreature_spell_dummy_npc;
+    newscript->pEffectAuraDummy = &EffectAuraDummy_spell_aura_dummy_npc;
     newscript->RegisterSelf();
 }

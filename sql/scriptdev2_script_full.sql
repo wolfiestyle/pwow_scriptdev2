@@ -574,7 +574,15 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1000552,'Breaking off a piece of its bark, the %s hands it to you before departing.',0,2,0,0,'woodlands EMOTE_CREATE'),
 
 (-1000553,'Be ready, $N. I hear the council returning. Prepare to ambush!',0,0,0,0,'deathstalker_faerleia SAY_START'),
-(-1000554,'Well done. A blow to Arugal no doubt!',0,0,0,0,'deathstalker_faerleia SAY_END');
+(-1000554,'Well done. A blow to Arugal no doubt!',0,0,0,0,'deathstalker_faerleia SAY_END'),
+
+(-1000555,'Back... to work...',0,0,0,0,'exhausted vrykul SAY_RAND_WORK1'),
+(-1000556,'You treat us worse than animals!',0,0,0,0,'exhausted vrykul SAY_RAND_WORK2'),
+(-1000557,'We will have revenge...some day.',0,0,0,0,'exhausted vrykul SAY_RAND_WORK3'),
+(-1000558,'Curse you! You will not treat me like a beast!',0,0,0,0,'exhausted vrykul SAY_RAND_ATTACK1'),
+(-1000559,'I\'d rather die fighting than live like a slave.',0,0,0,0,'exhausted vrykul SAY_RAND_ATTACK2'),
+(-1000560,'Enough! I will teach you some manners, wench!',0,0,0,0,'exhausted vrykul SAY_RAND_ATTACK3');
+
 -- -1 033 000 SHADOWFANG KEEP
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
 (-1033000,'Follow me and I\'ll open the courtyard door for you.',0,0,7,1,'prisoner ashcrombe SAY_FREE_AS'),
@@ -1186,7 +1194,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1533126,'Show them no mercy!',8856,1,0,0,'razuvious SAY_COMMAND2'),
 (-1533127,'You disappoint me, students!',8858,1,0,0,'razuvious SAY_COMMAND3'),
 (-1533128,'The time for practice is over! Show me what you\'ve learned!',8859,1,0,0,'razuvious SAY_COMMAND4'),
-(-1533129,'An honorable... death...',8860,1,0,0,'razuvious SAY_DEATH');
+(-1533129,'An honorable... death...',8860,1,0,0,'razuvious SAY_DEATH'),
+
+(-1533130,'%s summons forth Skeletal Warriors!',0,3,0,0,'noth EMOTE_WARRIOR'),
+(-1533131,'%s teleports to the balcony above!',0,3,0,0,'noth EMOTE_SKELETON'),
+(-1533132,'%s raises more skeletons!',0,3,0,0,'noth EMOTE_TELEPORT'),
+(-1533133,'%s teleports back into the battle!',0,3,0,0,'noth EMOTE_TELEPORT_RETURN');
 
 -- -1 534 000 THE BATTLE OF MT. HYJAL
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
