@@ -960,11 +960,13 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                         pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_AURA, true, 0, 0, m_creature->GetGUID());
 
                                         //Using packet workaround
+										/*
                                         WorldPacket data(12);
                                         data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
                                         data << pUnit->GetPackGUID();
                                         data << uint32(0);
                                         pUnit->SendMessageToSet(&data, true);
+										*/
                                     }
                                 }
                                 m_uiGravityLapse_Timer = 10000;
@@ -989,11 +991,13 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
                                     {
                                         //Using packet workaround
+										/*
                                         WorldPacket data(12);
                                         data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
                                         data << pUnit->GetPackGUID();
                                         data << uint32(0);
                                         pUnit->SendMessageToSet(&data, true);
+										*/
                                     }
                                 }
 
