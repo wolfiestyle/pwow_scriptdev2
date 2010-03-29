@@ -11,6 +11,7 @@
 enum
 {
     MAX_ENCOUNTER               = 3,
+    MAX_CHAMPIONS               = 3,
 
     TYPE_GRAND_CHAMPIONS        = 0,
     TYPE_ARGENT_CHALLENGE       = 1,
@@ -29,6 +30,9 @@ enum
     DATA_CHAMPIONID_3           = 13,
     DATA_MEMORY                 = 14,
     DATA_ARGENT_CHALLENGER      = 15,
+
+    DATA_CHAMPION_BEGIN         = DATA_CHAMPION_1,
+    DATA_CHAMPION_END           = DATA_CHAMPION_3,
 
     NPC_JACOB                   = 34705,
     NPC_AMBROSE                 = 34702,

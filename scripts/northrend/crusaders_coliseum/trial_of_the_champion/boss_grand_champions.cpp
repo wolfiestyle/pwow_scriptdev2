@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "trial_of_the_champion.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -78,41 +79,12 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
 
     void EnterEvadeMode()
     {
-        if (Creature* pTemp = GET_CREATURE(DATA_CHAMPION_1))
-        {
-            if (pTemp->isDead())
-                pTemp->Respawn();
-            else
-            {
-                pTemp->RemoveArenaAuras(true);
-                pTemp->SetHealth(pTemp->GetMaxHealth());
-            }
-            pTemp->MonsterMove(738.665771, 661.031433, 412.394623, 1);
-        }
+        for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; id++)
+            if (Creature* pTemp = GET_CREATURE(id))
+                if (pTemp->isDead())
+                    pTemp->Respawn();
 
-        if (Creature* pTemp = GET_CREATURE(DATA_CHAMPION_2))
-        {
-            if (pTemp->isDead())
-                pTemp->Respawn();
-            else
-            {
-                pTemp->RemoveArenaAuras(true);
-                pTemp->SetHealth(pTemp->GetMaxHealth());
-            }
-            pTemp->MonsterMove(746.864441, 660.918762, 411.695465, 1);
-        }
-
-        if (Creature* pTemp = GET_CREATURE(DATA_CHAMPION_3))
-        {
-            if (pTemp->isDead())
-                pTemp->Respawn();
-            else
-            {
-                pTemp->RemoveArenaAuras(true);
-                pTemp->SetHealth(pTemp->GetMaxHealth());
-            }
-            pTemp->MonsterMove(754.360779, 660.816162, 412.395996, 1);
-        }
+        ScriptedAI::EnterEvadeMode();
     }
 
     void Aggro(Unit* pWho)
@@ -123,15 +95,10 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
             m_creature->ForcedDespawn();
         else
         {
-            if (Creature *pTemp = GET_CREATURE(DATA_CHAMPION_1))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
-            if (Creature *pTemp = GET_CREATURE(DATA_CHAMPION_2))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
-            if (Creature *pTemp = GET_CREATURE(DATA_CHAMPION_3))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+            for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; id++)
+                if (Creature *pTemp = GET_CREATURE(id))
+                    if (pTemp->isAlive())
+                        pTemp->SetInCombatWithZone();
             m_pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
         }
     }
@@ -140,16 +107,22 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
     {
         if (!m_pInstance)
             return;
-        Creature *pChamp1 = GET_CREATURE(DATA_CHAMPION_1);
-        Creature *pChamp2 = GET_CREATURE(DATA_CHAMPION_2);
-        Creature *pChamp3 = GET_CREATURE(DATA_CHAMPION_3);
-        if (pChamp1 && pChamp2 && pChamp3 && pChamp1->isDead() && pChamp2->isDead() && pChamp3->isDead())
+        std::vector<Creature*> pChamp;
+        uint32 deadCount = 0;
+        pChamp.reserve(MAX_CHAMPIONS);
+        for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; id++)
+            if (Creature *pTemp = GET_CREATURE(id))
+            {
+                pChamp.push_back(pTemp);
+                if (pTemp->isDead())
+                    deadCount++;
+            }
+        if (deadCount >= MAX_CHAMPIONS)
         {
             if (Creature *pAnn = GET_CREATURE(DATA_TOC5_ANNOUNCER))
                 pAnn->SetVisibility(VISIBILITY_ON);
-            pChamp1->ForcedDespawn();
-            pChamp2->ForcedDespawn();
-            pChamp3->ForcedDespawn();
+            for (std::vector<Creature*>::const_iterator i = pChamp.begin(); i != pChamp.end(); ++i)
+                static_cast<TemporarySummon*>(*i)->UnSummon();
             m_pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
         }
     }
@@ -166,6 +139,7 @@ struct MANGOS_DLL_DECL mob_toc5_warriorAI: public toc5_champion_baseAI
 
     mob_toc5_warriorAI(Creature* pCreature): toc5_champion_baseAI(pCreature)
     {
+        Reset();
     }
 
     void Reset()
@@ -175,7 +149,6 @@ struct MANGOS_DLL_DECL mob_toc5_warriorAI: public toc5_champion_baseAI
         Rolling_Throw_Timer = 30000;
         Intercept_Cooldown = 0;
         intercept_check = 1000;
-        m_creature->SetRespawnDelay(7*DAY);
     }
 
     void UpdateAI(const uint32 diff)
@@ -243,6 +216,7 @@ struct MANGOS_DLL_DECL mob_toc5_mageAI: public toc5_champion_baseAI
 
     mob_toc5_mageAI(Creature* pCreature): toc5_champion_baseAI(pCreature)
     {
+        Reset();
     }
 
     void Reset()
@@ -251,7 +225,6 @@ struct MANGOS_DLL_DECL mob_toc5_mageAI: public toc5_champion_baseAI
         Blast_Wave_Timer = 20000;
         Haste_Timer = 9000;
         Polymorph_Timer = 15000;
-        m_creature->SetRespawnDelay(7*DAY);
     }
 
     void UpdateAI(const uint32 diff)
@@ -309,12 +282,9 @@ struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
     uint32 Healing_Wave_Timer;
     uint32 Hex_Timer;
 
-    float mob1_health;
-    float mob2_health;
-    float mob3_health;
-
     mob_toc5_shamanAI(Creature* pCreature): toc5_champion_baseAI(pCreature)
     {
+        Reset();
     }
 
     void Reset()
@@ -323,7 +293,6 @@ struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
         Earth_Shield_Timer = 5000;
         Healing_Wave_Timer = 13000;
         Hex_Timer = 10000;
-        m_creature->SetRespawnDelay(7*DAY);
     }
 
     void UpdateAI(const uint32 diff)
@@ -350,15 +319,10 @@ struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
         if (Healing_Wave_Timer < diff)
         {
             std::multimap<uint32, Creature*> ChampionHealths;
-            if (Creature *pTemp = GET_CREATURE(DATA_CHAMPION_1))
-                if (pTemp->isAlive())
-                    ChampionHealths.insert(std::make_pair(pTemp->GetHealth()*100 / pTemp->GetMaxHealth(), pTemp));
-            if (Creature* pTemp = GET_CREATURE(DATA_CHAMPION_2))
-                if (pTemp->isAlive())
-                    ChampionHealths.insert(std::make_pair(pTemp->GetHealth()*100 / pTemp->GetMaxHealth(), pTemp));
-            if (Creature* pTemp = GET_CREATURE(DATA_CHAMPION_3))
-                if (pTemp->isAlive())
-                    ChampionHealths.insert(std::make_pair(pTemp->GetHealth()*100 / pTemp->GetMaxHealth(), pTemp));
+            for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; id++)
+                if (Creature *pTemp = GET_CREATURE(id))
+                    if (pTemp->isAlive())
+                        ChampionHealths.insert(std::make_pair(uint32(pTemp->GetHealthPercent()), pTemp));
             if (!ChampionHealths.empty())
             {
                 std::multimap<uint32, Creature*>::const_iterator lowest_hp = ChampionHealths.begin();
@@ -372,19 +336,7 @@ struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
 
         if (Earth_Shield_Timer < diff)
         {
-            Creature *pTemp = NULL;
-            switch(urand(0, 2))
-            {
-                case 0:
-                    pTemp = GET_CREATURE(DATA_CHAMPION_1);
-                    break;
-                case 1:
-                    pTemp = GET_CREATURE(DATA_CHAMPION_2);
-                    break;
-                case 2:
-                    pTemp = GET_CREATURE(DATA_CHAMPION_3);
-                    break;
-            }
+            Creature *pTemp = GET_CREATURE(DATA_CHAMPION_1 + urand(0, MAX_CHAMPIONS-1));
             DoCast(pTemp && pTemp->isAlive() ? pTemp : m_creature, SPELL_EARTH_SHIELD);
             Earth_Shield_Timer = 25000;
         }
@@ -412,6 +364,7 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
 
     mob_toc5_hunterAI(Creature* pCreature): toc5_champion_baseAI(pCreature)
     {
+        Reset();
     }
 
     void Reset()
@@ -421,8 +374,7 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
         Multi_Shot_Timer = 10000;
         Disengage_Cooldown = 0;
         enemy_check = 1000;
-        disengage_check;
-        m_creature->SetRespawnDelay(7*DAY);
+        disengage_check = 1000;
     }
 
     void UpdateAI(const uint32 diff)
@@ -448,7 +400,7 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
         if (Shoot_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_SHOOT);
-            Shoot_Timer = 3000;
+            Shoot_Timer = 1500;
         }
         else
             Shoot_Timer -= diff;  
@@ -501,6 +453,7 @@ struct MANGOS_DLL_DECL mob_toc5_rogueAI: public toc5_champion_baseAI
 
     mob_toc5_rogueAI(Creature* pCreature): toc5_champion_baseAI(pCreature)
     {
+        Reset();
     }
 
     void Reset()
@@ -508,7 +461,6 @@ struct MANGOS_DLL_DECL mob_toc5_rogueAI: public toc5_champion_baseAI
         Eviscerate_Timer = 15000;
         FoK_Timer = 10000;
         Poison_Timer = 7000;
-        m_creature->SetRespawnDelay(7*DAY);
     }
 
     void UpdateAI(const uint32 diff)

@@ -80,7 +80,7 @@ struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public ScriptedAI
         if (Attack_Timer < diff)
         {
             if (Creature *pTemp = GET_CREATURE(DATA_BLACK_KNIGHT))
-                if (pTemp->isAlive() && (pTemp->GetHealth()*100 / pTemp->GetMaxHealth()) < 25)
+                if (pTemp->isAlive() && pTemp->GetHealthPercent() < 25.0f)
                 {
                     DoCast(m_creature, DIFFICULTY(SPELL_EXPLODE));
                     return;
@@ -102,7 +102,7 @@ struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public ScriptedAI
         else
             Attack_Timer -= diff;
 
-        if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)
+        if (m_creature->GetHealthPercent() < 25.0f)
             DoCast(m_creature, DIFFICULTY(SPELL_EXPLODE));
 
         DoMeleeAttackIfReady();
@@ -154,15 +154,6 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
         ghoul = false;
         m_creature->SetDisplayId(29837);
         SetEquipmentSlots(false, EQUIP_SWORD, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-        m_creature->SetRespawnDelay(7*DAY);
-    }
-
-    void EnterEvadeMode()
-    {
-        Reset();
-        m_creature->RemoveArenaAuras(true);
-        m_creature->MonsterMove(746.864441, 660.918762, 411.695465, 1);
-        m_creature->SetHealth(m_creature->GetMaxHealth());
     }
 
     void Aggro(Unit* pWho)
@@ -195,18 +186,16 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
         {
             m_pInstance->SetData(TYPE_BLACK_KNIGHT, DONE);
         }
-        if (phase2)
-            if (!m_creature->isAlive())
-            {
-                m_creature->Respawn();
-                StartPhase3();
-            }
-        if (phase1)
-            if (!m_creature->isAlive())
-            {
-                m_creature->Respawn();
-                StartPhase2();
-            }
+        if (phase2 && !m_creature->isAlive())
+        {
+            m_creature->Respawn();
+            StartPhase3();
+        }
+        if (phase1 && !m_creature->isAlive())
+        {
+            m_creature->Respawn();
+            StartPhase2();
+        }
     }
 
     void StartPhase2()
@@ -217,7 +206,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
         Plague_Strike_Timer = 14000;
         Icy_Touch_Timer = 12000;
         Obliterate_Timer = 18000;
-        m_creature->SetHealth(m_creature->GetMaxHealth());
+        m_creature->SetHealthPercent(100.0f);
         m_creature->SetDisplayId(27550);
         DoCast(m_creature, SPELL_ARMY);
     }
@@ -229,7 +218,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
         phase3 = true;
         Death_Timer = 5000;
         Mark_Timer = 9000;
-        m_creature->SetHealth(m_creature->GetMaxHealth());
+        m_creature->SetHealthPercent(100.0f);
         m_creature->SetDisplayId(14560);
         SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
     }
@@ -275,7 +264,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
         if (Summon_Ghoul < diff && phase1 && !ghoul)
         {
             if (uint32 minion_id = m_pInstance ? m_pInstance->GetData(DATA_BLACK_KNIGHT_MINION) : 0)
-                DoSpawnCreature(minion_id, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                DoSpawnCreature(minion_id, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
             ghoul = true;
         }
         else

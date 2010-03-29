@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "trial_of_the_champion.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -106,15 +107,6 @@ struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
         Hammer_Timer = 40000;
         Hammer_Dmg_Timer = 45000;
         HammerTarget = 0;
-        m_creature->SetRespawnDelay(7*DAY);
-    }
-
-    void EnterEvadeMode()
-    {
-        Reset();
-        m_creature->RemoveArenaAuras(true);
-        m_creature->MonsterMove(746.864441, 660.918762, 411.695465, 1);
-        m_creature->SetHealth(m_creature->GetMaxHealth());
     }
 
     void Aggro(Unit *pWho)
@@ -129,7 +121,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
 
     void JustDied(Unit *pKiller)
     {
-        m_creature->ForcedDespawn();
+        static_cast<TemporarySummon*>(m_creature)->UnSummon();
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, DONE);
     }
@@ -216,15 +208,6 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
         summoned = false;
         shielded = false;
         m_creature->RemoveAurasDueToSpell(SPELL_SHIELD);
-        m_creature->SetRespawnDelay(7*DAY);
-    }
-
-    void EnterEvadeMode()
-    {
-        Reset();
-        m_creature->RemoveArenaAuras(true);
-        m_creature->MonsterMove(746.864441, 660.918762, 411.695465, 1);
-        m_creature->SetHealth(m_creature->GetMaxHealth());
     }
 
     void Aggro(Unit* pWho)
@@ -239,10 +222,9 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance)
-            return;
-        m_creature->ForcedDespawn();
-        m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, DONE);
+        static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -293,12 +275,12 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
         else
             Renew_Timer -= diff;
 
-        if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 35 && !summoned)
+        if (!summoned && m_creature->GetHealthPercent() < 35.0f)
         {
             m_creature->CastStop(DIFFICULTY(SPELL_SMITE));
             m_creature->CastStop(DIFFICULTY(SPELL_HOLY_FIRE));
             DoCast(m_creature, SPELL_HOLY_NOVA);
-            if (Creature *pSummon = DoSpawnCreature(MemorySummons[urand(0, 24)], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
+            if (Creature *pSummon = DoSpawnCreature(MemorySummons[urand(0, 24)], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000))
             {
                 pSummon->AddThreat(m_creature->getVictim());
                 if (pSummon->AI())
