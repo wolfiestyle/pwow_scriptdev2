@@ -3,7 +3,7 @@
 
 void EventMap::Reset()
 {
-    clear();
+    m_events.clear();
     m_time = m_phase = 0;
 }
 
@@ -20,13 +20,13 @@ void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 gcd, uint32 pha
         eventId |= (1 << (gcd + 16));
     if (phase && phase < 9)
         eventId |= (1 << (phase + 24));
-    iterator itr = find(time);
-    while (itr != end())
+    EventMapType::iterator itr = m_events.find(time);
+    while (itr != m_events.end())
     {
         ++time;
-        itr = find(time);
+        itr = m_events.find(time);
     }
-    insert(std::make_pair(time, eventId));
+    m_events.insert(std::make_pair(time, eventId));
 }
 
 void EventMap::RescheduleEvent(uint32 eventId, uint32 time, uint32 gcd, uint32 phase)
@@ -37,37 +37,37 @@ void EventMap::RescheduleEvent(uint32 eventId, uint32 time, uint32 gcd, uint32 p
 
 void EventMap::RepeatEvent(uint32 time)
 {
-    if (empty())
+    if (m_events.empty())
         return;
-    uint32 eventId = begin()->second;
-    erase(begin());
+    uint32 eventId = m_events.begin()->second;
+    m_events.erase(m_events.begin());
     time += m_time;
-    iterator itr = find(time);
-    while (itr != end())
+    EventMapType::iterator itr = m_events.find(time);
+    while (itr != m_events.end())
     {
         ++time;
-        itr = find(time);
+        itr = m_events.find(time);
     }
-    insert(std::make_pair(time, eventId));
+    m_events.insert(std::make_pair(time, eventId));
 }
 
 void EventMap::PopEvent()
 {
-    erase(begin());
+    m_events.erase(m_events.begin());
 }
 
 uint32 EventMap::ExecuteEvent()
 {
-    while (!empty())
+    while (!m_events.empty())
     {
-        if (begin()->first > m_time)
+        if (m_events.begin()->first > m_time)
             return 0;
-        else if (m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
-            erase(begin());
+        else if (m_phase && (m_events.begin()->second & 0xFF000000) && !(m_events.begin()->second & m_phase))
+            m_events.erase(m_events.begin());
         else
         {
-            uint32 eventId = (begin()->second & 0x0000FFFF);
-            erase(begin());
+            uint32 eventId = (m_events.begin()->second & 0x0000FFFF);
+            m_events.erase(m_events.begin());
             return eventId;
         }
     }
@@ -76,14 +76,14 @@ uint32 EventMap::ExecuteEvent()
 
 uint32 EventMap::GetEvent()
 {
-    while (!empty())
+    while (!m_events.empty())
     {
-        if (begin()->first > m_time)
+        if (m_events.begin()->first > m_time)
             return 0;
-        else if (m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
-            erase(begin());
+        else if (m_phase && (m_events.begin()->second & 0xFF000000) && !(m_events.begin()->second & m_phase))
+            m_events.erase(m_events.begin());
         else
-            return (begin()->second & 0x0000FFFF);
+            return (m_events.begin()->second & 0x0000FFFF);
     }
     return 0;
 }
@@ -92,14 +92,14 @@ void EventMap::DelayEvents(uint32 time, uint32 gcd)
 {
     time += m_time;
     gcd = (1 << (gcd + 16));
-    for (iterator itr = begin(); itr != end();)
+    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (itr->first >= time)
             break;
         if (itr->second & gcd)
         {
             ScheduleEvent(time, itr->second);
-            erase(itr++);
+            m_events.erase(itr++);
         }
         else
             ++itr;
@@ -108,10 +108,10 @@ void EventMap::DelayEvents(uint32 time, uint32 gcd)
 
 void EventMap::CancelEvent(uint32 eventId)
 {
-    for (iterator itr = begin(); itr != end();)
+    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (eventId == (itr->second & 0x0000FFFF))
-            erase(itr++);
+            m_events.erase(itr++);
         else
             ++itr;
     }
@@ -119,10 +119,10 @@ void EventMap::CancelEvent(uint32 eventId)
 
 void EventMap::CancelEventsByGCD(uint32 gcd)
 {
-    for (iterator itr = begin(); itr != end();)
+    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (itr->second & gcd)
-            erase(itr++);
+            m_events.erase(itr++);
         else
             ++itr;
     }

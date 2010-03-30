@@ -1,13 +1,16 @@
 #ifndef SC_UTILITY_H
 #define SC_UTILITY_H
 
-class EventMap: private std::map<uint32, uint32>
+class EventMap
 {
-private:
+protected:
+    typedef std::map<uint32 /*time*/, uint32 /*eventId*/> EventMapType;
+    EventMapType m_events;
+
     uint32 m_time, m_phase;
 
 public:
-    explicit EventMap(): m_phase(0), m_time(0) {}
+    explicit EventMap(): m_time(0), m_phase(0) {}
 
     uint32 GetTimer() const { return m_time; }
     void Update(uint32 time) { m_time += time; }
@@ -23,6 +26,10 @@ public:
     void DelayEvents(uint32 time, uint32 gcd);
     void CancelEvent(uint32 eventId);
     void CancelEventsByGCD(uint32 gcd);
+
+private:
+    EventMap(EventMap const&);
+    EventMap& operator= (EventMap const&);
 };
 
 #endif
