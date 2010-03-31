@@ -1,5 +1,5 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
-* This program is free software; you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -61,19 +61,10 @@ enum Spells
 };
 
 // common parts for all champions
-struct MANGOS_DLL_DECL toc5_champion_baseAI: public ScriptedAI
+struct MANGOS_DLL_DECL toc5_champion_baseAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
-    toc5_champion_baseAI(Creature* pCreature): ScriptedAI(pCreature)
-    {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    void Reset()
+    toc5_champion_baseAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
     }
 
@@ -201,11 +192,6 @@ struct MANGOS_DLL_DECL mob_toc5_warriorAI: public toc5_champion_baseAI
     }
 };
 
-CreatureAI* GetAI_mob_toc5_warrior(Creature* pCreature)
-{
-    return new mob_toc5_warriorAI(pCreature);
-}
-
 // Mage
 struct MANGOS_DLL_DECL mob_toc5_mageAI: public toc5_champion_baseAI
 {
@@ -268,11 +254,6 @@ struct MANGOS_DLL_DECL mob_toc5_mageAI: public toc5_champion_baseAI
         DoMeleeAttackIfReady();
     }
 };
-
-CreatureAI* GetAI_mob_toc5_mage(Creature* pCreature)
-{
-    return new mob_toc5_mageAI(pCreature);
-}
 
 // Shaman
 struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
@@ -347,11 +328,6 @@ struct MANGOS_DLL_DECL mob_toc5_shamanAI: public toc5_champion_baseAI
     }
 };
 
-CreatureAI* GetAI_mob_toc5_shaman(Creature* pCreature)
-{
-    return new mob_toc5_shamanAI(pCreature);
-}
-
 // Hunter
 struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
 {
@@ -407,7 +383,7 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
 
         if (Multi_Shot_Timer < diff)
         {
-            m_creature->CastStop(SPELL_SHOOT);
+            m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature->getVictim(), SPELL_MULTI_SHOT);
             Multi_Shot_Timer = 10000;
         }
@@ -416,7 +392,7 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
 
         if (Lightning_Arrows_Timer < diff)
         {
-            m_creature->CastStop(SPELL_SHOOT);
+            m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature, SPELL_LIGHTNING_ARROWS);
             Lightning_Arrows_Timer = 25000;
         }
@@ -438,11 +414,6 @@ struct MANGOS_DLL_DECL mob_toc5_hunterAI: public toc5_champion_baseAI
         DoMeleeAttackIfReady();
     }
 };
-
-CreatureAI* GetAI_mob_toc5_hunter(Creature* pCreature)
-{
-    return new mob_toc5_hunterAI(pCreature);
-}
 
 // Rogue
 struct MANGOS_DLL_DECL mob_toc5_rogueAI: public toc5_champion_baseAI
@@ -497,37 +468,13 @@ struct MANGOS_DLL_DECL mob_toc5_rogueAI: public toc5_champion_baseAI
     }
 };
 
-CreatureAI* GetAI_mob_toc5_rogue(Creature* pCreature)
-{
-    return new mob_toc5_rogueAI(pCreature);
-}
-
 void AddSC_boss_grand_champions()
 {
     Script* NewScript;
 
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_warrior";
-    NewScript->GetAI = &GetAI_mob_toc5_warrior;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_mage";
-    NewScript->GetAI = &GetAI_mob_toc5_mage;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_shaman";
-    NewScript->GetAI = &GetAI_mob_toc5_shaman;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_hunter";
-    NewScript->GetAI = &GetAI_mob_toc5_hunter;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_rogue";
-    NewScript->GetAI = &GetAI_mob_toc5_rogue;
-    NewScript->RegisterSelf();
+    REGISTER_SCRIPT(mob_toc5_warrior);
+    REGISTER_SCRIPT(mob_toc5_mage);
+    REGISTER_SCRIPT(mob_toc5_shaman);
+    REGISTER_SCRIPT(mob_toc5_hunter);
+    REGISTER_SCRIPT(mob_toc5_rogue);
 }

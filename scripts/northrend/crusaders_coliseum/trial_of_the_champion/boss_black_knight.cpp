@@ -1,5 +1,5 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
-* This program is free software; you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -53,17 +53,13 @@ enum
 };
 
 // Risen Ghoul
-struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
     uint32 Attack_Timer;
 
-    mob_toc5_risen_ghoulAI(Creature* pCreature): ScriptedAI(pCreature)
+    mob_toc5_risen_ghoulAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -89,7 +85,7 @@ struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public ScriptedAI
             if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 4.0f))
             {
                 DoCast(m_creature->getVictim(), SPELL_CLAW);
-                if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Player *target = SelectRandomPlayer())
                     AttackStart(target);
                 Attack_Timer = 2500;
             }
@@ -109,17 +105,9 @@ struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_toc5_risen_ghoul(Creature* pCreature)
-{
-    return new mob_toc5_risen_ghoulAI(pCreature);
-}
-
 // The Black Knight
-struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
+struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
     uint32 Plague_Strike_Timer;
     uint32 Icy_Touch_Timer;
     uint32 Obliterate_Timer;
@@ -134,10 +122,9 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
     bool phase3;
     bool ghoul;
 
-    boss_black_knightAI(Creature* pCreature): ScriptedAI(pCreature)
+    boss_black_knightAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -254,7 +241,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
 
         if (Choke_Timer < diff && phase1)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Player *target = SelectRandomPlayer())
                 DoCast(m_creature->getVictim(), SPELL_CHOKE);
             Choke_Timer = 15000;
         }
@@ -272,7 +259,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
 
         if (Mark_Timer < diff && phase3)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Player *target = SelectRandomPlayer())
                 DoCast(target, SPELL_MARK);
             Mark_Timer = 15000;
         }
@@ -291,22 +278,10 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_black_knight(Creature* pCreature)
-{
-    return new boss_black_knightAI(pCreature);
-}
-
 void AddSC_boss_black_knight()
 {
     Script *NewScript;
 
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_risen_ghoul";
-    NewScript->GetAI = &GetAI_mob_toc5_risen_ghoul;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "boss_black_knight";
-    NewScript->GetAI = &GetAI_boss_black_knight;
-    NewScript->RegisterSelf();
+    REGISTER_SCRIPT(mob_toc5_risen_ghoul);
+    REGISTER_SCRIPT(boss_black_knight);
 }

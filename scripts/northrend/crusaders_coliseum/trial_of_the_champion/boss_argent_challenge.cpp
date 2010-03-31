@@ -1,5 +1,5 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
-* This program is free software; you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -52,7 +52,7 @@ enum Spells
     SPELL_OLD_WOUNDS_H          = 67679,
 };
 
-static const uint32 MemorySummons[25] = {
+static const uint32 MemorySummons[MAX_MEMORY] = {
     MEMORY_ALGALON,
     MEMORY_ARCHIMONDE,
     MEMORY_CHROMAGGUS,
@@ -81,11 +81,8 @@ static const uint32 MemorySummons[25] = {
 };
 
 // Eadric The Pure
-struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
+struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
     uint32 Vengeance_Timer;
     uint32 Radiance_Timer;
     uint32 Hammer_Timer;
@@ -93,10 +90,9 @@ struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
 
     uint64 HammerTarget;
 
-    boss_eadricAI(Creature* pCreature): ScriptedAI(pCreature)
+    boss_eadricAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -149,7 +145,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
 
         if (Hammer_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Player *target = SelectRandomPlayer())
             {
                 DoCast(target, SPELL_HAMMER_OF_JUSTICE);
                 HammerTarget = target->GetGUID();
@@ -171,17 +167,9 @@ struct MANGOS_DLL_DECL boss_eadricAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_eadric(Creature* pCreature)
-{
-    return new boss_eadricAI(pCreature);
-}
-
 // Argent Confessor Paletress
-struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
+struct MANGOS_DLL_DECL boss_paletressAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
     uint32 Smite_Timer;
     uint32 Holy_Fire_Timer;
     uint32 Renew_Timer;
@@ -191,10 +179,9 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
     bool summoned;
     bool shielded;
 
-    boss_paletressAI(Creature* pCreature): ScriptedAI(pCreature)
+    boss_paletressAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -234,7 +221,7 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
         if (Smite_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Player* target = SelectRandomPlayer())
                 DoCast(target, DIFFICULTY(SPELL_SMITE));
             Smite_Timer = 2000;
         }
@@ -243,8 +230,8 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
         if (Holy_Fire_Timer < diff)
         {
-            m_creature->CastStop(DIFFICULTY(SPELL_SMITE));
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            m_creature->InterruptNonMeleeSpells(true);
+            if (Player *target = SelectRandomPlayer())
                 DoCast(target, DIFFICULTY(SPELL_HOLY_FIRE));
             Holy_Fire_Timer = 10000;
         }
@@ -253,8 +240,7 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
         if (Renew_Timer < diff)
         {
-            m_creature->CastStop(DIFFICULTY(SPELL_SMITE));   //FIXME: probably wrong to do this
-            m_creature->CastStop(DIFFICULTY(SPELL_HOLY_FIRE));
+            m_creature->InterruptNonMeleeSpells(true);
             switch(urand(0, 1))
             {
                 case 0:
@@ -277,10 +263,9 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
         if (!summoned && m_creature->GetHealthPercent() < 35.0f)
         {
-            m_creature->CastStop(DIFFICULTY(SPELL_SMITE));
-            m_creature->CastStop(DIFFICULTY(SPELL_HOLY_FIRE));
+            m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature, SPELL_HOLY_NOVA);
-            if (Creature *pSummon = DoSpawnCreature(MemorySummons[urand(0, 24)], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000))
+            if (Creature *pSummon = DoSpawnCreature(MemorySummons[urand(0, MAX_MEMORY-1)], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000))
             {
                 pSummon->AddThreat(m_creature->getVictim());
                 if (pSummon->AI())
@@ -292,8 +277,7 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
 
         if (Shield_Delay < diff && !shielded && summoned)
         {
-            m_creature->CastStop(DIFFICULTY(SPELL_SMITE));
-            m_creature->CastStop(DIFFICULTY(SPELL_HOLY_FIRE));
+            m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature, SPELL_SHIELD);
             shielded = true;
             Shield_Check = 1000;
@@ -319,25 +303,16 @@ struct MANGOS_DLL_DECL boss_paletressAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_paletress(Creature* pCreature)
-{
-    return new boss_paletressAI(pCreature);
-}
-
 // Summoned Memory
-struct MANGOS_DLL_DECL mob_toc5_memoryAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_toc5_memoryAI: public boss_trial_of_the_championAI
 {
-    ScriptedInstance *m_pInstance;
-    bool m_bIsRegularMode;
-
     uint32 Old_Wounds_Timer;
     uint32 Shadows_Timer;
     uint32 Fear_Timer;
 
-    mob_toc5_memoryAI(Creature* pCreature): ScriptedAI(pCreature)
+    mob_toc5_memoryAI(Creature* pCreature):
+        boss_trial_of_the_championAI(pCreature)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -355,7 +330,7 @@ struct MANGOS_DLL_DECL mob_toc5_memoryAI: public ScriptedAI
 
         if (Old_Wounds_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Player* target = SelectRandomPlayer())
                 DoCast(target, DIFFICULTY(SPELL_OLD_WOUNDS));
             Old_Wounds_Timer = 10000;
         }
@@ -372,7 +347,7 @@ struct MANGOS_DLL_DECL mob_toc5_memoryAI: public ScriptedAI
 
         if (Shadows_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Player* target = SelectRandomPlayer())
                 DoCast(target, DIFFICULTY(SPELL_SHADOWS));
             Shadows_Timer = 10000;
         }
@@ -383,27 +358,11 @@ struct MANGOS_DLL_DECL mob_toc5_memoryAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_toc5_memory(Creature* pCreature)
-{
-    return new mob_toc5_memoryAI(pCreature);
-}
-
 void AddSC_boss_argent_challenge()
 {
     Script *NewScript;
 
-    NewScript = new Script;
-    NewScript->Name = "boss_eadric";
-    NewScript->GetAI = &GetAI_boss_eadric;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "boss_paletress";
-    NewScript->GetAI = &GetAI_boss_paletress;
-    NewScript->RegisterSelf();
-
-    NewScript = new Script;
-    NewScript->Name = "mob_toc5_memory";
-    NewScript->GetAI = &GetAI_mob_toc5_memory;
-    NewScript->RegisterSelf();
+    REGISTER_SCRIPT(boss_eadric);
+    REGISTER_SCRIPT(boss_paletress);
+    REGISTER_SCRIPT(mob_toc5_memory);
 }

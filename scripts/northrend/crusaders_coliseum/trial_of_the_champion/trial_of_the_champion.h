@@ -12,6 +12,7 @@ enum
 {
     MAX_ENCOUNTER               = 3,
     MAX_CHAMPIONS               = 3,
+    MAX_MEMORY                  = 25,
 
     TYPE_GRAND_CHAMPIONS        = 0,
     TYPE_ARGENT_CHALLENGE       = 1,
@@ -51,6 +52,7 @@ enum
     NPC_RISEN_ARELAS            = 35564,
     NPC_JAEREN                  = 35004,
     NPC_ARELAS                  = 35005,
+
     MEMORY_ALGALON              = 35052,
     MEMORY_ARCHIMONDE           = 35041,
     MEMORY_CHROMAGGUS           = 35033,
@@ -84,5 +86,29 @@ enum
     GO_PALETRESS_LOOT           = 195323,
     GO_PALETRESS_LOOT_H         = 195324
 };
+
+// base class for all ToC5 bosses
+struct MANGOS_DLL_DECL boss_trial_of_the_championAI: public ScriptedAI
+{
+    ScriptedInstance *m_pInstance;
+    bool m_bIsRegularMode;
+
+    boss_trial_of_the_championAI(Creature *pCreature);
+
+    Player* SelectRandomPlayer();
+};
+
+// helper for the script register process
+template <typename T>
+CreatureAI* toc5_GetAI(Creature *pCreature)
+{
+    return new T(pCreature);
+}
+
+#define REGISTER_SCRIPT(SC) \
+    NewScript = new Script; \
+    NewScript->Name = #SC; \
+    NewScript->GetAI = &toc5_GetAI<SC##AI>; \
+    NewScript->RegisterSelf();
 
 #endif
