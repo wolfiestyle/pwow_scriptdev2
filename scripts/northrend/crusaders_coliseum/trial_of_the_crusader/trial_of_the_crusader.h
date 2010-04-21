@@ -6,6 +6,7 @@
 // to cast the spell:   DoCast(target, DIFFICULTY(SPELL_TEST));
 #define DIFF_SELECT(N10, N25, H10, H25) (m_bIs10Man ? (m_bIsHeroic ? H10 : N10) : (m_bIsHeroic ? H25 : N25))
 #define DIFFICULTY(SP)      DIFF_SELECT(SP##_N10, SP##_N25, SP##_H10, SP##_H25)
+#define HEROIC(SP)          (m_bIsHeroic ? SP##_H : SP##_N)
 
 #define GET_CREATURE(C)     (m_pInstance ? m_creature->GetMap()->GetCreature(m_pInstance->GetData64(C)) : NULL)
 #define GET_GAMEOBJECT(G)   (m_pInstance ? m_creature->GetMap()->GetGameObject(m_pInstance->GetData64(G)) : NULL)
@@ -74,6 +75,7 @@ enum
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST         = 41,
     TYPE_FACTION_CHAMPION_CHEST = 42,
+    TYPE_ENTRANCE_DOOR          = 43,
 
     DATA_FACTION                = 50,
 
@@ -123,6 +125,7 @@ enum
     GO_COLISEUM_FLOOR           = 195527,
     GO_ANUBARAK_CHEST           = 195665,
     GO_FACTION_CHAMPION_CHEST   = 195631,
+    GO_ENTRANCE_DOOR            = 195589,
 };
 
 //---------------------------------------------------------

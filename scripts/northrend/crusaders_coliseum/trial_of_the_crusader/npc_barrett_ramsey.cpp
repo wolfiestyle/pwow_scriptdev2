@@ -201,6 +201,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
         RemoveAllSummons();
 
+        if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
+            Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+
         if(CurrPhase != PHASE_ANUBARAK)
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
@@ -309,11 +312,18 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
 
         if (!EncounterInProgress)
+        {
+            if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
+                Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        }
     }
 
     void StartNextPhase()
     {
+        if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
+            Door->SetGoState(GO_STATE_READY);
         CurrPhase++;
         EncounterInProgress = true;
         m_uiTalkCounter = 0;

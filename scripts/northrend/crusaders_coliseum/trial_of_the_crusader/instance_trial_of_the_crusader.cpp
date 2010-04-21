@@ -76,6 +76,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case GO_COLISEUM_FLOOR:         data_id = TYPE_COLISEUM_FLOOR; break;
             case GO_ANUBARAK_CHEST:         data_id = TYPE_ANUBARAK_CHEST; break;
             case GO_FACTION_CHAMPION_CHEST: data_id = TYPE_FACTION_CHAMPION_CHEST; break;
+            case GO_ENTRANCE_DOOR:          data_id = TYPE_ENTRANCE_DOOR; break;
 
             default:
                 return;
