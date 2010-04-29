@@ -22,7 +22,7 @@ SDCategory: Trial of the Crusader
 EndScriptData */
 
 /* ContentData
-boss_toc_anubarak
+boss_anubarak_trial
 EndContentData */
 
 #include "precompiled.h"
@@ -152,14 +152,14 @@ static const float SummonPositions [4][2] =
     {767.0f, 82.0f}
 };
 
-struct MANGOS_DLL_DECL boss_toc_anubarakAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderAI
 {
     uint32 CurrPhase;
     GuidMap m_Summons;
     GuidList m_AliveFrostSpheres;
     bool m_bSaidBeginningStuff;
 
-    boss_toc_anubarakAI(Creature* pCreature):
+    boss_anubarak_trialAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
         CurrPhase(PHASE_NOTSTARTED),
         m_bSaidBeginningStuff(false)
@@ -558,11 +558,11 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
     }
 };
 
-void AddSC_boss_anubarak_toc()
+void AddSC_boss_anubarak_trial()
 {
     Script *newscript;
 
-    REGISTER_SCRIPT(boss_toc_anubarak);
+    REGISTER_SCRIPT(boss_anubarak_trial);
     REGISTER_SCRIPT(mob_toc_nerubian_burrower);
     REGISTER_SCRIPT(mob_toc_swarm_scarab);
 }

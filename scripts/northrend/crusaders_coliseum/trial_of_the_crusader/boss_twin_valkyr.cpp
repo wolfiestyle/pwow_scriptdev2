@@ -22,8 +22,8 @@ SDCategory: Trial of the Crusader
 EndScriptData */
 
 /* ContentData
-boss_toc_fjola_lightbane
-boss_toc_eydis_darkbane
+boss_fjola
+boss_eydis
 EndContentData */
 
 #include "precompiled.h"
@@ -142,9 +142,9 @@ typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 #define TIMER_TOUCH         urand(15,20)*IN_MILISECONDS
 
 //fjola is the 'slave'
-struct MANGOS_DLL_DECL boss_toc_fjola_lightbaneAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 {
-    boss_toc_fjola_lightbaneAI(Creature* pCreature):
+    boss_fjolaAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature)
     {
     }
@@ -255,13 +255,13 @@ struct MANGOS_DLL_DECL boss_toc_fjola_lightbaneAI: public boss_trial_of_the_crus
 };
 
 //eydis is the 'master'
-struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 {
     GuidMap m_Summons;
     bool m_bIsClearingSummons;
     std::bitset<4> SpecialsUsed; //0=light vortex, 1= dark vortex, 2=light pact, 3=dark pact
 
-    boss_toc_eydis_darkbaneAI(Creature* pCreature):
+    boss_eydisAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
         m_bIsClearingSummons(false)
     {
@@ -421,9 +421,9 @@ struct MANGOS_DLL_DECL boss_toc_eydis_darkbaneAI: public boss_trial_of_the_crusa
                     SpecialsUsed[SpecialNum] = true;
 
                     Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE);
-                    boss_toc_fjola_lightbaneAI *LightbaneAI = NULL;
+                    boss_fjolaAI *LightbaneAI = NULL;
                     if (Lightbane)
-                        boss_toc_fjola_lightbaneAI *LightbaneAI = dynamic_cast<boss_toc_fjola_lightbaneAI*>(Lightbane->AI());
+                        boss_fjolaAI *LightbaneAI = dynamic_cast<boss_fjolaAI*>(Lightbane->AI());
 
                     switch (SpecialNum)
                     {
@@ -588,8 +588,8 @@ void AddSC_twin_valkyr()
 {
     Script *newscript;
 
-    REGISTER_SCRIPT(boss_toc_fjola_lightbane);
-    REGISTER_SCRIPT(boss_toc_eydis_darkbane);
+    REGISTER_SCRIPT(boss_fjola);
+    REGISTER_SCRIPT(boss_eydis);
     REGISTER_SCRIPT(mob_concentrated_orb);
 
     newscript = new Script;

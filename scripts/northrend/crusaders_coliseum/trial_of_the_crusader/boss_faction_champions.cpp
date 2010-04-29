@@ -524,7 +524,7 @@ struct MANGOS_DLL_DECL boss_toc_warriorAI: public boss_faction_championAI
     }
 };
 
-void AddSC_bosses_faction_champions()
+void AddSC_boss_faction_champions()
 {
     Script *newscript;
 

@@ -22,7 +22,7 @@ SDCategory: Trial of the Crusader
 EndScriptData */
 
 /* ContentData
-boss_toc_jaraxxus
+boss_jaraxxus
 EndContentData */
 
 #include "precompiled.h"
@@ -69,9 +69,9 @@ enum Says
     SAY_DEATH                   = -1300317,
 };
 
-struct MANGOS_DLL_DECL boss_toc_jaraxxusAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
-    boss_toc_jaraxxusAI(Creature* pCreature):
+    boss_jaraxxusAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature)
     {
     }
@@ -116,5 +116,5 @@ void AddSC_boss_jaraxxus()
 {
     Script *newscript;
 
-    REGISTER_SCRIPT(boss_toc_jaraxxus);
+    REGISTER_SCRIPT(boss_jaraxxus);
 }

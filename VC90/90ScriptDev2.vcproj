@@ -1698,15 +1698,11 @@
 						Name="trial_of_the_crusader"
 						>
 						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_anubarak_toc.cpp"
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_anubarak_trial.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_gormok.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_icehowl.cpp"
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_faction_champions.cpp"
 							>
 						</File>
 						<File
@@ -1714,15 +1710,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_jormungar_twins.cpp"
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_northrend_beasts.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_valkyr_twins.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\bosses_faction_champions.cpp"
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_twin_valkyr.cpp"
 							>
 						</File>
 						<File
