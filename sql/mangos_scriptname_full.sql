@@ -18,6 +18,8 @@ INSERT INTO areatrigger_scripts VALUES
 (5285,'at_aldurthar_gate'),
 (5286,'at_aldurthar_gate'),
 (5287,'at_aldurthar_gate');
+DELETE FROM areatrigger_scripts WHERE entry=4112;
+INSERT INTO areatrigger_scripts VALUES (4112,'at_naxxramas');
 
 /* BATTLEGROUNDS */
 UPDATE creature_template SET ScriptName='npc_spirit_guide' WHERE entry IN (13116, 13117);
@@ -407,6 +409,22 @@ UPDATE creature_template SET ScriptName='mob_shield_generator_channel' WHERE ent
 
 /* CRYSTALSONG FOREST */
 
+/*  */
+/* CRUSADER COLISEUM */
+/*  */
+
+/* TRAIL OF THE CHAMPION */
+
+/* TRIAL OF THE CRUSADER */
+UPDATE instance_template SET script='instance_trial_of_the_crusader' WHERE map=649;
+UPDATE creature_template SET ScriptName='boss_gormok' WHERE entry=34796;
+UPDATE creature_template SET ScriptName='boss_acidmaw' WHERE entry=35144;
+UPDATE creature_template SET ScriptName='boss_dreadscale' WHERE entry=34799;
+UPDATE creature_template SET ScriptName='boss_icehowl' WHERE entry=34797;
+UPDATE creature_template SET ScriptName='boss_jaraxxis' WHERE entry=34780;
+UPDATE creature_template SET ScriptName='boss_anubarak_trial' WHERE entry=34564;
+UPDATE creature_template SET ScriptName='boss_fjola' WHERE entry=34497;
+UPDATE creature_template SET ScriptName='boss_eydis' WHERE entry=34496;
 
 /* DALARAN */
 UPDATE creature_template SET ScriptName='npc_dalaran_guardian_mage' WHERE entry IN (29255, 29254);
@@ -718,10 +736,11 @@ UPDATE creature_template SET ScriptName='boss_anubrekhan' WHERE entry=15956;
 UPDATE creature_template SET ScriptName='boss_faerlina' WHERE entry=15953;
 UPDATE creature_template SET ScriptName='boss_maexxna' WHERE entry=15952;
 UPDATE creature_template SET ScriptName='boss_noth' WHERE entry=15954;
--- UPDATE creature_template SET ScriptName='boss_heigan' WHERE entry=15936;
+UPDATE creature_template SET ScriptName='boss_heigan' WHERE entry=15936;
 UPDATE creature_template SET ScriptName='boss_loatheb' WHERE entry=16011;
 UPDATE creature_template SET ScriptName='boss_razuvious' WHERE entry=16061;
--- UPDATE creature_template SET ScriptName='boss_gothik' WHERE entry=16060;
+UPDATE creature_template SET ScriptName='boss_gothik' WHERE entry=16060;
+UPDATE creature_template SET ScriptName='spell_anchor' WHERE entry=16137;
 UPDATE creature_template SET ScriptName='boss_thane_korthazz' WHERE entry=16064;
 UPDATE creature_template SET ScriptName='boss_sir_zeliek' WHERE entry=16063;
 UPDATE creature_template SET ScriptName='boss_lady_blaumeux' WHERE entry=16065;
@@ -733,7 +752,7 @@ UPDATE creature_template SET ScriptName='boss_gluth' WHERE entry=15932;
 -- UPDATE creature_template SET ScriptName='boss_stalagg' WHERE entry=15929;
 -- UPDATE creature_template SET ScriptName='boss_feugen' WHERE entry=15930;
 UPDATE creature_template SET ScriptName='boss_sapphiron' WHERE entry=15989;
--- UPDATE creature_template SET ScriptName='boss_kelthuzad' WHERE entry=15990;
+UPDATE creature_template SET ScriptName='boss_kelthuzad' WHERE entry=15990;
 
 /* NETHERSTORM */
 DELETE FROM areatrigger_scripts WHERE entry=4497;

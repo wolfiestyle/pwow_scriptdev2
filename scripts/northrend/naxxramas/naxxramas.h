@@ -43,6 +43,23 @@ enum
     NPC_BLAUMEUX                = 16065,
     NPC_RIVENDARE               = 30549,
 
+    // Gothik
+    NPC_GOTHIK                  = 16060,
+    NPC_SUB_BOSS_TRIGGER        = 16137,                    //summon locations
+    NPC_UNREL_TRAINEE           = 16124,
+    NPC_UNREL_DEATH_KNIGHT      = 16125,
+    NPC_UNREL_RIDER             = 16126,
+    NPC_SPECT_TRAINEE           = 16127,
+    NPC_SPECT_DEATH_KNIGTH      = 16148,
+    NPC_SPECT_RIDER             = 16150,
+    NPC_SPECT_HORSE             = 16149,
+
+    // End boss adds
+    NPC_SOLDIER_FROZEN          = 16427,
+    NPC_UNSTOPPABLE_ABOM        = 16428,
+    NPC_SOUL_WEAVER             = 16429,
+    NPC_GUARDIAN                = 16441,
+
     // Arachnid Quarter
     GO_ARAC_ANUB_DOOR           = 181126,                   //encounter door
     GO_ARAC_ANUB_GATE           = 181195,                   //open after boss is dead
@@ -89,7 +106,15 @@ enum
     GO_MILI_PORTAL              = 181578,
     GO_CONS_PORTAL              = 181576,
 
-    AREATRIGGER_FROSTWYRM       = 4120                     //not needed here, but AT to be scripted
+    AREATRIGGER_FROSTWYRM       = 4120,                    //not needed here, but AT to be scripted
+    AREATRIGGER_KELTHUZAD       = 4112,
+    AREATRIGGER_GOTHIK          = 4116
+};
+
+struct GothTrigger
+{
+    bool bIsRightSide;
+    bool bIsAnchorHigh;
 };
 
 #endif
