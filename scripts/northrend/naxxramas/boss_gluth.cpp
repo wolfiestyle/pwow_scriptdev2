@@ -99,7 +99,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         m_uiEnrageTimer = 60000;
         m_uiSummonTimer = 10000;
 
-        m_uiBerserkTimer = MINUTE*8*IN_MILISECONDS;
+        m_uiBerserkTimer = MINUTE*8*IN_MILLISECONDS;
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_GLUTH, NOT_STARTED);
@@ -182,7 +182,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         if (m_uiBerserkTimer < uiDiff)
         {
             DoCastSpellIfCan(m_creature, SPELL_BERSERK, CAST_TRIGGERED);
-            m_uiBerserkTimer = MINUTE*5*IN_MILISECONDS;
+            m_uiBerserkTimer = MINUTE*5*IN_MILLISECONDS;
         }
         else
             m_uiBerserkTimer -= uiDiff;
