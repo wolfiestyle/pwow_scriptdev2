@@ -119,13 +119,13 @@ enum Says
     SAY_DEATH           = -1300199
 };
 
-#define BERSERK_TIMER               15*MINUTE*IN_MILISECONDS
-#define SUMMON_CRUSHER_TIMER        urand(20, 35)*IN_MILISECONDS
-#define SUMMON_CORRUPTOR_TIMER      urand(15, 20)*IN_MILISECONDS
-#define SUMMON_CONSTRICTOR_TIMER    urand(10, 15)*IN_MILISECONDS
-#define LUNATIC_GAZE_TIMER          urand(30, 45)*IN_MILISECONDS
-#define EMPOWERING_SHADOWS_TIMER    urand(30, 40)*IN_MILISECONDS
-#define DEAFENING_ROAR_TIMER        urand(50, 60)*IN_MILISECONDS
+#define BERSERK_TIMER               15*MINUTE*IN_MILLISECONDS
+#define SUMMON_CRUSHER_TIMER        urand(20, 35)*IN_MILLISECONDS
+#define SUMMON_CORRUPTOR_TIMER      urand(15, 20)*IN_MILLISECONDS
+#define SUMMON_CONSTRICTOR_TIMER    urand(10, 15)*IN_MILLISECONDS
+#define LUNATIC_GAZE_TIMER          urand(30, 45)*IN_MILLISECONDS
+#define EMPOWERING_SHADOWS_TIMER    urand(30, 40)*IN_MILLISECONDS
+#define DEAFENING_ROAR_TIMER        urand(50, 60)*IN_MILLISECONDS
 
 #define MAX_TENTACLES               5
 #define SUMMON_RADIUS               38.0f
@@ -236,7 +236,7 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
             {
                 case EVENT_BERSERK:
                     DoCast(m_creature, SPELL_EXTINGUISH_LIFE);
-                    events.ScheduleEvent(EVENT_BERSERK, 10*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_BERSERK, 10*IN_MILLISECONDS);
                     break;
                 case EVENT_SUMMON_CRUSHER:
                     if (m_SummonList.size() < MAX_TENTACLES)
@@ -353,7 +353,7 @@ struct MANGOS_DLL_DECL npc_corruptor_tentacleAI: public npc_yogg_tentacleAI
 
     void Reset()
     {
-        m_uiCastTimer = 5*IN_MILISECONDS;
+        m_uiCastTimer = 5*IN_MILLISECONDS;
         DoCast(m_creature, SPELL_ERUPT, true);
     }
 
@@ -366,7 +366,7 @@ struct MANGOS_DLL_DECL npc_corruptor_tentacleAI: public npc_yogg_tentacleAI
         {
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 DoCast(target, CorruptorSpells[urand(0, 3)]);
-            m_uiCastTimer = 10*IN_MILISECONDS;
+            m_uiCastTimer = 10*IN_MILLISECONDS;
         }
         else
             m_uiCastTimer -= uiDiff;

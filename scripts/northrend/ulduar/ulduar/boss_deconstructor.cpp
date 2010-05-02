@@ -54,11 +54,11 @@ enum Says
     SAY_DEATH           = -1300047
 };
 
-#define BERSERK_TIMER           10*MINUTE*IN_MILISECONDS
-#define TIMPANIC_TANTRUM_TIMER  60*IN_MILISECONDS
-#define SEARING_LIGHT_TIMER     urand(25, 30)*IN_MILISECONDS
-#define GRAVITY_BOMB_TIMER      urand(35, 40)*IN_MILISECONDS
-#define HEARTH_PHASE_TIMER      30*IN_MILISECONDS
+#define BERSERK_TIMER           10*MINUTE*IN_MILLISECONDS
+#define TIMPANIC_TANTRUM_TIMER  60*IN_MILLISECONDS
+#define SEARING_LIGHT_TIMER     urand(25, 30)*IN_MILLISECONDS
+#define GRAVITY_BOMB_TIMER      urand(35, 40)*IN_MILLISECONDS
+#define HEARTH_PHASE_TIMER      30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
 {
@@ -176,7 +176,7 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
         {
             DoScriptText(SAY_BERSERK, m_creature);
             DoCast(m_creature, SPELL_BERSERK);
-            Berserk_Timer = 5*MINUTE*IN_MILISECONDS;
+            Berserk_Timer = 5*MINUTE*IN_MILLISECONDS;
         }
         else
             Berserk_Timer -= diff;

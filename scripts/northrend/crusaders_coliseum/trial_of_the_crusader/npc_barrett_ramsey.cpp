@@ -92,9 +92,9 @@ enum Says
 #define GOSSIP_START_NEXT_BOSS  "We are ready to begin the next challenge."  //not the actual text, but I cant find a source for it. If you know them, change it
 #define GOSSIP_TEXT_ID          45323
 
-#define DESPAWN_TIME            4*MINUTE*IN_MILISECONDS
-#define SUMMON_TIMER            3*MINUTE*IN_MILISECONDS
-#define AGGRO_TIMER             urand(10, 15)*IN_MILISECONDS
+#define DESPAWN_TIME            4*MINUTE*IN_MILLISECONDS
+#define SUMMON_TIMER            3*MINUTE*IN_MILLISECONDS
+#define AGGRO_TIMER             urand(10, 15)*IN_MILLISECONDS
 
 static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
 
@@ -390,7 +390,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             RemoveAllSummons();
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_ANUBARAK_INTRO1, Fordring);
-                            m_uiTalkTimer = 19*IN_MILISECONDS;
+                            m_uiTalkTimer = 19*IN_MILLISECONDS;
                             break;
                         case 1:
                             Creature *LichKing;
@@ -398,23 +398,23 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 LichKing = Fordring->SummonCreature(NPC_LICH_KING, summon_pos[0], summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (LichKing)
                                 DoScriptText(SAY_LICHKING_ANUBARAK_INTRO2, LichKing);
-                            m_uiTalkTimer = 5*IN_MILISECONDS;
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
                             break;
                         case 2:
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_ANUBARAK_INTRO3, Fordring);
-                            m_uiTalkTimer = 7*IN_MILISECONDS;
+                            m_uiTalkTimer = 7*IN_MILLISECONDS;
                             break;
                         case 3:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
                                 DoScriptText(SAY_LICHKING_ANUBARAK_INTRO4, LichKing);
-                            m_uiTalkTimer = 20*IN_MILISECONDS;
+                            m_uiTalkTimer = 20*IN_MILLISECONDS;
                             break;
                         case 4:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
                                 DoScriptText(SAY_LICHKING_ANUBARAK_INTRO5, LichKing);
                             DestroyFloor();
-                            m_uiTalkTimer = 9*IN_MILISECONDS;
+                            m_uiTalkTimer = 9*IN_MILLISECONDS;
                             break;
                         case 5:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))

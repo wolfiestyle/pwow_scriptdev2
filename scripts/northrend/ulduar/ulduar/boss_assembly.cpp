@@ -119,7 +119,7 @@ enum Says
     SAY_STORM_DEATH2            = -1300070
 };
 
-#define BERSERK_TIMER   15*MINUTE*IN_MILISECONDS
+#define BERSERK_TIMER   15*MINUTE*IN_MILLISECONDS
 
 static bool IsEncounterComplete(ScriptedInstance *pInstance, Creature *pCreature)
 {
@@ -196,11 +196,11 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI: public ScriptedAI
     {
         phase++;
         events.SetPhase(phase);
-        events.RescheduleEvent(EVENT_FUSION_PUNCH, 15*IN_MILISECONDS);
+        events.RescheduleEvent(EVENT_FUSION_PUNCH, 15*IN_MILLISECONDS);
         if (phase >= 2)
-            events.RescheduleEvent(EVENT_STATIC_DISRUPTION, 30*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_STATIC_DISRUPTION, 30*IN_MILLISECONDS);
         if (phase >= 3)
-            events.RescheduleEvent(EVENT_OVERWHELMING_POWER, urand(0, 5)*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_OVERWHELMING_POWER, urand(0, 5)*IN_MILLISECONDS);
     }
 
     void DamageTaken(Unit* pKiller, uint32 &damage)
@@ -256,17 +256,17 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI: public ScriptedAI
                     break;
                 case EVENT_FUSION_PUNCH:
                     DoCast(m_creature->getVictim(), HEROIC(SPELL_FUSION_PUNCH, SPELL_FUSION_PUNCH_H));
-                    events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(13, 22)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(13, 22)*IN_MILLISECONDS);
                     break;
                 case EVENT_STATIC_DISRUPTION:
                     if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_STATIC_DISRUPTION, SPELL_STATIC_DISRUPTION_H));
-                    events.ScheduleEvent(EVENT_STATIC_DISRUPTION, urand(20, 40)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_STATIC_DISRUPTION, urand(20, 40)*IN_MILLISECONDS);
                     break;
                 case EVENT_OVERWHELMING_POWER:
                     DoScriptText(SAY_STEEL_SPECIAL, m_creature);
                     DoCast(m_creature->getVictim(), HEROIC(SPELL_OVERWHELMING_POWER, SPELL_OVERWHELMING_POWER_H));
-                    events.ScheduleEvent(EVENT_OVERWHELMING_POWER, HEROIC(60, 35)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_OVERWHELMING_POWER, HEROIC(60, 35)*IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -327,12 +327,12 @@ struct MANGOS_DLL_DECL boss_runemaster_molgeimAI: public ScriptedAI
     {
         phase++;
         events.SetPhase(phase);
-        events.RescheduleEvent(EVENT_SHIELD_OF_RUNES, 27*IN_MILISECONDS);
-        events.RescheduleEvent(EVENT_RUNE_OF_POWER, 60*IN_MILISECONDS);
+        events.RescheduleEvent(EVENT_SHIELD_OF_RUNES, 27*IN_MILLISECONDS);
+        events.RescheduleEvent(EVENT_RUNE_OF_POWER, 60*IN_MILLISECONDS);
         if (phase >= 2)
-            events.RescheduleEvent(EVENT_RUNE_OF_DEATH, 30*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_RUNE_OF_DEATH, 30*IN_MILLISECONDS);
         if (phase >= 3)
-            events.RescheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20, 30)*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20, 30)*IN_MILLISECONDS);
     }
 
     void DamageTaken(Unit* pKiller, uint32 &damage)
@@ -390,24 +390,24 @@ struct MANGOS_DLL_DECL boss_runemaster_molgeimAI: public ScriptedAI
                     if (!Target || (Target && !Target->isAlive()))
                         Target = m_creature;
                     DoCast(Target, SPELL_RUNE_OF_POWER);
-                    events.ScheduleEvent(EVENT_RUNE_OF_POWER, 60*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_RUNE_OF_POWER, 60*IN_MILLISECONDS);
                     break;
                 }
                 case EVENT_SHIELD_OF_RUNES:
                     DoCast(m_creature, HEROIC(SPELL_SHIELD_OF_RUNES, SPELL_SHIELD_OF_RUNES_H));
-                    events.ScheduleEvent(EVENT_SHIELD_OF_RUNES, urand(27, 34)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_SHIELD_OF_RUNES, urand(27, 34)*IN_MILLISECONDS);
                     break;
                 case EVENT_RUNE_OF_DEATH:
                     DoScriptText(SAY_RUNE_RUNE_OF_DEATH, m_creature);
                     if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_RUNE_OF_DEATH, SPELL_RUNE_OF_DEATH_H));
-                    events.ScheduleEvent(EVENT_RUNE_OF_DEATH, urand(30, 40)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_RUNE_OF_DEATH, urand(30, 40)*IN_MILLISECONDS);
                     break;
                 case EVENT_RUNE_OF_SUMMONING:
                     DoScriptText(SAY_RUNE_SUMMON_ADDS, m_creature);
                     if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(Target, SPELL_RUNE_OF_SUMMONING);
-                    events.ScheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20, 30)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20, 30)*IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -468,14 +468,14 @@ struct MANGOS_DLL_DECL boss_stormcaller_brundirAI: public ScriptedAI
     {
         phase++;
         events.SetPhase(phase);
-        events.RescheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9, 17)*IN_MILISECONDS);
-        events.RescheduleEvent(EVENT_OVERLOAD, urand(60, 125)*IN_MILISECONDS);
+        events.RescheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9, 17)*IN_MILLISECONDS);
+        events.RescheduleEvent(EVENT_OVERLOAD, urand(60, 125)*IN_MILLISECONDS);
         if (phase >= 2)
-            events.RescheduleEvent(EVENT_LIGHTNING_WHIRL, urand(20, 40)*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_LIGHTNING_WHIRL, urand(20, 40)*IN_MILLISECONDS);
         if (phase >= 3)
         {
             DoCast(m_creature, SPELL_STORMSHIELD);
-            events.RescheduleEvent(EVENT_LIGHTNING_TENDRILS, urand(40, 80)*IN_MILISECONDS);
+            events.RescheduleEvent(EVENT_LIGHTNING_TENDRILS, urand(40, 80)*IN_MILLISECONDS);
         }
     }
 
@@ -531,16 +531,16 @@ struct MANGOS_DLL_DECL boss_stormcaller_brundirAI: public ScriptedAI
                 case EVENT_CHAIN_LIGHTNING:
                     if (Unit* Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_CHAIN_LIGHTNING, SPELL_CHAIN_LIGHTNING_H));
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9, 17)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9, 17)*IN_MILLISECONDS);
                     break;
                 case EVENT_OVERLOAD:
                     DoScriptText(SAY_STORM_SPECIAL, m_creature);
                     DoCast(m_creature, HEROIC(SPELL_OVERLOAD, SPELL_OVERLOAD_H));
-                    events.ScheduleEvent(EVENT_OVERLOAD, urand(60, 125)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_OVERLOAD, urand(60, 125)*IN_MILLISECONDS);
                     break;
                 case EVENT_LIGHTNING_WHIRL:
                     DoCast(m_creature, HEROIC(SPELL_LIGHTNING_WHIRL, SPELL_LIGHTNING_WHIRL_H));
-                    events.ScheduleEvent(EVENT_LIGHTNING_WHIRL, urand(20, 40)*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_LIGHTNING_WHIRL, urand(20, 40)*IN_MILLISECONDS);
                     break;
                 case EVENT_LIGHTNING_TENDRILS:
                     DoScriptText(SAY_STORM_FLIGHT, m_creature);

@@ -146,25 +146,25 @@ enum Events
     EVENT_MAGNETIC_FIELD
 };
 
-#define TIMER_BERSERK           15*MINUTE*IN_MILISECONDS
-#define TIMER_START_FIRST_PHASE 20*IN_MILISECONDS
-#define TIMER_START_NEXT_PHASE  30*IN_MILISECONDS
+#define TIMER_BERSERK           15*MINUTE*IN_MILLISECONDS
+#define TIMER_START_FIRST_PHASE 20*IN_MILLISECONDS
+#define TIMER_START_NEXT_PHASE  30*IN_MILLISECONDS
 // Leviathan
-#define TIMER_PROXIMITY_MINES   urand(28,30)*IN_MILISECONDS
-#define TIMER_NAHPALM_SHELLS    urand(7,10)*IN_MILISECONDS
-#define TIMER_PLASMA_BLAST      urand(28,32)*IN_MILISECONDS
-#define TIMER_SHOCK_BLAST       urand(7,13)*IN_MILISECONDS
+#define TIMER_PROXIMITY_MINES   urand(28,30)*IN_MILLISECONDS
+#define TIMER_NAHPALM_SHELLS    urand(7,10)*IN_MILLISECONDS
+#define TIMER_PLASMA_BLAST      urand(28,32)*IN_MILLISECONDS
+#define TIMER_SHOCK_BLAST       urand(7,13)*IN_MILLISECONDS
 // VX-001
-#define TIMER_RAPID_BURST_BEGIN 4*IN_MILISECONDS
-#define TIMER_RAPID_BURST       0.5*IN_MILISECONDS
-#define TIMER_ROCKET_STRIKE     urand(20,25)*IN_MILISECONDS
-#define TIMER_LASER_BARRAGE     30*IN_MILISECONDS
+#define TIMER_RAPID_BURST_BEGIN 4*IN_MILLISECONDS
+#define TIMER_RAPID_BURST       0.5*IN_MILLISECONDS
+#define TIMER_ROCKET_STRIKE     urand(20,25)*IN_MILLISECONDS
+#define TIMER_LASER_BARRAGE     30*IN_MILLISECONDS
 // Aerial Command Unit
-#define TIMER_PLASMA_BALL       urand(3,4)*IN_MILISECONDS
-#define TIMER_BOMB_BOT          urand(10,15)*IN_MILISECONDS //not quite sure about these summon timers
-#define TIMER_ASSAULT_BOT       urand(25,35)*IN_MILISECONDS //<-
-#define TIMER_TRASH_BOT         urand(10,15)*IN_MILISECONDS //<-
-#define TIMER_MAGNETIC_FIELD    urand(15,20)*IN_MILISECONDS //not sure about this one either
+#define TIMER_PLASMA_BALL       urand(3,4)*IN_MILLISECONDS
+#define TIMER_BOMB_BOT          urand(10,15)*IN_MILLISECONDS //not quite sure about these summon timers
+#define TIMER_ASSAULT_BOT       urand(25,35)*IN_MILLISECONDS //<-
+#define TIMER_TRASH_BOT         urand(10,15)*IN_MILLISECONDS //<-
+#define TIMER_MAGNETIC_FIELD    urand(15,20)*IN_MILLISECONDS //not sure about this one either
 
 #define GET_CREATURE_FROM_GUID(guid)    (m_creature->GetMap()->GetCreature(guid))
 //only for use in voltron peices
@@ -463,7 +463,7 @@ struct MANGOS_DLL_DECL mob_proximity_mineAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        ExplodeTimer = 35*IN_MILISECONDS;
+        ExplodeTimer = 35*IN_MILLISECONDS;
     }
 
     void Explode()
@@ -593,7 +593,7 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
                         float x, y, z;
                         Target->GetPosition(x, y, z);
                         m_creature->CastSpell(x, y, z, SPELL_ROCKET_STRIKE_TARGET, false);
-                        Creature *RocketTar = m_creature->SummonCreature(NPC_ROCKET_STRIKE_TARGET, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60*IN_MILISECONDS);
+                        Creature *RocketTar = m_creature->SummonCreature(NPC_ROCKET_STRIKE_TARGET, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60*IN_MILLISECONDS);
                         if(RocketTar)
                         {
                             RocketTar->SetSplineFlags(SPLINEFLAG_NONE);

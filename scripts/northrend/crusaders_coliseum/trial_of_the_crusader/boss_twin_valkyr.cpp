@@ -135,11 +135,11 @@ typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 
 #define ORB_NUMBER          urand(25,30)
 
-#define TIMER_BERSERK       6*MINUTE*IN_MILISECONDS
-#define TIMER_SPAWN_ORBS    urand(30,40)*IN_MILISECONDS
-#define TIMER_TWIN_SPIKE    20*IN_MILISECONDS
-#define TIMER_SPECIAL       45*IN_MILISECONDS
-#define TIMER_TOUCH         urand(15,20)*IN_MILISECONDS
+#define TIMER_BERSERK       6*MINUTE*IN_MILLISECONDS
+#define TIMER_SPAWN_ORBS    urand(30,40)*IN_MILLISECONDS
+#define TIMER_TWIN_SPIKE    20*IN_MILLISECONDS
+#define TIMER_SPECIAL       45*IN_MILLISECONDS
+#define TIMER_TOUCH         urand(15,20)*IN_MILLISECONDS
 
 //fjola is the 'slave'
 struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI

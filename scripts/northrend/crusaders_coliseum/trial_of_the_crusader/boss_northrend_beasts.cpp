@@ -67,9 +67,9 @@ enum GormokEvents
     EVENT_HEAD_CRACK,
 };
 
-#define TIMER_IMPALE            10*IN_MILISECONDS
-#define TIMER_STAGGERING_STOMP  urand(20, 25)*IN_MILISECONDS
-#define TIMER_THROW_SNOBOLD     urand(20, 45)*IN_MILISECONDS
+#define TIMER_IMPALE            10*IN_MILLISECONDS
+#define TIMER_STAGGERING_STOMP  urand(20, 25)*IN_MILLISECONDS
+#define TIMER_THROW_SNOBOLD     urand(20, 45)*IN_MILLISECONDS
 
 #define MAX_SNOBOLD             5
 
@@ -283,7 +283,7 @@ enum IcehowlEvents
     EVENT_BERSERK = 1,
 };
 
-#define TIMER_BERSERK           15*MINUTE*IN_MILISECONDS
+#define TIMER_BERSERK           15*MINUTE*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
 {

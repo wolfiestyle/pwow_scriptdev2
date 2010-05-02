@@ -55,9 +55,9 @@ enum Says
     SAY_YOGG_HELP       = -1300153
 };
 
-#define BERSERK_TIMER       8*MINUTE*IN_MILISECONDS
-#define FREEZE_TIMER        urand(10, 15)*IN_MILISECONDS
-#define FROZEN_BLOWS_TIMER  urand(45, 60)*IN_MILISECONDS
+#define BERSERK_TIMER       8*MINUTE*IN_MILLISECONDS
+#define FREEZE_TIMER        urand(10, 15)*IN_MILLISECONDS
+#define FROZEN_BLOWS_TIMER  urand(45, 60)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_hodirAI: public ScriptedAI
 {
@@ -90,7 +90,7 @@ struct MANGOS_DLL_DECL boss_hodirAI: public ScriptedAI
         if (m_pInstance)
         {
             /*
-            if (m_uiHardModeTimer < 3*MINUTE*IN_MILISECONDS)
+            if (m_uiHardModeTimer < 3*MINUTE*IN_MILLISECONDS)
                 if (uint64 HardLootGuid = m_pInstance->GetData64(DATA_HODIR_CHEST_HARD))                
                     m_pInstance->DoRespawnGameObject(HardLootGuid, 7*DAY);
             */

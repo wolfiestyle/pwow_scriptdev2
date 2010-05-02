@@ -73,8 +73,8 @@ enum Says
     SAY_IRON_DEATH                  = -1300125
 };
 
-#define BERSERK_TIMER   10*MINUTE*IN_MILISECONDS
-#define SUNBEAM_TIMER   urand(10, 15)*IN_MILISECONDS
+#define BERSERK_TIMER   10*MINUTE*IN_MILLISECONDS
+#define SUNBEAM_TIMER   urand(10, 15)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_freyaAI: public ScriptedAI
 {

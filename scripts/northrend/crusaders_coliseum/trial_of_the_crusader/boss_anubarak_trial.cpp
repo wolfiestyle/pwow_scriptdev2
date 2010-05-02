@@ -125,21 +125,21 @@ typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 typedef std::list<uint64> GuidList;
 
 // Anub'arak
-#define TIMER_BERSERK               10*MINUTE*IN_MILISECONDS
-#define TIMER_SUMMON_SWARM_SCARAB   4*IN_MILISECONDS
-#define TIMER_SUMMON_BURROWER       45*IN_MILISECONDS
-#define TIMER_PENETRATING_COLD      18*IN_MILISECONDS           //not sure about this one
-#define TIMER_FREEZING_SLASH        urand(19,21)*IN_MILISECONDS
-#define TIMER_SUBMERGE              75*IN_MILISECONDS
-#define TIMER_UNSUBMERGE            65*IN_MILISECONDS
-#define TIMER_LEECHING_SWARM_DAMAGE 1*IN_MILISECONDS
+#define TIMER_BERSERK               10*MINUTE*IN_MILLISECONDS
+#define TIMER_SUMMON_SWARM_SCARAB   4*IN_MILLISECONDS
+#define TIMER_SUMMON_BURROWER       45*IN_MILLISECONDS
+#define TIMER_PENETRATING_COLD      18*IN_MILLISECONDS           //not sure about this one
+#define TIMER_FREEZING_SLASH        urand(19,21)*IN_MILLISECONDS
+#define TIMER_SUBMERGE              75*IN_MILLISECONDS
+#define TIMER_UNSUBMERGE            65*IN_MILLISECONDS
+#define TIMER_LEECHING_SWARM_DAMAGE 1*IN_MILLISECONDS
 // Nerubian Burrower
-#define TIMER_ATTEMPT_SUBMERGE      50*IN_MILISECONDS           //not sure
-#define TIMER_EXPOSE_WEAKNESS       urand(3,10)*IN_MILISECONDS  //unsure
-#define TIMER_SHADOW_STRIKE         30.5*IN_MILISECONDS
+#define TIMER_ATTEMPT_SUBMERGE      50*IN_MILLISECONDS           //not sure
+#define TIMER_EXPOSE_WEAKNESS       urand(3,10)*IN_MILLISECONDS  //unsure
+#define TIMER_SHADOW_STRIKE         30.5*IN_MILLISECONDS
 // Swarm Scarab
-#define TIMER_ACID_DRENCHED_MANDIBLES 2*IN_MILISECONDS
-#define TIMER_DETERMINATION         urand(30,400)*IN_MILISECONDS    //unsure (wowwiki says "random chance")
+#define TIMER_ACID_DRENCHED_MANDIBLES 2*IN_MILLISECONDS
+#define TIMER_DETERMINATION         urand(30,400)*IN_MILLISECONDS    //unsure (wowwiki says "random chance")
 
 #define MAX_ALIVE_FROST_SPHERES     6
 #define FLOOR_HEIGHT                143
@@ -458,7 +458,7 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
             {
                 DoCast(m_creature, SPELL_SUBMERGE_BURROWER);
                 m_creature->SetHealth(m_creature->GetMaxHealth());
-                Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILISECONDS);
+                Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
             }
         }
     }

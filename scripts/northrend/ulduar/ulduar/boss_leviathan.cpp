@@ -62,11 +62,11 @@ enum Says
     SAY_DEATH               = -1300215
 };
 
-#define MISSILE_BARRAGE_TIMER   urand(10, 15)*IN_MILISECONDS
-#define FLAME_VENTS_TIMER       60*IN_MILISECONDS
-#define BATTERING_RAM_TIMER     urand(25, 30)*IN_MILISECONDS
-#define GATHERING_SPEED_TIMER   urand(30, 40)*IN_MILISECONDS
-#define TARGET_TIMER            30*IN_MILISECONDS
+#define MISSILE_BARRAGE_TIMER   urand(10, 15)*IN_MILLISECONDS
+#define FLAME_VENTS_TIMER       60*IN_MILLISECONDS
+#define BATTERING_RAM_TIMER     urand(25, 30)*IN_MILLISECONDS
+#define GATHERING_SPEED_TIMER   urand(30, 40)*IN_MILLISECONDS
+#define TARGET_TIMER            30*IN_MILLISECONDS
 
 static const float Turret_Pos[4][2] = {
     {-10, -16},
@@ -153,7 +153,7 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
         for (size_t i = 0; i < HEROIC(2, 4); i++)
             Creature *Turret = DoSpawnCreature(NPC_DEFENSE_TURRET,
                     Turret_Pos[i][0], Turret_Pos[i][1], 0, m_creature->GetOrientation(),
-                    TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*IN_MILISECONDS);
+                    TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*IN_MILLISECONDS);
         DoScriptText(SAY_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);

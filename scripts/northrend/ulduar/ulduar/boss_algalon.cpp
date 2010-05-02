@@ -136,15 +136,15 @@ enum SummonLimits
     MAX_CONSTELLATIONS = 10
 };
 
-#define BERSERK_TIMER               6*MINUTE*IN_MILISECONDS
-#define QUANTUM_STRIKE_TIMER        urand(3, 5)*IN_MILISECONDS
-#define PHASE_PUNCH_TIMER           urand(14, 15)*IN_MILISECONDS
-#define ASCEND_TO_HEAVENS_TIMER     8*MINUTE*IN_MILISECONDS
-#define DESPAWN_TIMER               HOUR*IN_MILISECONDS
-#define COSMIC_SMASH_TIMER          25*IN_MILISECONDS
-#define SUMMON_STARS_TIMER          15*IN_MILISECONDS
-#define SUMMON_CONSTELLATION_TIMER  urand(50, 60)*IN_MILISECONDS
-#define DARK_MATTER_TIMER           30*IN_MILISECONDS
+#define BERSERK_TIMER               6*MINUTE*IN_MILLISECONDS
+#define QUANTUM_STRIKE_TIMER        urand(3, 5)*IN_MILLISECONDS
+#define PHASE_PUNCH_TIMER           urand(14, 15)*IN_MILLISECONDS
+#define ASCEND_TO_HEAVENS_TIMER     8*MINUTE*IN_MILLISECONDS
+#define DESPAWN_TIMER               HOUR*IN_MILLISECONDS
+#define COSMIC_SMASH_TIMER          25*IN_MILLISECONDS
+#define SUMMON_STARS_TIMER          15*IN_MILLISECONDS
+#define SUMMON_CONSTELLATION_TIMER  urand(50, 60)*IN_MILLISECONDS
+#define DARK_MATTER_TIMER           30*IN_MILLISECONDS
 
 typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
 typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
@@ -208,8 +208,8 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
         {
             SayEvents.Reset();
             SayEvents.ScheduleEvent(SAYEVENT_ENTER1, 0);
-            SayEvents.ScheduleEvent(SAYEVENT_ENTER2, 8*IN_MILISECONDS);
-            SayEvents.ScheduleEvent(SAYEVENT_ENTER3, (8+6)*IN_MILISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_ENTER2, 8*IN_MILLISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_ENTER3, (8+6)*IN_MILLISECONDS);
             HasSaidBeginningStuff = true;
         }
     }
@@ -232,10 +232,10 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
 
             SayEvents.Reset();
             SayEvents.ScheduleEvent(SAYEVENT_DEFEATED1, 0);
-            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED2, (40)*IN_MILISECONDS);
-            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED3, (40+15)*IN_MILISECONDS);
-            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED4, (40+15+10)*IN_MILISECONDS);
-            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED5, (40+15+10+10)*IN_MILISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED2, (40)*IN_MILLISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED3, (40+15)*IN_MILLISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED4, (40+15+10)*IN_MILLISECONDS);
+            SayEvents.ScheduleEvent(SAYEVENT_DEFEATED5, (40+15+10+10)*IN_MILLISECONDS);
         }
     }
 
@@ -317,8 +317,8 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                 //schedule says
                 SayEvents.Reset();
                 SayEvents.ScheduleEvent(SAYEVENT_END1, 0);
-                SayEvents.ScheduleEvent(SAYEVENT_END2, (10)*IN_MILISECONDS);
-                SayEvents.ScheduleEvent(SAYEVENT_END3, (10+8)*IN_MILISECONDS);
+                SayEvents.ScheduleEvent(SAYEVENT_END2, (10)*IN_MILLISECONDS);
+                SayEvents.ScheduleEvent(SAYEVENT_END3, (10+8)*IN_MILLISECONDS);
             }
             else
                 m_uiDespawnTimer -= uiDiff;
@@ -421,7 +421,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
             {
                 case EVENT_BERSERK:
                     DoCast(m_creature, SPELL_BERSERK);
-                    //events.ScheduleEvent(EVENT_BERSERK, 10*IN_MILISECONDS);
+                    //events.ScheduleEvent(EVENT_BERSERK, 10*IN_MILLISECONDS);
                     DoScriptText(SAY_BERSERK, m_creature);
                     DoScriptText(EMOTE_BERSERK, m_creature);
                     break;
@@ -435,7 +435,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                     break;
                 case EVENT_ASCEND_TO_HEAVENS:
                     DoCast(m_creature->getVictim(), SPELL_ASCEND_TO_HEAVENS);
-                    events.ScheduleEvent(EVENT_ASCEND_TO_HEAVENS, 5*IN_MILISECONDS); //just in case they survive... hehehe
+                    events.ScheduleEvent(EVENT_ASCEND_TO_HEAVENS, 5*IN_MILLISECONDS); //just in case they survive... hehehe
                     break;
                 case EVENT_SUMMON_STARS:
                     if(!IsPhase2)
@@ -468,7 +468,7 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
                 case EVENT_COSMIC_SMASH:
                     //TODO: mark destination point (don't know the spell)
                     DoScriptText(EMOTE_COSMIC_SMASH, m_creature);
-                    events.ScheduleEvent(EVENT_COSMIC_SMASH_EFFECT, 2*IN_MILISECONDS);
+                    events.ScheduleEvent(EVENT_COSMIC_SMASH_EFFECT, 2*IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_COSMIC_SMASH, COSMIC_SMASH_TIMER);
                     break;
                 case EVENT_COSMIC_SMASH_EFFECT:
@@ -545,7 +545,7 @@ struct MANGOS_DLL_DECL mob_collapsing_starAI : public Scripted_NoMovementAI
     {
         m_creature->SetConfused(true);
         HealthDecrease = m_creature->GetMaxHealth() / 100;
-        HealthTimer = 1*IN_MILISECONDS;
+        HealthTimer = 1*IN_MILLISECONDS;
         m_creature->SetInCombatWithZone();
     }
 
@@ -574,7 +574,7 @@ struct MANGOS_DLL_DECL mob_collapsing_starAI : public Scripted_NoMovementAI
             }
             else
                 m_creature->SetHealth(m_creature->GetHealth() - HealthDecrease);
-            HealthTimer = 1*IN_MILISECONDS;
+            HealthTimer = 1*IN_MILLISECONDS;
         }
         else
             HealthTimer -= uiDiff;
@@ -610,7 +610,7 @@ struct MANGOS_DLL_DECL mob_black_holeAI : public ScriptedAI
     void Reset()
     {
         IsPhase2 = AlgalonAI ? AlgalonAI->IsPhase2 : false;
-        UnleashedDarkMatterTimer = 10*IN_MILISECONDS;
+        UnleashedDarkMatterTimer = 10*IN_MILLISECONDS;
         DoCast(m_creature, SPELL_BLACK_HOLE_VISUAL, true);
     }
 
