@@ -121,7 +121,7 @@ struct MANGOS_DLL_DECL hyjalAI : public ScriptedAI
     hyjalAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         memset(m_aSpells, 0, sizeof(m_aSpells));
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
