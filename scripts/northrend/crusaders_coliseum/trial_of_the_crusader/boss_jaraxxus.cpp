@@ -78,6 +78,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         DoScriptText(SAY_AGGRO, m_creature);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);

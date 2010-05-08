@@ -126,6 +126,8 @@ enum
     GO_ANUBARAK_CHEST           = 195665,
     GO_FACTION_CHAMPION_CHEST   = 195631,
     GO_ENTRANCE_DOOR            = 195589,
+
+    SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
 };
 
 //---------------------------------------------------------

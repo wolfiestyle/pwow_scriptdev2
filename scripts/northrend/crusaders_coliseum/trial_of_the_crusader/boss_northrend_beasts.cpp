@@ -200,6 +200,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -230,6 +231,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -294,6 +296,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);

@@ -113,6 +113,7 @@ struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -143,6 +144,7 @@ struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -173,6 +175,7 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -203,6 +206,7 @@ struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -233,6 +237,7 @@ struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -263,6 +268,7 @@ struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -293,6 +299,7 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -323,6 +330,7 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -353,6 +361,7 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -383,6 +392,7 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -413,6 +423,7 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -443,6 +454,7 @@ struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -473,6 +485,7 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
@@ -503,6 +516,7 @@ struct MANGOS_DLL_DECL boss_toc_warriorAI: public boss_faction_championAI
 
     void Aggro(Unit *pWho)
     {
+        DoCast(m_creature, SPELL_SUNWELL_RADIANCE, true); //TODO: remove this when script is complete
         if (m_pInstance)
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
