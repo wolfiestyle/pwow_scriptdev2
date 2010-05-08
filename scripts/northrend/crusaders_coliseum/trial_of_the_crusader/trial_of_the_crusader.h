@@ -124,7 +124,10 @@ enum
 
     GO_COLISEUM_FLOOR           = 195527,
     GO_ANUBARAK_CHEST           = 195665,
-    GO_FACTION_CHAMPION_CHEST   = 195631,
+    GO_CHAMPIONS_CHEST_N10      = 195631,
+    GO_CHAMPIONS_CHEST_N25      = 195632,
+    GO_CHAMPIONS_CHEST_H10      = 195633,
+    GO_CHAMPIONS_CHEST_H25      = 195635,
     GO_ENTRANCE_DOOR            = 195589,
 
     SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
