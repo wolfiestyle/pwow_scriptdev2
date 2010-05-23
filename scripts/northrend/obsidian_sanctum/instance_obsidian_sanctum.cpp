@@ -37,15 +37,17 @@ struct MANGOS_DLL_DECL instance_obsidian_sanctum : public ScriptedInstance
     uint64 m_uiTenebronGUID;
     uint64 m_uiShadronGUID;
     uint64 m_uiVesperonGUID;
+    uint32 m_uiDrakeData;
 
     void Initialize()
     {
-        memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+        memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
 
         m_uiSartharionGUID = 0;
         m_uiTenebronGUID   = 0;
         m_uiShadronGUID    = 0;
         m_uiVesperonGUID   = 0;
+        m_uiDrakeData      = 0;
     }
 
     void OnCreatureCreate(Creature* pCreature)
@@ -74,16 +76,28 @@ struct MANGOS_DLL_DECL instance_obsidian_sanctum : public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        if (uiType == TYPE_SARTHARION_EVENT)
-            m_auiEncounter[0] = uiData;
+        switch (uiType)
+        {
+            case TYPE_SARTHARION_EVENT:
+                m_auiEncounter[0] = uiData;
+                break;
+            case DATA_DRAKES:
+                m_uiDrakeData = uiData;
+                break;
+        }
     }
 
     uint32 GetData(uint32 uiType)
     {
-        if (uiType == TYPE_SARTHARION_EVENT)
-            return m_auiEncounter[0];
-
-        return 0;
+        switch (uiType)
+        {
+            case TYPE_SARTHARION_EVENT:
+                return m_auiEncounter[0];
+            case DATA_DRAKES:
+                return m_uiDrakeData;
+            default:
+                return 0;
+        }
     }
 
     uint64 GetData64(uint32 uiData)
@@ -100,6 +114,24 @@ struct MANGOS_DLL_DECL instance_obsidian_sanctum : public ScriptedInstance
                 return m_uiVesperonGUID;
         }
         return 0;
+    }
+
+    bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
+    {
+        switch (CriteriaId)
+        {
+            case CRIT_TWILIGHT_ASSIST_N:
+            case CRIT_TWILIGHT_ASSIST_H:
+                return m_uiDrakeData >= 1;
+            case CRIT_TWILIGHT_DUO_N:
+            case CRTT_TWILIGHT_DUO_H:
+                return m_uiDrakeData >= 2;
+            case CRIT_TWILIGHT_ZONE_N:
+            case CRIT_TWILIGHT_ZONE_H:
+                return m_uiDrakeData >= 3;
+            default:
+                return false;
+        }
     }
 };
 
