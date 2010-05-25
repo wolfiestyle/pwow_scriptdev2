@@ -103,13 +103,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     uint32 CurrPhase;
     uint32 CurrBeastOfNortherendPhase;
-    bool EncounterInProgress;
-    bool m_bIsHeroic;
+    bool EncounterInProgress :1;
+    bool m_bIsHeroic :1;
+    bool m_bIs10Man :1;
+    bool m_bCombatStart :1;
+    bool m_bIsInTalkPhase :1;
     uint32 uiSummonTimer;
-    bool m_bCombatStart;
     uint32 m_uiAggroTimer;
     uint32 m_uiBeastsDead;
-    bool m_bIsInTalkPhase;
     uint32 m_uiTalkTimer;
     uint32 m_uiTalkCounter;
 
@@ -121,11 +122,11 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         CurrPhase(PHASE_NOT_STARTED),
         CurrBeastOfNortherendPhase(PHASE_BEASTS_NONE),
         EncounterInProgress(false),
-        uiSummonTimer(0),
         m_bCombatStart(false),
+        m_bIsInTalkPhase(false),
+        uiSummonTimer(0),
         m_uiAggroTimer(0),
         m_uiBeastsDead(0),
-        m_bIsInTalkPhase(false),
         m_uiTalkTimer(0),
         m_uiTalkCounter(0)
     {
@@ -145,7 +146,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
         if (CurrPhase == PHASE_TWIN_VALKYR)
             DestroyFloor();
-        m_bIsHeroic = pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC;
+        Difficulty diff = pCreature->GetMap()->GetDifficulty();
+        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
+        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
         Reset();
     }
 
@@ -225,7 +228,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     void SpawnBoss(uint32 entry, int32 slot = 0)
     {
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
-        m_creature->SummonCreature(entry, summon_pos[0] + float(x*2), summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
 
     void NorthrendBeastsEncounterCheck()
@@ -349,23 +352,31 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 SpawnBoss(NPC_JARAXXUS);
                 break;
             case PHASE_FACTION_CHAMPIONS:
+            {
+                std::vector<uint32> ChampionEntries;
+                ChampionEntries.reserve(14);
                 if (!IS_HORDE)
-                    for (uint32 id = 34441, slot = 0; id <= 34459; id++) //the NPC ids are rather close together
+                    for (uint32 id = 34441; id <= 34459; id++) //the NPC ids are rather close together
                     {
                         if (id == 34442 || id == 34443 || id == 34446 || id == 34452)
                             continue;
 
-                        SpawnBoss(id, slot++);
+                        ChampionEntries.push_back(id);
                     }
                 else
-                    for (uint32 id = 34460, slot = 0; id <= 34475; id++)
+                    for (uint32 id = 34460; id <= 34475; id++)
                     {
                         if (id == 34462 || id == 34464)
                             continue;
 
-                        SpawnBoss(id, slot++);
+                        ChampionEntries.push_back(id);
                     }
+                std::random_shuffle(ChampionEntries.begin(), ChampionEntries.end());
+                uint32 amount = m_bIs10Man ? 6 : 10;
+                for (uint32 i = 0 ; i < amount; i++)
+                    SpawnBoss(ChampionEntries[i], i);
                 break;
+            }
             case PHASE_TWIN_VALKYR:
                 SpawnBoss(NPC_FJOLA_LIGHTBANE, 1);
                 SpawnBoss(NPC_EYDIS_DARKBANE, 2);

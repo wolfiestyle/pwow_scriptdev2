@@ -14,7 +14,7 @@
 // schedules an event
 #define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
 
-#define IS_HORDE            bool(m_pInstance ? m_pInstance->GetData(DATA_FACTION) : false)
+#define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE: false)
 
 enum
 {

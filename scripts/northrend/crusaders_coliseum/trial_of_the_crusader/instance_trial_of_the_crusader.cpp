@@ -34,19 +34,20 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string m_strInstData;
-    bool IsHorde;
+    uint32 m_playerTeam;
 
     typedef std::map<uint32, uint64> GuidMap;
     GuidMap m_guidsStore;
 
     void OnPlayerEnter(Player *pWho)
     {
-        IsHorde = pWho->GetTeam() == HORDE;
+        if (!m_playerTeam)
+            m_playerTeam = pWho->GetTeam();
     }
 
     void Initialize()
     {
-        IsHorde = false;
+        m_playerTeam = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -177,7 +178,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case TYPE_ANUBARAK:
                 return m_auiEncounter[uiType];
             case DATA_FACTION:
-                return IsHorde;
+                return m_playerTeam;
         }
 
         return 0;
