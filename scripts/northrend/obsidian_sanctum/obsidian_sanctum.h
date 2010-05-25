@@ -6,6 +6,7 @@
 #define DEF_OBSIDIAN_SANCTUM_H
 
 #define GET_CREATURE(C) (m_pInstance ? m_creature->GetMap()->GetCreature(m_pInstance->GetData64(C)) : NULL)
+#define DIFFICULTY(SP)  (m_bIsRegularMode ? SP : SP##_H)
 
 enum
 {

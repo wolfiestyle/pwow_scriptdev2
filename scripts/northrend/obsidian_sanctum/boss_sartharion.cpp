@@ -203,19 +203,19 @@ static Location const AcolyteofVesperon2 =   { 3246.57f, 551.263f, 58.6164f };
 
 static Location const TwilightEggs[] =
 {
-    {3219.28f, 669.121f , 88.5549f},
-    {3221.55f, 682.852f , 90.5361f},
-    {3239.77f, 685.94f , 90.3168f},
-    {3250.33f, 669.749f , 88.7637f},
-    {3246.6f, 642.365f , 84.8752f},
-    {3233.68f, 653.117f , 85.7051f}
+    {3219.28f, 669.121f, 88.5549f},
+    {3221.55f, 682.852f, 90.5361f},
+    {3239.77f, 685.94f,  90.3168f},
+    {3250.33f, 669.749f, 88.7637f},
+    {3246.6f,  642.365f, 84.8752f},
+    {3233.68f, 653.117f, 85.7051f}
 };
 
 static Location const TwilightEggsSarth[] =
 {
-    {3261.75f, 539.14f , 58.6082f},
-    {3257.41f, 512.939f , 58.5432f},
-    {3231.04f, 498.281f , 58.6439f}
+    {3261.75f, 539.14f,  58.6082f},
+    {3257.41f, 512.939f, 58.5432f},
+    {3231.04f, 498.281f, 58.6439f}
 };
 
 /*######
@@ -309,13 +309,11 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         Creature *pShad = GET_CREATURE(DATA_SHADRON);
         Creature *pVesp = GET_CREATURE(DATA_VESPERON);
 
-        //if at least one of the dragons are alive and are being called
-        bool bCanUseWill = false;
+        //can use Will if at least one of the dragons are alive and are being called
         uint32 drakeCount = 0;
 
         if (pTene && pTene->isAlive() && !pTene->getVictim())
         {
-            bCanUseWill = true;
             drakeCount++;
             pTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0].x, m_aTene[0].y, m_aTene[0].z);
 
@@ -326,7 +324,6 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
 
         if (pShad && pShad->isAlive() && !pShad->getVictim())
         {
-            bCanUseWill = true;
             drakeCount++;
             pShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0].x, m_aShad[0].y, m_aShad[0].z);
 
@@ -337,7 +334,6 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
 
         if (pVesp && pVesp->isAlive() && !pVesp->getVictim())
         {
-            bCanUseWill = true;
             drakeCount++;
             pVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0].x, m_aVesp[0].y, m_aVesp[0].z);
 
@@ -346,11 +342,10 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                 pVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
-        if (drakeCount)
-            if (m_pInstance)
-                m_pInstance->SetData(DATA_DRAKES, drakeCount);
+        if (m_pInstance)
+            m_pInstance->SetData(DATA_DRAKES, drakeCount);
 
-        if (bCanUseWill)
+        if (drakeCount)
         {
             if (pTene)
                 pTene->CastSpell(pTene, SPELL_WILL_OF_SARTHARION, true);
@@ -362,7 +357,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             //FIXME: this shouldn't be needed to be casted from victim
             if (Unit *victim = m_creature->getVictim())
                 victim->CastSpell(m_creature, SPELL_WILL_OF_SARTHARION, true);
-            //FIXME: make spell health increase properly from core
+            //FIXME: make spell properly increase maximum health from core
             m_creature->SetHealthPercent(100.0f);
         }
     }
@@ -440,6 +435,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             && ((pTene && pTene->isAlive()) || (pShad && pShad->isAlive()) || (pVesp && pVesp->isAlive())))
         {
             DoScriptText(SAY_SARTHARION_BERSERK, m_creature);
+            m_creature->InterruptNonMeleeSpells(false);
             DoCastSpellIfCan(m_creature, SPELL_BERSERK);
         }
 
@@ -482,15 +478,15 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                             break;
                         }
                     }
-                    events.ScheduleEvent(EVENT_FLAME_TSUNAMI,30000);
+                    events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
                     break;
                 case EVENT_FLAME_BREATH:
                     DoScriptText(SAY_SARTHARION_BREATH, m_creature);
-                    DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FLAME_BREATH : SPELL_FLAME_BREATH_H);
+                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_FLAME_BREATH));
                     events.ScheduleEvent(EVENT_FLAME_BREATH,urand(25000, 35000));
                     break;
                 case EVENT_TAIL_SWEEP:
-                    DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_TAIL_LASH : SPELL_TAIL_LASH_H);
+                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_TAIL_LASH));
                     events.ScheduleEvent(EVENT_TAIL_SWEEP,urand(15000, 20000));
                     break;
                 case EVENT_CLEAVE:
@@ -749,7 +745,7 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI
             // Twilight Revenge to main boss
             if (Creature *pSartharion = GET_CREATURE(DATA_SARTHARION))
                 if (pSartharion->isAlive())
-                    m_creature->CastSpell(pSartharion,SPELL_TWILIGHT_REVENGE,true);
+                    m_creature->CastSpell(pSartharion, SPELL_TWILIGHT_REVENGE, true);
         }
     }
 
@@ -822,7 +818,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             {
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
+                        DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
                     events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
@@ -831,7 +827,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_TENEBRON_BREATH, m_creature);
-                    DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
                     events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
@@ -898,19 +894,19 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
             {
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
-                    events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000,20000));
+                        DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
+                    events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
                     if (!m_creature->HasAura(SPELL_GIFT_OF_TWILIGHT_SHA))
                     {    
                         OpenPortal();
                     }
-                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000,65000));
+                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 65000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_SHADRON_BREATH, m_creature);
-                    DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
                     events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
                 }
@@ -974,17 +970,17 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
                 case EVENT_SHADOW_FISSURE:
                 {
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
+                        DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
                     events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 }
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000,70000));
+                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 70000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_VESPERON_BREATH, m_creature);
-                    DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
+                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
                     events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
@@ -1000,7 +996,7 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI
 {
     mob_portal_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
@@ -1058,14 +1054,14 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI
                             Unit* pDebuffTarget = i->getSource();
                             if (pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_TWILIGHT_SHIFT) && !pDebuffTarget->getVictim())
                             {
-                                pDebuffTarget->CastSpell(pDebuffTarget,SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
-                                pDebuffTarget->CastSpell(pDebuffTarget,SPELL_TWILIGHT_RESIDUE,true);
+                                pDebuffTarget->CastSpell(pDebuffTarget, SPELL_TWILIGHT_SHIFT_REMOVAL_ALL, true);
+                                pDebuffTarget->CastSpell(pDebuffTarget, SPELL_TWILIGHT_RESIDUE, true);
                                 pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
                                 pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
                             }
                         }
                     }
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(),NULL,SELF_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,NULL,false);
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     break;
                 }
             }
@@ -1088,7 +1084,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetPhaseMask(16 , false);
+        m_creature->SetPhaseMask(16, false);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -1150,7 +1146,7 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI
                 }
                 case EVENT_DEBUFF:
                 {
-                    Unit* pVesp = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_VESPERON));
+                    Creature* pVesp = GET_CREATURE(DATA_VESPERON);
                     if (pVesp)
                          pVesp->CastSpell(pVesp, SPELL_TWILIGHT_TORMENT_VESP, true);
                     break;
@@ -1215,6 +1211,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
+
 /*######
 ## Mob Tenebron Egg Controller
 ######*/
@@ -1317,11 +1314,11 @@ struct MANGOS_DLL_DECL mob_twilight_eggsAI : public ScriptedAI
 {
     mob_twilight_eggsAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    ScriptedInstance *m_pInstance;
     uint32 m_uiHatchEggTimer;
 
     void Reset()
@@ -1336,16 +1333,14 @@ struct MANGOS_DLL_DECL mob_twilight_eggsAI : public ScriptedAI
             m_creature->SummonCreature(NPC_TWILIGHT_WHELP, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
         else
             m_creature->SummonCreature(NPC_SHARTHARION_TWILIGHT_WHELP, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
-        m_creature->DealDamage(m_creature, m_creature->GetHealth(),NULL,SELF_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,NULL,false);
+        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
 
     void UpdateAI(const uint32 uiDiff) 
     {
         // hatch eggs
         if (m_uiHatchEggTimer <= uiDiff)
-        {
             SpawnWhelps();
-        }
         else
             m_uiHatchEggTimer -= uiDiff;
     }
@@ -1436,7 +1431,7 @@ struct mob_twilight_fissureAI : public Scripted_NoMovementAI
         if (VoidBlast_Timer <= diff)
         {
             //TODO: Find the appropiate Visual effect for the "Twilight Fissure"
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_VOID_BLAST : SPELL_VOID_BLAST_H, true);
+            DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_VOID_BLAST), true);
             VoidBlast_Timer = 9000;
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
@@ -1459,7 +1454,7 @@ struct MANGOS_DLL_DECL mob_twilight_whelpAI : public ScriptedAI
     void Reset()
     {
         m_uiFadeArmorTimer = 1000;
-        m_creature->SetPhaseMask(1,false);
+        m_creature->SetPhaseMask(1, false);
         m_creature->SetInCombatWithZone();
     }
 

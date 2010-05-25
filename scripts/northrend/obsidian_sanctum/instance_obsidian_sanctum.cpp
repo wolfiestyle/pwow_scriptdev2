@@ -30,7 +30,7 @@ EndScriptData */
 
 struct MANGOS_DLL_DECL instance_obsidian_sanctum : public ScriptedInstance
 {
-    instance_obsidian_sanctum(Map* pMap) : ScriptedInstance(pMap) {Initialize();};
+    instance_obsidian_sanctum(Map* pMap) : ScriptedInstance(pMap) { Initialize(); }
 
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     uint64 m_uiSartharionGUID;
