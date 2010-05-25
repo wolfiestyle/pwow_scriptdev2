@@ -30,6 +30,9 @@ enum
     DATA_STEELBREAKER           = 20,
     DATA_MOLGEIM                = 21,
     DATA_BRUNDIR                = 22,
+    DATA_BRAIN_OF_YOGGSARON     = 23,
+    DATA_SARA                   = 24,
+	DATA_ILLUSION               = 25,
     DATA_LEFT_ARM               = 30,
     DATA_RIGHT_ARM              = 31,
     DATA_SANCTUM_SENTRY         = 40,
@@ -48,6 +51,7 @@ enum
     DATA_VEZAX_DOOR             = 62,
     DATA_BOSS_ENGAGED           = 70,
     DATA_BOSS_DONE              = 71,
+    DATA_GUARDIANS_CHOSEN       = 72,
 
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
@@ -70,6 +74,8 @@ enum
     NPC_FREYA                   = 32906,
     NPC_VEZAX                   = 33271,
     NPC_YOGGSARON               = 33288,
+    NPC_BRAIN_OF_YOGGSARON      = 33890,
+    NPC_SARA                    = 33134,
     NPC_ALGALON                 = 32871,
 
     GO_KOLOGARN_CHEST           = 195046,

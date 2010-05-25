@@ -311,10 +311,12 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
 
         //if at least one of the dragons are alive and are being called
         bool bCanUseWill = false;
+        uint32 drakeCount = 0;
 
         if (pTene && pTene->isAlive() && !pTene->getVictim())
         {
             bCanUseWill = true;
+            drakeCount++;
             pTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0].x, m_aTene[0].y, m_aTene[0].z);
 
             events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
@@ -325,6 +327,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (pShad && pShad->isAlive() && !pShad->getVictim())
         {
             bCanUseWill = true;
+            drakeCount++;
             pShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0].x, m_aShad[0].y, m_aShad[0].z);
 
             events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
@@ -335,12 +338,17 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (pVesp && pVesp->isAlive() && !pVesp->getVictim())
         {
             bCanUseWill = true;
+            drakeCount++;
             pVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0].x, m_aVesp[0].y, m_aVesp[0].z);
 
             events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
             if (!pVesp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 pVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
+
+        if (drakeCount)
+            if (m_pInstance)
+                m_pInstance->SetData(DATA_DRAKES, drakeCount);
 
         if (bCanUseWill)
         {
@@ -376,9 +384,6 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                 int32 iTextId = 0;
                 //TODO: Add support for loot handling
                 AddDrakeLootMode();
-
-                if (m_pInstance)
-                    m_pInstance->SetData(DATA_DRAKES, m_pInstance->GetData(DATA_DRAKES)+1);
 
                 switch(pTemp->GetEntry())
                 {
@@ -1116,6 +1121,7 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI
         m_creature->SetDisplayId(11686);
         events.ScheduleEvent(EVENT_SUMMON, 1000);
         events.ScheduleEvent(EVENT_DEBUFF, 1000);
+        events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000);
     }
 
     void SummonedCreatureJustDied(Creature *pSummon)
