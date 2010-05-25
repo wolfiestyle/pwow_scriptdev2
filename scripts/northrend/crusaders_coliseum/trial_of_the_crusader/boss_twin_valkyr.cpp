@@ -141,6 +141,11 @@ typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 #define TIMER_SPECIAL       45*IN_MILLISECONDS
 #define TIMER_TOUCH         urand(15,20)*IN_MILLISECONDS
 
+// Used for Light/Dark essence damage effect (aura 303)
+// core should do this on apply/remove aura, but don't know that info
+#define AURA_STATE_DARK     AuraState(19)
+#define AURA_STATE_LIGHT    AuraState(22)
+
 //fjola is the 'slave'
 struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 {
@@ -188,6 +193,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
     void Aggro(Unit *pWho)
     {
         DoCast(m_creature, DIFFICULTY(SPELL_SURGE_OF_LIGHT));
+        m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
         RESCHEDULE_EVENT(BERSERK);
         RESCHEDULE_EVENT(TWIN_SPIKE);
         if (m_bIsHeroic)
@@ -334,6 +340,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         }
 
         DoCast(m_creature, DIFFICULTY(SPELL_SURGE_OF_DARKNESS));
+        m_creature->ModifyAuraState(AURA_STATE_DARK, true);
 
         RESCHEDULE_EVENT(BERSERK);
         RESCHEDULE_EVENT(SPAWN_ORBS);
