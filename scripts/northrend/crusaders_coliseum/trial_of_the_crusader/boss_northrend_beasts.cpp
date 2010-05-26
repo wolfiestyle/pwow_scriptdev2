@@ -110,6 +110,11 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
         }
     }
 
+    void JustDied(Unit *pKiller)
+    {
+        DespawnSummons();
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
