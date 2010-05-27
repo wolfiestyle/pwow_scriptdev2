@@ -308,7 +308,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                     Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SPRAY:
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, NULL))
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), DIFFICULTY(SPELL_PARALYTIC_SPRAY), true);
                     Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
                     break;
@@ -334,7 +334,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                             m_uiStep++;
                             break;
                         case 1:
-                            m_creature->GetMotionMaster()->MovePoint(NULL, RoomCenter[0]+(rand()%80 - 40), RoomCenter[1]+(rand()%80 - 40), RoomCenter[2]);
+                            m_creature->GetMotionMaster()->MovePoint(0, RoomCenter[0]+(rand()%80 - 40), RoomCenter[1]+(rand()%80 - 40), RoomCenter[2]);
                             Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 7500);
                             m_uiStep++;
                             break;
@@ -399,7 +399,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
         if (pAcidMaw && pAcidMaw->isAlive())
         {
             pAcidMaw->CastSpell(pAcidMaw, SPELL_ENRAGE, true);
-            pAcidMaw->MonsterTextEmote("As its companion perishes, Acidmaw becomes Enraged!", NULL, true);
+            pAcidMaw->MonsterTextEmote("As its companion perishes, Acidmaw becomes Enraged!", 0, true);
         }
     }
 
@@ -453,7 +453,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SPRAY:
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, NULL))
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                          m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), DIFFICULTY(SPELL_BURNING_SPRAY), true);
                     Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
                     break;
@@ -479,7 +479,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                             m_uiStep++;
                             break;
                         case 1:
-                            m_creature->GetMotionMaster()->MovePoint(NULL, RoomCenter[0]+(rand()%80 - 40), RoomCenter[1]+(rand()%80 - 40), RoomCenter[2]);
+                            m_creature->GetMotionMaster()->MovePoint(0, RoomCenter[0]+(rand()%80 - 40), RoomCenter[1]+(rand()%80 - 40), RoomCenter[2]);
                             Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 7500);
                             m_uiStep++;
                             break;
@@ -496,10 +496,10 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                             m_uiStep++;
                             Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 1500);
                             break;
-                        case 4: 
+                        case 4:
                             if (m_bIsRooted)
                                 DoStartNoMovement(m_creature->getVictim());
-                            else 
+                            else
                                 DoStartMovement(m_creature->getVictim());
                             m_uiStep = 0;
                             break;
@@ -509,7 +509,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                 default:
                     break;
             }
-        
+
         if (!m_uiStep) //prevent melee attacks from underground
             DoMeleeAttackIfReady();
     }
@@ -560,11 +560,11 @@ enum IcehowlPhases
 };
 
 #define TIMER_BERSERK           15*MINUTE*IN_MILLISECONDS
-#define WHIRL_TIMER             urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS)
-#define BREATH_TIMER            urand(15*IN_MILLISECONDS, 20*IN_MILLISECONDS)
-#define BUTT_TIMER              urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS)
+#define WHIRL_TIMER             urand(10, 20)*IN_MILLISECONDS
+#define BREATH_TIMER            urand(15, 20)*IN_MILLISECONDS
+#define BUTT_TIMER              urand(20, 30)*IN_MILLISECONDS
 #define SPECIAL_TIMER           60*IN_MILLISECONDS
-#define PHASE_TIMER             urand(30*IN_MILLISECONDS, 45*IN_MILLISECONDS)
+#define PHASE_TIMER             urand(30, 45)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
 {
@@ -573,16 +573,16 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
     {
     }
 
-    Unit* pTarget;
+    Unit *pTarget;
     float pTargetX, pTargetY;
     uint8 m_uiStep;
-    bool m_bHit;
 
     void Aggro(Unit *pWho)
     {
-        m_bHit = false;
-        m_uiStep = 0;
         pTarget = NULL;
+        pTargetX = 0.0f;
+        pTargetY = 0.0f;
+        m_uiStep = 0;
         m_creature->SetSpeedRate(MOVE_WALK, 2.0f, true);
         m_creature->SetSpeedRate(MOVE_RUN,  2.0f, true);
         Events.SetPhase(PHASE_NORMAL);
@@ -617,7 +617,8 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                     Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
                     break;
                 case EVENT_BREATH:
-                    m_creature->CastSpell(SelectUnit(SELECT_TARGET_RANDOM, NULL), DIFFICULTY(SPELL_ARCTIC_BREATH),false);
+                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        m_creature->CastSpell(target, DIFFICULTY(SPELL_ARCTIC_BREATH), false);
                     Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
                     break;
                 case EVENT_PHASE_CHANGE:
@@ -628,33 +629,33 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                 case EVENT_SPECIAL:
                     switch(m_uiStep)
                     {
-                        case 0:                            
+                        case 0:
                             DoStartNoMovement(m_creature->getVictim());
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
-                            m_creature->GetMotionMaster()->MovePoint(NULL, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
+                            m_creature->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
                             Events.ScheduleEvent(EVENT_SPECIAL, 2000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
                         case 1:
                             m_creature->GetMotionMaster()->MoveIdle();
-                            m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_MASSIVE_CRASH),false);
+                            m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_MASSIVE_CRASH), false);
                             Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
                         case 2:
-                            pTarget = SelectUnit(SELECT_TARGET_RANDOM, NULL);
+                            pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
                             if (pTarget)
                             {
-                                    pTargetX = pTarget->GetPositionX();
-                                    pTargetY = pTarget->GetPositionY(); 
-                                    m_creature->SetFacingTo( m_creature->GetAngle(pTargetX, pTargetY) );
-                                    m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget->GetGUID(), true); 
-                            }                           
+                                pTargetX = pTarget->GetPositionX();
+                                pTargetY = pTarget->GetPositionY();
+                                m_creature->SetFacingTo(m_creature->GetAngle(pTargetX, pTargetY));
+                                m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget->GetGUID(), true);
+                            }
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
-                        case 3: 
-                            m_creature->HandleEmoteCommand(EMOTE_ONESHOT_BATTLEROAR); // wont work
+                        case 3:
+                            m_creature->HandleEmote(EMOTE_ONESHOT_BATTLEROAR); //FIXME: doesn't display animation
                             Events.ScheduleEvent(EVENT_SPECIAL, 1500, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
@@ -664,26 +665,25 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 float x, y;
                                 float angle = m_creature->GetAngle(pTarget) + M_PI;
                                 float radius = m_creature->GetDistance2d(pTarget);
-                                x = radius*cos(angle)+ RoomCenter[0];
-                                y = radius*sin(angle)+ RoomCenter[1];
-                                m_creature->GetMotionMaster()->MovePoint(NULL, x, y, m_creature->GetPositionZ());
+                                x = radius*cos(angle) + RoomCenter[0];
+                                y = radius*sin(angle) + RoomCenter[1];
+                                m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
                             }
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
                         case 5:
-                            m_creature->SetFacingTo( m_creature->GetAngle(pTargetX, pTargetY) );
+                            m_creature->SetFacingTo(m_creature->GetAngle(pTargetX, pTargetY));
                             if (!m_bIsHeroic)
                             {
-                                Map* pMap = m_creature->GetMap();
+                                Map *pMap = m_creature->GetMap();
                                 if (pMap && pMap->IsDungeon())
                                 {
                                     Map::PlayerList const &PlayerList = pMap->GetPlayers();
 
-                                    if (!PlayerList.isEmpty())
-                                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) 
-                                            if (i->getSource()->isAlive())
-                                                i->getSource()->CastSpell(i->getSource(), SPELL_SURGE_OF_ADRENALINE, true);
+                                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                        if (i->getSource()->isAlive())
+                                            i->getSource()->CastSpell(i->getSource(), SPELL_SURGE_OF_ADRENALINE, true);
                                 }
                             }
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
@@ -692,37 +692,36 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                         case 6:
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
                             m_creature->SetSpeedRate(MOVE_WALK, 10.0f, true);
-                            m_creature->GetMotionMaster()->MovePoint(NULL, pTargetX, pTargetY, m_creature->GetPositionZ());
+                            m_creature->GetMotionMaster()->MovePoint(0, pTargetX, pTargetY, m_creature->GetPositionZ());
                             Events.ScheduleEvent(EVENT_SPECIAL, 2500, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
                         case 7:
+                        {
+                            Map* pMap = m_creature->GetMap();
+                            bool m_bHit = false;
+                            if (pMap && pMap->IsDungeon())
                             {
-                                Map* pMap = m_creature->GetMap();
-                                m_bHit = false;
-                                if (pMap && pMap->IsDungeon())
-                                {
-                                    Map::PlayerList const &PlayerList = pMap->GetPlayers();
-                                    if (!PlayerList.isEmpty())
-                                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) 
-                                            if (m_creature->GetDistance2d(i->getSource())< 12.0f)
-                                            {
-                                                m_bHit = true;
-                                                break;
-                                            }
-                                }
+                                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) 
+                                    if (m_creature->IsWithinDistInMap(i->getSource(), 12.0f))
+                                    {
+                                        m_bHit = true;
+                                        break;
+                                    }
                             }
                             m_creature->CastSpell(m_creature, SPELL_TRAMPLE, true);
                             if (!m_bHit)
                             {
                                 m_creature->CastSpell(m_creature, SPELL_STAGGERED_DAZE, false);
-                                m_creature->MonsterTextEmote("Icehowl crashes into the Coliseum Wall and is stunned!", NULL, true); 
-                            } 
+                                m_creature->MonsterTextEmote("Icehowl crashes into the Coliseum Wall and is stunned!", 0, true);
+                            }
                             else
                                 m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_FROTHING_RAGE), false);
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
+                        }
                         case 8:
                             m_creature->SetSpeedRate(MOVE_RUN, 2.0f, true);
                             m_creature->SetSpeedRate(MOVE_WALK, 2.0f, true);
