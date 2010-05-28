@@ -35,6 +35,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string m_strInstData;
     uint32 m_playerTeam;
+    uint32 m_auiAchievementAddCounter;
 
     typedef std::map<uint32, uint64> GuidMap;
     GuidMap m_guidsStore;
@@ -48,6 +49,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     void Initialize()
     {
         m_playerTeam = 0;
+        m_auiAchievementAddCounter = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -125,6 +127,12 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
+        if (uiType == DATA_MISTRESS_ACHIEVEMENT )
+        {
+            m_auiAchievementAddCounter = uiData;
+            return;
+        }
+
         m_auiEncounter[uiType] = uiData;
 
         std::ostringstream saveStream;
@@ -179,6 +187,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 return m_auiEncounter[uiType];
             case DATA_FACTION:
                 return m_playerTeam;
+            case DATA_MISTRESS_ACHIEVEMENT:
+                return m_auiAchievementAddCounter;
         }
 
         return 0;
@@ -210,6 +220,20 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         }
 
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
+    {
+        switch(CriteriaId)
+            {
+            case THREE_SIXTY_CRITERIA_N10:
+            case THREE_SIXTY_CRITERIA_N25:
+            case THREE_SIXTY_CRITERIA_H10:
+            case THREE_SIXTY_CRITERIA_H25:
+                return m_auiAchievementAddCounter >= 2;
+            default:
+                return false;
+            }
     }
 };
 

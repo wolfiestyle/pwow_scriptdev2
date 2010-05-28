@@ -78,6 +78,7 @@ enum
     TYPE_ENTRANCE_DOOR          = 43,
 
     DATA_FACTION                = 50,
+    DATA_MISTRESS_ACHIEVEMENT   = 51,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
@@ -121,6 +122,11 @@ enum
     NPC_GARROSH_HELLSCREAM      = 34995,
     NPC_TIRION_FORDRING         = 34996,
     NPC_LICH_KING               = 35877, // used for start of anub'arak encounter
+
+    THREE_SIXTY_CRITERIA_N10     = 11838,
+    THREE_SIXTY_CRITERIA_N25     = 11839,
+    THREE_SIXTY_CRITERIA_H10     = 11861,
+    THREE_SIXTY_CRITERIA_H25     = 11862,
 
     GO_COLISEUM_FLOOR           = 195527,
     GO_ANUBARAK_CHEST           = 195665,
