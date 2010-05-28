@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss Northrend Beasts
-SD%Complete: 10
+SD%Complete: 85%
 SDComment: vehicle support is needed to properly implement the 'throw snobold' event
 SDCategory: Trial of the Crusader
 EndScriptData */
@@ -728,6 +728,9 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             DoStartMovement(m_creature->getVictim());
                             m_uiStep = 0;
                             Events.SetPhase(PHASE_NORMAL);
+                            Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, PHASE_NORMAL);
+                            Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
+                            Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
                             break;
                     }
                     break;
