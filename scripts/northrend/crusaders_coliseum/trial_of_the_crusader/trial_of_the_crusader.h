@@ -79,6 +79,7 @@ enum
 
     DATA_FACTION                = 50,
     DATA_MISTRESS_ACHIEVEMENT   = 51,
+    DATA_GORMOK_ACHIEVEMENT     = 52,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
@@ -122,6 +123,11 @@ enum
     NPC_GARROSH_HELLSCREAM      = 34995,
     NPC_TIRION_FORDRING         = 34996,
     NPC_LICH_KING               = 35877, // used for start of anub'arak encounter
+
+    UPPER_BACK_PAIN_CRITERIA_N10 = 11779,
+    UPPER_BACK_PAIN_CRITERIA_N25 = 11780,
+    UPPER_BACK_PAIN_CRITERIA_H10 = 11802,
+    UPPER_BACK_PAIN_CRITERIA_H25 = 11801,
 
     THREE_SIXTY_CRITERIA_N10     = 11838,
     THREE_SIXTY_CRITERIA_N25     = 11839,

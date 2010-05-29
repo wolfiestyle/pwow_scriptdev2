@@ -230,7 +230,12 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case THREE_SIXTY_CRITERIA_N25:
             case THREE_SIXTY_CRITERIA_H10:
             case THREE_SIXTY_CRITERIA_H25:
+            case UPPER_BACK_PAIN_CRITERIA_N10:
+            case UPPER_BACK_PAIN_CRITERIA_H10:
                 return m_auiAchievementAddCounter >= 2;
+            case UPPER_BACK_PAIN_CRITERIA_N25:
+            case UPPER_BACK_PAIN_CRITERIA_H25:
+                return m_auiAchievementAddCounter >= 4;
             default:
                 return false;
             }
