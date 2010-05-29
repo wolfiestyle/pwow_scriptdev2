@@ -59,10 +59,10 @@ enum Spells
     SPELL_NETHER_PORTAL_N25     = 67898,
     SPELL_NETHER_PORTAL_H10     = 67899,
     SPELL_NETHER_PORTAL_H25     = 67900,
-    SPELL_NETHER_PPORTAL_N10    = 66263,
-    SPELL_NETHER_PPORTAL_N25    = 67103,
-    SPELL_NETHER_PPORTAL_H10    = 67104,
-    SPELL_NETHER_PPORTAL_H25    = 67105,
+    SPELL_NETHER_PORTAL_SUMMON_N10 = 66263,
+    SPELL_NETHER_PORTAL_SUMMON_N25 = 67103,
+    SPELL_NETHER_PORTAL_SUMMON_H10 = 67104,
+    SPELL_NETHER_PORTAL_SUMMON_H25 = 67105,
     SPELL_NETHER_POWER          = 67009,
 };
 
@@ -140,6 +140,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
             return;
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
+
     void JustSummoned(Creature* pSummon)
     {
         if (pSummon)
@@ -149,23 +150,40 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                 pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            switch(pSummon->GetEntry())
+            switch (pSummon->GetEntry())
             {
                 case NPC_NETHER_PORTAL:
                     pSummon->GetMotionMaster()->MoveIdle();
                     pSummon->SetDisplayId(30039);
-                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_NETHER_PPORTAL),false);
+                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_NETHER_PORTAL_SUMMON), false);
                     m_creature->MonsterTextEmote("Lord Jaraxxus creates a Nether Portal!", 0, true);
                     break;
                 case NPC_VOLCANO:
                     pSummon->GetMotionMaster()->MoveIdle();
-                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_INFERNAL_ERUPT),false);
+                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_INFERNAL_ERUPT), false);
                     break;
                 default:
                     break;
             }
         }
     }
+
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    {
+        if (uiDamage > m_creature->GetHealth())
+        {
+            DoScriptText(SAY_DEATH, m_creature);
+            Events.Reset();
+            Events.ScheduleEvent(EVENT_OUTRO, 5000);
+            m_creature->RemoveAllAuras();
+            m_creature->RemoveAllAttackers();
+            m_creature->GetMotionMaster()->MoveIdle();
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            m_creature->SetHealth(0);
+            uiDamage = 0;
+        }
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if ((!m_creature->SelectHostileTarget() || !m_creature->getVictim()) && m_pInstance->GetData(TYPE_JARAXXUS) == IN_PROGRESS)
@@ -214,22 +232,22 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_OUTRO:
                     switch(m_uiStep)
-                        {
+                    {
                         case 0:
                             if (Unit* Fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
-                                DoScriptText( SAY_TIRION_JARAXXUS_OUTRO1, Fordring);
+                                DoScriptText(SAY_TIRION_JARAXXUS_OUTRO1, Fordring);
                             m_uiStep++;
                             Events.ScheduleEvent(EVENT_OUTRO, 15000);
                             break;
                         case 1:
                             if (Unit* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
-                                DoScriptText( SAY_GARROSH_JARAXXUS_HORDE_OUTRO2, Garrosh);
+                                DoScriptText(SAY_GARROSH_JARAXXUS_HORDE_OUTRO2, Garrosh);
                             m_uiStep++;
                             Events.ScheduleEvent(EVENT_OUTRO, 10500);
                             break;
                         case 2:
-                        if (Unit* Wrynn = GET_CREATURE(TYPE_VARIAN_WYRM))
-                                DoScriptText( SAY_VARIAN_JARAXXUS_HORDE_OUTRO3, Wrynn);
+                            if (Unit* Wrynn = GET_CREATURE(TYPE_VARIAN_WYRM))
+                                DoScriptText(SAY_VARIAN_JARAXXUS_HORDE_OUTRO3, Wrynn);
                             m_uiStep++;
                             Events.ScheduleEvent(EVENT_OUTRO, 9000);
                             break;
@@ -239,27 +257,14 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                             m_uiStep = 0;
                             m_creature->DealDamage(m_creature, 1, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                             break;
-                        }
+                    }
+                    break;
+                default:
                     break;
             }
+
         if (!m_uiStep)
             DoMeleeAttackIfReady();
-    }
-
-    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
-    {
-        if (uiDamage > m_creature->GetHealth())
-        {
-            DoScriptText(SAY_DEATH, m_creature);
-            Events.Reset();
-            Events.ScheduleEvent(EVENT_OUTRO, 5000);
-            m_creature->RemoveAllAuras();
-            m_creature->RemoveAllAttackers();
-            m_creature->GetMotionMaster()->MoveIdle();
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_creature->SetHealth(0);
-            uiDamage = 0;
-        }
     }
 };
 
@@ -278,7 +283,7 @@ enum AddSpells
 
 enum AddEvents
 {
-    EVENT_KISS          = 1,
+    EVENT_KISS = 1,
     EVENT_SHIVAN_SLASH,
     EVENT_SPIKE,
     EVENT_FEL_INFERNO,
@@ -290,10 +295,23 @@ enum AddEvents
 #define SLASH_TIMER     urand(30,45)*IN_MILLISECONDS
 #define SPIKE_TIMER     urand(15,30)*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_mistress_of_painAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 {
+    ScriptedInstance *m_pInstance;
+    bool m_bIsHeroic;
+    bool m_bIs10Man;
+    EventMap Events;
+
     mob_mistress_of_painAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        ScriptedAI(pCreature)
+    {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
+        Difficulty diff = pCreature->GetMap()->GetDifficulty();
+        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
+        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
+    }
+
+    void Reset()
     {
     }
 
@@ -308,9 +326,11 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public boss_trial_of_the_crusader
 
     void JustDied(Unit* pSlayer)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(DATA_MISTRESS_ACHIEVEMENT, m_pInstance->GetData(DATA_MISTRESS_ACHIEVEMENT)-1);
-        
+        if (!m_pInstance)
+            return;
+        uint32 count = m_pInstance->GetData(DATA_MISTRESS_ACHIEVEMENT);
+        if (count > 0)
+            m_pInstance->SetData(DATA_MISTRESS_ACHIEVEMENT, count-1);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -336,7 +356,10 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public boss_trial_of_the_crusader
                         m_creature->CastSpell(pTarget, SPELL_SPINNING_PAIN_SPIKE, false);
                     Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
                     break;
+                default:
+                    break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
@@ -344,10 +367,16 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public boss_trial_of_the_crusader
 #define FELSTREAK_TIMER urand(15,30)*IN_MILLISECONDS
 #define FEL_INFERNO_TIMER urand(15,30)*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_felflame_infernalAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 {
+    EventMap Events;
+
     mob_felflame_infernalAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        ScriptedAI(pCreature)
+    {
+    }
+
+    void Reset()
     {
     }
 
@@ -376,20 +405,31 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public boss_trial_of_the_crusade
                     m_creature->CastSpell(m_creature, SPELL_FEL_INFERNO, false);
                     Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 6000);
                     break;
+                default:
+                    break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
 
 #define BURN_TIMER 1*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_legion_flameAI: public boss_trial_of_the_crusaderAI
+struct MANGOS_DLL_DECL mob_legion_flameAI: public ScriptedAI
 {
+    ScriptedInstance *m_pInstance;
+    EventMap Events;
+
     mob_legion_flameAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        ScriptedAI(pCreature)
     {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_creature->SetDisplayId(11686);
         Events.ScheduleEvent(EVENT_BURN, BURN_TIMER);
+    }
+
+    void Reset()
+    {
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -402,6 +442,8 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public boss_trial_of_the_crusaderAI
                     if (Unit* pJaraxxus = GET_CREATURE(TYPE_JARAXXUS))
                         m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false, 0, 0, pJaraxxus->GetGUID());
                     Events.ScheduleEvent(EVENT_BURN, BURN_TIMER);
+                    break;
+                default:
                     break;
             }
     }

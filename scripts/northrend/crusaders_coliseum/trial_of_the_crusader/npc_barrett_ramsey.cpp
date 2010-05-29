@@ -28,6 +28,11 @@ EndContentData */
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
+enum Spells
+{
+    SPELL_FEIGN_DEATH   = 66804,
+};
+
 enum Phases
 {
     PHASE_NOT_STARTED,
@@ -496,7 +501,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             break;
                         case 6:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                Fizzlebang->CastSpell(Fizzlebang, 66804 /* death */, false);
+                                Fizzlebang->CastSpell(Fizzlebang, SPELL_FEIGN_DEATH, false);
                             m_uiTalkTimer = 5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
@@ -511,7 +516,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         default:
                             m_bIsInTalkPhase = false;
                             break;
-                        }
+                    }
                     m_uiTalkCounter++;
                     break;
                 case PHASE_BEASTS_OF_NORTHEREND:

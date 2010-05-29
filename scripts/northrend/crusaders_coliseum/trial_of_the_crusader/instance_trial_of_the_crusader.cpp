@@ -35,7 +35,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string m_strInstData;
     uint32 m_playerTeam;
-    uint32 m_auiAchievementAddCounter;
+    uint32 m_uiJaraxxusAddCounter;
 
     typedef std::map<uint32, uint64> GuidMap;
     GuidMap m_guidsStore;
@@ -48,8 +48,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void Initialize()
     {
-        m_playerTeam = 0;
-        m_auiAchievementAddCounter = 0;
+        m_playerTeam            = 0;
+        m_uiJaraxxusAddCounter  = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -76,15 +76,21 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         uint32 data_id;
         switch (pGo->GetEntry())
         {
-            case GO_COLISEUM_FLOOR:         data_id = TYPE_COLISEUM_FLOOR; break;
-            case GO_ANUBARAK_CHEST:         data_id = TYPE_ANUBARAK_CHEST; break;
+            case GO_COLISEUM_FLOOR:
+                data_id = TYPE_COLISEUM_FLOOR;
+                break;
+            case GO_ANUBARAK_CHEST:
+                data_id = TYPE_ANUBARAK_CHEST;
+                break;
             case GO_CHAMPIONS_CHEST_N10:
             case GO_CHAMPIONS_CHEST_N25:
             case GO_CHAMPIONS_CHEST_H10:
             case GO_CHAMPIONS_CHEST_H25:
                 data_id = TYPE_FACTION_CHAMPION_CHEST;
                 break;
-            case GO_ENTRANCE_DOOR:          data_id = TYPE_ENTRANCE_DOOR; break;
+            case GO_ENTRANCE_DOOR:
+                data_id = TYPE_ENTRANCE_DOOR;
+                break;
 
             default:
                 return;
@@ -129,7 +135,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     {
         if (uiType == DATA_MISTRESS_ACHIEVEMENT )
         {
-            m_auiAchievementAddCounter = uiData;
+            m_uiJaraxxusAddCounter = uiData;
             return;
         }
 
@@ -188,7 +194,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case DATA_FACTION:
                 return m_playerTeam;
             case DATA_MISTRESS_ACHIEVEMENT:
-                return m_auiAchievementAddCounter;
+                return m_uiJaraxxusAddCounter;
         }
 
         return 0;
@@ -225,20 +231,20 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
     {
         switch(CriteriaId)
-            {
+        {
             case THREE_SIXTY_CRITERIA_N10:
             case THREE_SIXTY_CRITERIA_N25:
             case THREE_SIXTY_CRITERIA_H10:
             case THREE_SIXTY_CRITERIA_H25:
             case UPPER_BACK_PAIN_CRITERIA_N10:
             case UPPER_BACK_PAIN_CRITERIA_H10:
-                return m_auiAchievementAddCounter >= 2;
+                return m_uiJaraxxusAddCounter >= 2;
             case UPPER_BACK_PAIN_CRITERIA_N25:
             case UPPER_BACK_PAIN_CRITERIA_H25:
-                return m_auiAchievementAddCounter >= 4;
+                return m_uiJaraxxusAddCounter >= 4;
             default:
                 return false;
-            }
+        }
     }
 };
 
