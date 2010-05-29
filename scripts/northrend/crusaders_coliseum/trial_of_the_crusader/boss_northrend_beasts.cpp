@@ -532,6 +532,8 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
     }
 };
 
+#undef PHASE_TIMER
+
 enum IcehowlSpells
 {
     SPELL_BERSERK               = 26662,
