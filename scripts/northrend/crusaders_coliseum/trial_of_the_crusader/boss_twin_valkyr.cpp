@@ -159,8 +159,6 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
             if (ScriptedAI *DarkAI = dynamic_cast<ScriptedAI*>(Darkbane->AI()))
                 DarkAI->Reset();
-
-        boss_trial_of_the_crusaderAI::Reset();
     }
 
     void DamageTaken(Unit *pDoneBy, uint32 &uiDamage)
