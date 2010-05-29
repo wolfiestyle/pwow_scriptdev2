@@ -71,6 +71,7 @@ enum
     TYPE_GARROSH_HELLSCREAM     = 24,
     TYPE_TIRION_FORDRING        = 25,
     TYPE_LICH_KING              = 26,
+    TYPE_FIZZLEBANG             = 27,
 
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST         = 41,
@@ -123,6 +124,7 @@ enum
     NPC_GARROSH_HELLSCREAM      = 34995,
     NPC_TIRION_FORDRING         = 34996,
     NPC_LICH_KING               = 35877, // used for start of anub'arak encounter
+    NPC_WILFRED_FIZZLEBANG      = 35458,
 
     UPPER_BACK_PAIN_CRITERIA_N10 = 11779,
     UPPER_BACK_PAIN_CRITERIA_N25 = 11780,

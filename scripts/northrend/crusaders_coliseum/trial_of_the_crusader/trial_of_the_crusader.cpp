@@ -46,6 +46,7 @@ uint32 toc_GetType(Creature *pCreature)
         case NPC_GARROSH_HELLSCREAM      : return TYPE_GARROSH_HELLSCREAM;
         case NPC_TIRION_FORDRING         : return TYPE_TIRION_FORDRING;
         case NPC_LICH_KING               : return TYPE_LICH_KING;
+        case NPC_WILFRED_FIZZLEBANG      : return TYPE_FIZZLEBANG;
 
         default:
             return 0;

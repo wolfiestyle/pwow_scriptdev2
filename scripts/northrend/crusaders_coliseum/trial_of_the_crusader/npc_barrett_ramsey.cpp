@@ -63,10 +63,6 @@ enum Says
     SAY_JARAXXUS_INTRO5                             = -1300308,
     SAY_WILFRED_JARAXXUS_INTRO6                     = -1300309,
     SAY_TIRION_JARAXXUS_INTRO7                      = -1300310,
-    SAY_TIRION_JARAXXUS_OUTRO1                      = -1300318,
-    SAY_GARROSH_JARAXXUS_HORDE_OUTRO2               = -1300319,
-    SAY_VARIAN_JARAXXUS_HORDE_OUTRO3                = -1300320,
-    SAY_TIRION_JARAXXUS_HORDE_OUTRO4                = -1300321,
     // Faction champions
     SAY_TIRION_FACTION_CHAMPIONS_INTRO1             = -1300322,
     SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO2   = -1300323,
@@ -97,6 +93,7 @@ enum Says
 #define AGGRO_TIMER             urand(10, 15)*IN_MILLISECONDS
 
 static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
+static const float RoomCenter[3] = {563.67f, 139.57f, 393.83f };
 
 struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 {
@@ -215,6 +212,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     {
         if (!pSummon)
             return;
+        pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         summons.push_back(pSummon->GetGUID());
         if (!m_bCombatStart)
         {
@@ -223,10 +221,17 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && CurrBeastOfNortherendPhase != PHASE_BEASTS_NONE)
             m_bIsInTalkPhase = true;    // do intro for individual beasts
+        if (pSummon->GetEntry() == NPC_JARAXXUS)
+            m_uiAggroTimer = 35*IN_MILLISECONDS;
     }
 
     void SpawnBoss(uint32 entry, int32 slot = 0)
     {
+        if (entry == NPC_JARAXXUS)
+        {
+            m_creature->SummonCreature(entry, RoomCenter[0], RoomCenter[1]-4.0f, RoomCenter[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+            return;
+        }
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
         m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
@@ -439,9 +444,75 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     m_uiTalkCounter++;
                     break;
                 case PHASE_FACTION_CHAMPIONS:
-                case PHASE_JARAXXUS:
-                    m_bIsInTalkPhase = false;
                     StartNextBoss();
+                    m_bIsInTalkPhase = false;
+                    m_bCombatStart = true;
+                    break;
+                case PHASE_JARAXXUS:
+                    switch (m_uiTalkCounter)
+                    {
+                        case 0:
+                            RemoveAllSummons();
+                            m_bIsInTalkPhase = true;
+                            m_bCombatStart = false;
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_JARAXXUS_INTRO1, Fordring);
+                            Creature *Fizzlebang;
+                            if (Fordring)
+                                Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            if (Fizzlebang)
+                                Fizzlebang->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
+                            m_uiTalkTimer = 15*IN_MILLISECONDS;
+                            break;
+                        case 1:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO2, Fizzlebang);
+                            m_uiTalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 2:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO3, Fizzlebang);
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 3:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO4, Fizzlebang);
+                            StartNextBoss();
+                            m_uiTalkTimer = 12*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 4:
+                            if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+                                DoScriptText(SAY_JARAXXUS_INTRO5, Jaraxxus);
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 5:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO6, Fizzlebang);
+                            m_uiTalkTimer = 2*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 6:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                Fizzlebang->CastSpell(Fizzlebang, 66804 /* death */, false);
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 7:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                Fizzlebang->ForcedDespawn();
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_JARAXXUS_INTRO7, Fordring);
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                            m_bCombatStart = true;
+                            break;
+                        default:
+                            m_bIsInTalkPhase = false;
+                            break;
+                        }
+                    m_uiTalkCounter++;
                     break;
                 case PHASE_BEASTS_OF_NORTHEREND:
                     switch (CurrBeastOfNortherendPhase)
@@ -490,7 +561,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 for (GuidList::const_iterator i = summons.begin(); i != summons.end(); ++i)
                     if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
                         if (pSummon->isAlive())
+                        {
+                            pSummon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             pSummon->SetInCombatWithZone();
+                        }
                 m_bCombatStart = false;
             }
             else
