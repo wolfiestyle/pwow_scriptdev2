@@ -140,7 +140,7 @@ struct MANGOS_DLL_DECL boss_hodirAI: public ScriptedAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_FREEZE:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_FREEZE);
                     events.ScheduleEvent(EVENT_FREEZE, FREEZE_TIMER);
                     break;

@@ -74,7 +74,7 @@ struct MANGOS_DLL_DECL boss_stoutbeardAI : public ScriptedAI
         //Charge timer
         if (Charge_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target,SPELL_CHARGE);
 
             Charge_Timer = 15000;

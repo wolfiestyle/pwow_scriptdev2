@@ -130,14 +130,14 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 {
                     Creature* pSummon = m_creature->SummonCreature(NPC_NEXUS_LORD,SUMMON_X,SUMMON_Y,SUMMON_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
                     NexusLord_GUID[i] = pSummon->GetGUID();
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         pSummon->TauntApply(target);
                 }
                 for (uint8 i=0;i<2;i++)
                 {
                     Creature* pSummon = m_creature->SummonCreature(NPC_SCION_OF_ETERNITY,SUMMON_X,SUMMON_Y,SUMMON_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
                     ScionOfEternity_GUID[i] = pSummon->GetGUID();
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         pSummon->TauntApply(target);
                 }
 
@@ -175,7 +175,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             //Arcane Storm timer
             if (ArcaneStorm_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
     
                 ArcaneStorm_Timer = 15000;
@@ -221,7 +221,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             //Arcane Storm timer
             if (ArcaneStorm_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
     
                 ArcaneStorm_Timer = 15000;
@@ -234,7 +234,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             //Surge of Power timer
             if (SurgeOfPower_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_SURGE_OF_POWER : SPELL_SURGE_OF_POWER_H);
     
                 SurgeOfPower_Timer = 40000;
@@ -251,7 +251,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             //Static Field timer
             if (StaticField_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_STATIC_FIELD);
     
                 StaticField_Timer = 15000;

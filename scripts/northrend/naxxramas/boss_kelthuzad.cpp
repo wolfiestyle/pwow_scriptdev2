@@ -400,7 +400,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 {
                     if (Creature* pSummon = (Creature*)Unit::GetUnit(*m_creature, SoldierOfTheFrozenWastes[Soldiers_Counter]))
                         if (pSummon->isAlive())
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 pSummon->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
                     Soldiers_Counter++;
@@ -416,7 +416,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 {
                     if (Creature* pSummon = (Creature*)Unit::GetUnit(*m_creature, UnstoppableAbomination[Abominations_Counter]))
                         if (pSummon->isAlive())
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 pSummon->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
                     Abominations_Counter++;
@@ -432,7 +432,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 {
                     if (Creature* pSummon = (Creature*)Unit::GetUnit(*m_creature, SoulWeaver[Weavers_Counter]))
                         if (pSummon->isAlive())
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 pSummon->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
                     Weavers_Counter++;
@@ -501,7 +501,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             //Shadow Fissure Timer
             if (ShadowFisure_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target,SPELL_SHADOW_FISURE);
 
                 ShadowFisure_Timer = (30+rand()%30)*1000;
@@ -520,7 +520,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             //Mana Detonation Timer
             if (ManaDetonation_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target,SPELL_MANA_DETONATION);
 
                 switch(rand()%2)

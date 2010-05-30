@@ -81,7 +81,7 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
         //Time Bomb timer
         if (TimeBomb_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target, m_bIsRegularMode ? SPELL_TIME_BOMB : SPELL_TIME_BOMB_H);
 
             TimeBomb_Timer = 30000;

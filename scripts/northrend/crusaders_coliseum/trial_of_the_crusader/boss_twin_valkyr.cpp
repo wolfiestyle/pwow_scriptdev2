@@ -230,7 +230,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                     RESCHEDULE_EVENT(TWIN_SPIKE);
                     break;
                 case EVENT_TOUCH:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, m_bIs10Man ? SPELL_TOUCH_OF_LIGHT_10 : SPELL_TOUCH_OF_LIGHT_25);
                     RESCHEDULE_EVENT(TOUCH);
                     break;
@@ -458,7 +458,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     break;
                 }
                 case EVENT_TOUCH:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, m_bIs10Man ? SPELL_TOUCH_OF_DARKNESS_10 : SPELL_TOUCH_OF_DARKNESS_25);
                     RESCHEDULE_EVENT(TOUCH);
                     break;

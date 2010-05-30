@@ -194,7 +194,7 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
                 case 1: DoScriptText(SAY_CHANGE_TARGET2, m_creature); break;
                 case 2: DoScriptText(SAY_CHANGE_TARGET3, m_creature); break;
             }
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 m_creature->TauntApply(target);
 
             Target_Timer = TARGET_TIMER;
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_flame_leviathanAI : public ScriptedAI
         //Missile Barrage timer
         if (MissileBarrage_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target,SPELL_MISSILE_BARRAGE);
 
             MissileBarrage_Timer = MISSILE_BARRAGE_TIMER;

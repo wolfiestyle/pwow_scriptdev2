@@ -346,7 +346,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     RESCHEDULE_EVENT(FREEZING_SLASH);
                     break;
                 case EVENT_PENETRATING_COLD:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, DIFFICULTY(SPELL_PENETRATING_COLD));
                     RESCHEDULE_EVENT(PENETRATING_COLD);
                     break;
@@ -497,7 +497,7 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
                     RESCHEDULE_EVENT(EXPOSE_WEAKNESS);
                     break;
                 case EVENT_SHADOW_STRIKE:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_EXPOSE_WEAKNESS);
                     RESCHEDULE_EVENT(SHADOW_STRIKE);
                     break;

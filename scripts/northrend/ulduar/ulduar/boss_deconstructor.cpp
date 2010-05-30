@@ -184,7 +184,7 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
         //Gravity Bomb timer
         if (GravityBomb_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target, HEROIC(SPELL_GRAVITY_BOMB, SPELL_GRAVITY_BOMB_H));
 
             GravityBomb_Timer = GRAVITY_BOMB_TIMER;
@@ -193,7 +193,7 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
 	    //Searing Light timer
         if (SearingLight_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target, HEROIC(SPELL_SEARING_LIGHT, SPELL_SEARING_LIGHT_H));
 
             SearingLight_Timer = SEARING_LIGHT_TIMER;
@@ -203,7 +203,7 @@ struct MANGOS_DLL_DECL boss_deconstructorAI : public ScriptedAI
         if (TympanicTantrum_Timer < diff)
         {
             DoScriptText(SAY_TANTRUM, m_creature);
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target,SPELL_TYMPANIC_TANTRUM);
 
             TympanicTantrum_Timer = TIMPANIC_TANTRUM_TIMER;

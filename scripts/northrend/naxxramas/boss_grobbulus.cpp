@@ -110,7 +110,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
         if (MutatingInjection_Timer < diff)
         {
             //Cast spell one on a random target.
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target,SPELL_MUTATINGINJECTION);
 
             MutatingInjection_Timer = 10000 + int(m_creature->GetHealthPercent()*100.0f);    //10-20 seconds

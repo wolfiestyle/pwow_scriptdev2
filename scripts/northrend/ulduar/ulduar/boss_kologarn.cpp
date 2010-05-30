@@ -163,7 +163,7 @@ struct MANGOS_DLL_DECL boss_kologarnAI: public Scripted_NoMovementAI
             switch (eventId)
             {
                 /*case EVENT_EYEBEAM:
-                    if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, HEROIC(SPELL_FOCUSED_EYEBEAM, SPELL_FOCUSED_EYEBEAM_H), true);
                     events.ScheduleEvent(EVENT_EYEBEAM, 15000);
                     m_uiGcd = 1500;

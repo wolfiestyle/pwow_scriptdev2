@@ -174,7 +174,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
             //Decrepit Fever timer
             if (Fever_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(target,m_bIsRegularMode ? SPELL_FEVER : SPELL_FEVER_H);
 
                 Fever_Timer = 40000;

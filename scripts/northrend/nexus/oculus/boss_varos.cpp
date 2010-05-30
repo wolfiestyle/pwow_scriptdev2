@@ -61,7 +61,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
         //Amplify Magic timer
         if (AmplifyMagic_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(target, m_bIsRegularMode ? SPELL_AMPLIFY_MAGIC : SPELL_AMPLIFY_MAGIC_H);
 
             AmplifyMagic_Timer = 40000;

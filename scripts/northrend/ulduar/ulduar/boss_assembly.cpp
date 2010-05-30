@@ -259,7 +259,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI: public ScriptedAI
                     events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(13, 22)*IN_MILLISECONDS);
                     break;
                 case EVENT_STATIC_DISRUPTION:
-                    if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_STATIC_DISRUPTION, SPELL_STATIC_DISRUPTION_H));
                     events.ScheduleEvent(EVENT_STATIC_DISRUPTION, urand(20, 40)*IN_MILLISECONDS);
                     break;
@@ -399,13 +399,13 @@ struct MANGOS_DLL_DECL boss_runemaster_molgeimAI: public ScriptedAI
                     break;
                 case EVENT_RUNE_OF_DEATH:
                     DoScriptText(SAY_RUNE_RUNE_OF_DEATH, m_creature);
-                    if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_RUNE_OF_DEATH, SPELL_RUNE_OF_DEATH_H));
                     events.ScheduleEvent(EVENT_RUNE_OF_DEATH, urand(30, 40)*IN_MILLISECONDS);
                     break;
                 case EVENT_RUNE_OF_SUMMONING:
                     DoScriptText(SAY_RUNE_SUMMON_ADDS, m_creature);
-                    if (Unit *Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(Target, SPELL_RUNE_OF_SUMMONING);
                     events.ScheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20, 30)*IN_MILLISECONDS);
                     break;
@@ -529,7 +529,7 @@ struct MANGOS_DLL_DECL boss_stormcaller_brundirAI: public ScriptedAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_CHAIN_LIGHTNING:
-                    if (Unit* Target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(Target, HEROIC(SPELL_CHAIN_LIGHTNING, SPELL_CHAIN_LIGHTNING_H));
                     events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9, 17)*IN_MILLISECONDS);
                     break;

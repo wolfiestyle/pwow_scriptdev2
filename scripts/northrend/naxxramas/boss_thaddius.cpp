@@ -173,7 +173,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         if (ChainLightning_Timer < diff)
         {
             //Cast spell on our current target.
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
 				DoCast(target, m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING : H_SPELL_CHAIN_LIGHTNING);
 
             ChainLightning_Timer = 15000;

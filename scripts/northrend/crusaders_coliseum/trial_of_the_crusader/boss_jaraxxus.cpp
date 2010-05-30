@@ -198,18 +198,18 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
                     break;
                 case EVENT_FEL_LIGHTNING:
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_FEL_LIGHTNING));
                     Events.ScheduleEvent(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER);
                     break;
                 case EVENT_INCINERATE_FLESH:
                     DoScriptText(SAY_INCINERATE, m_creature);
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, DIFFICULTY(SPELL_INCINERATE_FLESH),false, NULL, NULL, pTarget->GetObjectGuid());
                     Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
                     break;
                 case EVENT_LEGION_FLAME:
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_LEGION_FLAME));
                     Events.ScheduleEvent(EVENT_LEGION_FLAME, LEGION_FLAME_TIMER);
                     break;
@@ -343,7 +343,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
             switch (uiEventId)
             {
                 case EVENT_KISS:
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_MISTRESS_KISS, false);
                     Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
                     break;
@@ -352,7 +352,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
                     Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
                     break;
                 case EVENT_SPIKE:
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_SPINNING_PAIN_SPIKE, false);
                     Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
                     break;
@@ -396,7 +396,7 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
             switch (uiEventId)
             {
                 case EVENT_FELSTREAK:
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_FEL_STREAK, false);
                     Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 7500);
                     break;
