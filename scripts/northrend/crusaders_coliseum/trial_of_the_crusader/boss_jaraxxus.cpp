@@ -205,7 +205,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                 case EVENT_INCINERATE_FLESH:
                     DoScriptText(SAY_INCINERATE, m_creature);
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->CastSpell(pTarget, DIFFICULTY(SPELL_INCINERATE_FLESH),false, NULL, NULL, pTarget->GetObjectGuid());
+                        m_creature->CastSpell(pTarget, DIFFICULTY(SPELL_INCINERATE_FLESH), false);
                     Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
                     break;
                 case EVENT_LEGION_FLAME:
@@ -440,7 +440,7 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public ScriptedAI
             {
                 case EVENT_BURN:
                     if (Unit* pJaraxxus = GET_CREATURE(TYPE_JARAXXUS))
-                        m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false, 0, 0, pJaraxxus->GetGUID());
+                        m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
                     Events.ScheduleEvent(EVENT_BURN, BURN_TIMER);
                     break;
                 default:

@@ -462,7 +462,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_BITE:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_BURNING_BITE), false, 0, 0, m_creature->getVictim()->GetGUID());
+                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_BURNING_BITE), false);
                     Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_SPIT:
