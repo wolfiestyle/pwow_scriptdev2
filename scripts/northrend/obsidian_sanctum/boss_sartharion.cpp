@@ -430,7 +430,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         Creature *pShad = GET_CREATURE(DATA_SHADRON);
         Creature *pVesp = GET_CREATURE(DATA_VESPERON);
 
-        //spell will target dragons, if they are still alive at 35%
+        //spell will target dragons, if they are still alive at 35% (soft enrage)
         if (m_creature->GetHealthPercent() < 35.0f && !m_bIsSoftEnraged
             && ((pTene && pTene->isAlive()) || (pShad && pShad->isAlive()) || (pVesp && pVesp->isAlive())))
         {
@@ -442,13 +442,6 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                 pShad->CastSpell(pShad, SPELL_BERSERK, false);
             if (pVesp && pVesp->isAlive())
                 pVesp->CastSpell(pVesp, SPELL_BERSERK, false);
-            m_bIsSoftEnraged = true;
-        }
-
-        //soft enrage
-        if (!m_bIsSoftEnraged && m_creature->GetHealthPercent() <= 10.0f)
-        {
-            // TODO
             m_bIsSoftEnraged = true;
         }
 
