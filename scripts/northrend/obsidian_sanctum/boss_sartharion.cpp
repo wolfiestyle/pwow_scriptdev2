@@ -431,12 +431,18 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         Creature *pVesp = GET_CREATURE(DATA_VESPERON);
 
         //spell will target dragons, if they are still alive at 35%
-        if (m_creature->GetHealthPercent() < 35.0f
+        if (m_creature->GetHealthPercent() < 35.0f && !m_bIsSoftEnraged
             && ((pTene && pTene->isAlive()) || (pShad && pShad->isAlive()) || (pVesp && pVesp->isAlive())))
         {
             DoScriptText(SAY_SARTHARION_BERSERK, m_creature);
             m_creature->InterruptNonMeleeSpells(false);
-            DoCastSpellIfCan(m_creature, SPELL_BERSERK);
+            if (pTene && pTene->isAlive())
+                pTene->CastSpell(pTene, SPELL_BERSERK, false);
+            if (pShad && pShad->isAlive())
+                pShad->CastSpell(pShad, SPELL_BERSERK, false);
+            if (pVesp && pVesp->isAlive())
+                pVesp->CastSpell(pVesp, SPELL_BERSERK, false);
+            m_bIsSoftEnraged = true;
         }
 
         //soft enrage
