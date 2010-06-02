@@ -27,6 +27,7 @@ EndContentData */
 
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -264,6 +265,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 
     void Reset()
     {
+        m_creature->SetInCombatWithZone();
     }
 
     void Aggro(Unit* pWho)
@@ -287,7 +289,11 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     void UpdateAI(uint32 const uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        {
+            if (m_creature->isTemporarySummon())
+                static_cast<TemporarySummon*>(m_creature)->UnSummon();
             return;
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -329,6 +335,7 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void Reset()
     {
+        m_creature->SetInCombatWithZone();
     }
 
     void Aggro(Unit* pWho)
@@ -340,7 +347,11 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
     void UpdateAI(uint32 const uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        {
+            if (m_creature->isTemporarySummon())
+                static_cast<TemporarySummon*>(m_creature)->UnSummon();
             return;
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
