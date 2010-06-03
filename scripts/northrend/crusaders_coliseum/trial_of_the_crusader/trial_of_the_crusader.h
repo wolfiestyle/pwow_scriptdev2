@@ -83,6 +83,7 @@ enum
 
     DATA_FACTION                = 50,
     DATA_ACHIEVEMENT_COUNTER    = 51,
+    DATA_ATTEMPT_COUNTER        = 52,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
@@ -148,6 +149,9 @@ enum
     GO_CHAMPIONS_CHEST_H25      = 195635,
     GO_ENTRANCE_DOOR            = 195589,
     GO_MAIN_GATE                = 195647,
+
+    WORLD_STATE_TOTGC                   = 4390,
+    WORLD_STATE_TOTGC_ATTEMPT_COUNTER   = 4389,
 
     SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
 };

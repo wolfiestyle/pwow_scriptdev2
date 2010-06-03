@@ -36,6 +36,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     std::string m_strInstData;
     uint32 m_playerTeam;
     uint32 m_uiAchievementProgressCounter;
+    uint32 m_uiAttemptCounter;
 
     typedef std::map<uint32, uint64> GuidMap;
     GuidMap m_guidsStore;
@@ -44,14 +45,24 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     {
         if (!m_playerTeam)
             m_playerTeam = pWho->GetTeam();
+        if ((instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC) && (m_uiAttemptCounter != 50 || IsEncounterInProgress()))
+            return;
+        pWho->SendUpdateWorldState(WORLD_STATE_TOTGC, 0);
     }
 
     void Initialize()
     {
+        m_uiAttemptCounter              = 51; //1 is lost cause reset is called at npc spawn
         m_playerTeam                    = 0;
         m_uiAchievementProgressCounter  = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
+    }
+
+    void InitWorldState(bool Enable = true)
+    {
+        DoUpdateWorldState(WORLD_STATE_TOTGC, Enable ? 1 : 0);
+        DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_uiAttemptCounter);
     }
 
     bool IsEncounterInProgress() const
@@ -136,18 +147,30 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        if (uiType == DATA_ACHIEVEMENT_COUNTER )
+        if (uiType == DATA_ACHIEVEMENT_COUNTER)
         {
             m_uiAchievementProgressCounter = uiData;
+            return;
+        }
+        if (uiType == DATA_ATTEMPT_COUNTER)
+        {
+            m_uiAttemptCounter = uiData;
+            DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_uiAttemptCounter);
             return;
         }
 
         m_auiEncounter[uiType] = uiData;
 
+        if (IsEncounterInProgress())
+            if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+                InitWorldState();
+
         std::ostringstream saveStream;
 
         for(size_t i = 0; i < MAX_ENCOUNTER; ++i)
             saveStream << m_auiEncounter[i] << " ";
+        
+        saveStream << m_uiAttemptCounter << " ";
 
         m_strInstData = saveStream.str();
 
@@ -198,6 +221,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 return m_playerTeam;
             case DATA_ACHIEVEMENT_COUNTER:
                 return m_uiAchievementProgressCounter;
+            case DATA_ATTEMPT_COUNTER:
+                return m_uiAttemptCounter;
         }
 
         return 0;
@@ -227,6 +252,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             if (m_auiEncounter[i] == IN_PROGRESS)
                 m_auiEncounter[i] = NOT_STARTED;
         }
+        loadStream >> m_uiAttemptCounter;
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }

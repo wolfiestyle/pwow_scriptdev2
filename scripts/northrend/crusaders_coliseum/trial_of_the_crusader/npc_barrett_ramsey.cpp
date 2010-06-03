@@ -212,6 +212,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
 
+        if (m_pInstance && m_bIsHeroic)
+            m_pInstance->SetData(DATA_ATTEMPT_COUNTER, m_pInstance->GetData(DATA_ATTEMPT_COUNTER)-1);
+
         RemoveAllSummons();
 
         if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
@@ -377,7 +380,13 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_bIsInTalkPhase = true;
         m_bIsInOutroTalk = false;
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
-            uiSummonTimer = 27*IN_MILLISECONDS;
+        {
+            if (m_pInstance->GetData(DATA_ATTEMPT_COUNTER) == 50) 
+            {
+                uiSummonTimer = 27*IN_MILLISECONDS;
+            } // if they wiped once, we just spawn him
+            else uiSummonTimer = 0;
+        }
     }
 
     void StartNextBoss()
@@ -653,6 +662,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     {
                         case PHASE_BEASTS_NONE:
                         case PHASE_GORMOK:
+                            if (m_bIsHeroic && m_pInstance->GetData(DATA_ATTEMPT_COUNTER) != 50) // if they wiped once, we skip the long intro
+                                m_uiTalkCounter = 2;
                             switch (m_uiTalkCounter)
                             {
                                 case 0:
@@ -797,6 +808,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
         if (m_bIsInOutroTalk)
             UpdateOutros(uiDiff);
+
+        if (m_pInstance->GetData(DATA_ATTEMPT_COUNTER) == 0)
+        {
+            if (m_creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))
+                m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            if (Creature* Anub = GET_CREATURE(TYPE_ANUBARAK))
+                Anub->ForcedDespawn();
+        }
 
         if (m_bCombatStart)
         {
