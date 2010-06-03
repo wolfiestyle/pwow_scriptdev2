@@ -230,14 +230,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && CurrBeastOfNortherendPhase != PHASE_BEASTS_NONE)
             m_bIsInTalkPhase = true;    // do intro for individual beasts
         if (pSummon->GetEntry() == NPC_JARAXXUS)
-            m_uiAggroTimer = 35*IN_MILLISECONDS;
+            m_uiAggroTimer = 37*IN_MILLISECONDS;
     }
 
     void SpawnBoss(uint32 entry, int32 slot = 0)
     {
         if (entry == NPC_JARAXXUS)
         {
-            m_creature->SummonCreature(entry, RoomCenter[0], RoomCenter[1]-4.0f, RoomCenter[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+            m_creature->SummonCreature(entry, RoomCenter[0], RoomCenter[1], RoomCenter[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
             return;
         }
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
@@ -475,10 +475,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 DoScriptText(SAY_TIRION_JARAXXUS_INTRO1, Fordring);
                             Creature *Fizzlebang;
                             if (Fordring)
-                                Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                                Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1]+30.0f, summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                             if (Fizzlebang)
-                                Fizzlebang->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
-                            m_uiTalkTimer = 15*IN_MILLISECONDS;
+                                Fizzlebang->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1]+10.0f, RoomCenter[2]);
+                            m_uiTalkTimer = 25*IN_MILLISECONDS;
                             break;
                         case 1:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
@@ -489,41 +489,89 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             break;
                         case 2:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                            {
                                 DoScriptText(SAY_WILFRED_JARAXXUS_INTRO3, Fizzlebang);
+                                if (Creature* Portal = GET_CREATURE(TYPE_PORTAL_TARGET))
+                                {
+                                    Portal->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                                    Portal->SetPhaseMask(1, true);
+                                    Fizzlebang->CastSpell(Portal, 67864 /*open portal*/, false);
+                                }
+                                // the rune circle and the portal are not visible for some reason (only visible in GM mode)
+                                if (Creature *Runes = GET_CREATURE(TYPE_PURPLE_RUNE))
+                                {
+                                    Runes->SetPhaseMask(1, true);
+                                    Runes->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);                                }
+                            }
                             m_uiTalkTimer = 5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 3:
-                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO4, Fizzlebang);
-                            StartNextBoss();
-                            m_uiTalkTimer = 12*IN_MILLISECONDS;
+                            if (Creature* Portal = GET_CREATURE(TYPE_PORTAL_TARGET))
+                            {
+                                Portal->CastSpell(Portal, 68424 /*wilfred portal*/, false);
+                            }
+                            m_uiTalkTimer = 6*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 4:
+                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO4, Fizzlebang);
+                            StartNextBoss();
                             if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
-                                DoScriptText(SAY_JARAXXUS_INTRO5, Jaraxxus);
-                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                                Jaraxxus->GetMotionMaster()->MovePoint(0, Jaraxxus->GetPositionX(), RoomCenter[1] - 10.0f, Jaraxxus->GetPositionZ());
+                            m_uiTalkTimer = 7*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 5:
-                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO6, Fizzlebang);
-                            m_uiTalkTimer = 2*IN_MILLISECONDS;
+                            if (Creature* Runes = GET_CREATURE(TYPE_PURPLE_RUNE))
+                                Runes->SetPhaseMask(256, true);
+                            if (Creature* Portal = GET_CREATURE(TYPE_PORTAL_TARGET))
+                            {
+                                Portal->RemoveAllAuras();
+                                Portal->SetPhaseMask(256, true);
+                            }
+                            m_uiTalkTimer = 7*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 6:
-                            if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                Fizzlebang->CastSpell(Fizzlebang, SPELL_FEIGN_DEATH, false);
+                            if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+                            {
+                                Jaraxxus->GetMotionMaster()->MovePoint(0, Jaraxxus->GetPositionX(), Jaraxxus->GetPositionY()+0.1f, Jaraxxus->GetPositionZ()); 
+                                DoScriptText(SAY_JARAXXUS_INTRO5, Jaraxxus);
+                            }
                             m_uiTalkTimer = 5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 7:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                Fizzlebang->ForcedDespawn();
+                                DoScriptText(SAY_WILFRED_JARAXXUS_INTRO6, Fizzlebang);
+                            m_uiTalkTimer = 1*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 8:
+                            if (Creature* Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+                            {                             
+                                if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                    Jaraxxus->CastSpell(Fizzlebang, 71825 /* random green beam */ /*67888*/ /* Fel Lightning FX */, false); //causes Jaraxxus to reset
+                            }
+                            m_uiTalkTimer = 0.5*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 9:
+                            if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
+                                Fizzlebang->DealDamage(Fizzlebang, Fizzlebang->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            m_uiTalkTimer = 7*IN_MILLISECONDS;
+                            m_bIsInTalkPhase = true;
+                            break;
+                        case 10:
                             if (Fordring)
+                            {
                                 DoScriptText(SAY_TIRION_JARAXXUS_INTRO7, Fordring);
-                            m_uiTalkTimer = 5*IN_MILLISECONDS;
+                                if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+                                    Jaraxxus->GetMotionMaster()->MovePoint(0, Jaraxxus->GetPositionX(), Jaraxxus->GetPositionY()-0.1f, Jaraxxus->GetPositionZ()); 
+                            }
+                            m_uiTalkTimer = 5.5*IN_MILLISECONDS;
                             m_bCombatStart = true;
                             break;
                         default:
@@ -570,6 +618,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         else
             m_uiTalkTimer -= uiDiff;
     }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_bIsInTalkPhase)
