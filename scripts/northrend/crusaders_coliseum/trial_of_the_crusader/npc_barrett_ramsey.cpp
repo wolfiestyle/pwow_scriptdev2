@@ -231,6 +231,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             m_bIsInTalkPhase = true;    // do intro for individual beasts
         if (pSummon->GetEntry() == NPC_JARAXXUS)
             m_uiAggroTimer = 37*IN_MILLISECONDS;
+        if (pSummon->GetEntry() != NPC_JARAXXUS)
+            pSummon->GetMotionMaster()->MovePoint(0, pSummon->GetPositionX(), summon_pos[1], summon_pos[2]);
     }
 
     void SpawnBoss(uint32 entry, int32 slot = 0)
@@ -241,7 +243,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             return;
         }
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
-        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1], summon_pos[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1]+30.0f, summon_pos[2]+1.0f, summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
 
     void NorthrendBeastsEncounterCheck()
