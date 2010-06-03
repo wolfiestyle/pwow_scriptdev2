@@ -91,6 +91,9 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case GO_ENTRANCE_DOOR:
                 data_id = TYPE_ENTRANCE_DOOR;
                 break;
+            case GO_MAIN_GATE:
+                data_id = TYPE_MAIN_GATE;
+                break;
 
             default:
                 return;

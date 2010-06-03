@@ -72,11 +72,14 @@ enum
     TYPE_TIRION_FORDRING        = 25,
     TYPE_LICH_KING              = 26,
     TYPE_FIZZLEBANG             = 27,
+    TYPE_PURPLE_RUNE            = 28,
+    TYPE_PORTAL_TARGET          = 29,
 
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST         = 41,
     TYPE_FACTION_CHAMPION_CHEST = 42,
     TYPE_ENTRANCE_DOOR          = 43,
+    TYPE_MAIN_GATE              = 44,
 
     DATA_FACTION                = 50,
     DATA_MISTRESS_ACHIEVEMENT   = 51,
@@ -125,6 +128,8 @@ enum
     NPC_TIRION_FORDRING         = 34996,
     NPC_LICH_KING               = 35877, // used for start of anub'arak encounter
     NPC_WILFRED_FIZZLEBANG      = 35458,
+    NPC_PURPLE_RUNE             = 35651,
+    NPC_PORTAL_TARGET           = 17965, // for "summoning" jaraxxus
 
     UPPER_BACK_PAIN_CRITERIA_N10 = 11779,
     UPPER_BACK_PAIN_CRITERIA_N25 = 11780,
@@ -143,6 +148,7 @@ enum
     GO_CHAMPIONS_CHEST_H10      = 195633,
     GO_CHAMPIONS_CHEST_H25      = 195635,
     GO_ENTRANCE_DOOR            = 195589,
+    GO_MAIN_GATE                = 195647,
 
     SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
 };

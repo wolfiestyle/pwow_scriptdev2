@@ -209,6 +209,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
             Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
 
+        if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+            Gate->SetGoState(GO_STATE_READY);
+
         if(CurrPhase != PHASE_ANUBARAK)
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
@@ -288,8 +291,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_ICEHOWL:
                 NorthrendBeastsEncounterCheck();
                 break;
+                // Twin Val'kyr
             case NPC_FJOLA_LIGHTBANE:
             case NPC_EYDIS_DARKBANE:
+                // faction champions
             case NPC_TYRIUS_DUSKBLADE:
             case NPC_KAVINA_GROVESONG:
             case NPC_MELADOR_VALESTRIDER:
@@ -328,6 +333,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         {
             if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
                 Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+            if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+                Gate->SetGoState(GO_STATE_READY);
 
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
@@ -337,6 +344,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     {
         if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
             Door->SetGoState(GO_STATE_READY);
+
+        if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+            Gate->SetGoState(GO_STATE_ACTIVE);
         CurrPhase++;
         EncounterInProgress = true;
         m_uiTalkCounter = 0;
@@ -472,6 +482,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         case 1:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
                                 DoScriptText(SAY_WILFRED_JARAXXUS_INTRO2, Fizzlebang);
+                            if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+                                Gate->SetGoState(GO_STATE_READY);
                             m_uiTalkTimer = 10*IN_MILLISECONDS;
                             break;
                         case 2:
@@ -532,10 +544,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         case PHASE_JORMUNGAR_TWINS:
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_TWIN_JORMUNGAR_SPAWN, Fordring);
+                            if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+                                Gate->SetGoState(GO_STATE_ACTIVE);
                             break;
                         case PHASE_ICEHOWL:
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_ICEHOWL_SPAWN, Fordring);
+                            if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+                                Gate->SetGoState(GO_STATE_ACTIVE);
                             break;
                     }
                     m_bIsInTalkPhase = false;
@@ -563,6 +579,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         {
             if (m_uiAggroTimer < uiDiff)
             {
+                if (GameObject* Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
+                    Gate->SetGoState(GO_STATE_READY);
                 for (GuidList::const_iterator i = summons.begin(); i != summons.end(); ++i)
                     if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
                         if (pSummon->isAlive())
