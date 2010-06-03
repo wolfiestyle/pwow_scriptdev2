@@ -304,6 +304,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     SpawnBoss(NPC_ACIDMAW, 1);
                     SpawnBoss(NPC_DREADSCALE, 2);
                 }
+                else
+                    uiSummonTimer = 0;
                 NorthrendBeastsEncounterCheck();
                 break;
             case NPC_ACIDMAW:
@@ -313,6 +315,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     CurrBeastOfNortherendPhase = PHASE_ICEHOWL;
                     SpawnBoss(NPC_ICEHOWL);
                 }
+                else
+                    if (m_bIsHeroic && !m_pInstance->IsEncounterInProgress())
+                        uiSummonTimer = 0;
                 // (no break)
             case NPC_ICEHOWL:
                 NorthrendBeastsEncounterCheck();
