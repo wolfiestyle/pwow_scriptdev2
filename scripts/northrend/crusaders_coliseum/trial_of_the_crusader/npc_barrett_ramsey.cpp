@@ -483,9 +483,54 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     m_uiTalkCounter++;
                     break;
                 case PHASE_FACTION_CHAMPIONS:
-                    StartNextBoss();
-                    m_bIsInTalkPhase = false;
-                    m_bCombatStart = true;
+                    switch (m_uiTalkCounter)
+                    {
+                        case 0:
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_FACTION_CHAMPIONS_INTRO1, Fordring);
+                            m_uiAggroTimer = 35*IN_MILLISECONDS;
+                            m_uiTalkTimer = 9*IN_MILLISECONDS;
+                            break;
+                        case 1:
+                            if (IS_HORDE)
+                            {
+                                if (Creature* Varian = GET_CREATURE(TYPE_VARIAN_WYRM))
+                                    DoScriptText(SAY_VARIAN_FACTION_CHAMPIONS_HORDE_INTRO2, Varian);
+                                m_uiTalkTimer = 16*IN_MILLISECONDS;
+                            }
+                            else
+                            {
+                                if (Creature* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
+                                    DoScriptText(SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO2, Garrosh);
+                                m_uiTalkTimer = 15*IN_MILLISECONDS;
+                            }
+                            break;
+                        case 2:
+                            if (Fordring)
+                                DoScriptText(SAY_TIRION_FACTION_CHAMPIONS_INTRO3, Fordring);
+                            StartNextBoss();
+                            m_uiTalkTimer = 4.5*IN_MILLISECONDS;
+                            break;
+                        case 3:
+                            if (IS_HORDE)
+                            {
+                                if (Creature* Varian = GET_CREATURE(TYPE_VARIAN_WYRM))
+                                    DoScriptText(SAY_VARIAN_FACTION_CHAMPIONS_HORDE_INTRO4, Varian);
+                                m_uiTalkTimer =10*IN_MILLISECONDS;
+                            }
+                            else
+                            {
+                                if (Creature* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
+                                    DoScriptText(SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO4, Garrosh);
+                                m_uiTalkTimer = 10*IN_MILLISECONDS;
+                            }
+                            break;
+                        default:
+                            m_bIsInTalkPhase = false;
+                            m_bCombatStart = true;
+                            break;
+                    }
+                    m_uiTalkCounter++;
                     break;
                 case PHASE_JARAXXUS:
                     switch (m_uiTalkCounter)
@@ -695,6 +740,34 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         case 4:
                             if (Unit* Fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
                                 DoScriptText(SAY_TIRION_JARAXXUS_HORDE_OUTRO4, Fordring);
+                            break;
+                        default:
+                            m_bIsInOutroTalk = false;
+                            break;
+                    }
+                    m_uiTalkCounter++;
+                    break;
+                case PHASE_FACTION_CHAMPIONS:
+                    switch (m_uiTalkCounter)
+                    {
+                        case 0:
+                            if (!IS_HORDE)
+                            {
+                                if (Creature* Varian = GET_CREATURE(TYPE_VARIAN_WYRM))
+                                    DoScriptText(SAY_VARIAN_ALLIANCE_VICTORY, Varian);
+                                m_uiTalkTimer =3*IN_MILLISECONDS;
+                            }
+                            else
+                            {
+                                if (Creature* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
+                                    DoScriptText(SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO4, Garrosh);
+                                m_uiTalkTimer = 5.5*IN_MILLISECONDS;
+                            }
+                            break;
+                        case 1:
+                            if (Unit* Fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
+                                DoScriptText(SAY_TIRION_OUTRO, Fordring);
+                            m_bIsInOutroTalk = false;
                             break;
                         default:
                             m_bIsInOutroTalk = false;
