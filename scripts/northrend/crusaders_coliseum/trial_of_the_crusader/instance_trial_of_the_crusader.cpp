@@ -35,7 +35,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string m_strInstData;
     uint32 m_playerTeam;
-    uint32 m_uiJaraxxusAddCounter;
+    uint32 m_uiAchievementProgressCounter;
 
     typedef std::map<uint32, uint64> GuidMap;
     GuidMap m_guidsStore;
@@ -48,8 +48,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void Initialize()
     {
-        m_playerTeam            = 0;
-        m_uiJaraxxusAddCounter  = 0;
+        m_playerTeam                    = 0;
+        m_uiAchievementProgressCounter  = 0;
 
         memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -136,9 +136,9 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        if (uiType == DATA_MISTRESS_ACHIEVEMENT )
+        if (uiType == DATA_ACHIEVEMENT_COUNTER )
         {
-            m_uiJaraxxusAddCounter = uiData;
+            m_uiAchievementProgressCounter = uiData;
             return;
         }
 
@@ -196,8 +196,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 return m_auiEncounter[uiType];
             case DATA_FACTION:
                 return m_playerTeam;
-            case DATA_MISTRESS_ACHIEVEMENT:
-                return m_uiJaraxxusAddCounter;
+            case DATA_ACHIEVEMENT_COUNTER:
+                return m_uiAchievementProgressCounter;
         }
 
         return 0;
@@ -241,10 +241,10 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case THREE_SIXTY_CRITERIA_H25:
             case UPPER_BACK_PAIN_CRITERIA_N10:
             case UPPER_BACK_PAIN_CRITERIA_H10:
-                return m_uiJaraxxusAddCounter >= 2;
+                return m_uiAchievementProgressCounter >= 2;
             case UPPER_BACK_PAIN_CRITERIA_N25:
             case UPPER_BACK_PAIN_CRITERIA_H25:
-                return m_uiJaraxxusAddCounter >= 4;
+                return m_uiAchievementProgressCounter >= 4;
             default:
                 return false;
         }

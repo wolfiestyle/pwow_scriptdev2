@@ -274,16 +274,16 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
         Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
         Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
         if (m_pInstance)
-            m_pInstance->SetData(DATA_MISTRESS_ACHIEVEMENT, m_pInstance->GetData(DATA_MISTRESS_ACHIEVEMENT)+1);
+            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
     }
 
     void JustDied(Unit* pSlayer)
     {
         if (!m_pInstance)
             return;
-        uint32 count = m_pInstance->GetData(DATA_MISTRESS_ACHIEVEMENT);
+        uint32 count = m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER);
         if (count > 0)
-            m_pInstance->SetData(DATA_MISTRESS_ACHIEVEMENT, count-1);
+            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, count-1);
     }
 
     void UpdateAI(uint32 const uiDiff)

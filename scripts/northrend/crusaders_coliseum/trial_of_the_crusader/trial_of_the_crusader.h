@@ -82,8 +82,7 @@ enum
     TYPE_MAIN_GATE              = 44,
 
     DATA_FACTION                = 50,
-    DATA_MISTRESS_ACHIEVEMENT   = 51,
-    DATA_GORMOK_ACHIEVEMENT     = 52,
+    DATA_ACHIEVEMENT_COUNTER    = 51,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,

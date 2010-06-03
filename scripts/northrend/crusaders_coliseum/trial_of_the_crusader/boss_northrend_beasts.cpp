@@ -108,7 +108,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
             m_Snobolds.push_back(pSummon->GetGUID());
             pSummon->SetInCombatWithZone();
             if (m_pInstance)
-                m_pInstance->SetData(DATA_GORMOK_ACHIEVEMENT, m_pInstance->GetData(DATA_GORMOK_ACHIEVEMENT)+1);
+                m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
         }
     }
 
@@ -117,7 +117,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
         if (pSummon && pSummon->GetEntry() == NPC_SNOBOLD_VASSAL)
         {
             if (m_pInstance)
-                m_pInstance->SetData(DATA_GORMOK_ACHIEVEMENT, m_pInstance->GetData(DATA_GORMOK_ACHIEVEMENT)-1);
+                m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)-1);
         }
     }
 

@@ -349,6 +349,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             Gate->SetGoState(GO_STATE_ACTIVE);
         CurrPhase++;
         EncounterInProgress = true;
+        m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, 0); // we reset the achievement progress on every new phase
         m_uiTalkCounter = 0;
         m_uiTalkTimer = 0;
         m_bIsInTalkPhase = true;
@@ -536,7 +537,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     {
                         case PHASE_BEASTS_NONE:
                         case PHASE_GORMOK:
-                            if(!m_bIsHeroic)
+                            if (!m_bIsHeroic)
                                 StartNextBoss();
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_GORMOK_SPAWN, Fordring);
@@ -569,7 +570,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         else
             m_uiTalkTimer -= uiDiff;
     }
-
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_bIsInTalkPhase)
