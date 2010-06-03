@@ -54,6 +54,8 @@ enum BeastsOfNortherendPhases
 
 enum Says
 {
+    SAY_TIRION_TRIAL_OF_THE_CRUSADER_INTRO_1        = -1300364,
+    SAY_TIRION_TRIAL_OF_THE_CRUSADER_INTRO_2        = -1300363,
     // Northrend Beasts
     SAY_TIRION_GORMOK_SPAWN                         = -1300299,
     SAY_TIRION_TWIN_JORMUNGAR_SPAWN                 = -1300300,
@@ -375,7 +377,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_bIsInTalkPhase = true;
         m_bIsInOutroTalk = false;
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
-            uiSummonTimer = 0;
+            uiSummonTimer = 27*IN_MILLISECONDS;
     }
 
     void StartNextBoss()
@@ -606,25 +608,47 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     {
                         case PHASE_BEASTS_NONE:
                         case PHASE_GORMOK:
-                            if (!m_bIsHeroic)
-                                StartNextBoss();
-                            if (Fordring)
-                                DoScriptText(SAY_TIRION_GORMOK_SPAWN, Fordring);
+                            switch (m_uiTalkCounter)
+                            {
+                                case 0:
+                                    if (Fordring)
+                                        DoScriptText(SAY_TIRION_TRIAL_OF_THE_CRUSADER_INTRO_1, Fordring);
+                                    m_uiTalkTimer = 22*IN_MILLISECONDS;
+                                    m_bIsInTalkPhase = true;
+                                    break;
+                                case 1:
+                                    if (Fordring)
+                                        DoScriptText(SAY_TIRION_TRIAL_OF_THE_CRUSADER_INTRO_2, Fordring);
+                                    m_uiTalkTimer = 5*IN_MILLISECONDS;
+                                    break;
+                                case 2:
+                                    if(!m_bIsHeroic)
+                                        StartNextBoss();
+                                    if (Fordring)
+                                        DoScriptText(SAY_TIRION_GORMOK_SPAWN, Fordring);
+                                    m_bIsInTalkPhase = false;
+                                    break;
+                                default:
+                                    m_bIsInTalkPhase = false;
+                                    break;
+                            }
+                            m_uiTalkCounter++;
                             break;
                         case PHASE_JORMUNGAR_TWINS:
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_TWIN_JORMUNGAR_SPAWN, Fordring);
                             if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
                                 Gate->SetGoState(GO_STATE_ACTIVE);
+                            m_bIsInTalkPhase = false;
                             break;
                         case PHASE_ICEHOWL:
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_ICEHOWL_SPAWN, Fordring);
                             if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
                                 Gate->SetGoState(GO_STATE_ACTIVE);
+                            m_bIsInTalkPhase = false;
                             break;
                     }
-                    m_bIsInTalkPhase = false;
                     break;
                 case PHASE_TWIN_VALKYR:
                     if (Fordring)
