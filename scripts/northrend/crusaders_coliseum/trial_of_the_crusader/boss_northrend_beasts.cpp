@@ -237,10 +237,10 @@ static const float RoomCenter[] = { 563.67f, 139.57f, 393.83f };
 
 #define PHASE_TIMER 45*IN_MILLISECONDS
 #define SPEW_TIMER  urand(10, 20)*IN_MILLISECONDS
-#define BITE_TIMER  urand(10, 15)*IN_MILLISECONDS
+#define BITE_TIMER  urand(15, 20)*IN_MILLISECONDS
 #define SPIT_TIMER  1200
 #define SPRAY_TIMER urand(10, 20)*IN_MILLISECONDS
-#define SLIME_TIMER urand(10, 15)*IN_MILLISECONDS
+#define SLIME_TIMER urand(15, 20)*IN_MILLISECONDS
 #define SWEEP_TIMER urand(15, 20)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
@@ -255,6 +255,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        m_creature->CastSpell(m_creature, SPELL_EMERGE, false);
         m_uiStep = 0;
         m_bIsRooted = true;
         Events.SetPhase(PHASE_ROOTED);

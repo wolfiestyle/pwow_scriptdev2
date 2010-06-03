@@ -240,6 +240,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && CurrBeastOfNortherendPhase != PHASE_BEASTS_NONE)
             m_bIsInTalkPhase = true;    // do intro for individual beasts
+        if (pSummon->GetEntry() == NPC_ACIDMAW)
+            pSummon->CastSpell(pSummon, 56422 /* submerge */, false);
         if (pSummon->GetEntry() == NPC_JARAXXUS)
             m_uiAggroTimer = 37*IN_MILLISECONDS;
         if (pSummon->GetEntry() != NPC_JARAXXUS)
