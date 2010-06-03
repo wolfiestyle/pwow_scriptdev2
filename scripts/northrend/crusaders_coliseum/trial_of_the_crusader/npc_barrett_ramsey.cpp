@@ -775,6 +775,12 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     }
                     m_uiTalkCounter++;
                     break;
+                case PHASE_TWIN_VALKYR:
+                    if (IS_HORDE)
+                        if (Creature *Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
+                            DoScriptText(SAY_GARROSH_TWIN_VALKYR_OUTRO, Garrosh);
+                    m_bIsInOutroTalk = false;
+                    break;
                 default:
                     m_bIsInOutroTalk = false;
                     break;
