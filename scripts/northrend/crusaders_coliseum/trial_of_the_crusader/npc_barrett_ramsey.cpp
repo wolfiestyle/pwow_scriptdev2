@@ -68,6 +68,10 @@ enum Says
     SAY_JARAXXUS_INTRO5                             = -1300308,
     SAY_WILFRED_JARAXXUS_INTRO6                     = -1300309,
     SAY_TIRION_JARAXXUS_INTRO7                      = -1300310,
+    SAY_TIRION_JARAXXUS_OUTRO1                      = -1300318,
+    SAY_GARROSH_JARAXXUS_HORDE_OUTRO2               = -1300319,
+    SAY_VARIAN_JARAXXUS_HORDE_OUTRO3                = -1300320,
+    SAY_TIRION_JARAXXUS_HORDE_OUTRO4                = -1300321,
     // Faction champions
     SAY_TIRION_FACTION_CHAMPIONS_INTRO1             = -1300322,
     SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO2   = -1300323,
@@ -110,6 +114,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     bool m_bIs10Man :1;
     bool m_bCombatStart :1;
     bool m_bIsInTalkPhase :1;
+    bool m_bIsInOutroTalk :1;
     uint32 uiSummonTimer;
     uint32 m_uiAggroTimer;
     uint32 m_uiBeastsDead;
@@ -126,6 +131,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         EncounterInProgress(false),
         m_bCombatStart(false),
         m_bIsInTalkPhase(false),
+        m_bIsInOutroTalk(false),
         uiSummonTimer(0),
         m_uiAggroTimer(0),
         m_uiBeastsDead(0),
@@ -256,6 +262,17 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
     }
 
+    void EncounterCheck()
+    {
+        if (!m_pInstance->IsEncounterInProgress())
+        {
+            EncounterInProgress = false;
+            m_bIsInOutroTalk = true;
+            m_uiTalkCounter = 0;
+            m_uiTalkTimer = 4*IN_MILLISECONDS;
+        }
+    }
+
     void SummonedCreatureJustDied(Creature *who)
     {
         if (!who || !m_pInstance)
@@ -272,6 +289,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 break;
             case NPC_JARAXXUS:
                 EncounterInProgress = false;
+                m_uiTalkCounter = 0;
+                m_bIsInOutroTalk = true;
                 break;
             case NPC_GORMOK:
                 if (!m_bIsHeroic)
@@ -324,8 +343,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_BROLN_STOUTHORN:
             case NPC_THRAKGAR:
             case NPC_HARKZOG:
-                if (!m_pInstance->IsEncounterInProgress())
-                    EncounterInProgress = false;
+                EncounterCheck();
                 break;
             default:
                 break;
@@ -355,6 +373,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_uiTalkCounter = 0;
         m_uiTalkTimer = 0;
         m_bIsInTalkPhase = true;
+        m_bIsInOutroTalk = false;
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
             uiSummonTimer = 0;
     }
@@ -621,10 +640,60 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             m_uiTalkTimer -= uiDiff;
     }
 
+    void UpdateOutros(uint32 const uiDiff)
+    {
+        if (m_uiTalkTimer < uiDiff)
+        {
+            Creature *Fordring = GET_CREATURE(TYPE_TIRION_FORDRING);
+            switch (CurrPhase)
+            {
+                case PHASE_JARAXXUS:
+                    switch (m_uiTalkCounter)
+                    {
+                        case 0:
+                            m_uiTalkTimer = 5000;
+                            break;
+                        case 1:
+                            if (Unit* Fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
+                                DoScriptText(SAY_TIRION_JARAXXUS_OUTRO1, Fordring);
+                            m_uiTalkTimer = 15000;
+                            break;
+                        case 2:
+                            if (Unit* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
+                                DoScriptText(SAY_GARROSH_JARAXXUS_HORDE_OUTRO2, Garrosh);
+                            m_uiTalkTimer = 10500;
+                            break;
+                        case 3:
+                            if (Unit* Wrynn = GET_CREATURE(TYPE_VARIAN_WYRM))
+                                DoScriptText(SAY_VARIAN_JARAXXUS_HORDE_OUTRO3, Wrynn);
+                            m_uiTalkTimer = 7000;
+                            break;
+                        case 4:
+                            if (Unit* Fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
+                                DoScriptText(SAY_TIRION_JARAXXUS_HORDE_OUTRO4, Fordring);
+                            break;
+                        default:
+                            m_bIsInOutroTalk = false;
+                            break;
+                    }
+                    m_uiTalkCounter++;
+                    break;
+                default:
+                    m_bIsInOutroTalk = false;
+                    break;
+           }
+        }
+        else
+            m_uiTalkTimer -= uiDiff;
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_bIsInTalkPhase)
             UpdateIntros(uiDiff);
+
+        if (m_bIsInOutroTalk)
+            UpdateOutros(uiDiff);
 
         if (m_bCombatStart)
         {
