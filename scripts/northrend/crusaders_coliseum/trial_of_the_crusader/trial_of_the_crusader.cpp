@@ -1,63 +1,55 @@
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
-uint32 toc_GetType(Creature *pCreature)
-{
-    switch(pCreature->GetEntry())
-    {
-        case NPC_GORMOK                  : return TYPE_GORMOK;
-        case NPC_ACIDMAW                 : return TYPE_ACIDMAW;
-        case NPC_DREADSCALE              : return TYPE_DREADSCALE;
-        case NPC_ICEHOWL                 : return TYPE_ICEHOWL;
-        case NPC_JARAXXUS                : return TYPE_JARAXXUS;
-        case NPC_TYRIUS_DUSKBLADE        : return TYPE_TYRIUS_DUSKBLADE;
-        case NPC_KAVINA_GROVESONG        : return TYPE_KAVINA_GROVESONG;
-        case NPC_MELADOR_VALESTRIDER     : return TYPE_MELADOR_VALESTRIDER;
-        case NPC_ALYSSIA_MOONSTALKER     : return TYPE_ALYSSIA_MOONSTALKER;
-        case NPC_NOOZLE_WHIZZLESTICK     : return TYPE_NOOZLE_WHIZZLESTICK;
-        case NPC_VELNAA                  : return TYPE_VELNAA;
-        case NPC_BAELNOR_LIGHTBEARER     : return TYPE_BAELNOR_LIGHTBEARER;
-        case NPC_ANTHAR_FORGEMENDER      : return TYPE_ANTHAR_FORGEMENDER;
-        case NPC_BRIENNA_NIGHTFELL       : return TYPE_BRIENNA_NIGHTFELL;
-        case NPC_IRIETH_SHADOWSTEP       : return TYPE_IRIETH_SHADOWSTEP;
-        case NPC_SHAABAD                 : return TYPE_SHAABAD;
-        case NPC_SAAMUL                  : return TYPE_SAAMUL;
-        case NPC_SERISSA_GRIMDABBLER     : return TYPE_SERISSA_GRIMDABBLER;
-        case NPC_SHOCUUL                 : return TYPE_SHOCUUL;
-        case NPC_GORGRIM_SHADOWCLEAVE    : return TYPE_GORGRIM_SHADOWCLEAVE;
-        case NPC_BIRANA_STORMHOOF        : return TYPE_BIRANA_STORMHOOF;
-        case NPC_ERIN_MISTHOOF           : return TYPE_ERIN_MISTHOOF;
-        case NPC_RUJKAH                  : return TYPE_RUJKAH;
-        case NPC_GINSELLE_BLIGHTSLINGER  : return TYPE_GINSELLE_BLIGHTSLINGER;
-        case NPC_LIANDRA_SUNCALLER       : return TYPE_LIANDRA_SUNCALLER;
-        case NPC_MALITHAS_BRIGHTBLADE    : return TYPE_MALITHAS_BRIGHTBLADE;
-        case NPC_CAIPHUS_THE_STERN       : return TYPE_CAIPHUS_THE_STERN;
-        case NPC_VIVIENNE_BLACKWHISPER   : return TYPE_VIVIENNE_BLACKWHISPER;
-        case NPC_MAZDINAH                : return TYPE_MAZDINAH;
-        case NPC_BROLN_STOUTHORN         : return TYPE_BROLN_STOUTHORN;
-        case NPC_THRAKGAR                : return TYPE_THRAKGAR;
-        case NPC_HARKZOG                 : return TYPE_HARKZOG;
-        case NPC_NARRHOK_STEELBREAKER    : return TYPE_NARRHOK_STEELBREAKER;
-        case NPC_FJOLA_LIGHTBANE         : return TYPE_FJOLA_LIGHTBANE;
-        case NPC_EYDIS_DARKBANE          : return TYPE_EYDIS_DARKBANE;
-        case NPC_ANUBARAK                : return TYPE_ANUBARAK;
-        case NPC_BARRETT_RAMSAY          : return TYPE_BARRETT_RAMSAY;
-        case NPC_VARIAN_WYRM             : return TYPE_VARIAN_WYRM;
-        case NPC_GARROSH_HELLSCREAM      : return TYPE_GARROSH_HELLSCREAM;
-        case NPC_TIRION_FORDRING         : return TYPE_TIRION_FORDRING;
-        case NPC_LICH_KING               : return TYPE_LICH_KING;
-        case NPC_WILFRED_FIZZLEBANG      : return TYPE_FIZZLEBANG;
-        case NPC_PURPLE_RUNE             : return TYPE_PURPLE_RUNE;
-        case NPC_PORTAL_TARGET           : return TYPE_PORTAL_TARGET;
-
-        default:
-            return 0;
-    }
-}
+toc::EntryTypeMap const toc::EntryType = map_initializer<uint32, uint32>
+    (NPC_GORMOK,                TYPE_GORMOK)
+    (NPC_ACIDMAW,               TYPE_ACIDMAW)
+    (NPC_DREADSCALE,            TYPE_DREADSCALE)
+    (NPC_ICEHOWL,               TYPE_ICEHOWL)
+    (NPC_JARAXXUS,              TYPE_JARAXXUS)
+    (NPC_TYRIUS_DUSKBLADE,      TYPE_TYRIUS_DUSKBLADE)
+    (NPC_KAVINA_GROVESONG,      TYPE_KAVINA_GROVESONG)
+    (NPC_MELADOR_VALESTRIDER,   TYPE_MELADOR_VALESTRIDER)
+    (NPC_ALYSSIA_MOONSTALKER,   TYPE_ALYSSIA_MOONSTALKER)
+    (NPC_NOOZLE_WHIZZLESTICK,   TYPE_NOOZLE_WHIZZLESTICK)
+    (NPC_VELNAA,                TYPE_VELNAA)
+    (NPC_BAELNOR_LIGHTBEARER,   TYPE_BAELNOR_LIGHTBEARER)
+    (NPC_ANTHAR_FORGEMENDER,    TYPE_ANTHAR_FORGEMENDER)
+    (NPC_BRIENNA_NIGHTFELL,     TYPE_BRIENNA_NIGHTFELL)
+    (NPC_IRIETH_SHADOWSTEP,     TYPE_IRIETH_SHADOWSTEP)
+    (NPC_SHAABAD,               TYPE_SHAABAD)
+    (NPC_SAAMUL,                TYPE_SAAMUL)
+    (NPC_SERISSA_GRIMDABBLER,   TYPE_SERISSA_GRIMDABBLER)
+    (NPC_SHOCUUL,               TYPE_SHOCUUL)
+    (NPC_GORGRIM_SHADOWCLEAVE,  TYPE_GORGRIM_SHADOWCLEAVE)
+    (NPC_BIRANA_STORMHOOF,      TYPE_BIRANA_STORMHOOF)
+    (NPC_ERIN_MISTHOOF,         TYPE_ERIN_MISTHOOF)
+    (NPC_RUJKAH,                TYPE_RUJKAH)
+    (NPC_GINSELLE_BLIGHTSLINGER,TYPE_GINSELLE_BLIGHTSLINGER)
+    (NPC_LIANDRA_SUNCALLER,     TYPE_LIANDRA_SUNCALLER)
+    (NPC_MALITHAS_BRIGHTBLADE,  TYPE_MALITHAS_BRIGHTBLADE)
+    (NPC_CAIPHUS_THE_STERN,     TYPE_CAIPHUS_THE_STERN)
+    (NPC_VIVIENNE_BLACKWHISPER, TYPE_VIVIENNE_BLACKWHISPER)
+    (NPC_MAZDINAH,              TYPE_MAZDINAH)
+    (NPC_BROLN_STOUTHORN,       TYPE_BROLN_STOUTHORN)
+    (NPC_THRAKGAR,              TYPE_THRAKGAR)
+    (NPC_HARKZOG,               TYPE_HARKZOG)
+    (NPC_NARRHOK_STEELBREAKER,  TYPE_NARRHOK_STEELBREAKER)
+    (NPC_FJOLA_LIGHTBANE,       TYPE_FJOLA_LIGHTBANE)
+    (NPC_EYDIS_DARKBANE,        TYPE_EYDIS_DARKBANE)
+    (NPC_ANUBARAK,              TYPE_ANUBARAK)
+    (NPC_BARRETT_RAMSAY,        TYPE_BARRETT_RAMSAY)
+    (NPC_VARIAN_WYRM,           TYPE_VARIAN_WYRM)
+    (NPC_GARROSH_HELLSCREAM,    TYPE_GARROSH_HELLSCREAM)
+    (NPC_TIRION_FORDRING,       TYPE_TIRION_FORDRING)
+    (NPC_LICH_KING,             TYPE_LICH_KING)
+    (NPC_WILFRED_FIZZLEBANG,    TYPE_FIZZLEBANG)
+    (NPC_PURPLE_RUNE,           TYPE_PURPLE_RUNE)
+    (NPC_PORTAL_TARGET,         TYPE_PORTAL_TARGET);
 
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
     ScriptedAI(pCreature),
-    m_uiBossEncounterId(toc_GetType(pCreature))
+    m_uiBossEncounterId(toc::GetType(pCreature))
 {
     m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
     Difficulty diff = pCreature->GetMap()->GetDifficulty();

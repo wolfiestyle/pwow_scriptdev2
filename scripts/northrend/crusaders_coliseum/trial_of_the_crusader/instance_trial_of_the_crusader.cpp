@@ -38,7 +38,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_uiAchievementProgressCounter;
     uint32 m_uiAttemptCounter;
 
-    typedef std::map<uint32, uint64> GuidMap;
+    typedef UNORDERED_MAP<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
     GuidMap m_guidsStore;
 
     void OnPlayerEnter(Player *pWho)
@@ -78,7 +78,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void OnCreatureCreate(Creature *pCreature)
     {
-        if (uint32 data_id = toc_GetType(pCreature))
+        if (uint32 data_id = toc::GetType(pCreature))
             m_guidsStore[data_id] = pCreature->GetGUID();
     }
 

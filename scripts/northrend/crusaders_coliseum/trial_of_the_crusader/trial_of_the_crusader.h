@@ -158,9 +158,36 @@ enum
 
 //---------------------------------------------------------
 
+// helper for static initialization of containers
+template <typename KeyType, typename ValueType, typename ContainerType = UNORDERED_MAP<KeyType, ValueType> >
+class map_initializer
+{
+protected:
+    ContainerType m_map;
+
+public:
+    map_initializer(KeyType const& key, ValueType const& val)
+    {
+        m_map[key] = val;
+    }
+
+    map_initializer& operator() (KeyType const& key, ValueType const& val)
+    {
+        m_map[key] = val;
+        return *this;
+    }
+
+    operator ContainerType() const
+    {
+        return m_map;
+    }
+};
+
+namespace toc {
+
 // helper for the script register process
 template <typename T>
-CreatureAI* toc_GetAI(Creature *pCreature)
+CreatureAI* GetAI(Creature *pCreature)
 {
     return new T(pCreature);
 }
@@ -168,11 +195,20 @@ CreatureAI* toc_GetAI(Creature *pCreature)
 #define REGISTER_SCRIPT(SC) \
     newscript = new Script; \
     newscript->Name = #SC; \
-    newscript->GetAI = &toc_GetAI<SC##AI>; \
+    newscript->GetAI = &toc::GetAI<SC##AI>; \
     newscript->RegisterSelf();
 
 // get data_id from creature
-uint32 toc_GetType(Creature *pCreature);
+typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
+extern EntryTypeMap const EntryType;
+
+inline uint32 GetType(Creature *pCreature)
+{
+    EntryTypeMap::const_iterator it = EntryType.find(pCreature->GetEntry());
+    return it != EntryType.end() ? it->second : 0;
+}
+
+} // namespace toc
 
 // basic start point for bosses
 struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI
