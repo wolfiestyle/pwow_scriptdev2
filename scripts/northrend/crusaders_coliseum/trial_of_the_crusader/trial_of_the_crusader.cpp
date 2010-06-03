@@ -47,6 +47,8 @@ uint32 toc_GetType(Creature *pCreature)
         case NPC_TIRION_FORDRING         : return TYPE_TIRION_FORDRING;
         case NPC_LICH_KING               : return TYPE_LICH_KING;
         case NPC_WILFRED_FIZZLEBANG      : return TYPE_FIZZLEBANG;
+        case NPC_PURPLE_RUNE             : return TYPE_PURPLE_RUNE;
+        case NPC_PORTAL_TARGET           : return TYPE_PORTAL_TARGET;
 
         default:
             return 0;
