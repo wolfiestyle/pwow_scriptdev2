@@ -1,12 +1,7 @@
 #ifndef DEF_TRIAL_OF_THE_CRUSADER_H
 #define DEF_TRIAL_OF_THE_CRUSADER_H
 
-// this appends the difficulty suffix for each mode, so all of them must be defined in enum
-// so you declare:      enum { SPELL_TEST_N10, SPELL_TEST_N25, SPELL_TEST_H10, SPELL_TEST_H25 };
-// to cast the spell:   DoCast(target, DIFFICULTY(SPELL_TEST));
 #define DIFF_SELECT(N10, N25, H10, H25) (m_bIs10Man ? (m_bIsHeroic ? H10 : N10) : (m_bIsHeroic ? H25 : N25))
-#define DIFFICULTY(SP)      DIFF_SELECT(SP##_N10, SP##_N25, SP##_H10, SP##_H25)
-#define HEROIC(SP)          (m_bIsHeroic ? SP##_H : SP##_N)
 
 #define GET_CREATURE(C)     (InstanceVar<uint64>(C, m_pInstance).getObject<Creature>())
 #define GET_GAMEOBJECT(G)   (InstanceVar<uint64>(G, m_pInstance).getObject<GameObject>())
@@ -14,7 +9,7 @@
 // schedules an event
 #define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
 
-#define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE: false)
+#define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE : false)
 
 enum
 {

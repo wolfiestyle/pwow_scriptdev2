@@ -28,42 +28,25 @@ EndContentData */
 
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
+#include "SpellMgr.h"
 
 enum Spells
 {
     // Eydis Darkbane
-    SPELL_EYDIS_TWIN_SPIKE_N        = 66069,
-    SPELL_EYDIS_TWIN_SPIKE_H        = 67310,
-    SPELL_SURGE_OF_DARKNESS_N10     = 65768,
-    SPELL_SURGE_OF_DARKNESS_N25     = 67262,
-    SPELL_SURGE_OF_DARKNESS_H10     = 67263,
-    SPELL_SURGE_OF_DARKNESS_H25     = 67264,
-    SPELL_SHIELD_OF_DARKNESS_N10    = 65874,
-    SPELL_SHIELD_OF_DARKNESS_N25    = 67256,
-    SPELL_SHIELD_OF_DARKNESS_H10    = 67257,
-    SPELL_SHIELD_OF_DARKNESS_H25    = 67258,
-    SPELL_TWINS_PACT_EYDIS_N        = 67303,
-    SPELL_TWINS_PACT_EYDIS_H        = 67304,
+    SPELL_EYDIS_TWIN_SPIKE          = 66069,
+    SPELL_SURGE_OF_DARKNESS         = 65768,
+    SPELL_SHIELD_OF_DARKNESS        = 65874,
+    SPELL_TWINS_PACT_EYDIS          = 67303,
     SPELL_DARK_VORTEX               = 66058, //oddly enough, theres only 1 spell for all difficulties of this one
-    SPELL_TOUCH_OF_DARKNESS_10      = 67282, //only heroic
-    SPELL_TOUCH_OF_DARKNESS_25      = 67283,
+    SPELL_TOUCH_OF_DARKNESS         = 67282, //only heroic
 
     // Fjola Lightbane
-    SPELL_FJOLA_TWIN_SPIKE_N        = 66075,
-    SPELL_FJOLA_TWIN_SPIKE_H        = 67313,
-    SPELL_SURGE_OF_LIGHT_N10        = 65766,
-    SPELL_SURGE_OF_LIGHT_N25        = 67270,
-    SPELL_SURGE_OF_LIGHT_H10        = 67271,
-    SPELL_SURGE_OF_LIGHT_H25        = 67272,
-    SPELL_SHIELD_OF_LIGHTS_N10      = 65858,
-    SPELL_SHIELD_OF_LIGHTS_N25      = 67259,
-    SPELL_SHIELD_OF_LIGHTS_H10      = 67260,
-    SPELL_SHIELD_OF_LIGHTS_H25      = 67261,
-    SPELL_TWINS_PACT_FJOLA_N        = 65876,
-    SPELL_TWINS_PACT_FJOLA_H        = 67307,
+    SPELL_FJOLA_TWIN_SPIKE          = 66075,
+    SPELL_SURGE_OF_LIGHT            = 65766,
+    SPELL_SHIELD_OF_LIGHTS          = 65858,
+    SPELL_TWINS_PACT_FJOLA          = 65876,
     SPELL_LIGHT_VORTEX              = 66046,
-    SPELL_TOUCH_OF_LIGHT_10         = 67296, //only heroic
-    SPELL_TOUCH_OF_LIGHT_25         = 67298,
+    SPELL_TOUCH_OF_LIGHT            = 67296, //only heroic
 
     // both
     SPELL_POWER_OF_THE_TWINS        = 67246,
@@ -72,14 +55,8 @@ enum Spells
     SPELL_POWERING_UP               = 67604,
     SPELL_EMPOWERED_DARKNESS        = 65724,
     SPELL_EMPOWERED_LIGHT           = 67215,
-    SPELL_UNLEASHED_DARK_N10        = 65808,
-    SPELL_UNLEASHED_DARK_N25        = 67172,
-    SPELL_UNLEASHED_DARK_H10        = 67173,
-    SPELL_UNLEASHED_DARK_H25        = 67174,
-    SPELL_UNLEASHED_LIGHT_N10       = 65795,
-    SPELL_UNLEASHED_LIGHT_N25       = 67238,
-    SPELL_UNLEASHED_LIGHT_H10       = 67239,
-    SPELL_UNLEASHED_LIGHT_H25       = 67240,
+    SPELL_UNLEASHED_DARK            = 65808,
+    SPELL_UNLEASHED_LIGHT           = 65795,
 
     //portals
     SPELL_LIGHT_ESSENCE             = 65686,
@@ -173,8 +150,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
         {
             case SPECIAL_LIGHT_PACT:
                 DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
-                DoCast(m_creature, DIFFICULTY(SPELL_SHIELD_OF_LIGHTS), true);
-                DoCast(m_creature, HEROIC(SPELL_TWINS_PACT_FJOLA));
+                DoCast(m_creature, SPELL_SHIELD_OF_LIGHTS, true);
+                DoCast(m_creature, SPELL_TWINS_PACT_FJOLA);
                 break;
             case SPECIAL_LIGHT_VORTEX:
                 DoScriptText(SAY_TWIN_VALKYR_LIGHT_VORTEX, m_creature);
@@ -190,7 +167,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
-        DoCast(m_creature, DIFFICULTY(SPELL_SURGE_OF_LIGHT));
+        DoCast(m_creature, SPELL_SURGE_OF_LIGHT);
         m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
         RESCHEDULE_EVENT(BERSERK);
         RESCHEDULE_EVENT(TWIN_SPIKE);
@@ -225,12 +202,12 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_TWIN_SPIKE:
-                    DoCast(m_creature->getVictim(), HEROIC(SPELL_EYDIS_TWIN_SPIKE));
+                    DoCast(m_creature->getVictim(), SPELL_EYDIS_TWIN_SPIKE);
                     RESCHEDULE_EVENT(TWIN_SPIKE);
                     break;
                 case EVENT_TOUCH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCast(target, m_bIs10Man ? SPELL_TOUCH_OF_LIGHT_10 : SPELL_TOUCH_OF_LIGHT_25);
+                        DoCast(target, SPELL_TOUCH_OF_LIGHT);
                     RESCHEDULE_EVENT(TOUCH);
                     break;
                 default:
@@ -336,7 +313,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
             IsDark = !IsDark;
         }
 
-        DoCast(m_creature, DIFFICULTY(SPELL_SURGE_OF_DARKNESS));
+        DoCast(m_creature, SPELL_SURGE_OF_DARKNESS);
         m_creature->ModifyAuraState(AURA_STATE_DARK, true);
 
         RESCHEDULE_EVENT(BERSERK);
@@ -409,7 +386,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     break;
                 }
                 case EVENT_TWIN_SPIKE:
-                    DoCast(m_creature->getVictim(), HEROIC(SPELL_EYDIS_TWIN_SPIKE));
+                    DoCast(m_creature->getVictim(), SPELL_EYDIS_TWIN_SPIKE);
                     RESCHEDULE_EVENT(TWIN_SPIKE);
                     break;
                 case EVENT_SPECIAL:
@@ -436,8 +413,8 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                             break;
                         case SPECIAL_DARK_PACT:
                             DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
-                            DoCast(m_creature, DIFFICULTY(SPELL_SHIELD_OF_DARKNESS), true);
-                            DoCast(m_creature, HEROIC(SPELL_TWINS_PACT_EYDIS));
+                            DoCast(m_creature, SPELL_SHIELD_OF_DARKNESS, true);
+                            DoCast(m_creature, SPELL_TWINS_PACT_EYDIS);
                             if (LightbaneAI)
                                 LightbaneAI->DoSpecial(SPECIAL_DARK_PACT);
                             break;
@@ -457,7 +434,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                 }
                 case EVENT_TOUCH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCast(target, m_bIs10Man ? SPELL_TOUCH_OF_DARKNESS_10 : SPELL_TOUCH_OF_DARKNESS_25);
+                        DoCast(target, SPELL_TOUCH_OF_DARKNESS);
                     RESCHEDULE_EVENT(TOUCH);
                     break;
                 default:
@@ -548,7 +525,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
                 else
                 {
                     m_creature->setFaction(14);//hostile
-                    DoCast(pWho, DIFFICULTY(SPELL_UNLEASHED_LIGHT), true);
+                    DoCast(pWho, SPELL_UNLEASHED_LIGHT, true);
                 }
             else
                 if (pWho->HasAura(SPELL_DARK_ESSENCE))
@@ -556,7 +533,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
                 else
                 {
                     m_creature->setFaction(14);//hostile
-                    DoCast(pWho, DIFFICULTY(SPELL_UNLEASHED_DARK), true);
+                    DoCast(pWho, SPELL_UNLEASHED_DARK, true);
                 }
             m_creature->ForcedDespawn();
         }
@@ -568,8 +545,8 @@ bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
     player->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
     {
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS_10);
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS_25);
+        if (SpellEntry const* sp = GetSpellEntryByDifficulty(SPELL_TOUCH_OF_DARKNESS, pCreature->GetMap()->GetDifficulty()))
+            player->RemoveAurasDueToSpell(sp->Id);
     }
     player->CastSpell(player, SPELL_LIGHT_ESSENCE, false);
     return true;
@@ -580,8 +557,8 @@ bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
     player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC )
     {
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT_10);
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT_25);
+        if (SpellEntry const* sp = GetSpellEntryByDifficulty(SPELL_TOUCH_OF_LIGHT, pCreature->GetMap()->GetDifficulty()))
+            player->RemoveAurasDueToSpell(sp->Id);
     }
     player->CastSpell(player, SPELL_DARK_ESSENCE, false);
     return true;

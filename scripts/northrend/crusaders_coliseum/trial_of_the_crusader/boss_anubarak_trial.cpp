@@ -36,14 +36,8 @@ enum Spells
     // Anub'arak
     SPELL_BERSERK               = 26662,
     SPELL_FREEZING_SLASH        = 66012,
-    SPELL_PENETRATING_COLD_N10  = 66013,
-    SPELL_PENETRATING_COLD_N25  = 67700,
-    SPELL_PENETRATING_COLD_H10  = 68509,
-    SPELL_PENETRATING_COLD_H25  = 68510,
-    SPELL_LEECHING_SWARM_N10    = 66118,
-    SPELL_LEECHING_SWARM_N25    = 67630,
-    SPELL_LEECHING_SWARM_H10    = 68646,
-    SPELL_LEECHING_SWARM_H25    = 68647,
+    SPELL_PENETRATING_COLD      = 66013,
+    SPELL_LEECHING_SWARM        = 66118,
     SPELL_LEECHING_SWARM_DAMAGE = 66240,
     SPELL_LEECHING_SWARM_HEAL   = 66125,
     SPELL_PURSUING_SPIKES       = 65922,  // only part of the effect, probably used by dummy creature
@@ -52,10 +46,7 @@ enum Spells
     SPELL_PURSUED_BY_ANUBARK    = 67574,
 
     // Frost Sphere
-    SPELL_PERMAFROST_N10        = 66193,
-    SPELL_PERMAFROST_N25        = 67855,
-    SPELL_PERMAFROST_H10        = 67856,
-    SPELL_PERMAFROST_H25        = 67857,
+    SPELL_PERMAFROST            = 66193,
     // Nerubian Burrower
     SPELL_SUBMERGE_BURROWER     = 68394,
     SPELL_SHADOW_STRIKE         = 66134, //only heroic
@@ -63,10 +54,7 @@ enum Spells
     SPELL_EXPOSE_WEAKNESS       = 67720,
     SPELL_SPIDER_FRENZY         = 66128,
     // Swarm Scarab
-    SPELL_ACID_DRENCHED_MANDIBLES_N10 = 65775,
-    SPELL_ACID_DRENCHED_MANDIBLES_N25 = 67861,
-    SPELL_ACID_DRENCHED_MANDIBLES_H10 = 67862,
-    SPELL_ACID_DRENCHED_MANDIBLES_H25 = 67863,
+    SPELL_ACID_DRENCHED_MANDIBLES = 65775,
     SPELL_DETERMINATION         = 66092,
 };
 
@@ -250,7 +238,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         {
             pSumm->Relocate(pSumm->GetPositionX(), pSumm->GetPositionY(), FLOOR_HEIGHT);  //move to ground
             m_AliveFrostSpheres.remove(pSumm->GetGUID());
-            pSumm->CastSpell(pSumm, DIFFICULTY(SPELL_PERMAFROST), true);
+            pSumm->CastSpell(pSumm, SPELL_PERMAFROST, true);
         }
         else
         {
@@ -328,7 +316,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             if (!m_bIsHeroic)
                 Events.CancelEvent(EVENT_SUMMON_BURROWER);
             DoScriptText(SAY_LEECHING_SWARM, m_creature);
-            DoCast(m_creature, DIFFICULTY(SPELL_LEECHING_SWARM));
+            DoCast(m_creature, SPELL_LEECHING_SWARM);
         }
 
         Events.Update(uiDiff);
@@ -346,7 +334,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     break;
                 case EVENT_PENETRATING_COLD:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCast(target, DIFFICULTY(SPELL_PENETRATING_COLD));
+                        DoCast(target, SPELL_PENETRATING_COLD);
                     RESCHEDULE_EVENT(PENETRATING_COLD);
                     break;
                 case EVENT_SUMMON_BURROWER:
@@ -545,7 +533,7 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
             switch (uiEventId)
             {
                 case EVENT_ACID_DRENCHED_MANDIBLES:
-                    DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_ACID_DRENCHED_MANDIBLES));
+                    DoCast(m_creature->getVictim(), SPELL_ACID_DRENCHED_MANDIBLES);
                     RESCHEDULE_EVENT(ACID_DRENCHED_MANDIBLES);
                     break;
                 case EVENT_DETERMINATION:

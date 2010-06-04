@@ -34,14 +34,8 @@ EndContentData */
 enum GormokSpells
 {
     // Gormok
-    SPELL_IMPALE_N10            = 66331,    // "Requires Polearms"
-    SPELL_IMPALE_N25            = 67477,
-    SPELL_IMPALE_H10            = 67478,
-    SPELL_IMPALE_H25            = 67479,
-    SPELL_STAGGERING_STOMP_N10  = 66330,
-    SPELL_STAGGERING_STOMP_N25  = 67647,
-    SPELL_STAGGERING_STOMP_H10  = 67648,
-    SPELL_STAGGERING_STOMP_H25  = 67649,
+    SPELL_IMPALE                = 66331,    // "Requires Polearms"
+    SPELL_STAGGERING_STOMP      = 66330,
     // Snobold Vassal
     SPELL_SNOBOLLED             = 66406,    // dummy effect, target vehicle
     SPELL_RISING_ANGER          = 66636,    // target Gormok
@@ -119,11 +113,11 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
             switch (uiEventId)
             {
                 case EVENT_IMPALE:
-                    DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_IMPALE));
+                    DoCast(m_creature->getVictim(), SPELL_IMPALE);
                     Events.ScheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
                     break;
                 case EVENT_STAGGERING_STOMP:
-                    DoCast(m_creature, DIFFICULTY(SPELL_STAGGERING_STOMP));
+                    DoCast(m_creature, SPELL_STAGGERING_STOMP);
                     Events.ScheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
                     break;
                 case EVENT_THROW_SNOBOLD:
@@ -212,41 +206,17 @@ enum JormungarSpells
 {
     // Acidmaw
     SPELL_ACIDIC_SPEW           = 66818,    //triggers 66819, there is 67609, 67610, 67611 related and currently unused, maybe core should auto-select them?
-    SPELL_PARALYTIC_BITE_N10    = 66824,
-    SPELL_PARALYTIC_BITE_N25    = 67612,
-    SPELL_PARALYTIC_BITE_H10    = 67613,
-    SPELL_PARALYTIC_BITE_H25    = 67614,
-    SPELL_ACID_SPIT_N10         = 66880,
-    SPELL_ACID_SPIT_N25         = 67606,
-    SPELL_ACID_SPIT_H10         = 67607,
-    SPELL_ACID_SPIT_H25         = 67608,
-    SPELL_PARALYTIC_SPRAY_N10   = 66901,
-    SPELL_PARALYTIC_SPRAY_N25   = 67615,
-    SPELL_PARALYTIC_SPRAY_H10   = 67616,
-    SPELL_PARALYTIC_SPRAY_H25   = 67617,
+    SPELL_PARALYTIC_BITE        = 66824,
+    SPELL_ACID_SPIT             = 66880,
+    SPELL_PARALYTIC_SPRAY       = 66901,
     // Dreadscale
     SPELL_MOLTEN_SPEW           = 66821,    //triggers 66820, related and unused 67635, 67636, 67637
-    SPELL_BURNING_BITE_N10      = 66879,
-    SPELL_BURNING_BITE_N25      = 67624,
-    SPELL_BURNING_BITE_H10      = 67625,
-    SPELL_BURNING_BITE_H25      = 67626,
-    SPELL_FIRE_SPIT_N10         = 66796,
-    SPELL_FIRE_SPIT_N25         = 67632,
-    SPELL_FIRE_SPIT_H10         = 67633,
-    SPELL_FIRE_SPIT_H25         = 67634,
-    SPELL_BURNING_SPRAY_N10     = 66902,
-    SPELL_BURNING_SPRAY_N25     = 67627,
-    SPELL_BURNING_SPRAY_H10     = 67628,
-    SPELL_BURNING_SPRAY_H25     = 67629,
+    SPELL_BURNING_BITE          = 66879,
+    SPELL_FIRE_SPIT             = 66796,
+    SPELL_BURNING_SPRAY         = 66902,
     // all bosses
-    SPELL_SLIME_POOL_N10        = 66883,
-    SPELL_SLIME_POOL_N25        = 67641,
-    SPELL_SLIME_POOL_H10        = 67642,
-    SPELL_SLIME_POOL_H25        = 67643,
-    SPELL_SWEEP_N10             = 66794,
-    SPELL_SWEEP_N25             = 67644,
-    SPELL_SWEEP_H10             = 67645,
-    SPELL_SWEEP_H25             = 67646,
+    SPELL_SLIME_POOL            = 66883,
+    SPELL_SWEEP                 = 66794,
     SPELL_ENRAGE                = 68335,
     SPELL_SUBMERGE              = 56422, //i'm using Nerubian Submerge here, don't know correct spell
     SPELL_EMERGE                = 65982, //same here, using another spell till i understand what is wrong 66947, 66949
@@ -360,24 +330,24 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                     Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_BITE:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_PARALYTIC_BITE), false);
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_PARALYTIC_BITE, false);
                     Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_SPIT:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_ACID_SPIT), false);
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_ACID_SPIT, false);
                     Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), DIFFICULTY(SPELL_PARALYTIC_SPRAY), true);
+                        m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_PARALYTIC_SPRAY, true);
                     Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
-                    DoCastSpellIfCan(m_creature, DIFFICULTY(SPELL_SLIME_POOL), CAST_TRIGGERED);
+                    DoCastSpellIfCan(m_creature, SPELL_SLIME_POOL, CAST_TRIGGERED);
                     Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
-                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SWEEP), CAST_TRIGGERED);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
                     Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
@@ -504,24 +474,24 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_BITE:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_BURNING_BITE), false);
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_BURNING_BITE, false);
                     Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_SPIT:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_FIRE_SPIT), false);
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_FIRE_SPIT, false);
                     Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), DIFFICULTY(SPELL_BURNING_SPRAY), true);
+                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_BURNING_SPRAY, true);
                     Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
-                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SLIME_POOL), CAST_TRIGGERED);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SLIME_POOL, CAST_TRIGGERED);
                     Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
-                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SWEEP), CAST_TRIGGERED);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
                     Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
@@ -579,26 +549,11 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
 enum IcehowlSpells
 {
     SPELL_BERSERK               = 26662,
-    SPELL_FEROCIOUS_BUTT_N10    = 66770,
-    SPELL_FEROCIOUS_BUTT_N25    = 67654,
-    SPELL_FEROCIOUS_BUTT_H10    = 67655,
-    SPELL_FEROCIOUS_BUTT_H25    = 67656,
-    SPELL_ARCTIC_BREATH_N10     = 66689,
-    SPELL_ARCTIC_BREATH_N25     = 67650,
-    SPELL_ARCTIC_BREATH_H10     = 67651,
-    SPELL_ARCTIC_BREATH_H25     = 67652,
-    SPELL_WHIRL_N10             = 67345,
-    SPELL_WHIRL_N25             = 67663,
-    SPELL_WHIRL_H10             = 67664,
-    SPELL_WHIRL_H25             = 67665,
-    SPELL_MASSIVE_CRASH_N10     = 66683,
-    SPELL_MASSIVE_CRASH_N25     = 67660,
-    SPELL_MASSIVE_CRASH_H10     = 67661,
-    SPELL_MASSIVE_CRASH_H25     = 67662,
-    SPELL_FROTHING_RAGE_N10     = 66759,
-    SPELL_FROTHING_RAGE_N25     = 67657,
-    SPELL_FROTHING_RAGE_H10     = 67658,
-    SPELL_FROTHING_RAGE_H25     = 67659,
+    SPELL_FEROCIOUS_BUTT        = 66770,
+    SPELL_ARCTIC_BREATH         = 66689,
+    SPELL_WHIRL                 = 67345,
+    SPELL_MASSIVE_CRASH         = 66683,
+    SPELL_FROTHING_RAGE         = 66759,
     SPELL_TRAMPLE               = 66734,    // just the dmg part
     SPELL_STAGGERED_DAZE        = 66758,    // part of the Trample effect
     SPELL_SURGE_OF_ADRENALINE   = 68667,
@@ -669,16 +624,16 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_WHIRL:
-                    m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_WHIRL), false);
+                    m_creature->CastSpell(m_creature, SPELL_WHIRL, false);
                     Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, PHASE_NORMAL);
                     break;
                 case EVENT_BUTT:
-                    m_creature->CastSpell(m_creature->getVictim(), DIFFICULTY(SPELL_FEROCIOUS_BUTT), false);
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_FEROCIOUS_BUTT, false);
                     Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
                     break;
                 case EVENT_BREATH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->CastSpell(target, DIFFICULTY(SPELL_ARCTIC_BREATH), false);
+                        m_creature->CastSpell(target, SPELL_ARCTIC_BREATH, false);
                     Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
                     break;
                 case EVENT_PHASE_CHANGE:
@@ -698,7 +653,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             break;
                         case 1:
                             m_creature->GetMotionMaster()->MoveIdle();
-                            m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_MASSIVE_CRASH), false);
+                            m_creature->CastSpell(m_creature, SPELL_MASSIVE_CRASH, false);
                             Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;
@@ -777,7 +732,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 m_creature->MonsterTextEmote("Icehowl crashes into the Coliseum Wall and is stunned!", 0, true);
                             }
                             else
-                                m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_FROTHING_RAGE), false);
+                                m_creature->CastSpell(m_creature, SPELL_FROTHING_RAGE, false);
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
                             m_uiStep++;
                             break;

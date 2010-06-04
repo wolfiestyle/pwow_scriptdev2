@@ -32,38 +32,14 @@ EndContentData */
 enum Spells
 {
     SPELL_BERSERK               = 64238,
-    SPELL_FEL_FIREBALL_N10      = 66532,
-    SPELL_FEL_FIREBALL_N25      = 66963,
-    SPELL_FEL_FIREBALL_H10      = 66964,
-    SPELL_FEL_FIREBALL_H25      = 66965,
-    SPELL_FEL_LIGHTNING_N10     = 66528,
-    SPELL_FEL_LIGHTNING_N25     = 67029,
-    SPELL_FEL_LIGHTNING_H10     = 67030,
-    SPELL_FEL_LIGHTNING_H25     = 67031,
-    SPELL_INCINERATE_FLESH_N10  = 66237,
-    SPELL_INCINERATE_FLESH_N25  = 67049,
-    SPELL_INCINERATE_FLESH_H10  = 67050,
-    SPELL_INCINERATE_FLESH_H25  = 67051,
-    SPELL_LEGION_FLAME_N10      = 66197,
-    SPELL_LEGION_FLAME_N25      = 68123,
-    SPELL_LEGION_FLAME_H10      = 68124,
-    SPELL_LEGION_FLAME_H25      = 68125,
-    SPELL_INFERNAL_ERUPTION_N10 = 66258,
-    SPELL_INFERNAL_ERUPTION_N25 = 67901,
-    SPELL_INFERNAL_ERUPTION_H10 = 67902,
-    SPELL_INFERNAL_ERUPTION_H25 = 67903,
-    SPELL_INFERNAL_ERUPT_N10    = 66252,
-    SPELL_INFERNAL_ERUPT_N25    = 67067,
-    SPELL_INFERNAL_ERUPT_H10    = 67068,
-    SPELL_INFERNAL_ERUPT_H25    = 67069,
-    SPELL_NETHER_PORTAL_N10     = 66269,
-    SPELL_NETHER_PORTAL_N25     = 67898,
-    SPELL_NETHER_PORTAL_H10     = 67899,
-    SPELL_NETHER_PORTAL_H25     = 67900,
-    SPELL_NETHER_PORTAL_SUMMON_N10 = 66263,
-    SPELL_NETHER_PORTAL_SUMMON_N25 = 67103,
-    SPELL_NETHER_PORTAL_SUMMON_H10 = 67104,
-    SPELL_NETHER_PORTAL_SUMMON_H25 = 67105,
+    SPELL_FEL_FIREBALL          = 66532,
+    SPELL_FEL_LIGHTNING         = 66528,
+    SPELL_INCINERATE_FLESH      = 66237,
+    SPELL_LEGION_FLAME          = 66197,
+    SPELL_INFERNAL_ERUPTION     = 66258,
+    SPELL_INFERNAL_ERUPT        = 66252,
+    SPELL_NETHER_PORTAL         = 66269,
+    SPELL_NETHER_PORTAL_SUMMON  = 66263,
     SPELL_NETHER_POWER          = 67009,
 };
 
@@ -156,13 +132,13 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                 case NPC_NETHER_PORTAL:
                     pSummon->GetMotionMaster()->MoveIdle();
                     pSummon->SetDisplayId(30039);
-                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_NETHER_PORTAL_SUMMON), false);
+                    pSummon->CastSpell(pSummon, SPELL_NETHER_PORTAL_SUMMON, false);
                     m_creature->MonsterTextEmote("Lord Jaraxxus creates a Nether Portal!", 0, true);
                     m_Summoners.push_back(pSummon->GetGUID());
                     break;
                 case NPC_VOLCANO:
                     pSummon->GetMotionMaster()->MoveIdle();
-                    pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_INFERNAL_ERUPT), false);
+                    pSummon->CastSpell(pSummon, SPELL_INFERNAL_ERUPT, false);
                     m_Summoners.push_back(pSummon->GetGUID());
                     break;
                 default:
@@ -194,33 +170,33 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
             switch (uiEventId)
             {
                 case EVENT_FEL_FIREBALL:
-                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_FEL_FIREBALL));
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEL_FIREBALL);
                     Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
                     break;
                 case EVENT_FEL_LIGHTNING:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_FEL_LIGHTNING));
+                        DoCastSpellIfCan(pTarget, SPELL_FEL_LIGHTNING);
                     Events.ScheduleEvent(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER);
                     break;
                 case EVENT_INCINERATE_FLESH:
                     DoScriptText(SAY_INCINERATE, m_creature);
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->CastSpell(pTarget, DIFFICULTY(SPELL_INCINERATE_FLESH), false);
+                        m_creature->CastSpell(pTarget, SPELL_INCINERATE_FLESH, false);
                     Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
                     break;
                 case EVENT_LEGION_FLAME:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_LEGION_FLAME));
+                        DoCastSpellIfCan(pTarget, SPELL_LEGION_FLAME);
                     Events.ScheduleEvent(EVENT_LEGION_FLAME, LEGION_FLAME_TIMER);
                     break;
                 case EVENT_SUMMON_VOLCANO:
                     DoScriptText(SAY_SUMMON_INFERNO, m_creature);
-                    m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_INFERNAL_ERUPTION), false);
+                    m_creature->CastSpell(m_creature, SPELL_INFERNAL_ERUPTION, false);
                     Events.ScheduleEvent(EVENT_SUMMON_VOLCANO, VOLCANO_TIMER);
                     break;
                 case EVENT_SUMMON_PORTAL:
                     DoScriptText(SAY_SUMMON_MISTRESS_OF_PAIN, m_creature);
-                    m_creature->CastSpell(m_creature, DIFFICULTY(SPELL_NETHER_PORTAL), false);
+                    m_creature->CastSpell(m_creature, SPELL_NETHER_PORTAL, false);
                     Events.ScheduleEvent(EVENT_SUMMON_PORTAL, PORTAL_TIMER);
                     break;
                 case EVENT_BERSERK:
@@ -241,10 +217,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 enum AddSpells
 {
     SPELL_MISTRESS_KISS         = 67077,
-    SPELL_SHIVAN_SLASH_N10      = 66378,
-    SPELL_SHIVAN_SLASH_N25      = 67097,
-    SPELL_SHIVAN_SLASH_H10      = 67098,
-    SPELL_SHIVAN_SLASH_H25      = 67099,
+    SPELL_SHIVAN_SLASH          = 66378,
     SPELL_SPINNING_PAIN_SPIKE   = 66283,
     SPELL_FEL_INFERNO           = 67047, // Spell trigger is 66517.
     SPELL_FEL_STREAK            = 66493,
@@ -322,7 +295,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
                     Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
                     break;
                 case EVENT_SHIVAN_SLASH:
-                    DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHIVAN_SLASH));
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHIVAN_SLASH);
                     Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
                     break;
                 case EVENT_SPIKE:
