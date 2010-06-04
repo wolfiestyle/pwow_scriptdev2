@@ -237,6 +237,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (!pSummon)
             return;
         pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        pSummon->SetSpeedRate(MOVE_WALK, 2.0f);
         summons.push_back(pSummon->GetGUID());
         if (!m_bCombatStart)
         {
@@ -248,7 +249,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (pSummon->GetEntry() == NPC_ACIDMAW)
             pSummon->CastSpell(pSummon, 56422 /* submerge */, false);
         if (pSummon->GetEntry() == NPC_JARAXXUS)
-            m_uiAggroTimer = 37*IN_MILLISECONDS;
+            m_uiAggroTimer = 35*IN_MILLISECONDS;
         if (pSummon->GetEntry() != NPC_JARAXXUS)
             pSummon->GetMotionMaster()->MovePoint(0, pSummon->GetPositionX(), summon_pos[1], summon_pos[2]);
     }
@@ -261,7 +262,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             return;
         }
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
-        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1]+30.0f, summon_pos[2]+1.0f, summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1]+45.0f, summon_pos[2]+1.0f, summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
 
     void NorthrendBeastsEncounterCheck()
@@ -842,6 +843,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
                         if (pSummon->isAlive())
                         {
+                            pSummon->SetSpeedRate(MOVE_WALK, 1.0f);
                             pSummon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             pSummon->SetInCombatWithZone();
                         }
