@@ -254,6 +254,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         }
         loadStream >> m_uiAttemptCounter;
 
+        m_uiAttemptCounter++; //we adds 1  because of "reset"
+
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 

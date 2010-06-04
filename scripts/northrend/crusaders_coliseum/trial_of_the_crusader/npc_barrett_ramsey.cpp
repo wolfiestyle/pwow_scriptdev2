@@ -307,7 +307,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     SpawnBoss(NPC_DREADSCALE, 2);
                 }
                 else
-                    uiSummonTimer = 0;
+                    if (uiSummonTimer < (SUMMON_TIMER - 15*IN_MILLISECONDS))
+                        uiSummonTimer = 0;
                 NorthrendBeastsEncounterCheck();
                 break;
             case NPC_ACIDMAW:
