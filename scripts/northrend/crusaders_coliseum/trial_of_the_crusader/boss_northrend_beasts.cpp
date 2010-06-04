@@ -107,24 +107,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
         {
             m_Snobolds.push_back(pSummon->GetGUID());
             pSummon->SetInCombatWithZone();
-            if (m_pInstance)
-                m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
         }
-    }
-
-    void SummonedCreatureJustDied(Creature *pSummon)
-    {
-        if (pSummon && pSummon->GetEntry() == NPC_SNOBOLD_VASSAL)
-        {
-            if (m_pInstance)
-                m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)-1);
-        }
-    }
-
-    void SummonedCreatureDespawn(Creature *pSummon)
-    {
-        if (pSummon)
-            SummonedCreatureJustDied(pSummon);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -146,6 +129,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_THROW_SNOBOLD:
                     DoSpawnCreature(NPC_SNOBOLD_VASSAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+                    DoCast(m_creature, SPELL_RISING_ANGER);
                     if (++m_uiSnoboldCount < MAX_SNOBOLD)
                         Events.ScheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
                     break;
@@ -162,6 +146,66 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
                 pSummon->ForcedDespawn();
         m_Snobolds.clear();
         m_uiSnoboldCount = 0;
+    }
+};
+
+#define TIMER_BATTER        urand(10, 20)*IN_MILLISECONDS
+#define TIMER_FIRE_BOMB     urand(20, 25)*IN_MILLISECONDS
+#define TIMER_HEAD_CRACK    urand(30, 45)*IN_MILLISECONDS
+
+struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
+{
+    mob_snobold_vassalAI(Creature* pCreature):
+        ScriptedAI(pCreature)
+    {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
+    }
+
+    void Reset()
+    {
+    }
+
+    EventMap Events;
+    ScriptedInstance* m_pInstance;
+
+    void Aggro(Unit *pWho)
+    {
+        Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);
+        Events.RescheduleEvent(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB);
+        Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
+        if (m_pInstance)
+            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
+    }
+
+    void JustDied(Unit* pSlayer)
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)-1);
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {   
+                case EVENT_BATTER:
+                    DoCast(m_creature->getVictim(), SPELL_BATTER);
+                    Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);
+                    break;
+                case EVENT_FIRE_BOMB:
+                    DoCast(m_creature->getVictim(), SPELL_FIRE_BOMB);
+                    Events.RescheduleEvent(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB);
+                    break;
+                case EVENT_HEAD_CRACK:
+                    DoCast(m_creature->getVictim(), SPELL_HEAD_CRACK);
+                    Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
+                    break;
+            }
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -767,6 +811,7 @@ void AddSC_northrend_beasts()
     Script *newscript;
 
     REGISTER_SCRIPT(boss_gormok);
+    REGISTER_SCRIPT(mob_snobold_vassal);
     REGISTER_SCRIPT(boss_acidmaw);
     REGISTER_SCRIPT(boss_dreadscale);
     REGISTER_SCRIPT(boss_icehowl);
