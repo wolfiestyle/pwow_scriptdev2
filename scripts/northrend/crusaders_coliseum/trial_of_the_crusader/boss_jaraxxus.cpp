@@ -112,6 +112,9 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
     {
     }
 
+    typedef std::list<uint64> GuidList;
+    GuidList m_Summoners;   // portals - volcanoes
+
     void Aggro(Unit *pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
@@ -127,6 +130,12 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
             m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
     }
 
+    void Reset()
+    {
+        DespawnSummons();
+        boss_trial_of_the_crusaderAI::Reset();
+    }
+
     void KilledUnit(Unit *who)
     {
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
@@ -138,7 +147,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
     {
         if (pSummon)
         {
-            if (!m_bIsHeroic)
+            if (!m_bIsHeroic && (pSummon->GetEntry() == NPC_NETHER_PORTAL || pSummon->GetEntry() == NPC_VOLCANO))
             {
                 pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -150,15 +159,25 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     pSummon->SetDisplayId(30039);
                     pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_NETHER_PORTAL_SUMMON), false);
                     m_creature->MonsterTextEmote("Lord Jaraxxus creates a Nether Portal!", 0, true);
+                    m_Summoners.push_back(pSummon->GetGUID());
                     break;
                 case NPC_VOLCANO:
                     pSummon->GetMotionMaster()->MoveIdle();
                     pSummon->CastSpell(pSummon, DIFFICULTY(SPELL_INFERNAL_ERUPT), false);
+                    m_Summoners.push_back(pSummon->GetGUID());
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    void DespawnSummons() // despawns portals and volcanoes only
+    {
+        for (GuidList::const_iterator i = m_Summoners.begin(); i != m_Summoners.end(); ++i)
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+                pSummon->ForcedDespawn();
+        m_Summoners.clear();
     }
 
     void JustDied(Unit* pSlayer)
@@ -265,7 +284,6 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetInCombatWithZone();
     }
 
     void Aggro(Unit* pWho)
@@ -284,6 +302,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
         uint32 count = m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER);
         if (count > 0)
             m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, count-1);
+        m_creature->ForcedDespawn();
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -321,6 +340,41 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     }
 };
 
+struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
+{
+    mob_jaraxxus_add_summonerAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature)
+    {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
+    }
+
+    ScriptedInstance *m_pInstance;
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+    }
+
+    void Aggro(Unit *pWho)
+    {
+    }
+
+    void JustSummoned(Creature *pSummon)
+    {
+        if (Unit* Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+            ((Creature*)Jaraxxus)->AI()->JustSummoned(pSummon);
+        pSummon->SetInCombatWithZone();
+    }
+
+    void JustDied(Unit* pSlayer)
+    {
+        m_creature->ForcedDespawn();
+    }
+};
+
 #define FELSTREAK_TIMER urand(15,30)*IN_MILLISECONDS
 #define FEL_INFERNO_TIMER urand(15,30)*IN_MILLISECONDS
 
@@ -335,7 +389,6 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetInCombatWithZone();
     }
 
     void Aggro(Unit* pWho)
@@ -373,21 +426,23 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
         DoMeleeAttackIfReady();
     }
+
+    void JustDied(Unit* pSlayer)
+    {
+        m_creature->ForcedDespawn();
+    }
 };
 
-#define BURN_TIMER 1*IN_MILLISECONDS
-
-struct MANGOS_DLL_DECL mob_legion_flameAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
 {
     ScriptedInstance *m_pInstance;
-    EventMap Events;
 
     mob_legion_flameAI(Creature* pCreature):
-        ScriptedAI(pCreature)
+        Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_creature->SetDisplayId(11686);
-        Events.ScheduleEvent(EVENT_BURN, BURN_TIMER);
+        m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
     }
 
     void Reset()
@@ -396,18 +451,8 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public ScriptedAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        Events.Update(uiDiff);
-        while (uint32 uiEventId = Events.ExecuteEvent())
-            switch (uiEventId)
-            {
-                case EVENT_BURN:
-                    if (Unit* pJaraxxus = GET_CREATURE(TYPE_JARAXXUS))
-                        m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
-                    Events.ScheduleEvent(EVENT_BURN, BURN_TIMER);
-                    break;
-                default:
-                    break;
-            }
+        if (!m_pInstance->IsEncounterInProgress())
+            m_creature->ForcedDespawn();
     }
 };
 
@@ -419,4 +464,5 @@ void AddSC_boss_jaraxxus()
     REGISTER_SCRIPT(mob_mistress_of_pain);
     REGISTER_SCRIPT(mob_felflame_infernal);
     REGISTER_SCRIPT(mob_legion_flame);
+    REGISTER_SCRIPT(mob_jaraxxus_add_summoner);
 }
