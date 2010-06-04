@@ -49,7 +49,8 @@ enum BeastsOfNortherendPhases
     PHASE_BEASTS_NONE,
     PHASE_GORMOK,
     PHASE_JORMUNGAR_TWINS,
-    PHASE_ICEHOWL
+    PHASE_ICEHOWL,
+    PHASE_BEASTS_DONE,
 };
 
 enum Says
@@ -196,6 +197,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     if (Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
                         DoScriptText(SAY_TIRION_BEASTS_OF_NORTHREND_WIPE, fordring);
                     break;
+                case PHASE_JARAXXUS:
+                    m_pInstance->SetData(TYPE_JARAXXUS, NOT_STARTED);
+                    break;
                 case PHASE_FACTION_CHAMPIONS:
                     for (uint32 i = FACTION_CHAMPION_START; i <= FACTION_CHAMPION_END; i++)
                         m_pInstance->SetData(i, NOT_STARTED);
@@ -209,7 +213,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
         if (CurrPhase && CurrPhase != PHASE_ANUBARAK)
             CurrPhase--;
-        CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
+        if (CurrPhase && CurrPhase == PHASE_BEASTS_OF_NORTHEREND)
+            if (CurrBeastOfNortherendPhase != PHASE_BEASTS_DONE)
+                CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
 
         if (m_pInstance && m_bIsHeroic)
@@ -266,6 +272,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             EncounterInProgress = false;
             if (Creature *fordring = GET_CREATURE(TYPE_TIRION_FORDRING))
                 DoScriptText(SAY_TIRION_BEASTS_OF_NOTHREND_DEFEATED, fordring);
+            CurrBeastOfNortherendPhase = PHASE_BEASTS_DONE;
         }
     }
 
@@ -586,7 +593,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 if (Creature *Runes = GET_CREATURE(TYPE_PURPLE_RUNE))
                                 {
                                     Runes->SetPhaseMask(1, true);
-                                    Runes->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);                                }
+                                    Runes->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE); 
+                                }
                             }
                             m_uiTalkTimer = 5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
@@ -853,20 +861,22 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     case PHASE_BEASTS_NONE:
                         SpawnBoss(NPC_GORMOK);
                         uiSummonTimer = SUMMON_TIMER;
+                        CurrBeastOfNortherendPhase++;
                         break;
                     case PHASE_GORMOK:
                         SpawnBoss(NPC_ACIDMAW, 1);
                         SpawnBoss(NPC_DREADSCALE, 2);
                         uiSummonTimer = SUMMON_TIMER;
+                        CurrBeastOfNortherendPhase++;
                         break;
                     case PHASE_JORMUNGAR_TWINS:
                         SpawnBoss(NPC_ICEHOWL);
                         uiSummonTimer = SUMMON_TIMER;
+                        CurrBeastOfNortherendPhase++;
                         break;
                     default:
                         return;
                 }
-                CurrBeastOfNortherendPhase++;
             }
             else
                 uiSummonTimer-= uiDiff;
