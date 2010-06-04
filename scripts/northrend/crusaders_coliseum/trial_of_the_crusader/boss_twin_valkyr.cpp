@@ -197,8 +197,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
         if (m_bIsHeroic)
             RESCHEDULE_EVENT(TOUCH);
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void KilledUnit(Unit *who)
@@ -348,8 +347,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
             RESCHEDULE_EVENT(TOUCH);
 
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void JustSummoned(Creature *pSumm)

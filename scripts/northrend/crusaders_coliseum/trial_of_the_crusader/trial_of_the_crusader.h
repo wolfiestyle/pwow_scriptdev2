@@ -8,8 +8,8 @@
 #define DIFFICULTY(SP)      DIFF_SELECT(SP##_N10, SP##_N25, SP##_H10, SP##_H25)
 #define HEROIC(SP)          (m_bIsHeroic ? SP##_H : SP##_N)
 
-#define GET_CREATURE(C)     (m_pInstance ? m_creature->GetMap()->GetCreature(m_pInstance->GetData64(C)) : NULL)
-#define GET_GAMEOBJECT(G)   (m_pInstance ? m_creature->GetMap()->GetGameObject(m_pInstance->GetData64(G)) : NULL)
+#define GET_CREATURE(C)     (InstanceVar<uint64>(C, m_pInstance).getObject<Creature>())
+#define GET_GAMEOBJECT(G)   (InstanceVar<uint64>(G, m_pInstance).getObject<GameObject>())
 
 // schedules an event
 #define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
@@ -183,6 +183,176 @@ public:
     }
 };
 
+// wrapper for accessing data variables in instance scripts
+template <typename T>
+class InstanceVarBase
+{
+public:
+    InstanceVarBase(uint32 _id, InstanceData* _instance):
+        m_instance(_instance), m_dataId(_id)
+    {
+    }
+
+    uint32 getDataId() const { return m_dataId; }
+    InstanceData* getInstanceData() const { return m_instance; }
+    void setInstanceData(InstanceData* _instance) { m_instance = _instance; }
+
+    virtual T get() const = 0;
+    virtual void set(T val) = 0;
+
+    operator T() const
+    {
+        return get();
+    }
+
+    T operator++ ()
+    {
+        T val = get();
+        set(++val);
+        return val;
+    }
+
+    T operator-- ()
+    {
+        T val = get();
+        if (val > 0)    // prevent wrap-around to unsigned negative value
+            set(--val);
+        return val;
+    }
+
+    T operator++ (int)
+    {
+        T val = get();
+        T temp = val++;
+        set(val);
+        return temp;
+    }
+
+    T operator-- (int)
+    {
+        T val = get();
+        if (val > 0)    // prevent wrap-around to unsigned negative value
+        {
+            T temp = val--;
+            set(val);
+            return temp;
+        }
+        else
+            return val;
+    }
+
+    T operator+= (T rhs)
+    {
+        T val = get() + rhs;
+        set(val);
+        return val;
+    }
+
+    T operator-= (T rhs)
+    {
+        T val = get();
+        if (val > rhs)  // prevent wrap-around to unsigned negative value
+            val -= rhs;
+        else
+            val = 0;
+        set(val);
+        return val;
+    }
+
+protected:
+    InstanceData *m_instance;
+    uint32 const m_dataId;
+
+    virtual ~InstanceVarBase() { }
+};
+
+// empty base template (only uint32 and uint64 cases meaningful)
+template <typename T>
+class InstanceVar;
+
+// specialization for GetData / SetData
+template <>
+class InstanceVar<uint32>: public InstanceVarBase<uint32>
+{
+public:
+    explicit InstanceVar(uint32 _id, InstanceData* _instance = NULL):
+        InstanceVarBase<uint32>(_id, _instance)
+    {
+    }
+
+    uint32 get() const
+    {
+        return m_instance ? m_instance->GetData(m_dataId) : 0;
+    }
+
+    void set(uint32 val)
+    {
+        if (m_instance)
+            m_instance->SetData(m_dataId, val);
+    }
+
+    // copy value instead of whole object
+    InstanceVar& operator= (InstanceVar const& var)
+    {
+        set(var.get());
+        return *this;
+    }
+
+    uint32 operator= (uint32 val)
+    {
+        set(val);
+        return val;
+    }
+
+private:
+    InstanceVar(InstanceVar const&);    // prohibit object copy
+};
+
+// specialization for GetData64 / SetData64
+template <>
+class InstanceVar<uint64>: public InstanceVarBase<uint64>
+{
+public:
+    explicit InstanceVar(uint32 _id, InstanceData* _instance = NULL):
+        InstanceVarBase<uint64>(_id, _instance)
+    {
+    }
+
+    uint64 get() const
+    {
+        return m_instance ? m_instance->GetData64(m_dataId) : 0;
+    }
+
+    void set(uint64 val)
+    {
+        if (m_instance)
+            m_instance->SetData64(m_dataId, val);
+    }
+
+    // copy value instead of whole object
+    InstanceVar& operator= (InstanceVar const& var)
+    {
+        set(var.get());
+        return *this;
+    }
+
+    uint64 operator= (uint64 val)
+    {
+        set(val);
+        return val;
+    }
+
+    // find object using stored value as guid
+    template <typename SearchType>
+    SearchType* getObject() const
+    {
+        return m_instance ? m_instance->instance->GetObjectsStore().find<SearchType>(get(), (SearchType*)NULL) : NULL;
+    }
+
+private:
+    InstanceVar(InstanceVar const&);    // prohibit object copy
+};
+
 namespace toc {
 
 // helper for the script register process
@@ -216,7 +386,7 @@ struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     bool m_bIsHeroic;
     bool m_bIs10Man;
-    uint32 const m_uiBossEncounterId;
+    InstanceVar<uint32> m_BossEncounter;
     EventMap Events;
 
     boss_trial_of_the_crusaderAI(Creature*);

@@ -199,8 +199,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         SummonAdds(NPC_FROST_SPHERE, 6);
 
         DoScriptText(SAY_AGGRO, m_creature);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void UnSummonAllCreatures()

@@ -126,8 +126,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
         Events.ScheduleEvent(EVENT_SUMMON_VOLCANO, 90*IN_MILLISECONDS);
         Events.ScheduleEvent(EVENT_SUMMON_PORTAL, 30*IN_MILLISECONDS);
         Events.ScheduleEvent(EVENT_BUFF, BUFF_TIMER);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void Reset()
@@ -187,7 +186,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if ((!m_creature->SelectHostileTarget() || !m_creature->getVictim()) && m_pInstance->GetData(TYPE_JARAXXUS) == IN_PROGRESS)
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         Events.Update(uiDiff);
@@ -234,8 +233,8 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                 default:
                     break;
             }
-
-            DoMeleeAttackIfReady();
+    
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -272,11 +271,13 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     bool m_bIsHeroic;
     bool m_bIs10Man;
     EventMap Events;
+    InstanceVar<uint32> m_AchievementCounter;
 
     mob_mistress_of_painAI(Creature* pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Difficulty diff = pCreature->GetMap()->GetDifficulty();
         m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
         m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
@@ -291,17 +292,14 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
         Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
         Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
         Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
-        if (m_pInstance)
-            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
+        ++m_AchievementCounter;
     }
 
     void JustDied(Unit* pSlayer)
     {
         if (!m_pInstance)
             return;
-        uint32 count = m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER);
-        if (count > 0)
-            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, count-1);
+        --m_AchievementCounter;
         m_creature->ForcedDespawn();
     }
 

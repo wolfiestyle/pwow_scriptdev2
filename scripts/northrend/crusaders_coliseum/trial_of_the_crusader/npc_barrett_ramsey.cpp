@@ -123,12 +123,15 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     uint32 m_uiBeastsDead;
     uint32 m_uiTalkTimer;
     uint32 m_uiTalkCounter;
+    InstanceVar<uint32> m_AttemptCounter;
+    InstanceVar<uint32> m_AchievementCounter;
 
     typedef std::list<uint64> GuidList;
     GuidList summons;
 
     npc_barrett_ramseyAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         CurrPhase(PHASE_NOT_STARTED),
         CurrBeastOfNortherendPhase(PHASE_BEASTS_NONE),
         EncounterInProgress(false),
@@ -139,9 +142,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_uiAggroTimer(0),
         m_uiBeastsDead(0),
         m_uiTalkTimer(0),
-        m_uiTalkCounter(0)
+        m_uiTalkCounter(0),
+        m_AttemptCounter(DATA_ATTEMPT_COUNTER, m_pInstance),
+        m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         if (m_pInstance)    //choose correct phase, in case of d/c or something happens and barrett is respawned
         {
             if (m_pInstance->GetData(TYPE_ANUBARAK) == DONE)
@@ -185,7 +189,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     void Reset()    //called when any creature wipes group
     {
         if (m_pInstance && m_bIsHeroic) //because of the order how data is saved into the instance, we first update the wipe counter
-            m_pInstance->SetData(DATA_ATTEMPT_COUNTER, m_pInstance->GetData(DATA_ATTEMPT_COUNTER)-1);
+            --m_AttemptCounter;
 
         if (m_pInstance)
         {
@@ -293,7 +297,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             return;
 
         if (boss_trial_of_the_crusaderAI *bossAI = dynamic_cast<boss_trial_of_the_crusaderAI*>(who->AI()))
-            m_pInstance->SetData(bossAI->m_uiBossEncounterId, DONE);
+            bossAI->m_BossEncounter = DONE;
 
         switch (who->GetEntry())
         {
@@ -389,14 +393,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             Gate->SetGoState(GO_STATE_ACTIVE);
         CurrPhase++;
         EncounterInProgress = true;
-        m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, 0); // we reset the achievement progress on every new phase
+        m_AchievementCounter = 0;   // we reset the achievement progress on every new phase
         m_uiTalkCounter = 0;
         m_uiTalkTimer = 0;
         m_bIsInTalkPhase = true;
         m_bIsInOutroTalk = false;
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
         {
-            if (m_pInstance->GetData(DATA_ATTEMPT_COUNTER) == 50) 
+            if (m_AttemptCounter == 50) 
             {
                 uiSummonTimer = 27*IN_MILLISECONDS;
             } // if they wiped once, we just spawn him
@@ -678,7 +682,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     {
                         case PHASE_BEASTS_NONE:
                         case PHASE_GORMOK:
-                            if (m_bIsHeroic && m_pInstance->GetData(DATA_ATTEMPT_COUNTER) != 50) // if they wiped once, we skip the long intro
+                            if (m_bIsHeroic && m_AttemptCounter != 50) // if they wiped once, we skip the long intro
                                 m_uiTalkCounter = 2;
                             switch (m_uiTalkCounter)
                             {
@@ -825,7 +829,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (m_bIsInOutroTalk)
             UpdateOutros(uiDiff);
 
-        if (m_pInstance->GetData(DATA_ATTEMPT_COUNTER) == 0)
+        if (m_AttemptCounter == 0)
         {
             if (m_creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))
                 m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);

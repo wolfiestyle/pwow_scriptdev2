@@ -97,8 +97,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
         Events.RescheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
         Events.RescheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
         Events.RescheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void JustSummoned(Creature *pSummon)
@@ -155,32 +154,32 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
 
 struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
 {
+    ScriptedInstance* m_pInstance;
+    EventMap Events;
+    InstanceVar<uint32> m_AchievementCounter;
+
     mob_snobold_vassalAI(Creature* pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
     }
 
     void Reset()
     {
     }
 
-    EventMap Events;
-    ScriptedInstance* m_pInstance;
-
     void Aggro(Unit *pWho)
     {
         Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);
         Events.RescheduleEvent(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB);
         Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
-        if (m_pInstance)
-            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)+1);
+        ++m_AchievementCounter;
     }
 
     void JustDied(Unit* pSlayer)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(DATA_ACHIEVEMENT_COUNTER, m_pInstance->GetData(DATA_ACHIEVEMENT_COUNTER)-1);
+        --m_AchievementCounter;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -308,8 +307,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
         Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER);
         SetCombatMovement(false);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void JustDied(Unit* pSlayer)
@@ -451,8 +449,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
         Events.ScheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
         Events.ScheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
         Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void JustDied(Unit* pSlayer)
@@ -655,8 +652,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
         Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
         Events.ScheduleEvent(EVENT_PHASE_CHANGE, PHASE_TIMER);
         Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
-        if (m_pInstance)
-            m_pInstance->SetData(m_uiBossEncounterId, IN_PROGRESS);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void UpdateAI(const uint32 uiDiff)

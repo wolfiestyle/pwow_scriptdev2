@@ -49,21 +49,19 @@ toc::EntryTypeMap const toc::EntryType = map_initializer<uint32, uint32>
 
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
     ScriptedAI(pCreature),
-    m_uiBossEncounterId(toc::GetType(pCreature))
+    m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+    m_BossEncounter(toc::GetType(pCreature), m_pInstance)
 {
-    m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
     Difficulty diff = pCreature->GetMap()->GetDifficulty();
     m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
     m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
-    if (m_pInstance)
-        m_pInstance->SetData(m_uiBossEncounterId, NOT_STARTED);
+    m_BossEncounter = NOT_STARTED;
     Events.Reset();
 }
 
 void boss_trial_of_the_crusaderAI::Reset()
 {
-    if (m_pInstance)
-        m_pInstance->SetData(m_uiBossEncounterId, NOT_STARTED);
+    m_BossEncounter = NOT_STARTED;
     if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
         if(ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
