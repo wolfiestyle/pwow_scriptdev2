@@ -440,6 +440,8 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
     mob_legion_flameAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature)
     {
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_creature->SetDisplayId(11686);
         m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
