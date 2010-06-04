@@ -184,6 +184,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
     void Reset()    //called when any creature wipes group
     {
+        if (m_pInstance && m_bIsHeroic) //because of the order how data is saved into the instance, we first update the wipe counter
+            m_pInstance->SetData(DATA_ATTEMPT_COUNTER, m_pInstance->GetData(DATA_ATTEMPT_COUNTER)-1);
+
         if (m_pInstance)
         {
             switch (CurrPhase)
@@ -216,9 +219,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (CurrBeastOfNortherendPhase != PHASE_BEASTS_DONE)
             CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
-
-        if (m_pInstance && m_bIsHeroic)
-            m_pInstance->SetData(DATA_ATTEMPT_COUNTER, m_pInstance->GetData(DATA_ATTEMPT_COUNTER)-1);
 
         RemoveAllSummons();
 
