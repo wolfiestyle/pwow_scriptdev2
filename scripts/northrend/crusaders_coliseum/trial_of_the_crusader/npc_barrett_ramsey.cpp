@@ -213,9 +213,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         }
         if (CurrPhase && CurrPhase != PHASE_ANUBARAK)
             CurrPhase--;
-        if (CurrPhase && CurrPhase == PHASE_BEASTS_OF_NORTHEREND)
-            if (CurrBeastOfNortherendPhase != PHASE_BEASTS_DONE)
-                CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
+        if (CurrBeastOfNortherendPhase != PHASE_BEASTS_DONE)
+            CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
 
         if (m_pInstance && m_bIsHeroic)
@@ -567,17 +566,17 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 DoScriptText(SAY_TIRION_JARAXXUS_INTRO1, Fordring);
                             Creature *Fizzlebang;
                             if (Fordring)
-                                Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1]+30.0f, summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                                Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1]+40.0f, summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                             if (Fizzlebang)
                                 Fizzlebang->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1]+10.0f, RoomCenter[2]);
-                            m_uiTalkTimer = 25*IN_MILLISECONDS;
+                            m_uiTalkTimer = 30*IN_MILLISECONDS;
                             break;
                         case 1:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
                                 DoScriptText(SAY_WILFRED_JARAXXUS_INTRO2, Fizzlebang);
                             if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
                                 Gate->SetGoState(GO_STATE_READY);
-                            m_uiTalkTimer = 10*IN_MILLISECONDS;
+                            m_uiTalkTimer = 12*IN_MILLISECONDS;
                             break;
                         case 2:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
@@ -654,7 +653,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         case 9:
                             if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
                                 Fizzlebang->DealDamage(Fizzlebang, Fizzlebang->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                            m_uiTalkTimer = 7*IN_MILLISECONDS;
+                            m_uiTalkTimer = 4*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 10:
