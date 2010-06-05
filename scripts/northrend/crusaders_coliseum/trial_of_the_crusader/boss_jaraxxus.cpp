@@ -45,13 +45,13 @@ enum Spells
 
 enum Says
 {
-    SAY_AGGRO                           = -1300311,
-    SAY_INCINERATE                      = -1300312,
-    SAY_SUMMON_MISTRESS_OF_PAIN         = -1300313,
-    SAY_SUMMON_INFERNO                  = -1300314,
-    SAY_KILLED_PLAYER1                  = -1300315,
-    SAY_KILLED_PLAYER2                  = -1300316,
-    SAY_DEATH                           = -1300317,
+    SAY_AGGRO                   = -1300311,
+    SAY_INCINERATE              = -1300312,
+    SAY_SUMMON_MISTRESS_OF_PAIN = -1300313,
+    SAY_SUMMON_INFERNO          = -1300314,
+    SAY_KILLED_PLAYER1          = -1300315,
+    SAY_KILLED_PLAYER2          = -1300316,
+    SAY_DEATH                   = -1300317,
 };
 
 enum Adds
@@ -151,13 +151,18 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
     {
         for (GuidList::const_iterator i = m_Summoners.begin(); i != m_Summoners.end(); ++i)
             if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                pSummon->ForcedDespawn();
+            {
+                if (pSummon->isTemporarySummon())
+                    static_cast<TemporarySummon*>(pSummon)->UnSummon();
+                else
+                    pSummon->ForcedDespawn();
+            }
         m_Summoners.clear();
     }
 
     void JustDied(Unit* pSlayer)
     {
-        DoScriptText(SAY_DEATH, m_creature, NULL);
+        DoScriptText(SAY_DEATH, m_creature);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -241,8 +246,6 @@ enum AddEvents
 struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
-    bool m_bIsHeroic;
-    bool m_bIs10Man;
     EventMap Events;
     InstanceVar<uint32> m_AchievementCounter;
 
@@ -251,9 +254,6 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
-        Difficulty diff = pCreature->GetMap()->GetDifficulty();
-        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
     }
 
     void Reset()
@@ -270,10 +270,8 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 
     void JustDied(Unit* pSlayer)
     {
-        if (!m_pInstance)
-            return;
         --m_AchievementCounter;
-        m_creature->ForcedDespawn();
+        m_creature->ForcedDespawn(1*IN_MILLISECONDS);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -313,19 +311,15 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 {
-    mob_jaraxxus_add_summonerAI(Creature* pCreature):
-        Scripted_NoMovementAI(pCreature)
-    {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-    }
-
     ScriptedInstance *m_pInstance;
 
-    void Reset()
+    mob_jaraxxus_add_summonerAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
     }
 
-    void UpdateAI(uint32 const uiDiff)
+    void Reset()
     {
     }
 
@@ -335,8 +329,8 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
     void JustSummoned(Creature *pSummon)
     {
-        if (Unit* Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
-            ((Creature*)Jaraxxus)->AI()->JustSummoned(pSummon);
+        if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
+            Jaraxxus->AI()->JustSummoned(pSummon);
         pSummon->SetInCombatWithZone();
     }
 
@@ -344,10 +338,14 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
     {
         m_creature->ForcedDespawn();
     }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+    }
 };
 
-#define FELSTREAK_TIMER urand(15,30)*IN_MILLISECONDS
-#define FEL_INFERNO_TIMER urand(15,30)*IN_MILLISECONDS
+#define FELSTREAK_TIMER     urand(15,30)*IN_MILLISECONDS
+#define FEL_INFERNO_TIMER   urand(15,30)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 {
@@ -366,6 +364,11 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
     {
         Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 6000);
         Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 7500);
+    }
+
+    void JustDied(Unit* pSlayer)
+    {
+        m_creature->ForcedDespawn();
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -397,11 +400,6 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
         DoMeleeAttackIfReady();
     }
-
-    void JustDied(Unit* pSlayer)
-    {
-        m_creature->ForcedDespawn();
-    }
 };
 
 struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
@@ -409,11 +407,11 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
     ScriptedInstance *m_pInstance;
 
     mob_legion_flameAI(Creature* pCreature):
-        Scripted_NoMovementAI(pCreature)
+        Scripted_NoMovementAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_creature->SetDisplayId(11686);
         m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
     }

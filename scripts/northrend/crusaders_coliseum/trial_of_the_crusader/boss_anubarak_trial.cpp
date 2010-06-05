@@ -236,7 +236,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
         if (pSumm->GetEntry() == NPC_FROST_SPHERE)
         {
-            pSumm->Relocate(pSumm->GetPositionX(), pSumm->GetPositionY(), FLOOR_HEIGHT);  //move to ground
+            pSumm->MonsterMove(pSumm->GetPositionX(), pSumm->GetPositionY(), FLOOR_HEIGHT, 1);  //move to ground
             m_AliveFrostSpheres.remove(pSumm->GetGUID());
             pSumm->CastSpell(pSumm, SPELL_PERMAFROST, true);
         }
@@ -352,14 +352,10 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     break;
                 case EVENT_LEECHING_SWARM_DAMAGE:
                 {
+                    //TODO: implement dummy effect of spell 66118 instead of doing this
                     ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
-                    GuidList TargetGuids;   //to prevent crashes from players dieing while being damaged
                     for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
-                        if (*i)
-                            TargetGuids.push_back((*i)->getUnitGuid());
-
-                    for (GuidList::const_iterator i = TargetGuids.begin(); i != TargetGuids.end(); ++i)
-                        if (Unit *Target = m_creature->GetUnit(*m_creature, *i))
+                        if (Unit *Target = m_creature->GetUnit(*m_creature, (*i)->getUnitGuid()))
                             if (Target->isAlive() && Target->IsInMap(m_creature))
                             {
                                 int32 Damage = Target->GetHealth() * DIFF_SELECT(0.1f, 0.1f, 0.2f, 0.3f);
@@ -425,15 +421,18 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 {
     bool m_bIsHeroic;
-    bool m_bIs10Man;
     EventMap Events;
 
-    mob_toc_nerubian_burrowerAI(Creature* pCreature): ScriptedAI(pCreature) 
+    mob_toc_nerubian_burrowerAI(Creature* pCreature):
+        ScriptedAI(pCreature) 
     {
         Difficulty diff = pCreature->GetMap()->GetDifficulty();
         m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
-        Reset();
+    }
+
+    void Reset()
+    {
+        Events.Reset();
     }
 
     void SpellHit(Unit *who, const SpellEntry *Spell) 
@@ -458,11 +457,6 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
         DoCast(m_creature, SPELL_SPIDER_FRENZY, true);
         if (m_bIsHeroic)
             RESCHEDULE_EVENT(SHADOW_STRIKE);
-    }
-
-    void Reset()
-    {
-        Events.Reset();
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -499,15 +493,10 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
 {
-    bool m_bIsHeroic;
-    bool m_bIs10Man;
     EventMap Events;
 
     mob_toc_swarm_scarabAI(Creature* pCreature): ScriptedAI(pCreature) 
     {
-        Difficulty diff = pCreature->GetMap()->GetDifficulty();
-        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
         Reset();
     }
 

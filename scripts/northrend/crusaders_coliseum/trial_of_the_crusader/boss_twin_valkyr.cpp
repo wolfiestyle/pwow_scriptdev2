@@ -37,7 +37,7 @@ enum Spells
     SPELL_SURGE_OF_DARKNESS         = 65768,
     SPELL_SHIELD_OF_DARKNESS        = 65874,
     SPELL_TWINS_PACT_EYDIS          = 67303,
-    SPELL_DARK_VORTEX               = 66058, //oddly enough, theres only 1 spell for all difficulties of this one
+    SPELL_DARK_VORTEX               = 66058,
     SPELL_TOUCH_OF_DARKNESS         = 67282, //only heroic
     SPELL_TOUCH_OF_DARKNESS_25      = 67283,
 
@@ -77,8 +77,7 @@ enum Adds
 
 enum Events
 {
-    EVENT_BERSERK,
-
+    EVENT_BERSERK = 1,
     EVENT_SPAWN_ORBS,
     EVENT_TWIN_SPIKE,
     EVENT_SPECIAL,
@@ -192,7 +191,11 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
             return;
 
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
-            m_creature->SetHealth(std::min(m_creature->GetHealth(), Darkbane->GetHealth()));
+        {
+            uint32 eydis_health = Darkbane->GetHealth();
+            if (eydis_health < m_creature->GetHealth())
+                m_creature->SetHealth(eydis_health);
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -362,7 +365,11 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
             return;
 
         if (Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
-            m_creature->SetHealth(std::min(m_creature->GetHealth(), Lightbane->GetHealth()));
+        {
+            uint32 fjola_health = Lightbane->GetHealth();
+            if (fjola_health < m_creature->GetHealth())
+                m_creature->SetHealth(fjola_health);
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -467,15 +474,8 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
 struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
 {
-    bool m_bIsHeroic;
-    bool m_bIs10Man;
-
     mob_concentrated_orbAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
-        Difficulty diff = pCreature->GetMap()->GetDifficulty();
-        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-        m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
-
         float x,y;
         GetRandomPointInCircle(48.5, x, y);
         m_creature->GetMotionMaster()->MovePoint(5, x+CENTER_X, y+CENTER_Y, FLOOR_HEIGHT);
@@ -522,6 +522,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
         if (pWho->GetTypeId() == TYPEID_PLAYER && pWho->GetDistance(m_creature) < 1.7)
         {
             if (m_creature->GetEntry() == NPC_CONCENTRATED_LIGHT)
+            {
                 if (pWho->HasAura(SPELL_LIGHT_ESSENCE))
                     CastPowerUp(pWho,true);
                 else
@@ -529,7 +530,9 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
                     m_creature->setFaction(14);//hostile
                     DoCast(pWho, SPELL_UNLEASHED_LIGHT, true);
                 }
+            }
             else
+            {
                 if (pWho->HasAura(SPELL_DARK_ESSENCE))
                     CastPowerUp(pWho, false);
                 else
@@ -537,6 +540,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
                     m_creature->setFaction(14);//hostile
                     DoCast(pWho, SPELL_UNLEASHED_DARK, true);
                 }
+            }
             m_creature->ForcedDespawn();
         }
     }
@@ -557,7 +561,7 @@ bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
 bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
 {
     player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
-    if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC )
+    if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
     {
         player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT);
         player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT_25);

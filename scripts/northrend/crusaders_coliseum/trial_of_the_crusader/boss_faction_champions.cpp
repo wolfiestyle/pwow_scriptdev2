@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Bosses Faction Champions
 SD%Complete: 0
-SDComment:
+SDComment: 28 champions, divided equally between horde/alliance, each pair sharing AIs
 SDCategory: Trial of the Crusader
 EndScriptData */
 
@@ -41,8 +41,6 @@ EndContentData */
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
-//28 champions, divided equally between horde/alliance, each pair sharing AIs
-
 enum Says
 {
     SAY_GARROSH_ALLIANCE_PLAYER_KILLED1 = -1300328,
@@ -55,11 +53,16 @@ enum Says
     SAY_VARIAN_HORDE_PLAYER_KILLED4     = -1300335,
 };
 
-static int32 KilledPlayerSays[8] = {
+static int32 const HordeSays[] =
+{
     SAY_GARROSH_ALLIANCE_PLAYER_KILLED1,
     SAY_GARROSH_ALLIANCE_PLAYER_KILLED2,
     SAY_GARROSH_ALLIANCE_PLAYER_KILLED3,
-    SAY_GARROSH_ALLIANCE_PLAYER_KILLED4,
+    SAY_GARROSH_ALLIANCE_PLAYER_KILLED4
+};
+
+static int32 const AllianceSays[] =
+{
     SAY_VARIAN_HORDE_PLAYER_KILLED1,
     SAY_VARIAN_HORDE_PLAYER_KILLED2,
     SAY_VARIAN_HORDE_PLAYER_KILLED3,
@@ -69,29 +72,36 @@ static int32 KilledPlayerSays[8] = {
 // common parts for all faction champions
 struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusaderAI
 {
+    bool m_bIsHorde;
+    InstanceVar<uint64> const m_FriendlyLeader;
+    InstanceVar<uint64> const m_EnemyLeader;
+    int32 const *m_FriendlySays;
+    int32 const *m_EnemySays;
+
     boss_faction_championAI(Creature *pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_trial_of_the_crusaderAI(pCreature),
+        m_bIsHorde(IS_HORDE),
+        m_FriendlyLeader(m_bIsHorde ? TYPE_GARROSH_HELLSCREAM : TYPE_VARIAN_WYRM, m_pInstance),
+        m_EnemyLeader(m_bIsHorde ? TYPE_VARIAN_WYRM : TYPE_GARROSH_HELLSCREAM, m_pInstance),
+        m_FriendlySays(m_bIsHorde ? HordeSays : AllianceSays),
+        m_EnemySays(m_bIsHorde ? AllianceSays : HordeSays)
     {
     }
 
+    // boss kills player
     void KilledUnit(Unit *who)
     {
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
-        bool isHorde = IS_HORDE;
-        Creature *source = GET_CREATURE(isHorde ? TYPE_VARIAN_WYRM : TYPE_GARROSH_HELLSCREAM);
-        if (!source)
-            return;
-        DoScriptText(KilledPlayerSays[urand(0,3) + (isHorde ? 4 : 0)], source);
+        if (Creature *source = m_EnemyLeader.getObject<Creature>())
+            DoScriptText(m_EnemySays[urand(0, 3)], source);
     }
 
+    // player kills boss
     void JustDied(Unit *killer)
     {
-        bool isHorde = IS_HORDE;
-        Creature *source = GET_CREATURE(isHorde ? TYPE_GARROSH_HELLSCREAM : TYPE_VARIAN_WYRM);
-        if (!source)
-            return;
-        DoScriptText(KilledPlayerSays[urand(0,3) + (isHorde ? 0 : 4)], source);
+        if (Creature *source = m_FriendlyLeader.getObject<Creature>())
+            DoScriptText(m_FriendlySays[urand(0, 3)], source);
     }
 };
 

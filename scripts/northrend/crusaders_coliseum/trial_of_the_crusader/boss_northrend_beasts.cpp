@@ -198,6 +198,7 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
                     Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
@@ -258,13 +259,13 @@ static const float RoomCenter[] = { 563.67f, 139.57f, 393.83f };
 
 struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
 {
+    bool m_bIsRooted;
+    uint32 m_uiStep;
+
     boss_acidmawAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature)
     {
     }
-
-    bool m_bIsRooted;
-    uint32 m_uiStep;
 
     void Aggro(Unit *pWho)
     {
@@ -402,13 +403,13 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
 
 struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
 {
+    bool m_bIsRooted;
+    uint32 m_uiStep;
+
     boss_dreadscaleAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature)
     {
     }
-
-    bool m_bIsRooted;
-    uint8 m_uiStep;
 
     void Aggro(Unit *pWho)
     {
@@ -575,23 +576,26 @@ enum IcehowlPhases
     PHASE_SPECIAL,
 };
 
-#define TIMER_BERSERK           15*MINUTE*IN_MILLISECONDS
-#define WHIRL_TIMER             urand(10, 20)*IN_MILLISECONDS
-#define BREATH_TIMER            urand(15, 20)*IN_MILLISECONDS
-#define BUTT_TIMER              urand(20, 30)*IN_MILLISECONDS
-#define SPECIAL_TIMER           60*IN_MILLISECONDS
-#define PHASE_TIMER             urand(30, 45)*IN_MILLISECONDS
+#define TIMER_BERSERK   15*MINUTE*IN_MILLISECONDS
+#define WHIRL_TIMER     urand(10, 20)*IN_MILLISECONDS
+#define BREATH_TIMER    urand(15, 20)*IN_MILLISECONDS
+#define BUTT_TIMER      urand(20, 30)*IN_MILLISECONDS
+#define SPECIAL_TIMER   60*IN_MILLISECONDS
+#define PHASE_TIMER     urand(30, 45)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
 {
-    boss_icehowlAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
-    {
-    }
-
     Unit *pTarget;
     float pTargetX, pTargetY;
-    uint8 m_uiStep;
+    uint32 m_uiStep;
+
+    boss_icehowlAI(Creature* pCreature):
+        boss_trial_of_the_crusaderAI(pCreature),
+        pTarget(NULL),
+        pTargetX(0.0f), pTargetY(0.0f),
+        m_uiStep(0)
+    {
+    }
 
     void Aggro(Unit *pWho)
     {
@@ -695,7 +699,6 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 if (pMap && pMap->IsDungeon())
                                 {
                                     Map::PlayerList const &PlayerList = pMap->GetPlayers();
-
                                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                         if (i->getSource()->isAlive())
                                             i->getSource()->CastSpell(i->getSource(), SPELL_SURGE_OF_ADRENALINE, true);
