@@ -83,16 +83,27 @@ enum Events
 
 struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
+    typedef std::list<uint64> GuidList;
+    GuidList m_Summoners;   // portals - volcanoes
+    InstanceVar<uint32> m_bIsInTalkPhase; // used to avoid Reset and despawn during intro
+
     boss_jaraxxusAI(Creature* pCreature):
-        boss_trial_of_the_crusaderAI(pCreature)
+        boss_trial_of_the_crusaderAI(pCreature),
+        m_bIsInTalkPhase(DATA_IN_TALK_PHASE, m_pInstance)
     {
     }
 
-    typedef std::list<uint64> GuidList;
-    GuidList m_Summoners;   // portals - volcanoes
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (m_bIsInTalkPhase)
+            return;
+        ScriptedAI::MoveInLineOfSight(pWho);
+    }
 
     void Aggro(Unit *pWho)
     {
+        if (m_bIsInTalkPhase)
+            return;
         DoScriptText(SAY_AGGRO, m_creature);
         Events.ScheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
         Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
@@ -107,13 +118,15 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void Reset()
     {
+        if (m_bIsInTalkPhase)
+            return;
         DespawnSummons();
         boss_trial_of_the_crusaderAI::Reset();
     }
 
     void KilledUnit(Unit *who)
     {
-        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+        if ((!who || who->GetTypeId() != TYPEID_PLAYER) && !m_bIsInTalkPhase)
             return;
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }

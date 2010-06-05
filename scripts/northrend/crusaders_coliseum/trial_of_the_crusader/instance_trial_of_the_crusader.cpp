@@ -36,6 +36,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_uiPlayerTeam;
     uint32 m_uiAchievementProgressCounter;
     uint32 m_uiAttemptCounter;
+    uint32 m_uiInTalkPhase;
 
     typedef UNORDERED_MAP<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
     GuidMap m_guidsStore;
@@ -62,6 +63,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         m_uiAttemptCounter              = 51; //1 is lost cause reset is called at npc spawn
         m_uiPlayerTeam                  = 0;
         m_uiAchievementProgressCounter  = 0;
+        m_uiInTalkPhase                 = 0;
     }
 
     void InitWorldState(bool Enable = true)
@@ -130,6 +132,9 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 m_uiAttemptCounter = uiData;
                 DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_uiAttemptCounter);
                 return;
+            case DATA_IN_TALK_PHASE:
+                m_uiInTalkPhase = uiData;
+                return;
         }
 
         if (uiType < MAX_ENCOUNTER)
@@ -194,6 +199,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 return m_uiAchievementProgressCounter;
             case DATA_ATTEMPT_COUNTER:
                 return m_uiAttemptCounter;
+            case DATA_IN_TALK_PHASE:
+                return m_uiInTalkPhase;
         }
 
         return 0;

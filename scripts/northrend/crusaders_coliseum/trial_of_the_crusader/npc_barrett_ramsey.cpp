@@ -116,7 +116,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     bool m_bIsHeroic :1;
     bool m_bIs10Man :1;
     bool m_bCombatStart :1;
-    bool m_bIsInTalkPhase :1;
     bool m_bIsInOutroTalk :1;
     uint32 uiSummonTimer;
     uint32 m_uiAggroTimer;
@@ -125,6 +124,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     uint32 m_uiTalkCounter;
     InstanceVar<uint32> m_AttemptCounter;
     InstanceVar<uint32> m_AchievementCounter;
+    InstanceVar<uint32> m_bIsInTalkPhase;
 
     typedef std::list<uint64> GuidList;
     GuidList summons;
@@ -136,7 +136,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         CurrBeastOfNortherendPhase(PHASE_BEASTS_NONE),
         EncounterInProgress(false),
         m_bCombatStart(false),
-        m_bIsInTalkPhase(false),
         m_bIsInOutroTalk(false),
         uiSummonTimer(0),
         m_uiAggroTimer(0),
@@ -144,7 +143,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_uiTalkTimer(0),
         m_uiTalkCounter(0),
         m_AttemptCounter(DATA_ATTEMPT_COUNTER, m_pInstance),
-        m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
+        m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance),
+        m_bIsInTalkPhase(DATA_IN_TALK_PHASE, m_pInstance)
     {
         if (m_pInstance)    //choose correct phase, in case of d/c or something happens and barrett is respawned
         {
@@ -650,18 +650,12 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             if (Creature* Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
                             {                             
                                 if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                    Jaraxxus->CastSpell(Fizzlebang, 71825 /* random green beam */ /*67888*/ /* Fel Lightning FX */, false); //causes Jaraxxus to reset
+                                    Jaraxxus->CastSpell(Fizzlebang, 67888 /* Fel Lightning FX */, false);
                             }
-                            m_uiTalkTimer = 0.5*IN_MILLISECONDS;
+                            m_uiTalkTimer = 4.5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 9:
-                            if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                Fizzlebang->DealDamage(Fizzlebang, Fizzlebang->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                            m_uiTalkTimer = 4*IN_MILLISECONDS;
-                            m_bIsInTalkPhase = true;
-                            break;
-                        case 10:
                             if (Fordring)
                             {
                                 DoScriptText(SAY_TIRION_JARAXXUS_INTRO7, Fordring);

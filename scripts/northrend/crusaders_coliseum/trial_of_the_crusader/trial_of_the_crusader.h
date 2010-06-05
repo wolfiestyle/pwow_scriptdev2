@@ -79,6 +79,7 @@ enum
     DATA_FACTION                = 50,
     DATA_ACHIEVEMENT_COUNTER    = 51,
     DATA_ATTEMPT_COUNTER        = 52,
+    DATA_IN_TALK_PHASE          = 53,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
