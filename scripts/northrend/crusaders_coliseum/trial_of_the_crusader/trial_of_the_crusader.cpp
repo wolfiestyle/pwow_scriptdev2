@@ -1,7 +1,9 @@
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
-toc::EntryTypeMap const toc::EntryType = map_initializer<uint32, uint32>
+typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
+
+static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
     (NPC_GORMOK,                TYPE_GORMOK)
     (NPC_ACIDMAW,               TYPE_ACIDMAW)
     (NPC_DREADSCALE,            TYPE_DREADSCALE)
@@ -47,10 +49,38 @@ toc::EntryTypeMap const toc::EntryType = map_initializer<uint32, uint32>
     (NPC_PURPLE_RUNE,           TYPE_PURPLE_RUNE)
     (NPC_PORTAL_TARGET,         TYPE_PORTAL_TARGET);
 
+static EntryTypeMap const GameObjectEntryToType = map_initializer<uint32, uint32>
+    (GO_COLISEUM_FLOOR,         TYPE_COLISEUM_FLOOR)
+    (GO_ANUBARAK_CHEST,         TYPE_ANUBARAK_CHEST)
+    (GO_CHAMPIONS_CHEST_N10,    TYPE_FACTION_CHAMPION_CHEST)
+    (GO_CHAMPIONS_CHEST_N25,    TYPE_FACTION_CHAMPION_CHEST)
+    (GO_CHAMPIONS_CHEST_H10,    TYPE_FACTION_CHAMPION_CHEST)
+    (GO_CHAMPIONS_CHEST_H25,    TYPE_FACTION_CHAMPION_CHEST)
+    (GO_ENTRANCE_DOOR,          TYPE_ENTRANCE_DOOR)
+    (GO_MAIN_GATE,              TYPE_MAIN_GATE);
+
+namespace toc {
+
+template <>
+uint32 GetType<Creature>(Creature *pCreature)
+{
+    EntryTypeMap::const_iterator it = CreatureEntryToType.find(pCreature->GetEntry());
+    return it != CreatureEntryToType.end() ? it->second : 0;
+}
+
+template <>
+uint32 GetType<GameObject>(GameObject *pGO)
+{
+    EntryTypeMap::const_iterator it = GameObjectEntryToType.find(pGO->GetEntry());
+    return it != GameObjectEntryToType.end() ? it->second : 0;
+}
+
+} // namespace toc
+
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
     ScriptedAI(pCreature),
     m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-    m_BossEncounter(toc::GetType(pCreature), m_pInstance)
+    m_BossEncounter(toc::GetType<Creature>(pCreature), m_pInstance)
 {
     Difficulty diff = pCreature->GetMap()->GetDifficulty();
     m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;

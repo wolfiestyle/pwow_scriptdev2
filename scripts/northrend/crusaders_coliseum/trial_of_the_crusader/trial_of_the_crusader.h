@@ -363,15 +363,10 @@ CreatureAI* GetAI(Creature *pCreature)
     newscript->GetAI = &toc::GetAI<SC##AI>; \
     newscript->RegisterSelf();
 
-// get data_id from creature
-typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
-extern EntryTypeMap const EntryType;
-
-inline uint32 GetType(Creature *pCreature)
-{
-    EntryTypeMap::const_iterator it = EntryType.find(pCreature->GetEntry());
-    return it != EntryType.end() ? it->second : 0;
-}
+// get data_id from Creature or GameObject
+// (only specializations for creature / go defined)
+template <typename T>
+uint32 GetType(T*);
 
 } // namespace toc
 
