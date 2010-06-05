@@ -39,6 +39,7 @@ enum Spells
     SPELL_TWINS_PACT_EYDIS          = 67303,
     SPELL_DARK_VORTEX               = 66058, //oddly enough, theres only 1 spell for all difficulties of this one
     SPELL_TOUCH_OF_DARKNESS         = 67282, //only heroic
+    SPELL_TOUCH_OF_DARKNESS_25      = 67283,
 
     // Fjola Lightbane
     SPELL_FJOLA_TWIN_SPIKE          = 66075,
@@ -47,6 +48,7 @@ enum Spells
     SPELL_TWINS_PACT_FJOLA          = 65876,
     SPELL_LIGHT_VORTEX              = 66046,
     SPELL_TOUCH_OF_LIGHT            = 67296, //only heroic
+    SPELL_TOUCH_OF_LIGHT_25         = 67298,
 
     // both
     SPELL_POWER_OF_THE_TWINS        = 67246,
@@ -545,8 +547,8 @@ bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
     player->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
     {
-        if (SpellEntry const* sp = GetSpellEntryByDifficulty(SPELL_TOUCH_OF_DARKNESS, pCreature->GetMap()->GetDifficulty()))
-            player->RemoveAurasDueToSpell(sp->Id);
+        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS);
+        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS_25);
     }
     player->CastSpell(player, SPELL_LIGHT_ESSENCE, false);
     return true;
@@ -557,8 +559,8 @@ bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
     player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC )
     {
-        if (SpellEntry const* sp = GetSpellEntryByDifficulty(SPELL_TOUCH_OF_LIGHT, pCreature->GetMap()->GetDifficulty()))
-            player->RemoveAurasDueToSpell(sp->Id);
+        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT);
+        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT_25);
     }
     player->CastSpell(player, SPELL_DARK_ESSENCE, false);
     return true;
