@@ -30,7 +30,10 @@ EndContentData */
 
 enum Spells
 {
-    SPELL_FEIGN_DEATH   = 66804,
+    SPELL_SUBMERGE          = 56422,
+    SPELL_OPEN_PORTAL       = 67864,
+    SPELL_WILFRED_PORTAL    = 68424,
+    SPELL_FEL_LIGHTNING     = 67888,
 };
 
 enum Phases
@@ -251,7 +254,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && CurrBeastOfNortherendPhase != PHASE_BEASTS_NONE)
             m_bIsInTalkPhase = true;    // do intro for individual beasts
         if (pSummon->GetEntry() == NPC_ACIDMAW)
-            pSummon->CastSpell(pSummon, 56422 /* submerge */, false);
+            pSummon->CastSpell(pSummon, SPELL_SUBMERGE, false);
         if (pSummon->GetEntry() == NPC_JARAXXUS)
             m_uiAggroTimer = 35*IN_MILLISECONDS;
         if (pSummon->GetEntry() != NPC_JARAXXUS)
@@ -336,10 +339,10 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case NPC_ICEHOWL:
                 NorthrendBeastsEncounterCheck();
                 break;
-                // Twin Val'kyr
+            // Twin Val'kyr
             case NPC_FJOLA_LIGHTBANE:
             case NPC_EYDIS_DARKBANE:
-                // faction champions
+            // faction champions
             case NPC_TYRIUS_DUSKBLADE:
             case NPC_KAVINA_GROVESONG:
             case NPC_MELADOR_VALESTRIDER:
@@ -591,7 +594,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 {
                                     Portal->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                     Portal->SetPhaseMask(1, true);
-                                    Fizzlebang->CastSpell(Portal, 67864 /*open portal*/, false);
+                                    Fizzlebang->CastSpell(Portal, SPELL_OPEN_PORTAL, false);
                                 }
                                 // the rune circle and the portal are not visible for some reason (only visible in GM mode)
                                 if (Creature *Runes = GET_CREATURE(TYPE_PURPLE_RUNE))
@@ -606,7 +609,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         case 3:
                             if (Creature* Portal = GET_CREATURE(TYPE_PORTAL_TARGET))
                             {
-                                Portal->CastSpell(Portal, 68424 /*wilfred portal*/, false);
+                                Portal->CastSpell(Portal, SPELL_WILFRED_PORTAL, false);
                             }
                             m_uiTalkTimer = 6*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
@@ -650,7 +653,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             if (Creature* Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
                             {                             
                                 if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
-                                    Jaraxxus->CastSpell(Fizzlebang, 67888 /* Fel Lightning FX */, false);
+                                    Jaraxxus->CastSpell(Fizzlebang, SPELL_FEL_LIGHTNING, false);
                             }
                             m_uiTalkTimer = 4.5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;

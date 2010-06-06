@@ -108,6 +108,12 @@ enum Phases
     PHASE_DONE
 };
 
+enum Factions
+{
+    FACTION_NEUTRAL = 7,
+    FACTION_HOSTILE = 14,
+};
+
 typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
 typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 typedef std::list<uint64> GuidList;
@@ -132,13 +138,15 @@ typedef std::list<uint64> GuidList;
 #define MAX_ALIVE_FROST_SPHERES     6
 #define FLOOR_HEIGHT                143
 
-static const float SummonPositions [4][2] = 
+static const float SummonPositions[4][2] = 
 {
     {724.0f, 191.0f},
     {688.5f, 189.0f},
     {716.0f, 81.6f},
     {767.0f, 82.0f}
 };
+
+static const float FrostSpherePos[3] = {741.0f, 133.6f, 163.0f};
 
 struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderAI
 {
@@ -184,7 +192,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         RESCHEDULE_EVENT(SUBMERGE);
         RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
 
-        SummonAdds(NPC_FROST_SPHERE, 6);
+        SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES);
 
         DoScriptText(SAY_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
@@ -219,7 +227,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 break;
             case NPC_SWARM_SCARAB:
                 if (CurrPhase == PHASE_ABOVEGROUND)
-                    pSumm->setFaction(7);   //neutral
+                    pSumm->setFaction(FACTION_NEUTRAL);
                 else
                     pSumm->SetInCombatWithZone();
                 break;
@@ -259,6 +267,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void KilledUnit(Unit *who)
     {
+        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
@@ -280,9 +289,9 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             {
                 float x, y;
                 GetRandomPointInCircle(54.0f, x, y);
-                x += 741.0f;
-                y += 133.6f;
-                m_creature->SummonCreature(NPC_FROST_SPHERE, x, y, 163, 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                m_creature->SummonCreature(NPC_FROST_SPHERE,
+                    x + FrostSpherePos[0], y + FrostSpherePos[1], FrostSpherePos[2], 0.0f,
+                    TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
         else
@@ -381,7 +390,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     for (GuidMap::const_iterator i = range.first; i != range.second; ++i)
                         if (Creature *scarab = m_creature->GetMap()->GetCreature(i->second))
                         {
-                            scarab->setFaction(14);//hostile
+                            scarab->setFaction(FACTION_HOSTILE);
                             scarab->SetInCombatWithZone();
                         }
                     //DoCast(m_creature, SPELL_UNDERGROUND_VISUAL, true); //doesn't show
@@ -451,9 +460,9 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
         }
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
@@ -504,10 +513,10 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     EventMap Events;
 
-    mob_toc_swarm_scarabAI(Creature* pCreature): ScriptedAI(pCreature) 
+    mob_toc_swarm_scarabAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        Reset();
     }
 
     void Reset()
@@ -515,9 +524,9 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
         Events.Reset();
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 

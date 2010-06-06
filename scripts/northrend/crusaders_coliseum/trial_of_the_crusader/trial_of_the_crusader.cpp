@@ -106,7 +106,6 @@ void boss_trial_of_the_crusaderAI::Reset()
 
 void boss_trial_of_the_crusaderAI::KilledUnit(Unit* pWho)
 {
-    if (pWho->GetTypeId() == TYPEID_PLAYER)
+    if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
         m_pInstance->SetData(DATA_IMMORTAL, 0);
 }
-

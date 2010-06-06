@@ -126,6 +126,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void KilledUnit(Unit *who)
     {
+        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if ((!who || who->GetTypeId() != TYPEID_PLAYER) && !m_bIsInTalkPhase)
             return;
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
@@ -273,9 +274,9 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     {
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
@@ -344,7 +345,7 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
     void KilledUnit(Unit* pWho)
     {
-        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
@@ -387,9 +388,9 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
     {
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
@@ -453,9 +454,9 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
     {
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 

@@ -163,9 +163,9 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
     {
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit *pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
