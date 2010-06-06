@@ -785,7 +785,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             else
                             {
                                 if (Creature* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
-                                    DoScriptText(SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO4, Garrosh);
+                                    DoScriptText(SAY_GARROSH_HORDE_VICTORY, Garrosh);
                                 m_uiTalkTimer = 5.5*IN_MILLISECONDS;
                             }
                             break;
