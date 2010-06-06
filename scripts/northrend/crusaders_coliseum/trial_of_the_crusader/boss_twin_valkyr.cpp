@@ -479,20 +479,12 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
     mob_concentrated_orbAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         float x,y;
-        GetRandomPointInCircle(48.5, x, y);
-        m_creature->GetMotionMaster()->MovePoint(5, x+CENTER_X, y+CENTER_Y, FLOOR_HEIGHT);
+        toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
+        m_creature->GetMotionMaster()->MovePoint(5, x, y, FLOOR_HEIGHT);
     }
 
     void Reset()
     {
-    }
-
-    void GetRandomPointInCircle(float max_rad, float &x, float &y)
-    {
-        float ang = 2 * M_PI * rand_norm();
-        float rad = max_rad * sqrt(rand_norm());
-        x = rad * cos(ang);
-        y = rad * sin(ang);
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -501,8 +493,8 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
             return;
         //simulate random movement
         float x, y;
-        GetRandomPointInCircle(48.5, x, y);
-        m_creature->GetMotionMaster()->MovePoint(5, x+CENTER_X, y+CENTER_Y, FLOOR_HEIGHT);
+        toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
+        m_creature->GetMotionMaster()->MovePoint(5, x, y, FLOOR_HEIGHT);
     }
 
     void CastPowerUp(Unit* pTarget, bool IsLight)

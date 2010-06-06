@@ -273,14 +273,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
 
-    void GetRandomPointInCircle(float max_rad, float &x, float &y)
-    {
-        float ang = 2*M_PI * rand_norm();
-        float rad = max_rad * sqrt(rand_norm());
-        x = rad * cos(ang);
-        y = rad * sin(ang);
-    }
-
     void SummonAdds(uint32 entry, uint32 num = 1)
     {
         if (entry == NPC_FROST_SPHERE)
@@ -288,10 +280,8 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             for (int i = 0; i < num; i++)
             {
                 float x, y;
-                GetRandomPointInCircle(54.0f, x, y);
-                m_creature->SummonCreature(NPC_FROST_SPHERE,
-                    x + FrostSpherePos[0], y + FrostSpherePos[1], FrostSpherePos[2], 0.0f,
-                    TEMPSUMMON_MANUAL_DESPAWN, 0);
+                toc::GetRandomPointInCircle(x, y, 54.0f, FrostSpherePos[0], FrostSpherePos[1]);
+                m_creature->SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
         else

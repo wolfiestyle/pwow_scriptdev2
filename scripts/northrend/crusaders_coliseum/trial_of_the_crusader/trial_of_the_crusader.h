@@ -404,6 +404,9 @@ CreatureAI* GetAI(Creature *pCreature)
 template <typename T>
 uint32 GetType(T*);
 
+// get random point inside area delimited by circle
+void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, float cy = 0.0f);
+
 } // namespace toc
 
 // basic start point for bosses

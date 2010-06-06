@@ -82,6 +82,14 @@ uint32 GetType<GameObject>(GameObject *pGO)
     return it != GameObjectEntryToType.end() ? it->second : 0;
 }
 
+void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
+{
+    float ang = 2*M_PI * rand_norm();
+    float rad = max_rad * sqrt(rand_norm());
+    x = cx + rad * cos(ang);
+    y = cy + rad * sin(ang);
+}
+
 } // namespace toc
 
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
