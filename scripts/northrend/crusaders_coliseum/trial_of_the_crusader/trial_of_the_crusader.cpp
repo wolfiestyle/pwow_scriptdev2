@@ -51,7 +51,14 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
 
 static EntryTypeMap const GameObjectEntryToType = map_initializer<uint32, uint32>
     (GO_COLISEUM_FLOOR,         TYPE_COLISEUM_FLOOR)
-    (GO_ANUBARAK_CHEST,         TYPE_ANUBARAK_CHEST)
+    (GO_ANUBARAK_CHEST_10H_0,   TYPE_ANUBARAK_CHEST_FAIL)
+    (GO_ANUBARAK_CHEST_10H_25,  TYPE_ANUBARAK_CHEST_25)
+    (GO_ANUBARAK_CHEST_10H_45,  TYPE_ANUBARAK_CHEST_45)
+    (GO_ANUBARAK_CHEST_10H_50,  TYPE_ANUBARAK_CHEST_50)
+    (GO_ANUBARAK_CHEST_25H_0,   TYPE_ANUBARAK_CHEST_FAIL)
+    (GO_ANUBARAK_CHEST_25H_25,  TYPE_ANUBARAK_CHEST_25)
+    (GO_ANUBARAK_CHEST_25H_45,  TYPE_ANUBARAK_CHEST_45)
+    (GO_ANUBARAK_CHEST_25H_50,  TYPE_ANUBARAK_CHEST_50)
     (GO_CHAMPIONS_CHEST_N10,    TYPE_FACTION_CHAMPION_CHEST)
     (GO_CHAMPIONS_CHEST_N25,    TYPE_FACTION_CHAMPION_CHEST)
     (GO_CHAMPIONS_CHEST_H10,    TYPE_FACTION_CHAMPION_CHEST)
@@ -96,3 +103,10 @@ void boss_trial_of_the_crusaderAI::Reset()
         if(ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
 }
+
+void boss_trial_of_the_crusaderAI::KilledUnit(Unit* pWho)
+{
+    if (pWho->GetTypeId() == TYPEID_PLAYER)
+        m_pInstance->SetData(DATA_IMMORTAL, 0);
+}
+

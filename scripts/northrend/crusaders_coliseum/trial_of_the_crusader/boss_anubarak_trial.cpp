@@ -422,10 +422,12 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 {
     bool m_bIsHeroic;
     EventMap Events;
+    ScriptedInstance* m_pInstance;
 
     mob_toc_nerubian_burrowerAI(Creature* pCreature):
         ScriptedAI(pCreature) 
     {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Difficulty diff = pCreature->GetMap()->GetDifficulty();
         m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
     }
@@ -447,6 +449,12 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
                 Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
             }
         }
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
     void Aggro(Unit *who)
@@ -493,16 +501,24 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
 {
+    ScriptedInstance *m_pInstance;
     EventMap Events;
 
     mob_toc_swarm_scarabAI(Creature* pCreature): ScriptedAI(pCreature) 
     {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
     void Reset()
     {
         Events.Reset();
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
     void Aggro(Unit *who)

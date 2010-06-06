@@ -163,6 +163,12 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
     {
     }
 
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
+    }
+
     void Aggro(Unit *pWho)
     {
         Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);

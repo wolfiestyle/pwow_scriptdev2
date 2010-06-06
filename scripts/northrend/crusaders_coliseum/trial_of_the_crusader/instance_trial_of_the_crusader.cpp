@@ -37,6 +37,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_uiAchievementProgressCounter;
     uint32 m_uiAttemptCounter;
     uint32 m_uiInTalkPhase;
+    uint32 m_bImmortal;
 
     typedef UNORDERED_MAP<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
     GuidMap m_guidsStore;
@@ -64,6 +65,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         m_uiPlayerTeam                  = 0;
         m_uiAchievementProgressCounter  = 0;
         m_uiInTalkPhase                 = 0;
+        m_bImmortal                     = 1;
     }
 
     void InitWorldState(bool Enable = true)
@@ -95,7 +97,25 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         switch (uiType)
         {
             case TYPE_ANUBARAK:
-                //loot_id = TYPE_ANUBARAK_CHEST;
+                if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+                {
+                    if (m_uiAttemptCounter < 25)
+                    {
+                        loot_id = TYPE_ANUBARAK_CHEST_FAIL;
+                    }
+                    if (m_uiAttemptCounter >= 25)
+                    {
+                        loot_id = TYPE_ANUBARAK_CHEST_25;
+                    }
+                    if (m_uiAttemptCounter >= 45)
+                    {
+                        loot_id = TYPE_ANUBARAK_CHEST_45;
+                    }
+                    if (m_uiAttemptCounter == 50)
+                    {
+                        loot_id = TYPE_ANUBARAK_CHEST_50;
+                    }
+                }
                 break;
             case TYPE_GORGRIM_SHADOWCLEAVE:
             case TYPE_BIRANA_STORMHOOF:
@@ -135,6 +155,9 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case DATA_IN_TALK_PHASE:
                 m_uiInTalkPhase = uiData;
                 return;
+            case DATA_IMMORTAL:
+                m_bImmortal = uiData;
+                return;
         }
 
         if (uiType < MAX_ENCOUNTER)
@@ -147,6 +170,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         std::ostringstream saveStream;
         std::copy(m_auiEncounter.begin(), m_auiEncounter.end(), std::ostream_iterator<uint32>(saveStream, " "));
         saveStream << m_uiAttemptCounter << " ";
+        saveStream << m_bImmortal << " ";
 
         m_strInstData = saveStream.str();
 
@@ -201,6 +225,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 return m_uiAttemptCounter;
             case DATA_IN_TALK_PHASE:
                 return m_uiInTalkPhase;
+            case DATA_IMMORTAL:
+                return m_bImmortal;
         }
 
         return 0;
@@ -226,6 +252,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
             loadStream >> m_auiEncounter[i];
         loadStream >> m_uiAttemptCounter;
+        loadStream >> m_bImmortal;
 
         std::replace(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS, NOT_STARTED);
 
@@ -246,6 +273,20 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case UPPER_BACK_PAIN_CRITERIA_N25:
             case UPPER_BACK_PAIN_CRITERIA_H25:
                 return m_uiAchievementProgressCounter >= 4;
+            case TRIBUTE_TO_SKILL_CRITERIA_10H1:
+            case TRIBUTE_TO_SKILL_CRITERIA_25H1:
+                return m_uiAttemptCounter >= 25;
+            case TRIBUTE_TO_MAD_SKILL_CRITERIA_10H1:
+            case TRIBUTE_TO_MAD_SKILL_CRITERIA_25H1:
+                return m_uiAttemptCounter >= 45;
+            case TRIBUTE_TO_INSANITY_CRITERIA_10H1:
+            case TRIBUTE_TO_INSANITY_CRITERIA_25H1:
+            //case TRIBUTE_TO_DEDICATED_INSANITY:      //TODO: uncomment this line once the checks for gear get applied for every encounter
+            case REALMFIRST_GRAND_CRUSADER_CRITERIA:
+                return m_uiAttemptCounter == 50;
+            case TRIBUTE_TO_IMMORTALITY_CRITERIA_25H:  //TODO: achievement reward into DB (missing item templates)
+            case TRIBUTE_TO_IMMORTALITY_CRITERIA_25A:
+                return m_uiAttemptCounter == 50 && (m_bImmortal == 1);
             default:
                 return false;
         }

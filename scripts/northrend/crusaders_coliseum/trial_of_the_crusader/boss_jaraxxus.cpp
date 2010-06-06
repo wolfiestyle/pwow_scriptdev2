@@ -273,6 +273,12 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     {
     }
 
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
+    }
+
     void Aggro(Unit* pWho)
     {
         Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
@@ -336,6 +342,12 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
     {
     }
 
+    void KilledUnit(Unit* pWho)
+    {
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
+    }
+
     void Aggro(Unit *pWho)
     {
     }
@@ -363,14 +375,22 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 {
     EventMap Events;
+    ScriptedInstance *m_pInstance;
 
     mob_felflame_infernalAI(Creature* pCreature):
         ScriptedAI(pCreature)
     {
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
     }
 
     void Reset()
     {
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
     void Aggro(Unit* pWho)
@@ -431,6 +451,12 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
 
     void Reset()
     {
+    }
+
+    void KilledUnit(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+            m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
     void UpdateAI(uint32 const uiDiff)
