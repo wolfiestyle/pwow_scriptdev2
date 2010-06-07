@@ -81,13 +81,13 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void OnCreatureCreate(Creature *pCreature)
     {
-        if (uint32 data_id = toc::GetType<Creature>(pCreature))
+        if (uint32 data_id = toc::GetType(pCreature))
             m_guidsStore[data_id] = pCreature->GetGUID();
     }
 
     void OnObjectCreate(GameObject *pGo)
     {
-        if (uint32 data_id = toc::GetType<GameObject>(pGo))
+        if (uint32 data_id = toc::GetType(pGo))
             m_guidsStore[data_id] = pGo->GetGUID();
     }
 

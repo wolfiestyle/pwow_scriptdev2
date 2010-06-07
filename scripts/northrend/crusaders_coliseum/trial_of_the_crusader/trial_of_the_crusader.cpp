@@ -68,15 +68,13 @@ static EntryTypeMap const GameObjectEntryToType = map_initializer<uint32, uint32
 
 namespace toc {
 
-template <>
-uint32 GetType<Creature>(Creature *pCreature)
+uint32 GetType(Creature *pCreature)
 {
     EntryTypeMap::const_iterator it = CreatureEntryToType.find(pCreature->GetEntry());
     return it != CreatureEntryToType.end() ? it->second : 0;
 }
 
-template <>
-uint32 GetType<GameObject>(GameObject *pGO)
+uint32 GetType(GameObject *pGO)
 {
     EntryTypeMap::const_iterator it = GameObjectEntryToType.find(pGO->GetEntry());
     return it != GameObjectEntryToType.end() ? it->second : 0;
@@ -95,7 +93,7 @@ void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float c
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
     ScriptedAI(pCreature),
     m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-    m_BossEncounter(toc::GetType<Creature>(pCreature), m_pInstance)
+    m_BossEncounter(toc::GetType(pCreature), m_pInstance)
 {
     Difficulty diff = pCreature->GetMap()->GetDifficulty();
     m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
