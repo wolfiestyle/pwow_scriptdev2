@@ -24,7 +24,7 @@ enum
     TYPE_ICEHOWL                = 3,
     // jaraxxus
     TYPE_JARAXXUS               = 4,
-    // faction champions of alliance
+    // alliance faction champions
     TYPE_TYRIUS_DUSKBLADE       = 5,
     TYPE_KAVINA_GROVESONG       = 6,
     TYPE_MELADOR_VALESTRIDER    = 7,
@@ -61,15 +61,16 @@ enum
     TYPE_ANUBARAK               = 21,
     // controller guy
     TYPE_BARRETT_RAMSAY         = 22,
-
+    // spectators
     TYPE_VARIAN_WYRM            = 23,
     TYPE_GARROSH_HELLSCREAM     = 24,
     TYPE_TIRION_FORDRING        = 25,
+    // used in intros/outros
     TYPE_LICH_KING              = 26,
     TYPE_FIZZLEBANG             = 27,
     TYPE_PURPLE_RUNE            = 28,
     TYPE_PORTAL_TARGET          = 29,
-
+    // instance objects
     TYPE_COLISEUM_FLOOR         = 40,
     TYPE_ANUBARAK_CHEST_FAIL    = 41,
     TYPE_ANUBARAK_CHEST_25      = 42,
@@ -78,7 +79,7 @@ enum
     TYPE_FACTION_CHAMPION_CHEST = 45,
     TYPE_ENTRANCE_DOOR          = 46,
     TYPE_MAIN_GATE              = 47,
-
+    // instance variables
     DATA_FACTION                = 50,
     DATA_ACHIEVEMENT_COUNTER    = 51,
     DATA_ATTEMPT_COUNTER        = 52,
@@ -139,21 +140,21 @@ enum
     TRIBUTE_TO_SKILL_CRITERIA_25H2      = 12339,
     TRIBUTE_TO_SKILL_CRITERIA_25H3      = 12340,
 
-    TRIBUTE_TO_MAD_SKILL_CRITERIA_10H1      = 12347,
-    TRIBUTE_TO_MAD_SKILL_CRITERIA_10H2      = 12348,
+    TRIBUTE_TO_MAD_SKILL_CRITERIA_10H1  = 12347,
+    TRIBUTE_TO_MAD_SKILL_CRITERIA_10H2  = 12348,
 
-    TRIBUTE_TO_MAD_SKILL_CRITERIA_25H1      = 12341,
-    TRIBUTE_TO_MAD_SKILL_CRITERIA_25H2      = 12342,
+    TRIBUTE_TO_MAD_SKILL_CRITERIA_25H1  = 12341,
+    TRIBUTE_TO_MAD_SKILL_CRITERIA_25H2  = 12342,
 
-    TRIBUTE_TO_INSANITY_CRITERIA_10H1       = 12349,
-    TRIBUTE_TO_INSANITY_CRITERIA_25H1       = 12343,
+    TRIBUTE_TO_INSANITY_CRITERIA_10H1   = 12349,
+    TRIBUTE_TO_INSANITY_CRITERIA_25H1   = 12343,
 
-    TRIBUTE_TO_IMMORTALITY_CRITERIA_25H     = 12358,
-    TRIBUTE_TO_IMMORTALITY_CRITERIA_25A     = 12359,
+    TRIBUTE_TO_IMMORTALITY_CRITERIA_25H = 12358,
+    TRIBUTE_TO_IMMORTALITY_CRITERIA_25A = 12359,
 
-    REALMFIRST_GRAND_CRUSADER_CRITERIA      = 12350,
+    REALMFIRST_GRAND_CRUSADER_CRITERIA  = 12350,
 
-    TRIBUTE_TO_DEDICATED_INSANITY           = 12360,
+    TRIBUTE_TO_DEDICATED_INSANITY       = 12360,
 
     UPPER_BACK_PAIN_CRITERIA_N10 = 11779,
     UPPER_BACK_PAIN_CRITERIA_N25 = 11780,
@@ -183,6 +184,9 @@ enum
 
     WORLD_STATE_TOTGC                   = 4390,
     WORLD_STATE_TOTGC_ATTEMPT_COUNTER   = 4389,
+
+    FACTION_NEUTRAL             = 7,
+    FACTION_HOSTILE             = 14,
 
     SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
 };

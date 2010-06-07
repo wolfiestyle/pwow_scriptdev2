@@ -104,11 +104,6 @@ enum Says
     SAY_TWIN_VALKYR_LIGHT_VORTEX    = -1300347,
 };
 
-enum Factions
-{
-    FACTION_HOSTILE                 = 14,
-};
-
 #define FLOOR_HEIGHT    394
 #define CENTER_X        563.5
 #define CENTER_Y        140

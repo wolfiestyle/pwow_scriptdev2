@@ -108,12 +108,6 @@ enum Phases
     PHASE_DONE
 };
 
-enum Factions
-{
-    FACTION_NEUTRAL = 7,
-    FACTION_HOSTILE = 14,
-};
-
 typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
 typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
 typedef std::list<uint64> GuidList;
