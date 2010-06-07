@@ -104,6 +104,11 @@ enum Says
     SAY_TWIN_VALKYR_LIGHT_VORTEX    = -1300347,
 };
 
+enum Factions
+{
+    FACTION_HOSTILE                 = 14,
+};
+
 #define FLOOR_HEIGHT    394
 #define CENTER_X        563.5
 #define CENTER_Y        140
@@ -474,25 +479,24 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
+#define RANDOM_MOVE_TIMER   urand(10, 25)*IN_MILLISECONDS
+
+struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 {
-    mob_concentrated_orbAI(Creature *pCreature) : ScriptedAI(pCreature)
+    uint32 m_uiMoveTimer;
+    bool m_bIsUsed;
+
+    mob_concentrated_orbAI(Creature *pCreature):
+        ScriptedAI(pCreature),
+        m_uiMoveTimer(0),
+        m_bIsUsed(false)
     {
     }
-
-    uint32 moveTimer;
 
     void Reset()
     {
-        moveTimer = 0;
-    }
-
-    void CalculateNextPosition(float &x, float &y)
-    {
-        float rad = 48.5f;
-        float angle = 2*M_PI*rand_norm();
-        x = rad*cos(angle)+CENTER_X;
-        y = rad*sin(angle)+CENTER_Y;
+        m_uiMoveTimer = 0;
+        m_bIsUsed = false;
     }
 
     void CastPowerUp(Unit* pTarget, bool IsLight)
@@ -502,49 +506,53 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
         if (aur && aur->GetStackAmount() >= 100)
         {
             pTarget->RemoveAurasDueToSpell(SPELL_POWERING_UP);
-            if (IsLight)
-                pTarget->CastSpell(pTarget, SPELL_EMPOWERED_LIGHT, true);
-            else
-                pTarget->CastSpell(pTarget, SPELL_EMPOWERED_DARKNESS, true);
+            pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
         }
     }
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (pWho->GetTypeId() == TYPEID_PLAYER && pWho->GetDistance(m_creature) < 1.7)
+        if (m_bIsUsed || !pWho || pWho->GetTypeId() != TYPEID_PLAYER || !m_creature->IsWithinDistInMap(pWho, 1.7f))
+            return;
+        switch (m_creature->GetEntry())
         {
-            if (m_creature->GetEntry() == NPC_CONCENTRATED_LIGHT)
-            {
+            case NPC_CONCENTRATED_LIGHT:
                 if (pWho->HasAura(SPELL_LIGHT_ESSENCE))
-                    CastPowerUp(pWho,true);
+                    CastPowerUp(pWho, true);
                 else
                 {
-                    m_creature->setFaction(14);//hostile
+                    m_creature->setFaction(FACTION_HOSTILE);
                     DoCast(pWho, SPELL_UNLEASHED_LIGHT, true);
                 }
-            }
-            else
-            {
+                m_bIsUsed = true;
+                break;
+            case NPC_CONCENTRATED_DARKNESS:
                 if (pWho->HasAura(SPELL_DARK_ESSENCE))
                     CastPowerUp(pWho, false);
                 else
                 {
-                    m_creature->setFaction(14);//hostile
+                    m_creature->setFaction(FACTION_HOSTILE);
                     DoCast(pWho, SPELL_UNLEASHED_DARK, true);
                 }
-            }
-            m_creature->ForcedDespawn();
+                m_bIsUsed = true;
+                break;
+            default:
+                return;
         }
+        m_creature->ForcedDespawn(500);
     }
+
     void UpdateAI(uint32 const uiDiff)
     {
-        if (moveTimer < uiDiff)
-        {   
+        if (m_uiMoveTimer < uiDiff)
+        {
             float x, y;
-            CalculateNextPosition(x, y);
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, FLOOR_HEIGHT);
-            moveTimer = urand(10, 25)* IN_MILLISECONDS;
-        } else moveTimer -= uiDiff;
+            toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
+            m_uiMoveTimer = RANDOM_MOVE_TIMER;
+        }
+        else
+            m_uiMoveTimer -= uiDiff;
     }
 };
 
