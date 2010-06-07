@@ -478,23 +478,21 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
 {
     mob_concentrated_orbAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
-        float x,y;
-        toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
-        m_creature->GetMotionMaster()->MovePoint(5, x, y, FLOOR_HEIGHT);
     }
+
+    uint32 moveTimer;
 
     void Reset()
     {
+        moveTimer = 0;
     }
 
-    void MovementInform(uint32 type, uint32 id)
+    void CalculateNextPosition(float &x, float &y)
     {
-        if(type != POINT_MOTION_TYPE)
-            return;
-        //simulate random movement
-        float x, y;
-        toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
-        m_creature->GetMotionMaster()->MovePoint(5, x, y, FLOOR_HEIGHT);
+        float rad = 48.5f;
+        float angle = 2*M_PI*rand_norm();
+        x = rad*cos(angle)+CENTER_X;
+        y = rad*sin(angle)+CENTER_Y;
     }
 
     void CastPowerUp(Unit* pTarget, bool IsLight)
@@ -537,6 +535,16 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI : public ScriptedAI
             }
             m_creature->ForcedDespawn();
         }
+    }
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (moveTimer < uiDiff)
+        {   
+            float x, y;
+            CalculateNextPosition(x, y);
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, FLOOR_HEIGHT);
+            moveTimer = urand(10, 25)* IN_MILLISECONDS;
+        } else moveTimer -= uiDiff;
     }
 };
 
