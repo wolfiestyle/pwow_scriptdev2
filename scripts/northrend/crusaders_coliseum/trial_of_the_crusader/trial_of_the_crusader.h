@@ -223,10 +223,7 @@ template <typename T>
 class InstanceVarBase
 {
 public:
-    InstanceVarBase(uint32 _id, InstanceData* _instance):
-        m_instance(_instance), m_dataId(_id)
-    {
-    }
+    virtual ~InstanceVarBase() { }
 
     uint32 getDataId() const { return m_dataId; }
     InstanceData* getInstanceData() const { return m_instance; }
@@ -298,7 +295,10 @@ protected:
     InstanceData *m_instance;
     uint32 const m_dataId;
 
-    virtual ~InstanceVarBase() { }
+    InstanceVarBase(uint32 _id, InstanceData* _instance):
+        m_instance(_instance), m_dataId(_id)
+    {
+    }
 };
 
 // empty base template (only uint32 and uint64 cases meaningful)
