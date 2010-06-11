@@ -48,7 +48,8 @@ EndContentData */
 #define RETURN_SPELL_IF_COOLED(SP)  do { if (!SpellIsOnCooldown(SP)) return SP; } while(0)
 #define TIMER_CAST                  1.5*IN_MILLISECONDS //simulate GCD
 #define TIMER_SWITCH_TARGET         9*IN_MILLISECONDS
-#define MAX_CASTER_RANGE            30
+#define MAX_CASTER_RANGE            30.0f
+#define NORMAL_CASTER_RANGE         20.0f
 
 enum Events
 {
@@ -378,11 +379,12 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
             !SpellIsOnCooldown(SPELL_PVP_TRINKET) && !m_creature->IsNonMeleeSpellCasted(false))
             DoCastWithCooldown(m_creature, SPELL_PVP_TRINKET, true);
 
-        if (!IsMelee)
+        if (!IsMelee && CurrHostileTarget)
         {
-            if (CurrHostileTarget && CurrHostileTarget->GetDistance(m_creature) > MAX_CASTER_RANGE)
-                DoStartMovement(CurrHostileTarget, MAX_CASTER_RANGE);
-            else
+            float dist = m_creature->GetDistance(CurrHostileTarget);
+            if (dist > MAX_CASTER_RANGE)
+                DoStartMovement(CurrHostileTarget);
+            else if (dist <= NORMAL_CASTER_RANGE)
                 DoStartNoMovement(CurrHostileTarget);
         }
 
