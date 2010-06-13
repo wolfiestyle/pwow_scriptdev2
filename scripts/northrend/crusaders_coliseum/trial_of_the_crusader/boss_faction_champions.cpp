@@ -55,6 +55,8 @@ enum Events
 {
     EVENT_CAST = 1,
     EVENT_SWITCH_TARGET,
+    EVENT_REGAIN_MANA,
+    EVENT_REGAIN_ENERGY,
 };
 
 enum Says
@@ -273,6 +275,10 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
     {
         RESCHEDULE_EVENT(CAST);
         Events.RescheduleEvent(EVENT_SWITCH_TARGET, 0); //force acquire target
+        if (m_creature->getPowerType() == POWER_MANA)
+            Events.RescheduleEvent(EVENT_REGAIN_MANA, 1000);
+        if (m_creature->getPowerType() == POWER_ENERGY)
+            Events.RescheduleEvent(EVENT_REGAIN_ENERGY, 1000);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -460,6 +466,19 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                     }
                     RESCHEDULE_EVENT(SWITCH_TARGET);
                     break;
+                case EVENT_REGAIN_MANA:
+                {
+                    uint32 mana = m_creature->GetMaxPower(POWER_MANA)*0.05;
+                    m_creature->SetPower(POWER_MANA, m_creature->GetPower(POWER_MANA) + mana);
+                    Events.RescheduleEvent(EVENT_REGAIN_MANA, urand(1,2)*IN_MILLISECONDS);
+                    break;
+                }
+                case EVENT_REGAIN_ENERGY:
+                {
+                    m_creature->SetPower(POWER_ENERGY, m_creature->GetPower(POWER_ENERGY) + 10);
+                    Events.RescheduleEvent(EVENT_REGAIN_ENERGY, 1000);
+                    break;
+                }
                 default:
                     break;
             }
@@ -964,6 +983,7 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_creature->setPowerType(POWER_ENERGY);
     }
 
     uint32 ChooseDamageSpell()
