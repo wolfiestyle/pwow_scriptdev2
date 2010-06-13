@@ -1053,7 +1053,7 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
     {
         if (!m_creature->HasAura(SPELL_EARTH_SHIELD))
             return SPELL_EARTH_SHIELD;
-        uint32 spell = m_bIsHorde ? SPELL_BLOODLUST : SPELL_HEROISM;
+        uint32 spell = m_bIsHorde ? SPELL_HEROISM : SPELL_BLOODLUST;
         if (!m_creature->HasAura(spell))
             RETURN_SPELL_IF_COOLED(spell);
         return 0;
@@ -1098,7 +1098,7 @@ struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_faction_championAI
     {
         if (!m_creature->HasAura(SPELL_EARTH_SHIELD))
             return SPELL_EARTH_SHIELD;
-        uint32 spell = m_bIsHorde ? SPELL_BLOODLUST : SPELL_HEROISM;
+        uint32 spell = m_bIsHorde ? SPELL_HEROISM : SPELL_BLOODLUST;
         if (!m_creature->HasAura(spell))
             RETURN_SPELL_IF_COOLED(spell);
         return 0;
