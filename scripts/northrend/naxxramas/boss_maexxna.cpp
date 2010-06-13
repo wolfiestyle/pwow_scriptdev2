@@ -133,12 +133,6 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
             m_pInstance->SetData(TYPE_MAEXXNA, DONE);
     }
 
-    void JustReachedHome()
-    {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_MAEXXNA, FAIL);
-    }
-
     void DoCastWebWrap()
     {
         ThreatList const& tList = m_creature->getThreatManager().getThreatList();

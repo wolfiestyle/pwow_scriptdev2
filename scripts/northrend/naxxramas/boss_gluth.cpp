@@ -117,12 +117,6 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
             m_pInstance->SetData(TYPE_GLUTH, IN_PROGRESS);
     }
 
-    void JustReachedHome()
-    {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_GLUTH, FAIL);
-    }
-
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())

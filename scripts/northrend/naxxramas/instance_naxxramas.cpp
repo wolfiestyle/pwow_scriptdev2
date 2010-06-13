@@ -292,105 +292,105 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         {
             case TYPE_ANUB_REKHAN:
                 m_auiEncounter[0] = uiData;
-                /*DoUseDoorOrButton(m_uiAnubDoorGUID);
+                DoUseDoorOrButton(m_uiAnubDoorGUID);
                 if (uiData == DONE)
-                    DoUseDoorOrButton(m_uiAnubGateGUID);*/
+                    DoUseDoorOrButton(m_uiAnubGateGUID);
                 break;
             case TYPE_FAERLINA:
                 m_auiEncounter[1] = uiData;
-                /*DoUseDoorOrButton(m_uiFaerWebGUID);
+                DoUseDoorOrButton(m_uiFaerWebGUID);
                 if (uiData == DONE)
                 {
                     DoUseDoorOrButton(m_uiFaerDoorGUID);
                     DoUseDoorOrButton(m_uiMaexOuterGUID);
-                }*/
+                }
                 break;
             case TYPE_MAEXXNA:
                 m_auiEncounter[2] = uiData;
-                //DoUseDoorOrButton(m_uiMaexInnerGUID, uiData);
+                DoUseDoorOrButton(m_uiMaexInnerGUID, uiData);
                 if (uiData == DONE)
                 {
-                    //DoUseDoorOrButton(m_uiAracEyeRampGUID);
+                    DoUseDoorOrButton(m_uiAracEyeRampGUID);
                     DoRespawnGameObject(m_uiAracPortalGUID, 30*MINUTE);
                 }
                 break;
             case TYPE_NOTH:
                 m_auiEncounter[3] = uiData;
-                /*DoUseDoorOrButton(m_uiNothEntryDoorGUID);
+                DoUseDoorOrButton(m_uiNothEntryDoorGUID);
                 if (uiData == DONE)
                 {
                      DoUseDoorOrButton(m_uiNothExitDoorGUID);
                      DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
-                }*/
+                }
                 break;
             case TYPE_HEIGAN:
                 m_auiEncounter[4] = uiData;
-                /*DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
+                DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
                 if (uiData == DONE)
-                     DoUseDoorOrButton(m_uiHeigExitDoorGUID);*/
+                     DoUseDoorOrButton(m_uiHeigExitDoorGUID);
                 break;
             case TYPE_LOATHEB:
                 m_auiEncounter[5] = uiData;
-                //DoUseDoorOrButton(m_uiLoathebDoorGUID);
+                DoUseDoorOrButton(m_uiLoathebDoorGUID);
                 if (uiData == DONE)
                 {
-                    //DoUseDoorOrButton(m_uiPlagEyeRampGUID);
+                    DoUseDoorOrButton(m_uiPlagEyeRampGUID);
                     DoRespawnGameObject(m_uiPlagPortalGUID, 30*MINUTE);
                 }
                 break;
             case TYPE_RAZUVIOUS:
                 m_auiEncounter[6] = uiData;
-                /*if (uiData == DONE)
-                     DoUseDoorOrButton(m_uiGothikEntryDoorGUID);*/
+                if (uiData == DONE)
+                     DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
                 break;
             case TYPE_GOTHIK:
                 m_auiEncounter[7] = uiData;
-                //DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+                DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
                 if (uiData == DONE)
                 {
                      DoUseDoorOrButton(m_uiGothikExitDoorGUID);
-                     //DoUseDoorOrButton(m_uiHorsemenDoorGUID);
+                     DoUseDoorOrButton(m_uiHorsemenDoorGUID);
                 }
                 break;
             case TYPE_FOUR_HORSEMEN:
                 m_auiEncounter[8] = uiData;
-                //DoUseDoorOrButton(m_uiHorsemenDoorGUID);
+                DoUseDoorOrButton(m_uiHorsemenDoorGUID);
                 if (uiData == DONE)
                 {
-                    //DoUseDoorOrButton(m_uiMiliEyeRampGUID);
+                    DoUseDoorOrButton(m_uiMiliEyeRampGUID);
                     DoRespawnGameObject(m_uiMiliPortalGUID, 30*MINUTE);
                     DoRespawnGameObject(m_uiHorsemenChestGUID, 30*MINUTE);
                 }
                 break;
             case TYPE_PATCHWERK:
                 m_auiEncounter[9] = uiData;
-                /*if (uiData == DONE)
-                    DoUseDoorOrButton(m_uiPathExitDoorGUID);*/
+                if (uiData == DONE)
+                    DoUseDoorOrButton(m_uiPathExitDoorGUID);
                 break;
             case TYPE_GROBBULUS:
                 m_auiEncounter[10] = uiData;
                 break;
             case TYPE_GLUTH:
                 m_auiEncounter[11] = uiData;
-                /*if (uiData == DONE)
+                if (uiData == DONE)
                 {
                     DoUseDoorOrButton(m_uiGlutExitDoorGUID);
                     DoUseDoorOrButton(m_uiThadDoorGUID);
-                }*/
+                }
                 break;
             case TYPE_THADDIUS:
                 m_auiEncounter[12] = uiData;
-                //DoUseDoorOrButton(m_uiThadDoorGUID, uiData);
+                DoUseDoorOrButton(m_uiThadDoorGUID, uiData);
                 if (uiData == DONE)
                 {
-                    //DoUseDoorOrButton(m_uiConsEyeRampGUID);
+                    DoUseDoorOrButton(m_uiConsEyeRampGUID);
                     DoRespawnGameObject(m_uiConsPortalGUID, 30*MINUTE);
                 }
                 break;
             case TYPE_SAPPHIRON:
                 m_auiEncounter[13] = uiData;
-                /*if (uiData == DONE)
-                    DoUseDoorOrButton(m_uiKelthuzadDoorGUID);*/
+                if (uiData == DONE)
+                    DoUseDoorOrButton(m_uiKelthuzadDoorGUID);
                 break;
             case TYPE_KELTHUZAD:
                 m_auiEncounter[14] = uiData;

@@ -177,6 +177,8 @@ struct MANGOS_DLL_DECL boss_gothikAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_GOTHIK, DONE);
+        if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_MILI_GOTH_COMBAT_GATE)))
+            pGate->SetGoState(GO_STATE_ACTIVE);
     }
 
     void UpdateAI(const uint32 diff)

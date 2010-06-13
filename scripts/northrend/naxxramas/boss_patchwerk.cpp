@@ -95,12 +95,6 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
             m_pInstance->SetData(TYPE_PATCHWERK, IN_PROGRESS);
     }
 
-    void JustReachedHome()
-    {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_PATCHWERK, FAIL);
-    }
-
     void DoHatefulStrike()
     {
         // The ability is used on highest HP target choosen of the top 2 (3 heroic) targets on threat list being in melee range
