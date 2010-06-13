@@ -39,7 +39,6 @@ enum Spells
     SPELL_TWINS_PACT_EYDIS          = 67303,
     SPELL_DARK_VORTEX               = 66058,
     SPELL_TOUCH_OF_DARKNESS         = 67282, //only heroic
-    SPELL_TOUCH_OF_DARKNESS_25      = 67283,
 
     // Fjola Lightbane
     SPELL_FJOLA_TWIN_SPIKE          = 66075,
@@ -48,7 +47,6 @@ enum Spells
     SPELL_TWINS_PACT_FJOLA          = 65876,
     SPELL_LIGHT_VORTEX              = 66046,
     SPELL_TOUCH_OF_LIGHT            = 67296, //only heroic
-    SPELL_TOUCH_OF_LIGHT_25         = 67298,
 
     // both
     SPELL_POWER_OF_THE_TWINS        = 67246,
@@ -65,6 +63,15 @@ enum Spells
     SPELL_DARK_ESSENCE              = 65684,
 
     SPELL_BERSERK                   = 64238,
+};
+
+enum SpellDifficulties
+{
+    SPDIFF_DARK_ESSENCE             = 388,
+    SPDIFF_LIGHT_ESSENCE            = 405,
+    SPDIFF_TOUCH_OF_DARKNESS        = 441,
+    SPDIFF_TOUCH_OF_LIGHT           = 464,
+    SPDIFF_POWERING_UP              = 581,
 };
 
 enum Adds
@@ -203,7 +210,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
             switch (uiEventId)
             {
                 case EVENT_BERSERK:
-                    m_creature->InterruptNonMeleeSpells(true);
+                    m_creature->InterruptNonMeleeSpells(false);
                     DoScriptText(SAY_TWIN_VALKYR_BERSERK, m_creature);
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
@@ -226,7 +233,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
-        if(Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
+        if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
         {
             Darkbane->SetHealth(0);
             Darkbane->setDeathState(JUST_DIED);
@@ -292,19 +299,24 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         m_bIsClearingSummons = false;
     }
 
+    void RemoveEncounterAuras()
+    {
+        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
+        {
+            Unit *pPlayer = itr->getSource();
+            if (!pPlayer)
+                continue;
+            pPlayer->RemoveAurasWithDifficulty(SPDIFF_DARK_ESSENCE);
+            pPlayer->RemoveAurasWithDifficulty(SPDIFF_LIGHT_ESSENCE);
+            pPlayer->RemoveAurasWithDifficulty(SPDIFF_POWERING_UP);
+        }
+    }
+
     void Reset()
     {
         UnSummonAllCreatures();
-        Map *pMap = m_creature->GetMap();
-        Map::PlayerList const &Players = pMap->GetPlayers();
-        for(Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit* pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
-            pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
-            pPlayer->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
-        }
+        RemoveEncounterAuras();
         boss_trial_of_the_crusaderAI::Reset();
     }
 
@@ -471,6 +483,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
 
         UnSummonAllCreatures();
+        RemoveEncounterAuras();
     }
 };
 
@@ -500,7 +513,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
         Aura *aur = pTarget->GetAura(SPELL_POWERING_UP, EFFECT_INDEX_0);
         if (aur && aur->GetStackAmount() >= 100)
         {
-            pTarget->RemoveAurasDueToSpell(SPELL_POWERING_UP);
+            pTarget->RemoveAurasWithDifficulty(SPDIFF_POWERING_UP);
             pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
         }
     }
@@ -553,24 +566,18 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 
 bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
 {
-    player->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
+    player->RemoveAurasWithDifficulty(SPDIFF_DARK_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
-    {
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS);
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_DARKNESS_25);
-    }
+        player->RemoveAurasWithDifficulty(SPDIFF_TOUCH_OF_DARKNESS);
     player->CastSpell(player, SPELL_LIGHT_ESSENCE, false);
     return true;
 };
 
 bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
 {
-    player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
+    player->RemoveAurasWithDifficulty(SPDIFF_LIGHT_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
-    {
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT);
-        player->RemoveAurasDueToSpell(SPELL_TOUCH_OF_LIGHT_25);
-    }
+        player->RemoveAurasWithDifficulty(SPDIFF_TOUCH_OF_LIGHT);
     player->CastSpell(player, SPELL_DARK_ESSENCE, false);
     return true;
 }
