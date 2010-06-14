@@ -106,9 +106,46 @@ enum Says
 #define DESPAWN_TIME            4*MINUTE*IN_MILLISECONDS
 #define SUMMON_TIMER            3*MINUTE*IN_MILLISECONDS
 #define AGGRO_TIMER             urand(10, 15)*IN_MILLISECONDS
+#define MAX_CHAMPION            14
 
 static const float summon_pos[4] = {563.8f, 182.0f, 395.0f, 3*M_PI/2};
 static const float RoomCenter[3] = {563.67f, 139.57f, 393.83f };
+
+static const uint32 AllianceChampions[MAX_CHAMPION] =
+{
+    NPC_TYRIUS_DUSKBLADE,
+    NPC_KAVINA_GROVESONG,
+    NPC_MELADOR_VALESTRIDER,
+    NPC_ALYSSIA_MOONSTALKER,
+    NPC_NOOZLE_WHIZZLESTICK,
+    NPC_VELNAA,
+    NPC_BAELNOR_LIGHTBEARER,
+    NPC_ANTHAR_FORGEMENDER,
+    NPC_BRIENNA_NIGHTFELL,
+    NPC_IRIETH_SHADOWSTEP,
+    NPC_SHAABAD,
+    NPC_SAAMUL,
+    NPC_SERISSA_GRIMDABBLER,
+    NPC_SHOCUUL
+};
+
+static const uint32 HordeChampions[MAX_CHAMPION] =
+{
+    NPC_GORGRIM_SHADOWCLEAVE,
+    NPC_BIRANA_STORMHOOF,
+    NPC_ERIN_MISTHOOF,
+    NPC_RUJKAH,
+    NPC_GINSELLE_BLIGHTSLINGER,
+    NPC_LIANDRA_SUNCALLER,
+    NPC_MALITHAS_BRIGHTBLADE,
+    NPC_CAIPHUS_THE_STERN,
+    NPC_VIVIENNE_BLACKWHISPER,
+    NPC_MAZDINAH,
+    NPC_BROLN_STOUTHORN,
+    NPC_THRAKGAR,
+    NPC_HARKZOG,
+    NPC_NARRHOK_STEELBREAKER
+};
 
 struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 {
@@ -189,7 +226,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             pFloor->Delete();   //hacky fix, type 33 (destructable building) not implemented
     }
 
-    void Reset()    //called when any creature wipes group
+    // called when any creature wipes group
+    void Reset()
     {
         if (m_pInstance && m_bIsHeroic) //because of the order how data is saved into the instance, we first update the wipe counter
             --m_AttemptCounter;
@@ -313,6 +351,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 m_uiTalkCounter = 0;
                 m_bIsInOutroTalk = true;
                 break;
+            // Beasts of Northrend
             case NPC_GORMOK:
                 if (!m_bIsHeroic)
                 {
@@ -403,11 +442,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_bIsInOutroTalk = false;
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
         {
-            if (m_AttemptCounter == 50) 
-            {
-                uiSummonTimer = 27*IN_MILLISECONDS;
-            } // if they wiped once, we just spawn him
-            else uiSummonTimer = 0;
+            // if they wiped once, we just spawn him
+            uiSummonTimer = m_AttemptCounter == 50 ? 27*IN_MILLISECONDS : 0;
         }
     }
 
@@ -429,23 +465,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             case PHASE_FACTION_CHAMPIONS:
             {
                 std::vector<uint32> ChampionEntries;
-                ChampionEntries.reserve(14);
-                if (!IS_HORDE)
-                    for (uint32 id = 34441; id <= 34459; id++) //the NPC ids are rather close together
-                    {
-                        if (id == 34442 || id == 34443 || id == 34446 || id == 34452)
-                            continue;
-
-                        ChampionEntries.push_back(id);
-                    }
-                else
-                    for (uint32 id = 34460; id <= 34475; id++)
-                    {
-                        if (id == 34462 || id == 34464)
-                            continue;
-
-                        ChampionEntries.push_back(id);
-                    }
+                uint32 const* champ = IS_HORDE ? AllianceChampions : HordeChampions;
+                ChampionEntries.assign(champ, champ+MAX_CHAMPION);
                 std::random_shuffle(ChampionEntries.begin(), ChampionEntries.end());
                 uint32 amount = m_bIs10Man ? 6 : 10;
                 for (uint32 i = 0 ; i < amount; i++)
@@ -783,7 +804,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             {
                                 if (Creature* Varian = GET_CREATURE(TYPE_VARIAN_WYRM))
                                     DoScriptText(SAY_VARIAN_ALLIANCE_VICTORY, Varian);
-                                m_uiTalkTimer =3*IN_MILLISECONDS;
+                                m_uiTalkTimer = 3*IN_MILLISECONDS;
                             }
                             else
                             {
