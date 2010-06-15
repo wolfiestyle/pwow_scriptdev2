@@ -568,7 +568,7 @@ struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_faction_championAI
         if (IsSpellInRange(SPELL_MOONFIRE) && !CurrHostileTarget->HasAura(SPELL_MOONFIRE))
             RETURN_SPELL_IF_COOLED(SPELL_MOONFIRE);
         if (IsSpellInRange(SPELL_STARFIRE))
-            if (urand(0,1))
+            if (urand(0,10) < 8)
                 return SPELL_STARFIRE;
             else
                 return SPELL_FORCE_OF_NATURE;
@@ -625,14 +625,15 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
         if (!NextPossibleHealTarget)
             return 0;
         uint32 HealthPercent = NextPossibleHealTarget->GetHealthPercent();
-        if (HealthPercent > 0.98f)
+        if (HealthPercent > 98.0f)
             return 0;
-        if (HealthPercent > 0.93f)
-            return SPELL_NOURISH;
-        if (HealthPercent > 0.85f)
-            return SPELL_LIFEBLOOM;
-        if (HealthPercent > 0.80f)
+        if (HealthPercent > 85.0f)
+            if (urand(1, 5) < 3)
+                return SPELL_LIFEBLOOM;
+        if (HealthPercent > 75.0f)
             return SPELL_REGROWTH;
+        if (HealthPercent > 50.0f)
+            return SPELL_NOURISH;
         RETURN_SPELL_IF_COOLED(SPELL_TRANQUILITY);
         return SPELL_REJUVINATION;
     }
@@ -641,8 +642,10 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
     {
         if (!m_creature->HasAura(SPELL_BARKSKIN))
             RETURN_SPELL_IF_COOLED(SPELL_BARKSKIN);
-        RETURN_SPELL_IF_COOLED(SPELL_NATURES_GRASP);
-        RETURN_SPELL_IF_COOLED(SPELL_THORNS);
+        if (!m_creature->HasAura(SPELL_NATURES_GRASP))
+            RETURN_SPELL_IF_COOLED(SPELL_NATURES_GRASP);
+        if (!m_creature->HasAura(SPELL_THORNS))
+            RETURN_SPELL_IF_COOLED(SPELL_THORNS);
         return 0;
     }
 };
@@ -798,18 +801,18 @@ struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_faction_championAI
             NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_DISEASE) + 
             NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_POISON)) > 0)
             RETURN_SPELL_IF_COOLED(SPELL_CLENSE);
-        if (NextPossibleHealTarget->GetHealthPercent() < 0.4f)
+        if (NextPossibleHealTarget->GetHealthPercent() < 40.0f)
             RETURN_SPELL_IF_COOLED(SPELL_HAND_OF_PROTECTION);
-        if (NextPossibleHealTarget->GetHealthPercent() < 0.7f)
+        if (NextPossibleHealTarget->GetHealthPercent() < 70.0f)
             return SPELL_HOLY_LIGHT;
-        if (NextPossibleHealTarget->GetHealthPercent() < 0.9f)
+        if (NextPossibleHealTarget->GetHealthPercent() < 90.0f)
             return SPELL_FLASH_OF_LIGHT;
         return 0;
     }
 
     uint32 ChooseBuff()
     {
-        if (m_creature->GetHealthPercent() < 0.3f)
+        if (m_creature->GetHealthPercent() < 30.0f)
             RETURN_SPELL_IF_COOLED(SPELL_DIVINE_SHEILD);
         return 0;
     }
@@ -851,7 +854,7 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
     {
         if (!NextPossibleHealTarget)
             return 0;
-        if (NextPossibleHealTarget->GetHealthPercent() < 0.2f)
+        if (NextPossibleHealTarget->GetHealthPercent() < 20.0f)
             RETURN_SPELL_IF_COOLED(SPELL_HAND_OF_PROTECTION);
         return 0;
     }
@@ -860,9 +863,9 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
     {
         if (!m_creature->HasAura(SPELL_SEAL_OF_COMMAND))
             return SPELL_SEAL_OF_COMMAND;
-        if (m_creature->GetHealthPercent() < 0.3f)
+        if (m_creature->GetHealthPercent() < 30.0f)
             RETURN_SPELL_IF_COOLED(SPELL_DIVINE_SHIELD);
-        if (m_creature->GetHealthPercent() < 0.15f)
+        if (m_creature->GetHealthPercent() < 15.0f)
             RETURN_SPELL_IF_COOLED(SPELL_HAND_OF_PROTECTION);
         RETURN_SPELL_IF_COOLED(SPELL_AVENGING_WRATH);
         return 0;
@@ -903,11 +906,11 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
         if (NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_MAGIC) >= 2 && urand(3, 6) == 4)
             return SPELL_DISPEL_MAGIC;
         float percent = NextPossibleHealTarget->GetHealthPercent();
-        if (percent > 0.8f)
+        if (percent > 80.0f)
             return SPELL_PENANCE;
-        if (percent > 0.7f)
+        if (percent > 70.0f)
             return SPELL_FLASH_HEAL;
-        if (percent > 0.6f)
+        if (percent < 60.0f)
         {
             if (SpellIsOnCooldown(SPELL_POWER_WORD_SHIELD))
                 return SPELL_RENEW;
@@ -937,7 +940,7 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
     {
         if (!CurrHostileTarget)
             return 0;
-        if (IsSpellInRange(SPELL_DISPEL_MAGIC) && m_creature->GetDistance(CurrHostileTarget) > 30 &&
+        if (IsSpellInRange(SPELL_DISPEL_MAGIC) && m_creature->GetDistance(CurrHostileTarget) > 30.0f &&
             CurrHostileTarget->GetAurasCountByDispelType(DISPEL_MAGIC) >= 2)
             return SPELL_DISPEL_MAGIC;
         if (IsSpellInRange(SPELL_SILENCE) && CurrHostileTarget->IsNonMeleeSpellCasted(false) && urand(3, 6) == 4)
@@ -969,7 +972,7 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (m_creature->GetHealthPercent() < 0.2f || m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA) < 20)
+        if (m_creature->GetHealthPercent() < 20.0f || m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA) < 20)
             RETURN_SPELL_IF_COOLED(SPELL_DISPERSION);
         return 0;
     }
@@ -994,13 +997,10 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
             RETURN_SPELL_IF_COOLED(SPELL_FAN_OF_KNIVES);
         if (CurrHostileTarget->IsWithinDistInMap(m_creature, 10.0f))
             RETURN_SPELL_IF_COOLED(SPELL_SHADOWSTEP);
-        if (IsSpellInRange(SPELL_HEMORRHAGE))
-        {
-            if(urand(4, 5) == 4)
-                RETURN_SPELL_IF_COOLED(SPELL_EVISCERATE);
-            else
-                return SPELL_HEMORRHAGE;
-        }
+        if(urand(4, 5) == 4)
+            RETURN_SPELL_IF_COOLED(SPELL_EVISCERATE);
+        else
+            return SPELL_HEMORRHAGE;
         return 0;
     }
 
@@ -1064,7 +1064,7 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
             NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_DISEASE) + 
             NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_POISON)) > 0)
             RETURN_SPELL_IF_COOLED(SPELL_CLEANSE_SPIRIT);
-        if (NextPossibleHealTarget->GetHealthPercent() < 0.7f)
+        if (NextPossibleHealTarget->GetHealthPercent() < 70.0f)
             RETURN_SPELL_IF_COOLED(SPELL_RIPTIDE);
         return SPELL_LESSER_HEALING_WAVE;
     }
@@ -1155,7 +1155,7 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
         if (!CurrHostileTarget->HasAura(SPELL_CURSE_OF_AGONY))
             return SPELL_CURSE_OF_AGONY;
 
-        if (GetNumberOfPlayersInRange(10.0f) > 5 && m_creature->GetHealthPercent() > 0.4f)
+        if (GetNumberOfPlayersInRange(10.0f) > 5 && m_creature->GetHealthPercent() > 40.0f)
             return SPELL_HELLFIRE;
 
         return urand(4,5)==4 ? SPELL_SHADOW_BOLT : SPELL_SEARING_PAIN;
@@ -1163,7 +1163,7 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
 
     uint32 ChooseCCSpell()
     {
-        if (m_creature->GetHealthPercent() < 0.7f)
+        if (m_creature->GetHealthPercent() < 70.0f)
             RETURN_SPELL_IF_COOLED(SPELL_DEATH_COIL_WARLOCK);
         RETURN_SPELL_IF_COOLED(SPELL_FEAR);
         return 0;
