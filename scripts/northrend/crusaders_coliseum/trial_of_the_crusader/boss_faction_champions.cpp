@@ -40,9 +40,10 @@ EndContentData */
 
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
+#include "SpellMgr.h"
 
 //there is not enough information about the encounter to accurately reconstruct each individual AI
-//so it is scripted according to how (i think) a 'player' would do it
+//so it is scripted according to how (I think) a 'player' would do it
 //It is not nessessarily blizzlike. Feel free to tune up the AI's
 
 #define RETURN_SPELL_IF_COOLED(SP)  do { if (!SpellIsOnCooldown(SP)) return SP; } while(0)
@@ -248,6 +249,7 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
 
     Unit *NextPossibleHealTarget;
     Unit *CurrHostileTarget;
+    CanCastResult LastSpellResult;
 
     bool IsDPS :1;
     bool IsHealer :1;
@@ -260,8 +262,9 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         m_EnemyLeader(m_bIsHorde ? TYPE_VARIAN_WYRM : TYPE_GARROSH_HELLSCREAM, m_pInstance),
         m_FriendlySays(m_bIsHorde ? HordeSays : AllianceSays),
         m_EnemySays(m_bIsHorde ? AllianceSays : HordeSays),
-        CurrHostileTarget(NULL),
         NextPossibleHealTarget(NULL),
+        CurrHostileTarget(NULL),
+        LastSpellResult(CAST_OK),
         IsDPS(false), IsHealer(false), IsMelee(false)
     {
     }
@@ -319,18 +322,20 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         {
             if (Unit *target = m_creature->GetUnit(*m_creature, (*i)->getUnitGuid()))
             {
-                if(target->GetHealthPercent() < .5)
+                //make it more likely too attack if very little hp
+                if (target->GetHealthPercent() < 50.0f)
                     PossibleTargets.push_back(target);
-                if(target->GetHealthPercent() < .35)
+                if (target->GetHealthPercent() < 35.0f)
                     PossibleTargets.push_back(target);
-                if(target->GetHealthPercent() < .10)
-                    PossibleTargets.push_back(target); //make it more likely too attack if very little hp
-                if(target->GetDistance(m_creature) < 30)
+                if (target->GetHealthPercent() < 10.0f)
                     PossibleTargets.push_back(target);
-                if(target->GetDistance(m_creature) < 10)
+                //more likely if close
+                if (target->IsWithinDistInMap(m_creature, 30.0f))
                     PossibleTargets.push_back(target);
-                if(target->GetDistance(m_creature) < 5)
-                    PossibleTargets.push_back(target); //more likely if close
+                if (target->IsWithinDistInMap(m_creature, 10.0f))
+                    PossibleTargets.push_back(target);
+                if (target->IsWithinDistInMap(m_creature, 5.0f))
+                    PossibleTargets.push_back(target);
             }
         }
 
@@ -347,7 +352,8 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
 
     void DoCastWithCooldown(Unit *pVictim, uint32 uiSpellId, bool bTriggered = false)
     {
-        if (CanCast(pVictim, GetSpellStore()->LookupEntry(uiSpellId), bTriggered) || pVictim == m_creature /*range check fails if m_creature is target*/)
+        LastSpellResult = CanCastSpell(pVictim, GetSpellStore()->LookupEntry(uiSpellId), bTriggered);
+        if (LastSpellResult == CAST_OK)
         {
             DoCast(pVictim, uiSpellId, bTriggered);
             m_creature->AddCreatureSpellCooldown(uiSpellId);
@@ -360,7 +366,7 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         if (!pSpell)
             return false;
         SpellRangeEntry const *pRange = GetSpellRangeStore()->LookupEntry(pSpell->rangeIndex);
-        return pRange ? m_creature->GetDistance(CurrHostileTarget) < pRange->maxRange : false;
+        return pRange ? m_creature->IsWithinDistInMap(CurrHostileTarget, pRange->maxRange) : false;
     }
 
     uint32 GetNumberOfPlayersInRange(float Range) const
@@ -387,11 +393,16 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
 
         if (!IsMelee && CurrHostileTarget)
         {
-            float dist = m_creature->GetDistance(CurrHostileTarget);
-            if (dist > MAX_CASTER_RANGE)
+            if (LastSpellResult == CAST_FAIL_POWER)
                 DoStartMovement(CurrHostileTarget);
-            else if (dist <= NORMAL_CASTER_RANGE)
-                DoStartNoMovement(CurrHostileTarget);
+            else
+            {
+                float dist = m_creature->GetDistance(CurrHostileTarget);
+                if (dist > MAX_CASTER_RANGE)
+                    DoStartMovement(CurrHostileTarget);
+                else if (dist <= NORMAL_CASTER_RANGE)
+                    DoStartNoMovement(CurrHostileTarget);
+            }
         }
 
         Events.Update(uiDiff);
@@ -449,7 +460,7 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                     break;
                 }
                 case EVENT_SWITCH_TARGET:
-                    if (!CurrHostileTarget || CurrHostileTarget->GetHealthPercent() > 0.2f)
+                    if (!CurrHostileTarget || CurrHostileTarget->GetHealthPercent() > 20.0f)
                     {
                         if (m_creature->IsNonMeleeSpellCasted(false))
                         {
@@ -483,8 +494,25 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                     break;
             }
 
-        if (IsMelee)
+        if (IsMelee || LastSpellResult == CAST_FAIL_POWER)
             DoMeleeAttackIfReady();
+    }
+
+    uint32 GetAuraCountByDispelType(bool PositiveSpells, Unit *pTarget, DispelType dispelType) const
+    {
+        // Create dispel mask by dispel type
+        uint32 dispelMask = GetDispellMask(dispelType);
+        uint32 count = 0;
+
+        Unit::AuraMap const& auras = pTarget->GetAuras();
+        for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        {
+            SpellEntry const* spell = itr->second->GetSpellProto();
+            if ((1 << spell->Dispel) & dispelMask && itr->second->IsPositive() == PositiveSpells)
+                ++count;
+        }
+
+        return count;
     }
 };
 
@@ -797,9 +825,9 @@ struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_faction_championAI
             NextPossibleHealTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)) &&
             (m_bIsHeroic && heal_target ? heal_target->HasSpellCooldown(SPELL_PVP_TRINKET) : true))
             RETURN_SPELL_IF_COOLED(SPELL_HAND_OF_FREEDOM);
-        if ((NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_MAGIC) + 
-            NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_DISEASE) + 
-            NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_POISON)) > 0)
+        if ((GetAuraCountByDispelType(false, NextPossibleHealTarget, DISPEL_MAGIC) + 
+            GetAuraCountByDispelType(false, NextPossibleHealTarget, DISPEL_DISEASE) + 
+            GetAuraCountByDispelType(false, NextPossibleHealTarget, DISPEL_POISON)) > 0)
             RETURN_SPELL_IF_COOLED(SPELL_CLENSE);
         if (NextPossibleHealTarget->GetHealthPercent() < 40.0f)
             RETURN_SPELL_IF_COOLED(SPELL_HAND_OF_PROTECTION);
@@ -888,7 +916,7 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
             RETURN_SPELL_IF_COOLED(SPELL_MANA_BURN);
         if (!CurrHostileTarget)
             return 0;
-        if (IsSpellInRange(SPELL_DISPEL_MAGIC) && CurrHostileTarget->GetAurasCountByDispelType(DISPEL_MAGIC) >= 2)
+        if (IsSpellInRange(SPELL_DISPEL_MAGIC) && GetAuraCountByDispelType(true, CurrHostileTarget, DISPEL_MAGIC) >= 2)
             return SPELL_DISPEL_MAGIC;
         return 0;
     }
@@ -903,7 +931,7 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
     {
         if (!NextPossibleHealTarget)
             return 0;
-        if (NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_MAGIC) >= 2 && urand(3, 6) == 4)
+        if (GetAuraCountByDispelType(false, NextPossibleHealTarget, DISPEL_MAGIC) >= 2 && urand(3, 6) == 4)
             return SPELL_DISPEL_MAGIC;
         float percent = NextPossibleHealTarget->GetHealthPercent();
         if (percent > 80.0f)
@@ -941,7 +969,7 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
         if (!CurrHostileTarget)
             return 0;
         if (IsSpellInRange(SPELL_DISPEL_MAGIC) && m_creature->GetDistance(CurrHostileTarget) > 30.0f &&
-            CurrHostileTarget->GetAurasCountByDispelType(DISPEL_MAGIC) >= 2)
+            GetAuraCountByDispelType(true, CurrHostileTarget, DISPEL_MAGIC) >= 2)
             return SPELL_DISPEL_MAGIC;
         if (IsSpellInRange(SPELL_SILENCE) && CurrHostileTarget->IsNonMeleeSpellCasted(false) && urand(3, 6) == 4)
             RETURN_SPELL_IF_COOLED(SPELL_SILENCE);
@@ -1021,7 +1049,7 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
             return 0;
         if (m_creature->IsWithinDistInMap(CurrHostileTarget, 5.0f))
             RETURN_SPELL_IF_COOLED(SPELL_BLADE_FLURRY);
-        if (m_creature->GetAurasCountByDispelType(DISPEL_ALL) > 6)
+        if (GetAuraCountByDispelType(false, m_creature, DISPEL_ALL) > 6)
             RETURN_SPELL_IF_COOLED(SPELL_CLOAK_OF_SHADOWS);
         return 0;
     }
@@ -1060,9 +1088,9 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
         if (!NextPossibleHealTarget)
             return 0;
         //heal target guaranteed to be in range.. i think (40 yards normal, 60 yrds heroic)
-        if ((NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_CURSE) + 
-            NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_DISEASE) + 
-            NextPossibleHealTarget->GetAurasCountByDispelType(DISPEL_POISON)) > 0)
+        if ((GetAuraCountByDispelType(false, NextPossibleHealTarget,DISPEL_CURSE) + 
+            GetAuraCountByDispelType(false, NextPossibleHealTarget,DISPEL_DISEASE) + 
+            GetAuraCountByDispelType(false, NextPossibleHealTarget,DISPEL_POISON)) > 0)
             RETURN_SPELL_IF_COOLED(SPELL_CLEANSE_SPIRIT);
         if (NextPossibleHealTarget->GetHealthPercent() < 70.0f)
             RETURN_SPELL_IF_COOLED(SPELL_RIPTIDE);
