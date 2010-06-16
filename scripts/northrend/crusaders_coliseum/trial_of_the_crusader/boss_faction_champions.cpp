@@ -686,6 +686,7 @@ struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = false;
+        DoCast(m_creature, SPELL_CALL_PET, true);
     }
 
     uint32 ChooseDamageSpell()
@@ -732,8 +733,6 @@ struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (!m_creature->GetPet())
-            return SPELL_CALL_PET;
         return 0;
     }
 };
@@ -755,7 +754,7 @@ struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_faction_championAI
         if (CurrHostileTarget->IsWithinDistInMap(m_creature, 5.0f) || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
             RETURN_SPELL_IF_COOLED(SPELL_BLINK);
         uint32 ArcaneStack = 0;
-        if (Aura *aur = CurrHostileTarget->GetAura(SPELL_ARCANE_BLAST_EFFECT, EFFECT_INDEX_0))
+        if (Aura *aur = m_creature->GetAura(SPELL_ARCANE_BLAST_EFFECT, EFFECT_INDEX_0))
             ArcaneStack = aur->GetStackAmount();
         if (IsSpellInRange(SPELL_ARCANE_BLAST) && ArcaneStack < 4)
             return SPELL_ARCANE_BLAST;
