@@ -204,7 +204,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         Difficulty diff = pCreature->GetMap()->GetDifficulty();
         m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
         m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
-        Reset();
     }
 
     bool IsEncounterInProgress() const

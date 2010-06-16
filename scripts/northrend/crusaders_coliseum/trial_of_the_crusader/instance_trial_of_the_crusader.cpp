@@ -62,7 +62,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void Initialize()
     {
-        m_uiAttemptCounter              = 51; //1 is lost cause reset is called at npc spawn
+        m_uiAttemptCounter              = 50;
         m_uiPlayerTeam                  = 0;
         m_uiAchievementProgressCounter  = 0;
         m_uiInTalkPhase                 = 0;
