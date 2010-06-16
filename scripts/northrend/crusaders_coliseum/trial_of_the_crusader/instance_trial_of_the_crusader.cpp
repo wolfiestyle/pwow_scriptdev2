@@ -39,12 +39,13 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     uint32 m_uiInTalkPhase;
     uint32 m_bImmortal;
 
-    typedef UNORDERED_MAP<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
-    GuidMap m_guidsStore;
+    typedef std::vector<uint64> GuidContainer;  // data_id => guid
+    GuidContainer m_guidsStore;
 
     instance_trial_of_the_crusader(Map *pMap):
         ScriptedInstance(pMap),
-        m_auiEncounter(MAX_ENCOUNTER, 0)
+        m_auiEncounter(MAX_ENCOUNTER, 0),
+        m_guidsStore(DATA_MAX, 0)
     {
         Initialize();
     }
@@ -81,13 +82,15 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void OnCreatureCreate(Creature *pCreature)
     {
-        if (uint32 data_id = toc::GetType(pCreature))
+        uint32 data_id = toc::GetType(pCreature);
+        if (data_id < DATA_MAX)
             m_guidsStore[data_id] = pCreature->GetGUID();
     }
 
     void OnObjectCreate(GameObject *pGo)
     {
-        if (uint32 data_id = toc::GetType(pGo))
+        uint32 data_id = toc::GetType(pGo);
+        if (data_id < DATA_MAX)
             m_guidsStore[data_id] = pGo->GetGUID();
     }
 
@@ -179,8 +182,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     uint64 GetData64(uint32 uiData)
     {
-        GuidMap::const_iterator it = m_guidsStore.find(uiData);
-        return it != m_guidsStore.end() ? it->second : 0;
+        return uiData < DATA_MAX ? m_guidsStore[uiData] : 0;
     }
 
     uint32 GetData(uint32 uiType)

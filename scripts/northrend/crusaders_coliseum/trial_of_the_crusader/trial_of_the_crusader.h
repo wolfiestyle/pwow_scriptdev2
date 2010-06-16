@@ -85,6 +85,8 @@ enum
     DATA_ATTEMPT_COUNTER        = 52,
     DATA_IN_TALK_PHASE          = 53,
     DATA_IMMORTAL               = 54,
+    // total count of values stored
+    DATA_MAX,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
@@ -187,8 +189,6 @@ enum
 
     FACTION_NEUTRAL             = 7,
     FACTION_HOSTILE             = 14,
-
-    SPELL_SUNWELL_RADIANCE      = 45769, // workaround used to make unscripted bosses a bit harder
 };
 
 //---------------------------------------------------------

@@ -71,13 +71,13 @@ namespace toc {
 uint32 GetType(Creature *pCreature)
 {
     EntryTypeMap::const_iterator it = CreatureEntryToType.find(pCreature->GetEntry());
-    return it != CreatureEntryToType.end() ? it->second : 0;
+    return it != CreatureEntryToType.end() ? it->second : DATA_MAX;
 }
 
 uint32 GetType(GameObject *pGO)
 {
     EntryTypeMap::const_iterator it = GameObjectEntryToType.find(pGO->GetEntry());
-    return it != GameObjectEntryToType.end() ? it->second : 0;
+    return it != GameObjectEntryToType.end() ? it->second : DATA_MAX;
 }
 
 void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
