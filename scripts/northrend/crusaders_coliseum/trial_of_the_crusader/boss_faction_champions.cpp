@@ -589,11 +589,11 @@ struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_faction_championAI
 
     uint32 ChooseDamageSpell()
     {
-        if (IsSpellInRange(SPELL_FAERIE_FIRE) && !CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_FAERIE_FIRE))
+        if (IsSpellInRange(SPELL_FAERIE_FIRE) && !CurrHostileTarget->HasAuraByDifficulty(SPELL_FAERIE_FIRE))
             RETURN_SPELL_IF_COOLED(SPELL_FAERIE_FIRE);
-        if (IsSpellInRange(SPELL_INSECT_SWARM) && !CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_INSECT_SWARM))
+        if (IsSpellInRange(SPELL_INSECT_SWARM) && !CurrHostileTarget->HasAuraByDifficulty(SPELL_INSECT_SWARM))
             RETURN_SPELL_IF_COOLED(SPELL_INSECT_SWARM);
-        if (IsSpellInRange(SPELL_MOONFIRE) && !CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_MOONFIRE))
+        if (IsSpellInRange(SPELL_MOONFIRE) && !CurrHostileTarget->HasAuraByDifficulty(SPELL_MOONFIRE))
             RETURN_SPELL_IF_COOLED(SPELL_MOONFIRE);
         if (IsSpellInRange(SPELL_STARFIRE))
             if (urand(0,10) < 8)
@@ -668,11 +668,11 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_BARKSKIN))
+        if (!m_creature->HasAuraByDifficulty(SPELL_BARKSKIN))
             RETURN_SPELL_IF_COOLED(SPELL_BARKSKIN);
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_NATURES_GRASP))
+        if (!m_creature->HasAuraByDifficulty(SPELL_NATURES_GRASP))
             RETURN_SPELL_IF_COOLED(SPELL_NATURES_GRASP);
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_THORNS))
+        if (!m_creature->HasAuraByDifficulty(SPELL_THORNS))
             RETURN_SPELL_IF_COOLED(SPELL_THORNS);
         return 0;
     }
@@ -889,7 +889,7 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_SEAL_OF_COMMAND))
+        if (!m_creature->HasAuraByDifficulty(SPELL_SEAL_OF_COMMAND))
             return SPELL_SEAL_OF_COMMAND;
         if (m_creature->GetHealthPercent() < 30.0f)
             RETURN_SPELL_IF_COOLED(SPELL_DIVINE_SHIELD);
@@ -973,9 +973,9 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
             return SPELL_DISPEL_MAGIC;
         if (IsSpellInRange(SPELL_SILENCE) && CurrHostileTarget->IsNonMeleeSpellCasted(false) && urand(3, 6) == 4)
             RETURN_SPELL_IF_COOLED(SPELL_SILENCE);
-        if (IsSpellInRange(SPELL_SHADOW_WORD_PAIN) && !CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_SHADOW_WORD_PAIN))
+        if (IsSpellInRange(SPELL_SHADOW_WORD_PAIN) && !CurrHostileTarget->HasAuraByDifficulty(SPELL_SHADOW_WORD_PAIN))
             return SPELL_SHADOW_WORD_PAIN;
-        if (IsSpellInRange(SPELL_VAMPIRIC_TOUCH) && !CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_VAMPIRIC_TOUCH))
+        if (IsSpellInRange(SPELL_VAMPIRIC_TOUCH) && !CurrHostileTarget->HasAuraByDifficulty(SPELL_VAMPIRIC_TOUCH))
             return SPELL_VAMPIRIC_TOUCH;
         if (IsSpellInRange(SPELL_MIND_FLAY))
             return SPELL_MIND_FLAY;
@@ -1099,10 +1099,10 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_EARTH_SHIELD))
+        if (!m_creature->HasAuraByDifficulty(SPELL_EARTH_SHIELD))
             return SPELL_EARTH_SHIELD;
         uint32 spell = m_bIsHorde ? SPELL_HEROISM : SPELL_BLOODLUST;
-        if (!m_creature->HasSpellAuraByDifficulty(spell))
+        if (!m_creature->HasAuraByDifficulty(spell))
             RETURN_SPELL_IF_COOLED(spell);
         return 0;
     }
@@ -1144,10 +1144,10 @@ struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_faction_championAI
 
     uint32 ChooseBuff()
     {
-        if (!m_creature->HasSpellAuraByDifficulty(SPELL_EARTH_SHIELD))
+        if (!m_creature->HasAuraByDifficulty(SPELL_EARTH_SHIELD))
             return SPELL_EARTH_SHIELD;
         uint32 spell = m_bIsHorde ? SPELL_HEROISM : SPELL_BLOODLUST;
-        if (!m_creature->HasSpellAuraByDifficulty(spell))
+        if (!m_creature->HasAuraByDifficulty(spell))
             RETURN_SPELL_IF_COOLED(spell);
         return 0;
     }
@@ -1171,16 +1171,16 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
         if (!IsSpellInRange(SPELL_CORRUPTION))
             return 0;
 
-        if (!CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_CURSE_OF_EXHAUSTION))
+        if (!CurrHostileTarget->HasAuraByDifficulty(SPELL_CURSE_OF_EXHAUSTION))
             return SPELL_CURSE_OF_EXHAUSTION;
 
-        if (!CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_CORRUPTION))
+        if (!CurrHostileTarget->HasAuraByDifficulty(SPELL_CORRUPTION))
             return SPELL_CORRUPTION;
 
-        if (!CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_UNSTABLE_AFFLICTION))
+        if (!CurrHostileTarget->HasAuraByDifficulty(SPELL_UNSTABLE_AFFLICTION))
             RETURN_SPELL_IF_COOLED(SPELL_UNSTABLE_AFFLICTION);
 
-        if (!CurrHostileTarget->HasSpellAuraByDifficulty(SPELL_CURSE_OF_AGONY))
+        if (!CurrHostileTarget->HasAuraByDifficulty(SPELL_CURSE_OF_AGONY))
             return SPELL_CURSE_OF_AGONY;
 
         if (GetNumberOfPlayersInRange(10.0f) > 5 && m_creature->GetHealthPercent() > 40.0f)

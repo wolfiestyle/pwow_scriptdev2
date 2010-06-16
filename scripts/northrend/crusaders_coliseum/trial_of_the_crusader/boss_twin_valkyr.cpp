@@ -65,15 +65,6 @@ enum Spells
     SPELL_BERSERK                   = 64238,
 };
 
-enum SpellDifficulties
-{
-    SPDIFF_DARK_ESSENCE             = 388,
-    SPDIFF_LIGHT_ESSENCE            = 405,
-    SPDIFF_TOUCH_OF_DARKNESS        = 441,
-    SPDIFF_TOUCH_OF_LIGHT           = 464,
-    SPDIFF_POWERING_UP              = 581,
-};
-
 enum Adds
 {
     NPC_DARK_ESSENCE                = 34567,
@@ -307,9 +298,9 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
             Unit *pPlayer = itr->getSource();
             if (!pPlayer)
                 continue;
-            pPlayer->RemoveAurasWithDifficulty(SPDIFF_DARK_ESSENCE);
-            pPlayer->RemoveAurasWithDifficulty(SPDIFF_LIGHT_ESSENCE);
-            pPlayer->RemoveAurasWithDifficulty(SPDIFF_POWERING_UP);
+            pPlayer->RemoveAurasByDifficulty(SPELL_DARK_ESSENCE);
+            pPlayer->RemoveAurasByDifficulty(SPELL_LIGHT_ESSENCE);
+            pPlayer->RemoveAurasByDifficulty(SPELL_POWERING_UP);
         }
     }
 
@@ -510,10 +501,10 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
     void CastPowerUp(Unit* pTarget, bool IsLight)
     {
         pTarget->CastSpell(pTarget, SPELL_POWERING_UP, true);
-        Aura *aur = pTarget->GetAura(SPELL_POWERING_UP, EFFECT_INDEX_0);
+        Aura *aur = pTarget->GetAuraByDifficulty(SPELL_POWERING_UP, EFFECT_INDEX_0);
         if (aur && aur->GetStackAmount() >= 100)
         {
-            pTarget->RemoveAurasWithDifficulty(SPDIFF_POWERING_UP);
+            pTarget->RemoveAurasByDifficulty(SPELL_POWERING_UP);
             pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
         }
     }
@@ -525,7 +516,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
         switch (m_creature->GetEntry())
         {
             case NPC_CONCENTRATED_LIGHT:
-                if (pWho->HasAura(SPELL_LIGHT_ESSENCE))
+                if (pWho->HasAuraByDifficulty(SPELL_LIGHT_ESSENCE))
                     CastPowerUp(pWho, true);
                 else
                 {
@@ -535,7 +526,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
                 m_bIsUsed = true;
                 break;
             case NPC_CONCENTRATED_DARKNESS:
-                if (pWho->HasAura(SPELL_DARK_ESSENCE))
+                if (pWho->HasAuraByDifficulty(SPELL_DARK_ESSENCE))
                     CastPowerUp(pWho, false);
                 else
                 {
@@ -566,18 +557,18 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 
 bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
 {
-    player->RemoveAurasWithDifficulty(SPDIFF_DARK_ESSENCE);
+    player->RemoveAurasByDifficulty(SPELL_DARK_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
-        player->RemoveAurasWithDifficulty(SPDIFF_TOUCH_OF_DARKNESS);
+        player->RemoveAurasByDifficulty(SPELL_TOUCH_OF_DARKNESS);
     player->CastSpell(player, SPELL_LIGHT_ESSENCE, false);
     return true;
 };
 
 bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
 {
-    player->RemoveAurasWithDifficulty(SPDIFF_LIGHT_ESSENCE);
+    player->RemoveAurasByDifficulty(SPELL_LIGHT_ESSENCE);
     if (pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
-        player->RemoveAurasWithDifficulty(SPDIFF_TOUCH_OF_LIGHT);
+        player->RemoveAurasByDifficulty(SPELL_TOUCH_OF_LIGHT);
     player->CastSpell(player, SPELL_DARK_ESSENCE, false);
     return true;
 }
