@@ -79,14 +79,14 @@ enum
     TYPE_FACTION_CHAMPION_CHEST = 45,
     TYPE_ENTRANCE_DOOR          = 46,
     TYPE_MAIN_GATE              = 47,
+    // total count of guid values stored
+    DATA_MAX,
     // instance variables
     DATA_FACTION                = 50,
     DATA_ACHIEVEMENT_COUNTER    = 51,
     DATA_ATTEMPT_COUNTER        = 52,
     DATA_IN_TALK_PHASE          = 53,
     DATA_IMMORTAL               = 54,
-    // total count of values stored
-    DATA_MAX,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
