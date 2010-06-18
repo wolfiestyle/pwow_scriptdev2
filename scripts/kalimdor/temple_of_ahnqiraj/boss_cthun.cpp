@@ -42,6 +42,7 @@ EndScriptData */
 #define MOB_SMALL_PORTAL                    15904
 
 //Eye Spells
+#define SPELL_FREEZE_ANIM                   16245
 #define SPELL_GREEN_BEAM                    26134
 #define SPELL_DARK_GLARE                    26029
 #define SPELL_RED_COLORATION                22518           //Probably not the right spell but looks similar
@@ -302,9 +303,10 @@ struct MANGOS_DLL_DECL eye_of_cthunAI : public ScriptedAI
                     }
 
                     //Add red coloration to C'thun
-                    DoCastSpellIfCan(m_creature,SPELL_RED_COLORATION);
+                    m_creature->CastSpell(m_creature,SPELL_RED_COLORATION, false);
 
                     //Freeze animation
+                    m_creature->CastSpell(m_creature, SPELL_FREEZE_ANIM, false);
 
                     //Darkbeam for 35 seconds
                     PhaseTimer = 35000;
@@ -354,7 +356,9 @@ struct MANGOS_DLL_DECL eye_of_cthunAI : public ScriptedAI
                     m_creature->RemoveAurasDueToSpell(SPELL_RED_COLORATION);
 
                     //Freeze animation
-                    m_creature->SetUInt32Value(UNIT_FIELD_FLAGS, 0);
+                    m_creature->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
+
+                    //m_creature->SetUInt32Value(UNIT_FIELD_FLAGS, 0); // This line causes boss to reset on phase switch (From dark Glare)
 
                     //Eye Beam for 50 seconds
                     PhaseTimer = 50000;
