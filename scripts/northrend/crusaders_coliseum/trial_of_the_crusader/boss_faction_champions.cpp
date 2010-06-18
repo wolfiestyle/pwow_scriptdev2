@@ -254,6 +254,7 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
     bool IsDPS :1;
     bool IsHealer :1;
     bool IsMelee :1;
+    SpellSchools m_DamageClass;
 
     boss_faction_championAI(Creature *pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
@@ -265,7 +266,7 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         NextPossibleHealTarget(NULL),
         CurrHostileTarget(NULL),
         LastSpellResult(CAST_OK),
-        IsDPS(false), IsHealer(false), IsMelee(false)
+        IsDPS(false), IsHealer(false), IsMelee(false), m_DamageClass(SPELL_SCHOOL_NORMAL)
     {
     }
 
@@ -311,38 +312,29 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
     Unit* ChooseNewAttackTarget() const
     {
         //"based on proximity,health and damage"
-        ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
-        if (tlist.empty())
+        Map::PlayerList const &players = m_creature->GetMap()->GetPlayers();
+        if (players.isEmpty())
             return NULL;
 
-        std::vector<Unit*> PossibleTargets;
-        PossibleTargets.reserve(tlist.size());
-        // FIXME: this looks ugly, improve selection algorithm
-        for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
+        typedef std::multimap<float /*weight*/, Unit* /*player*/> AggroMap;
+        AggroMap PossibleTargets;
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         {
-            if (Unit *target = m_creature->GetUnit(*m_creature, (*i)->getUnitGuid()))
+            Unit *target = i->getSource();
+            if (target && target->isAlive())
             {
-                //make it more likely too attack if very little hp
-                if (target->GetHealthPercent() < 50.0f)
-                    PossibleTargets.push_back(target);
-                if (target->GetHealthPercent() < 35.0f)
-                    PossibleTargets.push_back(target);
-                if (target->GetHealthPercent() < 10.0f)
-                    PossibleTargets.push_back(target);
-                //more likely if close
-                if (target->IsWithinDistInMap(m_creature, 30.0f))
-                    PossibleTargets.push_back(target);
-                if (target->IsWithinDistInMap(m_creature, 10.0f))
-                    PossibleTargets.push_back(target);
-                if (target->IsWithinDistInMap(m_creature, 5.0f))
-                    PossibleTargets.push_back(target);
+                // calculate a "threat weight" based on different target attributes
+                float health = target->GetHealthPercent() / 100.0f;                                     // lowest health
+                float distance = std::min(m_creature->GetDistance(target) / MAX_CASTER_RANGE, 1.0f);    // closer distance
+                float resist = std::min(target->GetResistance(m_DamageClass) / (m_DamageClass == SPELL_SCHOOL_NORMAL ? 20000.0f : 300.0f), 1.0f);
+                                                                                                        // less resistance/armor
+                float random = (rand_norm() - 0.5f) / 10.0f;                                            // (add some random noise)
+                PossibleTargets.insert(std::make_pair(health + distance + resist + random, target));
             }
         }
 
-        if (PossibleTargets.empty())
-            return m_creature->GetMap()->GetPlayers().begin()->getSource();
-
-        return PossibleTargets[urand(0, PossibleTargets.size()-1)];
+        // pick lowest value (most vulnerable target)
+        return PossibleTargets.begin()->second;
     }
 
     bool SpellIsOnCooldown(uint32 uiSpell) const
@@ -524,6 +516,7 @@ struct MANGOS_DLL_DECL boss_toc_deathknightAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
     }
 
     // only should be called on wipe, creature WILL BE DESTROYED upon wipe, definition in boss_trial_of_the_crusaderAI
@@ -585,6 +578,7 @@ struct MANGOS_DLL_DECL boss_toc_caster_druidAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_ARCANE;
     }
 
     uint32 ChooseDamageSpell()
@@ -636,6 +630,7 @@ struct MANGOS_DLL_DECL boss_toc_heal_druidAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = false;
         IsHealer = true;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;    // only does autoattack if oom
     }
 
     uint32 ChooseDamageSpell()
@@ -686,6 +681,7 @@ struct MANGOS_DLL_DECL boss_toc_hunterAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
         DoCast(m_creature, SPELL_CALL_PET, true);
     }
 
@@ -745,6 +741,7 @@ struct MANGOS_DLL_DECL boss_toc_mageAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_ARCANE;
     }
 
     uint32 ChooseDamageSpell()
@@ -792,6 +789,7 @@ struct MANGOS_DLL_DECL boss_toc_heal_paladinAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;   //very small though
         IsHealer = true;
+        m_DamageClass = SPELL_SCHOOL_HOLY;
     }
 
     uint32 ChooseDamageSpell()
@@ -853,6 +851,7 @@ struct MANGOS_DLL_DECL boss_toc_ret_paladinAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = true;    //only hand of protection
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
     }
 
     uint32 ChooseDamageSpell()
@@ -907,6 +906,7 @@ struct MANGOS_DLL_DECL boss_toc_disc_priestAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;   // only SPELL_DISPEL_MAGIC, SPELL_MANA_BURN
         IsHealer = true;
+        m_DamageClass = SPELL_SCHOOL_SHADOW;
     }
 
     uint32 ChooseDamageSpell()
@@ -961,6 +961,7 @@ struct MANGOS_DLL_DECL boss_toc_shadow_priestAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_SHADOW;
     }
 
     uint32 ChooseDamageSpell()
@@ -1013,6 +1014,7 @@ struct MANGOS_DLL_DECL boss_toc_rogueAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
         m_creature->setPowerType(POWER_ENERGY);
     }
 
@@ -1062,6 +1064,7 @@ struct MANGOS_DLL_DECL boss_toc_magic_shamanAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = true;
+        m_DamageClass = SPELL_SCHOOL_NATURE;
     }
 
     uint32 ChooseDamageSpell()
@@ -1115,6 +1118,7 @@ struct MANGOS_DLL_DECL boss_toc_melee_shamanAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
     }
 
     uint32 ChooseDamageSpell()
@@ -1160,6 +1164,7 @@ struct MANGOS_DLL_DECL boss_toc_warlockAI: public boss_faction_championAI
         IsMelee = false;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_SHADOW;
         DoCast(m_creature, SPELL_SUMMON_FELHUNTER, true);   //need a triggered cast (soul shard needed)
     }
 
@@ -1215,6 +1220,7 @@ struct MANGOS_DLL_DECL boss_toc_warriorAI: public boss_faction_championAI
         IsMelee = true;
         IsDPS = true;
         IsHealer = false;
+        m_DamageClass = SPELL_SCHOOL_NORMAL;
     }
 
     uint32 ChooseDamageSpell()
