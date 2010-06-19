@@ -291,7 +291,8 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     void JustDied(Unit* pSlayer)
     {
         --m_AchievementCounter;
-        m_creature->ForcedDespawn(1*IN_MILLISECONDS);
+       if (m_creature->isTemporarySummon())
+           static_cast<TemporarySummon*>(m_creature)->UnSummon();
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -362,7 +363,8 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
     void JustDied(Unit* pSlayer)
     {
-        m_creature->ForcedDespawn();
+       if (m_creature->isTemporarySummon())
+           static_cast<TemporarySummon*>(m_creature)->UnSummon();
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -402,7 +404,8 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void JustDied(Unit* pSlayer)
     {
-        m_creature->ForcedDespawn();
+       if (m_creature->isTemporarySummon())
+           static_cast<TemporarySummon*>(m_creature)->UnSummon();
     }
 
     void UpdateAI(uint32 const uiDiff)
