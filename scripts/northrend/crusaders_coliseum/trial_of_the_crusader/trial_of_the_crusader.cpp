@@ -70,22 +70,12 @@ namespace toc {
 
 uint32 GetType(Creature *pCreature)
 {
-    EntryTypeMap::const_iterator it = CreatureEntryToType.find(pCreature->GetEntry());
-    return it != CreatureEntryToType.end() ? it->second : DATA_MAX;
+    return map_find(CreatureEntryToType, pCreature->GetEntry(), DATA_MAX);
 }
 
 uint32 GetType(GameObject *pGO)
 {
-    EntryTypeMap::const_iterator it = GameObjectEntryToType.find(pGO->GetEntry());
-    return it != GameObjectEntryToType.end() ? it->second : DATA_MAX;
-}
-
-void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
-{
-    float ang = 2*M_PI * rand_norm();
-    float rad = max_rad * sqrt(rand_norm());
-    x = cx + rad * cos(ang);
-    y = cy + rad * sin(ang);
+    return map_find(GameObjectEntryToType, pGO->GetEntry(), DATA_MAX);
 }
 
 } // namespace toc
@@ -106,7 +96,7 @@ void boss_trial_of_the_crusaderAI::Reset()
 {
     m_BossEncounter = NOT_STARTED;
     if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
-        if(ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
+        if (ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
 }
 

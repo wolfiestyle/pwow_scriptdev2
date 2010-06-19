@@ -546,7 +546,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
         if (m_uiMoveTimer < uiDiff)
         {
             float x, y;
-            toc::GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
+            GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
             m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
             m_uiMoveTimer = RANDOM_MOVE_TIMER;
         }

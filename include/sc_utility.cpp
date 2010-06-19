@@ -20,7 +20,7 @@ void EventMap::ScheduleEvent(uint32 eventId, uint32 time, uint32 gcd, uint32 pha
         eventId |= (1 << (gcd + 16));
     if (phase && phase < 9)
         eventId |= (1 << (phase + 24));
-    EventMapType::iterator itr = m_events.find(time);
+    EventContainer::iterator itr = m_events.find(time);
     while (itr != m_events.end())
     {
         ++time;
@@ -42,7 +42,7 @@ void EventMap::RepeatEvent(uint32 time)
     uint32 eventId = m_events.begin()->second;
     m_events.erase(m_events.begin());
     time += m_time;
-    EventMapType::iterator itr = m_events.find(time);
+    EventContainer::iterator itr = m_events.find(time);
     while (itr != m_events.end())
     {
         ++time;
@@ -92,7 +92,7 @@ void EventMap::DelayEvents(uint32 time, uint32 gcd)
 {
     time += m_time;
     gcd = (1 << (gcd + 16));
-    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
+    for (EventContainer::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (itr->first >= time)
             break;
@@ -108,7 +108,7 @@ void EventMap::DelayEvents(uint32 time, uint32 gcd)
 
 void EventMap::CancelEvent(uint32 eventId)
 {
-    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
+    for (EventContainer::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (eventId == (itr->second & 0x0000FFFF))
             m_events.erase(itr++);
@@ -119,11 +119,19 @@ void EventMap::CancelEvent(uint32 eventId)
 
 void EventMap::CancelEventsByGCD(uint32 gcd)
 {
-    for (EventMapType::iterator itr = m_events.begin(); itr != m_events.end(); )
+    for (EventContainer::iterator itr = m_events.begin(); itr != m_events.end(); )
     {
         if (itr->second & gcd)
             m_events.erase(itr++);
         else
             ++itr;
     }
+}
+
+void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
+{
+    float ang = 2*M_PI * rand_norm();
+    float rad = max_rad * sqrt(rand_norm());
+    x = cx + rad * cos(ang);
+    y = cy + rad * sin(ang);
 }
