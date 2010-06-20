@@ -22,3 +22,56 @@ SDCategory: Icecrown Citadel
 EndScriptData */
 
 #include "precompiled.h"
+#include "icecrown_citadel.h"
+
+struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
+{
+    boss_the_lich_kingAI(Creature* pCreature):
+        boss_icecrown_citadelAI(pCreature)
+    {
+    }
+
+    /*
+    void Reset()
+    {
+        boss_icecrown_citadelAI::Reset();
+    }
+    */
+
+    void Aggro(Unit* pWho)
+    {
+        m_BossEncounter = IN_PROGRESS;
+    }
+
+    void KilledUnit(Unit* pWho)
+    {
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        m_BossEncounter = DONE;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+void AddSC_boss_the_lich_king()
+{
+    Script *newscript;
+
+    REGISTER_SCRIPT(boss_the_lich_king);
+}

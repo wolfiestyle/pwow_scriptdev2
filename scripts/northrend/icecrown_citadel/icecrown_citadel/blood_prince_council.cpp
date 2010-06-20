@@ -21,4 +21,155 @@ SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
 
+/* ContentData
+boss_valanar
+boss_keleseth
+boss_taldaram
+EndContentData */
+
 #include "precompiled.h"
+#include "icecrown_citadel.h"
+
+struct MANGOS_DLL_DECL boss_valanarAI: public boss_icecrown_citadelAI
+{
+    boss_valanarAI(Creature* pCreature):
+        boss_icecrown_citadelAI(pCreature)
+    {
+    }
+
+    /*
+    void Reset()
+    {
+        boss_icecrown_citadelAI::Reset();
+    }
+    */
+
+    void Aggro(Unit* pWho)
+    {
+        m_BossEncounter = IN_PROGRESS;
+    }
+
+    void KilledUnit(Unit* pWho)
+    {
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        m_BossEncounter = DONE;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+struct MANGOS_DLL_DECL boss_kelesethAI: public boss_icecrown_citadelAI
+{
+    boss_kelesethAI(Creature* pCreature):
+        boss_icecrown_citadelAI(pCreature)
+    {
+    }
+
+    /*
+    void Reset()
+    {
+        boss_icecrown_citadelAI::Reset();
+    }
+    */
+
+    void Aggro(Unit* pWho)
+    {
+        m_BossEncounter = IN_PROGRESS;
+    }
+
+    void KilledUnit(Unit* pWho)
+    {
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        m_BossEncounter = DONE;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+struct MANGOS_DLL_DECL boss_taldaramAI: public boss_icecrown_citadelAI
+{
+    boss_taldaramAI(Creature* pCreature):
+        boss_icecrown_citadelAI(pCreature)
+    {
+    }
+
+    /*
+    void Reset()
+    {
+        boss_icecrown_citadelAI::Reset();
+    }
+    */
+
+    void Aggro(Unit* pWho)
+    {
+        m_BossEncounter = IN_PROGRESS;
+    }
+
+    void KilledUnit(Unit* pWho)
+    {
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        m_BossEncounter = DONE;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+void AddSC_blood_prince_council()
+{
+    Script *newscript;
+
+    REGISTER_SCRIPT(boss_valanar);
+    REGISTER_SCRIPT(boss_keleseth);
+    REGISTER_SCRIPT(boss_taldaram);
+}

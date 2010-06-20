@@ -292,6 +292,18 @@ extern void AddSC_boss_galdarah();
 extern void AddSC_boss_moorabi();
 extern void AddSC_boss_sladran();
 extern void AddSC_instance_gundrak();
+extern void AddSC_blood_prince_council();                   //icecrown_citadel
+extern void AddSC_boss_blood_queen_lanathel();
+extern void AddSC_boss_deathbringer_saurfang();
+extern void AddSC_boss_festergut();
+extern void AddSC_boss_lady_deathwhisper();
+extern void AddSC_boss_lord_marrowgar();
+extern void AddSC_boss_proffesor_putricide();
+extern void AddSC_boss_rotface();
+extern void AddSC_boss_sindragosa();
+extern void AddSC_boss_the_lich_king();
+extern void AddSC_boss_valithria();
+extern void AddSC_instance_icecrown_citadel();
 extern void AddSC_boss_anubrekhan();                        //naxxramas
 extern void AddSC_boss_four_horsemen();
 extern void AddSC_boss_faerlina();
@@ -748,6 +760,18 @@ void AddScripts()
     AddSC_boss_moorabi();
     AddSC_boss_sladran();
     AddSC_instance_gundrak();
+    AddSC_blood_prince_council();                           //icecrown_citadel
+    AddSC_boss_blood_queen_lanathel();
+    AddSC_boss_deathbringer_saurfang();
+    AddSC_boss_festergut();
+    AddSC_boss_lady_deathwhisper();
+    AddSC_boss_lord_marrowgar();
+    AddSC_boss_proffesor_putricide();
+    AddSC_boss_rotface();
+    AddSC_boss_sindragosa();
+    AddSC_boss_the_lich_king();
+    AddSC_boss_valithria();
+    AddSC_instance_icecrown_citadel();
     AddSC_boss_anubrekhan();                                //naxxramas
     AddSC_boss_four_horsemen();
     AddSC_boss_faerlina();
