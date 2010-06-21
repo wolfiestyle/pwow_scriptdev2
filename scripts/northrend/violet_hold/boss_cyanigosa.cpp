@@ -139,8 +139,8 @@ struct MANGOS_DLL_DECL boss_cyanigosaAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_RIFT, DONE);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_MAIN, DONE);
     }
 
     void KilledUnit(Unit* pVictim)

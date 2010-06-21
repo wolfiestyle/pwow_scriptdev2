@@ -7,11 +7,12 @@
 
 enum
 {
-    MAX_ENCOUNTER               = 3,
+    MAX_ENCOUNTER               = 4,
 
     TYPE_MAIN                   = 1,
     TYPE_SEAL                   = 2,
     TYPE_PORTAL                 = 3,
+    TYPE_RANDOM_BOSS            = 4,
 
     WORLD_STATE_ID              = 3816,
     WORLD_STATE_SEAL            = 3815,
@@ -191,6 +192,7 @@ class MANGOS_DLL_DECL instance_violet_hold : public ScriptedInstance
         void Update(uint32 uiDiff);
 
         typedef std::multimap<uint32, uint64> BossToCellMap;
+        std::list<uint32> m_lRandomBossList;
 
     protected:
 
@@ -223,7 +225,6 @@ class MANGOS_DLL_DECL instance_violet_hold : public ScriptedInstance
 
         std::list<uint64> m_lIntroPortalList;
         std::list<uint64> m_lGuardsList;
-        std::list<uint32> m_lRandomBossList;
 };
 
 #endif

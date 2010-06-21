@@ -77,16 +77,16 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
         m_uiArcaneBuffet_Timer = m_uiSummonEtherealSphere_Timer + urand(5000, 6000);
         DespawnSphere();
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, NOT_STARTED);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, NOT_STARTED);
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, IN_PROGRESS);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, IN_PROGRESS);
     }
 
     void AttackStart(Unit* pWho)
@@ -172,8 +172,8 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         DespawnSphere();
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_XEVOZZ, DONE);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, DONE);
     }
 
     void KilledUnit(Unit* pVictim)

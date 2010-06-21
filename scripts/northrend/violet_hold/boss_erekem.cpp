@@ -90,25 +90,22 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
             if (*iter && (*iter)->isDead())
                 (*iter)->Respawn();
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, NOT_STARTED);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, NOT_STARTED);
     }
 
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, IN_PROGRESS);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, IN_PROGRESS);
     }
 
     void AttackStart(Unit* pWho)
     {
         if (!m_pInstance)
             return;
-
-        //if (m_pInstance->GetData(TYPE_EREKEM) != SPECIAL)
-        //    return;
 
         if (!pWho || pWho == m_creature)
             return;
@@ -197,8 +194,8 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        /*if (m_pInstance)
-            m_pInstance->SetData(TYPE_EREKEM, DONE);*/
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_RANDOM_BOSS, DONE);
     }
 
     void KilledUnit(Unit* pVictim)

@@ -204,7 +204,6 @@ void instance_violet_hold::SetData(uint32 uiType, uint32 uiData)
                 case FAIL:
                     if (Creature* pSinclari = instance->GetCreature(m_uiSinclariGUID))
                         pSinclari->Respawn();
-
                     break;
                 case DONE:
                     break;
@@ -229,6 +228,18 @@ void instance_violet_hold::SetData(uint32 uiType, uint32 uiData)
                     break;
             }
             m_auiEncounter[2] = uiData;
+            break;
+        }
+        case TYPE_RANDOM_BOSS:
+        {
+            m_auiEncounter[3] = uiData;
+            if (uiData == DONE)
+            {
+                m_uiPortalTimer = 32*IN_MILLISECONDS;
+            } 
+            else
+                if (uiData == IN_PROGRESS)
+                    m_uiPortalTimer = 24*HOUR*IN_MILLISECONDS;
             break;
         }
     }
@@ -369,8 +380,24 @@ uint32 instance_violet_hold::GetRandomMobForNormalPortal()
 }
 
 uint64 instance_violet_hold::GetData64(uint32 uiData)
-{
-    return 0;
+{      
+    switch(uiData)
+    {
+        case NPC_EREKEM:
+            return m_uiErekemGUID;
+        case NPC_MORAGG:
+            return m_uiMoraggGUID;
+        case NPC_ICHORON:
+            return m_uiIchoronGUID;
+        case NPC_XEVOZZ:
+            return m_uiXevozzGUID;
+        case NPC_LAVANTHOR:
+            return m_uiLavanthorGUID;
+        case NPC_ZURAMAT:
+            return m_uiZuramatGUID;
+        default:
+            return 0;
+    }
 }
 
 void instance_violet_hold::Update(uint32 uiDiff)
