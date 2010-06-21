@@ -60,33 +60,34 @@ enum
     // 'suprise' boss
     TYPE_ANUBARAK               = 21,
     // controller guy
-    TYPE_BARRETT_RAMSAY         = 22,
+    TYPE_BARRETT_RAMSAY,
     // spectators
-    TYPE_VARIAN_WYRM            = 23,
-    TYPE_GARROSH_HELLSCREAM     = 24,
-    TYPE_TIRION_FORDRING        = 25,
+    TYPE_VARIAN_WYRM,
+    TYPE_GARROSH_HELLSCREAM,
+    TYPE_TIRION_FORDRING,
     // used in intros/outros
-    TYPE_LICH_KING              = 26,
-    TYPE_FIZZLEBANG             = 27,
-    TYPE_PURPLE_RUNE            = 28,
-    TYPE_PORTAL_TARGET          = 29,
+    TYPE_LICH_KING,
+    TYPE_FIZZLEBANG,
+    TYPE_PURPLE_RUNE,
+    TYPE_PORTAL_TARGET,
     // instance objects
-    TYPE_COLISEUM_FLOOR         = 40,
-    TYPE_ANUBARAK_CHEST_FAIL    = 41,
-    TYPE_ANUBARAK_CHEST_25      = 42,
-    TYPE_ANUBARAK_CHEST_45      = 43,
-    TYPE_ANUBARAK_CHEST_50      = 44,
-    TYPE_FACTION_CHAMPION_CHEST = 45,
-    TYPE_ENTRANCE_DOOR          = 46,
-    TYPE_MAIN_GATE              = 47,
+    TYPE_COLISEUM_FLOOR,
+    TYPE_ANUBARAK_CHEST_FAIL,
+    TYPE_ANUBARAK_CHEST_25,
+    TYPE_ANUBARAK_CHEST_45,
+    TYPE_ANUBARAK_CHEST_50,
+    TYPE_FACTION_CHAMPION_CHEST,
+    TYPE_ENTRANCE_DOOR,
+    TYPE_MAIN_GATE,
     // total count of guid values stored
     DATA_MAX,
+
     // instance variables
-    DATA_FACTION                = 50,
-    DATA_ACHIEVEMENT_COUNTER    = 51,
-    DATA_ATTEMPT_COUNTER        = 52,
-    DATA_IN_TALK_PHASE          = 53,
-    DATA_IMMORTAL               = 54,
+    DATA_FACTION,
+    DATA_ACHIEVEMENT_COUNTER,
+    DATA_ATTEMPT_COUNTER,
+    DATA_IN_TALK_PHASE,
+    DATA_IMMORTAL,
 
     NPC_GORMOK                  = 34796, // beasts of northerend
     NPC_ACIDMAW                 = 35144,
