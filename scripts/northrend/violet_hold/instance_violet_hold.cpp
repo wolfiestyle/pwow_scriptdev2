@@ -301,24 +301,10 @@ void instance_violet_hold::SetPortalId()
 
 void instance_violet_hold::SetRandomBosses()
 {
-    while (m_lRandomBossList.size() > 2)
-    {
-        uint32 uiPosition = urand(0, m_lRandomBossList.size()-1);
+    std::random_shuffle(m_lRandomBossList.begin(), m_lRandomBossList.end());
+    m_currentBoss = m_lRandomBossList.begin();
 
-        for(std::list<uint32>::iterator itr = m_lRandomBossList.begin(); itr != m_lRandomBossList.end(); ++itr, --uiPosition)
-        {
-            if (!*itr)
-                continue;
-
-            if (!uiPosition)
-            {
-                m_lRandomBossList.erase(itr);
-                 break;
-            }
-        }
-    }
-
-    for(std::list<uint32>::iterator itr = m_lRandomBossList.begin(); itr != m_lRandomBossList.end(); ++itr)
+    for(std::vector<uint32>::const_iterator itr = m_lRandomBossList.begin(); itr != m_lRandomBossList.end(); ++itr)
         debug_log("SD2: instance_violet_hold random boss is entry %u", *itr);
 }
 
@@ -380,8 +366,8 @@ uint32 instance_violet_hold::GetRandomMobForNormalPortal()
 }
 
 uint64 instance_violet_hold::GetData64(uint32 uiData)
-{      
-    switch(uiData)
+{
+    switch (uiData)
     {
         case NPC_EREKEM:
             return m_uiErekemGUID;

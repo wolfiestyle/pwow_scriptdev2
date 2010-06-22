@@ -268,20 +268,19 @@ struct MANGOS_DLL_DECL npc_teleportation_portalAI : public ScriptedAI
                 pSummoned->ForcedDespawn(15000);
                 if (m_uiMyPortalNumber != 18)
                 {
-                    uint32 bossEntry = *(m_pInstance->m_lRandomBossList.begin());
-                    m_pInstance->m_lRandomBossList.remove(bossEntry);
+                    uint32 bossEntry = *m_pInstance->m_currentBoss++;
                     if (bossEntry)
                         m_pInstance->UpdateCellForBoss(bossEntry);
-                    if (Unit* Boss = m_pInstance->instance->GetCreature(m_pInstance->GetData64(bossEntry)))
+                    if (Creature* Boss = m_pInstance->instance->GetCreature(m_pInstance->GetData64(bossEntry)))
                     {
                         float x, y, z;
                         pSummoned->GetPosition(x, y, z);
                         Boss->GetMotionMaster()->MovePoint(0, x, y, z);
-                        Boss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                        Boss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
                         m_pInstance->SetData(TYPE_RANDOM_BOSS, IN_PROGRESS);
                     }
-                } 
-                else 
+                }
+                else
                 {
                     m_pInstance->SetData(TYPE_RANDOM_BOSS, IN_PROGRESS); // setting this here will prevent the 19th+ wave to spawn
                     pSummoned->SummonCreature(NPC_CYANIGOSA, pSummoned->GetPositionX(), pSummoned->GetPositionY(), pSummoned->GetPositionZ(), -pSummoned->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600*IN_MILLISECONDS);

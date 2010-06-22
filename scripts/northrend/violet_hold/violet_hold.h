@@ -192,7 +192,8 @@ class MANGOS_DLL_DECL instance_violet_hold : public ScriptedInstance
         void Update(uint32 uiDiff);
 
         typedef std::multimap<uint32, uint64> BossToCellMap;
-        std::list<uint32> m_lRandomBossList;
+
+        std::vector<uint32>::iterator m_currentBoss;
 
     protected:
 
@@ -225,6 +226,7 @@ class MANGOS_DLL_DECL instance_violet_hold : public ScriptedInstance
 
         std::list<uint64> m_lIntroPortalList;
         std::list<uint64> m_lGuardsList;
+        std::vector<uint32> m_lRandomBossList;
 };
 
 #endif
