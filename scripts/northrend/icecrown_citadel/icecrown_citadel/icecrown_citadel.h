@@ -87,6 +87,12 @@ public:
     Creature* SummonCreatureAt(WorldObject* target, uint32 Id, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
     void SummonCreaturesAt(WorldObject* target, uint32 Id, uint32 number, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
 
+    uint32 GetSummonCount() const { return m_Summons.size(); }
+    uint32 GetSummonCount(uint32 Id) const;
+
+    template <typename ContainerType>
+    void GetAllSummonsWithId(ContainerType& list, uint32 Id) const;
+
     void UnsummonCreature(Creature*);
     void UnsummonByGuid(ObjectGuid const&);
     void UnsummonAllWithId(uint32 Id);
@@ -100,6 +106,14 @@ private:
     SummonManager(SummonManager const&);
     SummonManager& operator= (SummonManager const&);
 };
+
+template <typename ContainerType>
+void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
+{
+    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
+        if (i->GetEntry() == Id)
+            list.push_back(*i);
+}
 
 namespace icc {
 

@@ -106,6 +106,15 @@ void SummonManager::SummonCreaturesAt(WorldObject* target, uint32 Id, uint32 num
         SummonCreatureAt(target, Id, type, SummonTimer, dx, dy, dz, dang);
 }
 
+uint32 SummonManager::GetSummonCount(uint32 Id) const
+{
+    uint32 count = 0;
+    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
+        if (i->GetEntry() == Id)
+            count++;
+    return count;
+}
+
 void SummonManager::UnsummonCreature(Creature *pSummon)
 {
     if (!pSummon)
