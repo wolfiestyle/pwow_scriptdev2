@@ -38,8 +38,6 @@ enum Spells
     SPELL_FREEZING_SLASH        = 66012,
     SPELL_PENETRATING_COLD      = 66013,
     SPELL_LEECHING_SWARM        = 66118,
-    SPELL_LEECHING_SWARM_DAMAGE = 66240,
-    SPELL_LEECHING_SWARM_HEAL   = 66125,
     SPELL_PURSUING_SPIKES       = 65922,  // only part of the effect, probably used by dummy creature
     SPELL_SUBMERGE_ANUBARAK     = 65981,
     SPELL_UNDERGROUND_VISUAL    = 65921,
@@ -89,7 +87,6 @@ enum Events
     EVENT_SUMMON_SWARM_SCARAB,
     EVENT_PURSUING_SPIKES,
     EVENT_UNSUBMERGE,
-    EVENT_LEECHING_SWARM_DAMAGE,
     // Nerubian Burrower
     EVENT_ATTEMPT_SUBMERGE,
     EVENT_EXPOSE_WEAKNESS,
@@ -120,7 +117,6 @@ typedef std::list<uint64> GuidList;
 #define TIMER_FREEZING_SLASH        urand(19,21)*IN_MILLISECONDS
 #define TIMER_SUBMERGE              75*IN_MILLISECONDS
 #define TIMER_UNSUBMERGE            65*IN_MILLISECONDS
-#define TIMER_LEECHING_SWARM_DAMAGE 1*IN_MILLISECONDS
 // Nerubian Burrower
 #define TIMER_ATTEMPT_SUBMERGE      50*IN_MILLISECONDS           //not sure
 #define TIMER_EXPOSE_WEAKNESS       urand(3,10)*IN_MILLISECONDS  //unsure
@@ -302,7 +298,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             CurrPhase = PHASE_THREE;
             RESCHEDULE_EVENT(PENETRATING_COLD);
             RESCHEDULE_EVENT(FREEZING_SLASH);
-            RESCHEDULE_EVENT(LEECHING_SWARM_DAMAGE);
             Events.CancelEvent(EVENT_SUMMON_SWARM_SCARAB);
             Events.CancelEvent(EVENT_SUBMERGE);
             Events.CancelEvent(EVENT_UNSUBMERGE);
@@ -343,24 +338,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     SummonAdds(NPC_SWARM_SCARAB);
                     RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
                     break;
-                case EVENT_LEECHING_SWARM_DAMAGE:
-                {
-                    //TODO: implement dummy effect of spell 66118 instead of doing this
-                    ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
-                    for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
-                        if (Unit *Target = m_creature->GetUnit(*m_creature, (*i)->getUnitGuid()))
-                            if (Target->isAlive() && Target->IsInMap(m_creature))
-                            {
-                                int32 Damage = Target->GetHealth() * DIFF_SELECT(0.1f, 0.1f, 0.2f, 0.3f);
-                                if (Damage < 250)
-                                    Damage = 250;
-                                m_creature->CastCustomSpell(Target, SPELL_LEECHING_SWARM_DAMAGE, &Damage, NULL, NULL, true);
-                                m_creature->CastCustomSpell(m_creature, SPELL_LEECHING_SWARM_HEAL, &Damage, NULL, NULL, true);
-                            }
-
-                    RESCHEDULE_EVENT(LEECHING_SWARM_DAMAGE);
-                    break;
-                }
                 case EVENT_SUBMERGE:
                 {
                     CurrPhase = PHASE_BELOWGROUND;
