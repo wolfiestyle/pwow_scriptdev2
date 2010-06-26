@@ -3,7 +3,7 @@
 
 typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
 
-static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
+static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_GORMOK,                TYPE_GORMOK)
     (NPC_ACIDMAW,               TYPE_ACIDMAW)
     (NPC_DREADSCALE,            TYPE_DREADSCALE)
@@ -49,7 +49,7 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
     (NPC_PURPLE_RUNE,           TYPE_PURPLE_RUNE)
     (NPC_PORTAL_TARGET,         TYPE_PORTAL_TARGET);
 
-static EntryTypeMap const GameObjectEntryToType = map_initializer<uint32, uint32>
+static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_COLISEUM_FLOOR,         TYPE_COLISEUM_FLOOR)
     (GO_ANUBARAK_CHEST_10H_0,   TYPE_ANUBARAK_CHEST_FAIL)
     (GO_ANUBARAK_CHEST_10H_25,  TYPE_ANUBARAK_CHEST_25)

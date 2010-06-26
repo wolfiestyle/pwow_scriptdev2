@@ -34,10 +34,13 @@ private:
 };
 
 // helper for static initialization of containers
-template <typename KeyType, typename ValueType, typename ContainerType = UNORDERED_MAP<KeyType, ValueType> >
+template <typename ContainerType>
 class map_initializer
 {
 protected:
+    typedef typename ContainerType::key_type    KeyType;
+    typedef typename ContainerType::mapped_type ValueType;
+
     ContainerType m_map;
 
 public:

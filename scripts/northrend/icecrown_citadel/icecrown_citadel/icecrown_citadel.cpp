@@ -3,7 +3,7 @@
 
 typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
 
-static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
+static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_MARROWGAR,         TYPE_MARROWGAR)
     (NPC_DEATHWHISPER,      TYPE_DEATHWHISPER)
     (NPC_SAURFANG,          TYPE_SAURFANG)
@@ -18,7 +18,7 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<uint32, uint32>
     (NPC_SINDRAGOSA,        TYPE_SINDRAGOSA)
     (NPC_LICH_KING,         TYPE_LICH_KING);
 
-static EntryTypeMap const GameObjectEntryToType = map_initializer<uint32, uint32>
+static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_MARROWGAR_DOOR_1,   DATA_MARROWGAR_DOOR_1)
     (GO_MARROWGAR_DOOR_2,   DATA_MARROWGAR_DOOR_2)
     (GO_DEATHWHISPER_ELEV,  DATA_DEATHWHISPER_ELEV)
