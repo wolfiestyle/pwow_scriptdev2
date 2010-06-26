@@ -71,50 +71,6 @@ enum
 
 //---------------------------------------------------------
 
-// SummonManager - keeps track of summons.
-class SummonManager
-{
-public:
-    typedef std::list<ObjectGuid> SummonContainer;
-
-    explicit SummonManager(Creature*);
-
-    void AddSummonToList(ObjectGuid const&);
-    void RemoveSummonFromList(ObjectGuid const&);
-
-    Creature* SummonCreature(uint32 Id, float x, float y, float z, float ang = 0.0f, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0);
-    void SummonCreatures(uint32 Id, float x, float y, float z, uint32 number, float ang = 0.0f, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0);
-    Creature* SummonCreatureAt(WorldObject* target, uint32 Id, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
-    void SummonCreaturesAt(WorldObject* target, uint32 Id, uint32 number, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
-
-    uint32 GetSummonCount() const { return m_Summons.size(); }
-    uint32 GetSummonCount(uint32 Id) const;
-
-    template <typename ContainerType>
-    void GetAllSummonsWithId(ContainerType& list, uint32 Id) const;
-
-    void UnsummonCreature(Creature*);
-    void UnsummonByGuid(ObjectGuid const&);
-    void UnsummonAllWithId(uint32 Id);
-    void UnsummonAll();
-
-protected:
-    Creature *m_creature;
-    SummonContainer m_Summons;
-
-private:
-    SummonManager(SummonManager const&);
-    SummonManager& operator= (SummonManager const&);
-};
-
-template <typename ContainerType>
-void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
-{
-    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (i->GetEntry() == Id)
-            list.push_back(*i);
-}
-
 namespace icc {
 
 // helper for the script register process

@@ -1,6 +1,5 @@
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "TemporarySummon.h"
 
 typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*data_id*/> EntryTypeMap;
 
@@ -58,102 +57,4 @@ void boss_icecrown_citadelAI::Reset()
 {
     Events.Reset();
     m_BossEncounter = NOT_STARTED;
-}
-
-SummonManager::SummonManager(Creature *pCreature):
-    m_creature(pCreature)
-{
-}
-
-void SummonManager::AddSummonToList(ObjectGuid const& guid)
-{
-    m_Summons.push_back(guid);
-}
-
-void SummonManager::RemoveSummonFromList(ObjectGuid const& guid)
-{
-    // could have used remove(guid) but we know they're unique so it wastes time searching after unique entry removed
-    for (SummonContainer::iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (*i == guid)
-        {
-            m_Summons.erase(i);
-            break;
-        }
-}
-
-Creature* SummonManager::SummonCreature(uint32 Id, float x, float y, float z, float ang, TempSummonType type, uint32 SummonTimer)
-{
-    Creature *pSummon = m_creature->SummonCreature(Id, x, y, z, ang, type, SummonTimer);
-    if (pSummon)
-        AddSummonToList(pSummon->GetObjectGuid());
-    return pSummon;
-}
-
-void SummonManager::SummonCreatures(uint32 Id, float x, float y, float z, uint32 number, float ang, TempSummonType type, uint32 SummonTimer)
-{
-    for (; number; --number)
-        SummonCreature(Id, x, y, z, ang, type, SummonTimer);
-}
-
-Creature* SummonManager::SummonCreatureAt(WorldObject* target, uint32 Id, TempSummonType type, uint32 SummonTimer, float dx, float dy, float dz, float dang)
-{
-    return SummonCreature(Id, target->GetPositionX()+dx, target->GetPositionY()+dy, target->GetPositionZ()+dz, target->GetOrientation()+dang, type, SummonTimer);
-}
-
-void SummonManager::SummonCreaturesAt(WorldObject* target, uint32 Id, uint32 number, TempSummonType type, uint32 SummonTimer, float dx, float dy, float dz, float dang)
-{
-    for (; number; --number)
-        SummonCreatureAt(target, Id, type, SummonTimer, dx, dy, dz, dang);
-}
-
-uint32 SummonManager::GetSummonCount(uint32 Id) const
-{
-    uint32 count = 0;
-    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (i->GetEntry() == Id)
-            count++;
-    return count;
-}
-
-void SummonManager::UnsummonCreature(Creature *pSummon)
-{
-    if (!pSummon)
-        return;
-    if (pSummon->isTemporarySummon())
-    {
-        RemoveSummonFromList(pSummon->GetObjectGuid());
-        static_cast<TemporarySummon*>(pSummon)->UnSummon();
-    }
-    else    // called for non-summoned unit
-        pSummon->ForcedDespawn();
-}
-
-void SummonManager::UnsummonByGuid(ObjectGuid const& guid)
-{
-    if (Creature *pSummon = m_creature->GetMap()->GetCreature(guid))
-        UnsummonCreature(pSummon);
-}
-
-void SummonManager::UnsummonAllWithId(uint32 Id)
-{
-    for (SummonContainer::iterator i = m_Summons.begin(); i != m_Summons.end(); )
-    {
-        if (i->GetEntry() == Id)
-        {
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                static_cast<TemporarySummon*>(pSummon)->UnSummon();
-            i = m_Summons.erase(i);
-        }
-        else
-            ++i;
-    }
-}
-
-void SummonManager::UnsummonAll()
-{
-    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-            static_cast<TemporarySummon*>(pSummon)->UnSummon();
-
-    m_Summons.clear();
 }
