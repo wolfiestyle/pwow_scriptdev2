@@ -283,7 +283,8 @@ void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
 {
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (i->GetEntry() == Id)
-            list.push_back(*i);
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+                list.push_back(pSummon);
 }
 
 // get random point inside area delimited by circle

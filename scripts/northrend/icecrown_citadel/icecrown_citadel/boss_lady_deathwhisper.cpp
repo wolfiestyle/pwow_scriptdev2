@@ -388,7 +388,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                 {
                     RESCHEDULE_EVENT(BUFF_ADD);
 
-                    std::vector<ObjectGuid> ApplicableSummons;
+                    std::vector<Creature*> ApplicableSummons;
                     ApplicableSummons.reserve(SummonMgr.GetSummonCount());
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_FANATIC);
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_ADHERENT);
@@ -397,7 +397,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
                     //select a random list element
                     uint32 RandomPlace = urand(0, ApplicableSummons.size()-1);
-                    Creature *pTarget = m_creature->GetMap()->GetCreature(ApplicableSummons[RandomPlace]);
+                    Creature *pTarget = ApplicableSummons[RandomPlace];
                     if (!pTarget)
                         break;
 
