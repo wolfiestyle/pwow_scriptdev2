@@ -27,7 +27,6 @@ EndContentData */
 
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
-#include "TemporarySummon.h"
 
 //evidently, azjol-nerub was merely a set-back
 
@@ -140,13 +139,13 @@ static const float FrostSpherePos[3] = {741.0f, 133.6f, 163.0f};
 
 struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderAI
 {
+    SummonManager SummonMgr;
     uint32 CurrPhase;
-    GuidMap m_Summons;
-    GuidList m_AliveFrostSpheres;
     bool m_bSaidBeginningStuff;
 
     boss_anubarak_trialAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
+        SummonMgr(pCreature),
         CurrPhase(PHASE_NOTSTARTED),
         m_bSaidBeginningStuff(false)
     {
@@ -164,8 +163,8 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void Reset()
     {
+        SummonMgr.UnsummonAll();
         CurrPhase = PHASE_NOTSTARTED;
-        UnSummonAllCreatures();
         m_creature->RemoveAllAuras();
         boss_trial_of_the_crusaderAI::Reset();
     }
@@ -188,32 +187,16 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         m_BossEncounter = IN_PROGRESS;
     }
 
-    void UnSummonAllCreatures()
-    {
-        for (GuidMap::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(i->second))
-            {
-                if (pSummon->GetEntry() == NPC_FROST_SPHERE)
-                    static_cast<TemporarySummon*>(pSummon)->UnSummon();
-                else
-                    pSummon->ForcedDespawn();
-            }
-        m_Summons.clear();
-    }
-
     void JustSummoned(Creature *pSumm)
     {
         if (!pSumm)
             return;
-
-        m_Summons.insert(std::make_pair(pSumm->GetEntry(), pSumm->GetGUID()));
 
         switch (pSumm->GetEntry())
         {
             case NPC_FROST_SPHERE:
                 pSumm->GetMotionMaster()->MoveIdle();
                 pSumm->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly
-                m_AliveFrostSpheres.push_back(pSumm->GetGUID());
                 break;
             case NPC_SWARM_SCARAB:
                 if (CurrPhase == PHASE_ABOVEGROUND)
@@ -231,27 +214,12 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
     {
         if (!pSumm)
             return;
+        SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
 
         if (pSumm->GetEntry() == NPC_FROST_SPHERE)
         {
             pSumm->MonsterMove(pSumm->GetPositionX(), pSumm->GetPositionY(), FLOOR_HEIGHT, 1);  //move to ground
-            m_AliveFrostSpheres.remove(pSumm->GetGUID());
             pSumm->CastSpell(pSumm, SPELL_PERMAFROST, true);
-        }
-        else
-        {
-            GuidMapRange range = m_Summons.equal_range(pSumm->GetEntry());
-            if (range.first == range.second)
-                return;
-            uint64 guid = pSumm->GetGUID();
-            for (GuidMap::iterator i = range.first; i != range.second; ++i)
-            {
-                if (i->second == guid)
-                {
-                    m_Summons.erase(i);
-                    break;
-                }
-            }
         }
     }
 
@@ -271,15 +239,15 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             {
                 float x, y;
                 GetRandomPointInCircle(x, y, 54.0f, FrostSpherePos[0], FrostSpherePos[1]);
-                m_creature->SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
         else
         {
-            for(int i = 0; i < num; i++)
+            for (int i = 0; i < num; i++)
             {
                 uint32 RandPos = urand(0,3);
-                m_creature->SummonCreature(entry, SummonPositions[RandPos][0], SummonPositions[RandPos][1], FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                SummonMgr.SummonCreature(entry, SummonPositions[RandPos][0], SummonPositions[RandPos][1], FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
             }
         }
     }
@@ -289,8 +257,12 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (m_AliveFrostSpheres.size() < MAX_ALIVE_FROST_SPHERES && !m_bIsHeroic)
-            SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES - m_AliveFrostSpheres.size());
+        if (!m_bIsHeroic)
+        {
+            uint32 AliveFrostSpheres = SummonMgr.GetSummonCount(NPC_FROST_SPHERE);
+            if (AliveFrostSpheres < MAX_ALIVE_FROST_SPHERES)
+                SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES - AliveFrostSpheres);
+        }
 
         if (CurrPhase != PHASE_THREE && m_creature->GetHealthPercent() < 30.0f)
         {
@@ -345,15 +317,13 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     m_creature->InterruptNonMeleeSpells(true);
                     DoCast(m_creature, SPELL_SUBMERGE_ANUBARAK, true);
                     //set scarabs to hostile
-                    GuidMapRange range = m_Summons.equal_range(NPC_SWARM_SCARAB);
-                    if (range.first == range.second)
-                        return;
-                    for (GuidMap::const_iterator i = range.first; i != range.second; ++i)
-                        if (Creature *scarab = m_creature->GetMap()->GetCreature(i->second))
-                        {
-                            scarab->setFaction(FACTION_HOSTILE);
-                            scarab->SetInCombatWithZone();
-                        }
+                    std::list<Creature*> scarabs;
+                    SummonMgr.GetAllSummonsWithId(scarabs, NPC_SWARM_SCARAB);
+                    for (std::list<Creature*>::const_iterator i = scarabs.begin(); i != scarabs.end(); ++i)
+                    {
+                        (*i)->setFaction(FACTION_HOSTILE);
+                        (*i)->SetInCombatWithZone();
+                    }
                     //DoCast(m_creature, SPELL_UNDERGROUND_VISUAL, true); //doesn't show
                     DoResetThreat();
 
@@ -378,7 +348,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void JustDied(Unit *pKiller)
     {
-        UnSummonAllCreatures();
+        SummonMgr.UnsummonAll();
         Events.Reset();
         DoScriptText(SAY_DEATH, m_creature);
         //only non-summoned boss, so to streamline things its easier to do this

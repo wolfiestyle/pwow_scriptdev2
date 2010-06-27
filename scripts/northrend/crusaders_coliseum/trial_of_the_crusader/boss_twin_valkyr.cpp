@@ -106,9 +106,6 @@ enum Says
 #define CENTER_X        563.5
 #define CENTER_Y        140
 
-typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
-typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
-
 #define ORB_NUMBER          urand(25,30)
 
 #define TIMER_BERSERK       6*MINUTE*IN_MILLISECONDS
@@ -241,53 +238,20 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 //eydis is the 'master'
 struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 {
-    GuidMap m_Summons;
-    bool m_bIsClearingSummons;
+    SummonManager SummonMgr;
     std::bitset<4> SpecialsUsed; //0=light vortex, 1= dark vortex, 2=light pact, 3=dark pact
 
     boss_eydisAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
-        m_bIsClearingSummons(false)
+        SummonMgr(pCreature)
     {
-    }
-
-    void SummonedCreatureDespawn(Creature *pSumm)
-    {
-        SummonedCreatureJustDied(pSumm);
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)
     {
-        if(m_bIsClearingSummons)
-            return;
-
         if (!pSumm)
             return;
-
-        GuidMapRange range = m_Summons.equal_range(pSumm->GetEntry());
-        if (range.first == range.second)
-            return;
-
-        uint64 guid = pSumm->GetGUID();
-        for (GuidMap::iterator i = range.first; i != range.second; ++i)
-        {
-            if (i->second == guid)
-            {
-                m_Summons.erase(i);
-                break;
-            }
-        }
-    }
-
-    void UnSummonAllCreatures()
-    {
-        m_bIsClearingSummons = true;
-        for (GuidMap::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(i->second))
-                    pSummon->ForcedDespawn();
-
-        m_Summons.clear();
-        m_bIsClearingSummons = false;
+        SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
     }
 
     void RemoveEncounterAuras()
@@ -306,7 +270,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void Reset()
     {
-        UnSummonAllCreatures();
+        SummonMgr.UnsummonAll();
         RemoveEncounterAuras();
         boss_trial_of_the_crusaderAI::Reset();
     }
@@ -318,7 +282,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         {
             float x, y;
             GetPointOnCircle(38, i*M_PI/4, x, y);
-            m_creature->SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT+2, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
+            SummonMgr.SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT+2, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
             IsDark = !IsDark;
         }
 
@@ -334,14 +298,6 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
-    }
-
-    void JustSummoned(Creature *pSumm)
-    {
-        if (!pSumm)
-            return;
-
-        m_Summons.insert(std::make_pair(pSumm->GetEntry(), pSumm->GetGUID()));
     }
 
     void DamageTaken(Unit *pDoneBy, uint32 &uiDamage)
@@ -387,14 +343,14 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_SPAWN_ORBS:
                 {
-                    int NumOrbs = ORB_NUMBER - (m_Summons.count(NPC_CONCENTRATED_DARKNESS) + m_Summons.count(NPC_CONCENTRATED_LIGHT));
+                    int NumOrbs = ORB_NUMBER - (SummonMgr.GetSummonCount(NPC_CONCENTRATED_DARKNESS) + SummonMgr.GetSummonCount(NPC_CONCENTRATED_LIGHT));
                     if (m_bIsHeroic)
                         NumOrbs += 15; //"More Concentrated Light and Concentrated Darkness spawn" (wowhead). Not quite sure how many more
-                    for(int i = 0; i <= NumOrbs; i++)
+                    for (int i = 0; i <= NumOrbs; i++)
                     {
                         float x, y;
                         GetPointOnCircle(48.5, rand_norm()*2*M_PI, x, y);
-                        m_creature->SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
+                        SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                     }
                     RESCHEDULE_EVENT(SPAWN_ORBS);
                     break;
@@ -410,7 +366,9 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
                     int SpecialNum;
                     do
+                    {
                         SpecialNum = urand(0, 3);
+                    }
                     while (SpecialsUsed[SpecialNum]);
                     SpecialsUsed[SpecialNum] = true;
 
@@ -473,7 +431,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
             if (barrett->AI())
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
 
-        UnSummonAllCreatures();
+        SummonMgr.UnsummonAll();
         RemoveEncounterAuras();
     }
 };

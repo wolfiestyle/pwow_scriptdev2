@@ -83,12 +83,12 @@ enum Events
 
 struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
-    typedef std::list<uint64> GuidList;
-    GuidList m_Summoners;   // portals - volcanoes
+    SummonManager SummonMgr;              // portals - volcanoes
     InstanceVar<uint32> m_bIsInTalkPhase; // used to avoid Reset and despawn during intro
 
     boss_jaraxxusAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
+        SummonMgr(pCreature),
         m_bIsInTalkPhase(DATA_IN_TALK_PHASE, m_pInstance)
     {
     }
@@ -120,7 +120,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
     {
         if (m_bIsInTalkPhase)
             return;
-        DespawnSummons();
+        SummonMgr.UnsummonAll();    // despawns portals and volcanoes only
         boss_trial_of_the_crusaderAI::Reset();
     }
 
@@ -134,44 +134,38 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 
     void JustSummoned(Creature* pSummon)
     {
-        if (pSummon)
+        if (!pSummon)
+            return;
+        SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
+
+        if (!m_bIsHeroic && (pSummon->GetEntry() == NPC_NETHER_PORTAL || pSummon->GetEntry() == NPC_VOLCANO))
         {
-            if (!m_bIsHeroic && (pSummon->GetEntry() == NPC_NETHER_PORTAL || pSummon->GetEntry() == NPC_VOLCANO))
-            {
-                pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
-            switch (pSummon->GetEntry())
-            {
-                case NPC_NETHER_PORTAL:
-                    pSummon->GetMotionMaster()->MoveIdle();
-                    pSummon->SetDisplayId(30039);
-                    pSummon->CastSpell(pSummon, SPELL_NETHER_PORTAL_SUMMON, false);
-                    m_creature->MonsterTextEmote("Lord Jaraxxus creates a Nether Portal!", 0, true);
-                    m_Summoners.push_back(pSummon->GetGUID());
-                    break;
-                case NPC_VOLCANO:
-                    pSummon->GetMotionMaster()->MoveIdle();
-                    pSummon->CastSpell(pSummon, SPELL_INFERNAL_ERUPT, false);
-                    m_Summoners.push_back(pSummon->GetGUID());
-                    break;
-                default:
-                    break;
-            }
+            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        switch (pSummon->GetEntry())
+        {
+            case NPC_NETHER_PORTAL:
+                pSummon->GetMotionMaster()->MoveIdle();
+                pSummon->SetDisplayId(30039);
+                pSummon->CastSpell(pSummon, SPELL_NETHER_PORTAL_SUMMON, false);
+                m_creature->MonsterTextEmote("Lord Jaraxxus creates a Nether Portal!", 0, true);
+                break;
+            case NPC_VOLCANO:
+                pSummon->GetMotionMaster()->MoveIdle();
+                pSummon->CastSpell(pSummon, SPELL_INFERNAL_ERUPT, false);
+                break;
+            default:
+                break;
         }
     }
 
-    void DespawnSummons() // despawns portals and volcanoes only
+    void SummonedCreatureJustDied(Creature *pSummon)
     {
-        for (GuidList::const_iterator i = m_Summoners.begin(); i != m_Summoners.end(); ++i)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-            {
-                if (pSummon->isTemporarySummon())
-                    static_cast<TemporarySummon*>(pSummon)->UnSummon();
-                else
-                    pSummon->ForcedDespawn();
-            }
-        m_Summoners.clear();
+        if (!pSummon)
+            return;
+        SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
     }
 
     void JustDied(Unit* pSlayer)
@@ -219,7 +213,8 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     Events.ScheduleEvent(EVENT_SUMMON_PORTAL, PORTAL_TIMER);
                     break;
                 case EVENT_BERSERK:
-                    DoCastSpellIfCan(m_creature, SPELL_BERSERK);
+                    m_creature->InterruptNonMeleeSpells(false);
+                    m_creature->CastSpell(m_creature, SPELL_BERSERK, false);
                     break;
                 case EVENT_BUFF:
                     DoCastSpellIfCan(m_creature, SPELL_NETHER_POWER);
@@ -228,7 +223,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                 default:
                     break;
             }
-    
+
         DoMeleeAttackIfReady();
     }
 };
@@ -356,8 +351,6 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
     void JustSummoned(Creature *pSummon)
     {
-        if (Creature *Jaraxxus = GET_CREATURE(TYPE_JARAXXUS))
-            Jaraxxus->AI()->JustSummoned(pSummon);
         pSummon->SetInCombatWithZone();
     }
 
@@ -381,9 +374,9 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
 
     mob_felflame_infernalAI(Creature* pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
     }
 
     void Reset()

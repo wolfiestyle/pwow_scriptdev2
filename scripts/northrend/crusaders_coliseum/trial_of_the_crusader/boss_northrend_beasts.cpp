@@ -69,20 +69,20 @@ enum GormokEvents
 
 struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
 {
+    SummonManager SummonMgr;
     uint32 m_uiSnoboldCount;
-
-    typedef std::list<uint64> GuidList;
-    GuidList m_Snobolds;
 
     boss_gormokAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
+        SummonMgr(pCreature),
         m_uiSnoboldCount(0)
     {
     }
 
     void Reset()
     {
-        DespawnSummons();
+        SummonMgr.UnsummonAll();
+        m_uiSnoboldCount = 0;
         boss_trial_of_the_crusaderAI::Reset();
     }
 
@@ -96,11 +96,8 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
 
     void JustSummoned(Creature *pSummon)
     {
-        if (pSummon && pSummon->GetEntry() == NPC_SNOBOLD_VASSAL)
-        {
-            m_Snobolds.push_back(pSummon->GetGUID());
+        if (pSummon)
             pSummon->SetInCombatWithZone();
-        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -121,7 +118,7 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
                     Events.ScheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
                     break;
                 case EVENT_THROW_SNOBOLD:
-                    DoSpawnCreature(NPC_SNOBOLD_VASSAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+                    SummonMgr.SummonCreatureAt(m_creature, NPC_SNOBOLD_VASSAL, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
                     DoCast(m_creature, SPELL_RISING_ANGER);
                     if (++m_uiSnoboldCount < MAX_SNOBOLD)
                         Events.ScheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
@@ -129,16 +126,8 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
                 default:
                     break;
             }
-        DoMeleeAttackIfReady();
-    }
 
-    void DespawnSummons()
-    {
-        for (GuidList::const_iterator i = m_Snobolds.begin(); i != m_Snobolds.end(); ++i)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                pSummon->ForcedDespawn();
-        m_Snobolds.clear();
-        m_uiSnoboldCount = 0;
+        DoMeleeAttackIfReady();
     }
 };
 

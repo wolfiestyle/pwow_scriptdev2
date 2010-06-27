@@ -165,9 +165,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     InstanceVar<uint32> m_AttemptCounter;
     InstanceVar<uint32> m_AchievementCounter;
     InstanceVar<uint32> m_bIsInTalkPhase;
-
-    typedef std::list<uint64> GuidList;
-    GuidList summons;
+    SummonManager SummonMgr;
 
     npc_barrett_ramseyAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -184,7 +182,8 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         m_uiTalkCounter(0),
         m_AttemptCounter(DATA_ATTEMPT_COUNTER, m_pInstance),
         m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance),
-        m_bIsInTalkPhase(DATA_IN_TALK_PHASE, m_pInstance)
+        m_bIsInTalkPhase(DATA_IN_TALK_PHASE, m_pInstance),
+        SummonMgr(pCreature)
     {
         if (m_pInstance)    //choose correct phase, in case of d/c or something happens and barrett is respawned
         {
@@ -209,14 +208,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     bool IsEncounterInProgress() const
     {
         return EncounterInProgress;
-    }
-
-    void RemoveAllSummons()
-    {
-        for (GuidList::const_iterator i = summons.begin(); i != summons.end(); ++i)
-            if (Creature *summ = m_creature->GetMap()->GetCreature(*i))
-                summ->ForcedDespawn();
-        summons.clear();
     }
 
     void DestroyFloor()
@@ -264,7 +255,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             CurrBeastOfNortherendPhase = PHASE_BEASTS_NONE;
         EncounterInProgress = false;
 
-        RemoveAllSummons();
+        SummonMgr.UnsummonAll();
 
         if (GameObject *Door = GET_GAMEOBJECT(TYPE_ENTRANCE_DOOR))
             Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
@@ -282,7 +273,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             return;
         pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pSummon->SetSpeedRate(MOVE_WALK, 2.0f);
-        summons.push_back(pSummon->GetGUID());
         if (!m_bCombatStart)
         {
             m_bCombatStart = true;
@@ -302,11 +292,11 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     {
         if (entry == NPC_JARAXXUS)
         {
-            m_creature->SummonCreature(entry, RoomCenter[0], RoomCenter[1], RoomCenter[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+            SummonMgr.SummonCreature(entry, RoomCenter[0], RoomCenter[1], RoomCenter[2], summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
             return;
         }
         int32 x = slot & 1 ? (slot + 1) / 2 : -(slot + 1) / 2;
-        m_creature->SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1]+45.0f, summon_pos[2]+1.0f, summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
+        SummonMgr.SummonCreature(entry, summon_pos[0] + float(x)*2.5f, summon_pos[1]+45.0f, summon_pos[2]+1.0f, summon_pos[3], TEMPSUMMON_DEAD_DESPAWN, DESPAWN_TIME);
     }
 
     void NorthrendBeastsEncounterCheck()
@@ -449,7 +439,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     void StartNextBoss()
     {
         //remove corpses
-        RemoveAllSummons();
+        SummonMgr.UnsummonAll();
 
         switch (CurrPhase)
         {
@@ -493,7 +483,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     switch (m_uiTalkCounter)
                     {
                         case 0:
-                            RemoveAllSummons();
+                            SummonMgr.UnsummonAll();
                             if (Fordring)
                                 DoScriptText(SAY_TIRION_ANUBARAK_INTRO1, Fordring);
                             m_uiTalkTimer = 19*IN_MILLISECONDS;
@@ -587,7 +577,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                     switch (m_uiTalkCounter)
                     {
                         case 0:
-                            RemoveAllSummons();
+                            SummonMgr.UnsummonAll();
                             m_bIsInTalkPhase = true;
                             m_bCombatStart = false;
                             if (Fordring)
@@ -860,7 +850,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
             {
                 if (GameObject* Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
                     Gate->SetGoState(GO_STATE_READY);
-                for (GuidList::const_iterator i = summons.begin(); i != summons.end(); ++i)
+
+                SummonManager::SummonContainer const& summons = SummonMgr.GetSummonList();
+                for (SummonManager::SummonContainer::const_iterator i = summons.begin(); i != summons.end(); ++i)
                     if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
                         if (pSummon->isAlive())
                         {
@@ -868,6 +860,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             pSummon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             pSummon->SetInCombatWithZone();
                         }
+
                 m_bCombatStart = false;
             }
             else
