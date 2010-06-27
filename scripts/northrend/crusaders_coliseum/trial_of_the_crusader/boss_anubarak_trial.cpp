@@ -314,8 +314,9 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 {
                     CurrPhase = PHASE_BELOWGROUND;
                     DoScriptText(SAY_SUBMERGE, m_creature);
-                    m_creature->InterruptNonMeleeSpells(true);
+                    m_creature->InterruptNonMeleeSpells(false);
                     DoCast(m_creature, SPELL_SUBMERGE_ANUBARAK, true);
+                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     //set scarabs to hostile
                     std::list<Creature*> scarabs;
                     SummonMgr.GetAllSummonsWithId(scarabs, NPC_SWARM_SCARAB);
@@ -334,6 +335,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 }
                 case EVENT_UNSUBMERGE:
                     m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE_ANUBARAK);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     CurrPhase = PHASE_ABOVEGROUND;
                     RESCHEDULE_EVENT(FREEZING_SLASH);
                     RESCHEDULE_EVENT(PENETRATING_COLD);
@@ -348,6 +350,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void JustDied(Unit *pKiller)
     {
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         SummonMgr.UnsummonAll();
         Events.Reset();
         DoScriptText(SAY_DEATH, m_creature);
