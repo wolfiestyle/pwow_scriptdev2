@@ -119,7 +119,7 @@ enum Phases
 #define TIMER_DETERMINATION         urand(30,400)*IN_MILLISECONDS    //unsure (wowwiki says "random chance")
 
 #define MAX_ALIVE_FROST_SPHERES     6
-#define FLOOR_HEIGHT                143
+#define FLOOR_HEIGHT                143.0f
 
 static const float SummonPositions[4][2] = 
 {
@@ -174,7 +174,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         RESCHEDULE_EVENT(FREEZING_SLASH);
         RESCHEDULE_EVENT(PENETRATING_COLD);
         RESCHEDULE_EVENT(SUBMERGE);
-        RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
 
         SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES);
 
@@ -194,11 +193,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 pSumm->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly
                 break;
             case NPC_SWARM_SCARAB:
-                if (CurrPhase == PHASE_ABOVEGROUND)
-                    pSumm->setFaction(FACTION_NEUTRAL);
-                else
-                    pSumm->SetInCombatWithZone();
-                break;
             case NPC_NERUBIAN_BURROWER:
                 pSumm->SetInCombatWithZone();
                 break;
@@ -237,7 +231,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
-        else
+        else    // scarabs and burrowers
         {
             for (int i = 0; i < num; i++)
             {
@@ -312,19 +306,12 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     m_creature->InterruptNonMeleeSpells(false);
                     DoCast(m_creature, SPELL_SUBMERGE_ANUBARAK, true);
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    //set scarabs to hostile
-                    std::list<Creature*> scarabs;
-                    SummonMgr.GetAllSummonsWithId(scarabs, NPC_SWARM_SCARAB);
-                    for (std::list<Creature*>::const_iterator i = scarabs.begin(); i != scarabs.end(); ++i)
-                    {
-                        (*i)->setFaction(FACTION_HOSTILE);
-                        (*i)->SetInCombatWithZone();
-                    }
                     //DoCast(m_creature, SPELL_UNDERGROUND_VISUAL, true); //doesn't show
                     DoResetThreat();
 
                     Events.CancelEvent(EVENT_PENETRATING_COLD);
                     Events.CancelEvent(EVENT_FREEZING_SLASH);
+                    RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
                     RESCHEDULE_EVENT(UNSUBMERGE);
                     break;
                 }
@@ -332,6 +319,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE_ANUBARAK);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     CurrPhase = PHASE_ABOVEGROUND;
+                    Events.CancelEvent(EVENT_SUMMON_SWARM_SCARAB);
                     RESCHEDULE_EVENT(FREEZING_SLASH);
                     RESCHEDULE_EVENT(PENETRATING_COLD);
                     RESCHEDULE_EVENT(SUBMERGE);
