@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss Anub'arak
 SD%Complete: 0
-SDComment: most add timers need verification, pursuing spikes not working (no idea about how it works)
+SDComment: most add timers need verification, pursuing spikes not working (no idea about how it works), Spider Frenzy buffs players instead of adds
 SDCategory: Trial of the Crusader
 EndScriptData */
 
@@ -103,10 +103,6 @@ enum Phases
     PHASE_THREE,
     PHASE_DONE
 };
-
-typedef std::multimap<uint32 /*entry*/, uint64 /*guid*/> GuidMap;
-typedef std::pair<GuidMap::iterator, GuidMap::iterator> GuidMapRange;
-typedef std::list<uint64> GuidList;
 
 // Anub'arak
 #define TIMER_BERSERK               10*MINUTE*IN_MILLISECONDS
@@ -405,7 +401,7 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
         Events.Reset();
         RESCHEDULE_EVENT(ATTEMPT_SUBMERGE);
         RESCHEDULE_EVENT(EXPOSE_WEAKNESS);
-        DoCast(m_creature, SPELL_SPIDER_FRENZY, true);
+        //DoCast(m_creature, SPELL_SPIDER_FRENZY, true);
         if (m_bIsHeroic)
             RESCHEDULE_EVENT(SHADOW_STRIKE);
     }
