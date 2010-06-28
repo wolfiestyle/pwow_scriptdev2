@@ -187,31 +187,11 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     uint32 GetData(uint32 uiType)
     {
-        switch(uiType)
+        if (uiType < MAX_ENCOUNTER)
+            return m_auiEncounter[uiType];
+
+        switch (uiType)
         {
-            case TYPE_GORMOK:
-            case TYPE_ACIDMAW:
-            case TYPE_DREADSCALE:
-            case TYPE_ICEHOWL:
-            case TYPE_JARAXXUS:
-            case TYPE_GORGRIM_SHADOWCLEAVE:
-            case TYPE_BIRANA_STORMHOOF:
-            case TYPE_ERIN_MISTHOOF:
-            case TYPE_RUJKAH:
-            case TYPE_GINSELLE_BLIGHTSLINGER:
-            case TYPE_LIANDRA_SUNCALLER:
-            case TYPE_MALITHAS_BRIGHTBLADE:
-            case TYPE_CAIPHUS_THE_STERN:
-            case TYPE_VIVIENNE_BLACKWHISPER:
-            case TYPE_MAZDINAH:
-            case TYPE_BROLN_STOUTHORN:
-            case TYPE_THRAKGAR:
-            case TYPE_HARKZOG:
-            case TYPE_NARRHOK_STEELBREAKER:
-            case TYPE_FJOLA_LIGHTBANE:
-            case TYPE_EYDIS_DARKBANE:
-            case TYPE_ANUBARAK:
-                return m_auiEncounter[uiType];
             case DATA_FACTION:
                 return m_uiPlayerTeam;
             case DATA_ACHIEVEMENT_COUNTER:
