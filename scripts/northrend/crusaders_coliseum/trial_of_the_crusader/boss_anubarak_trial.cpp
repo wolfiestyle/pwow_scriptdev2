@@ -123,10 +123,10 @@ enum Phases
 
 static const float SummonPositions[4][2] = 
 {
-    {724.0f, 191.0f},
-    {688.5f, 189.0f},
-    {716.0f, 81.6f},
-    {767.0f, 82.0f}
+    {740.5f, 189.1f},
+    {692.9f, 184.8f},
+    {688.2f, 102.8f},
+    {735.4f, 75.3f}
 };
 
 static const float FrostSpherePos[3] = {741.0f, 133.6f, 163.0f};
