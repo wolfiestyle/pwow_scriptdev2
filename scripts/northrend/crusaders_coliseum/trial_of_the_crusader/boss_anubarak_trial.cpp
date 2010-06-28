@@ -51,7 +51,7 @@ enum Spells
     SPELL_EXPOSE_WEAKNESS       = 67720,
     SPELL_SPIDER_FRENZY         = 66128,
     // Swarm Scarab
-    SPELL_ACID_DRENCHED_MANDIBLES = 65775,
+    SPELL_SWARM_SCARAB_PASSIVE  = 65774,
     SPELL_DETERMINATION         = 66092,
 };
 
@@ -91,7 +91,6 @@ enum Events
     EVENT_EXPOSE_WEAKNESS,
     EVENT_SHADOW_STRIKE,
     // Swarm Scarab
-    EVENT_ACID_DRENCHED_MANDIBLES,
     EVENT_DETERMINATION,
 };
 
@@ -117,7 +116,6 @@ enum Phases
 #define TIMER_EXPOSE_WEAKNESS       urand(3,10)*IN_MILLISECONDS  //unsure
 #define TIMER_SHADOW_STRIKE         30.5*IN_MILLISECONDS
 // Swarm Scarab
-#define TIMER_ACID_DRENCHED_MANDIBLES 2*IN_MILLISECONDS
 #define TIMER_DETERMINATION         urand(30,400)*IN_MILLISECONDS    //unsure (wowwiki says "random chance")
 
 #define MAX_ALIVE_FROST_SPHERES     6
@@ -159,6 +157,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void Reset()
     {
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         SummonMgr.UnsummonAll();
         CurrPhase = PHASE_NOTSTARTED;
         m_creature->RemoveAllAuras();
@@ -361,12 +360,12 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 {
     bool m_bIsHeroic;
     EventMap Events;
-    ScriptedInstance* m_pInstance;
+    ScriptedInstance *m_pInstance;
 
     mob_toc_nerubian_burrowerAI(Creature* pCreature):
-        ScriptedAI(pCreature) 
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Difficulty diff = pCreature->GetMap()->GetDifficulty();
         m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
     }
@@ -463,7 +462,7 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
     void Aggro(Unit *who)
     {
         Events.Reset();
-        RESCHEDULE_EVENT(ACID_DRENCHED_MANDIBLES);
+        DoCast(m_creature, SPELL_SWARM_SCARAB_PASSIVE);
         RESCHEDULE_EVENT(DETERMINATION);
     }
 
@@ -476,10 +475,6 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-                case EVENT_ACID_DRENCHED_MANDIBLES:
-                    DoCast(m_creature->getVictim(), SPELL_ACID_DRENCHED_MANDIBLES);
-                    RESCHEDULE_EVENT(ACID_DRENCHED_MANDIBLES);
-                    break;
                 case EVENT_DETERMINATION:
                     DoCast(m_creature, SPELL_DETERMINATION);
                     break;
