@@ -97,4 +97,107 @@ class AllCreaturesOfEntryInRange
         float m_fRange;
 };
 
+// DynamicObject grid searchers
+template <class Check>
+struct DynamicObjectLastSearcher
+{
+    uint32 i_phaseMask;
+    DynamicObject*& i_object;
+    Check& i_check;
+
+    DynamicObjectLastSearcher(WorldObject const* searcher, DynamicObject*& result, Check& check):
+        i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check)
+    {
+    }
+
+    void Visit(DynamicObjectMapType& m)
+    {
+        for (DynamicObjectMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+            if (itr->getSource()->InSamePhase(i_phaseMask))
+                if (i_check(itr->getSource()))
+                    i_object = itr->getSource();
+    }
+
+    template <class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) { }
+};
+
+template <class Check>
+struct DynamicObjectListSearcher
+{
+    uint32 i_phaseMask;
+    std::list<DynamicObject*> &i_objects;
+    Check& i_check;
+
+    DynamicObjectListSearcher(WorldObject const* searcher, std::list<DynamicObject*>& objects, Check& check):
+        i_phaseMask(searcher->GetPhaseMask()), i_objects(objects), i_check(check)
+    {
+    }
+
+    void Visit(DynamicObjectMapType& m)
+    {
+        for (DynamicObjectMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+            if (itr->getSource()->InSamePhase(i_phaseMask))
+                if (i_check(itr->getSource()))
+                    i_objects.push_back(itr->getSource());
+    }
+
+    template <class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) { }
+};
+
+// DynamicObject checks
+class NearestDynamicObjectEntryInRangeCheck
+{
+public:
+    NearestDynamicObjectEntryInRangeCheck(WorldObject const& obj, uint32 spellId, float range):
+        i_obj(obj), i_spellId(spellId), i_range(range)
+    {
+    }
+
+    bool operator() (DynamicObject *dynobj)
+    {
+        if (dynobj->GetSpellId() == i_spellId && i_obj.IsWithinDistInMap(dynobj, i_range))
+        {
+            i_range = i_obj.GetDistance(dynobj);
+            return true;
+        }
+        return false;
+    }
+
+    float GetLastRange() const { return i_range; }
+
+private:
+    WorldObject const& i_obj;
+    uint32 i_spellId;
+    float i_range;
+
+    NearestDynamicObjectEntryInRangeCheck(NearestDynamicObjectEntryInRangeCheck const&);
+};
+
+class AllDynamicObjectsWithEntryInRangeCheck
+{
+public:
+    AllDynamicObjectsWithEntryInRangeCheck(WorldObject const& obj, uint32 spellId, float range):
+        i_obj(obj), i_spellId(spellId), i_range(range)
+    {
+    }
+
+    bool operator() (DynamicObject* dynobj)
+    {
+        if (dynobj->GetSpellId() == i_spellId && i_obj.IsWithinDistInMap(dynobj, i_range))
+            return true;
+
+        return false;
+    }
+
+private:
+    WorldObject const& i_obj;
+    uint32 i_spellId;
+    float i_range;
+
+    AllDynamicObjectsWithEntryInRangeCheck(AllDynamicObjectsWithEntryInRangeCheck const&);
+};
+
+DynamicObject* GetClosestDynamicObjectWithEntry(WorldObject* pSource, uint32 spellId, float fMaxSearchRange);
+void GetDynamicObjectListWithEntryInGrid(std::list<DynamicObject*>& lList, WorldObject* pSource, uint32 spellId, float fMaxSearchRange);
+
 #endif

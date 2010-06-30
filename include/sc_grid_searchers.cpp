@@ -45,3 +45,25 @@ void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, WorldObject* pS
 
     Cell::VisitGridObjects(pSource, searcher, fMaxSearchRange);
 }
+
+// return closest DynamicObject in grid, with range from pSource
+DynamicObject* GetClosestDynamicObjectWithEntry(WorldObject* pSource, uint32 spellId, float fMaxSearchRange)
+{
+    DynamicObject* pDynObj = NULL;
+
+    NearestDynamicObjectEntryInRangeCheck check(*pSource, spellId, fMaxSearchRange);
+    DynamicObjectLastSearcher<NearestDynamicObjectEntryInRangeCheck> searcher(pSource, pDynObj, check);
+
+    Cell::VisitGridObjects(pSource, searcher, fMaxSearchRange);
+
+    return pDynObj;
+}
+
+// return list of DynamicObject's in grid within range from pSource
+void GetDynamicObjectListWithEntryInGrid(std::list<DynamicObject*>& lList, WorldObject* pSource, uint32 spellId, float fMaxSearchRange)
+{
+    AllDynamicObjectsWithEntryInRangeCheck check(*pSource, spellId, fMaxSearchRange);
+    DynamicObjectListSearcher<AllDynamicObjectsWithEntryInRangeCheck> searcher(pSource, lList, check);
+
+    Cell::VisitGridObjects(pSource, searcher, fMaxSearchRange);
+}
