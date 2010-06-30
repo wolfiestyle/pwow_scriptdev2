@@ -45,11 +45,11 @@ uint32 GetType(GameObject *pGO)
 boss_icecrown_citadelAI::boss_icecrown_citadelAI(Creature* pCreature):
     ScriptedAI(pCreature),
     m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+    m_Difficulty(pCreature->GetMap()->GetDifficulty()),
+    m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC),
+    m_bIs10Man(m_Difficulty == RAID_DIFFICULTY_10MAN_NORMAL || m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC),
     m_BossEncounter(icc::GetType(pCreature), m_pInstance)
 {
-    Difficulty diff = pCreature->GetMap()->GetDifficulty();
-    m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-    m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
     m_BossEncounter = NOT_STARTED;
 }
 

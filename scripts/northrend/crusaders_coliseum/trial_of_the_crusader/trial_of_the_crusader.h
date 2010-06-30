@@ -219,8 +219,9 @@ uint32 GetType(GameObject*);
 struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
-    bool m_bIsHeroic;
-    bool m_bIs10Man;
+    Difficulty m_Difficulty;
+    bool m_bIsHeroic :1;
+    bool m_bIs10Man :1;
     InstanceVar<uint32> m_BossEncounter;
     EventMap Events;
 

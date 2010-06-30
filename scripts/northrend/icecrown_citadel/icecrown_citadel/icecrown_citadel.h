@@ -96,6 +96,7 @@ uint32 GetType(GameObject*);
 struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
+    Difficulty m_Difficulty;
     bool m_bIsHeroic :1;
     bool m_bIs10Man :1;
     InstanceVar<uint32> m_BossEncounter;

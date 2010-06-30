@@ -83,17 +83,17 @@ uint32 GetType(GameObject *pGO)
 boss_trial_of_the_crusaderAI::boss_trial_of_the_crusaderAI(Creature* pCreature):
     ScriptedAI(pCreature),
     m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+    m_Difficulty(pCreature->GetMap()->GetDifficulty()),
+    m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC),
+    m_bIs10Man(m_Difficulty == RAID_DIFFICULTY_10MAN_NORMAL || m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC),
     m_BossEncounter(toc::GetType(pCreature), m_pInstance)
 {
-    Difficulty diff = pCreature->GetMap()->GetDifficulty();
-    m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
-    m_bIs10Man = diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC;
     m_BossEncounter = NOT_STARTED;
-    Events.Reset();
 }
 
 void boss_trial_of_the_crusaderAI::Reset()
 {
+    Events.Reset();
     m_BossEncounter = NOT_STARTED;
     if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
         if (ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
