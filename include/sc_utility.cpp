@@ -234,3 +234,14 @@ void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float c
     x = cx + rad * cos(ang);
     y = cy + rad * sin(ang);
 }
+
+uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
+{
+    SpellEntry const* sp_entry = GetSpellStore()->LookupEntry(spell_id);
+    if (!sp_entry)
+        return spell_id;
+    SpellDifficultyEntry const* diff_entry = GetSpellDifficultyStore()->LookupEntry(sp_entry->SpellDifficultyId);
+    if (!diff_entry)
+        return spell_id;
+    return diff_entry->spellId[diff];
+}

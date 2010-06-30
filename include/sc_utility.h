@@ -290,4 +290,7 @@ void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
 // get random point inside area delimited by circle
 void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, float cy = 0.0f);
 
+// get correct spell_id for the given difficulty
+uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
+
 #endif
