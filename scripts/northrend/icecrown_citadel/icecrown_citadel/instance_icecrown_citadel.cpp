@@ -25,9 +25,9 @@ EndScriptData */
 instance_icecrown_citadel
 EndContentData */
 
-#include <iterator>
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+#include <iterator>
 
 struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 {

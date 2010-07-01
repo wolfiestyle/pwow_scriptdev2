@@ -25,9 +25,9 @@ EndScriptData */
 instance_trial_of_the_crusader
 EndContentData */
 
-#include <iterator>
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
+#include <iterator>
 
 struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 {
