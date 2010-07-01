@@ -189,6 +189,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         switch (pSumm->GetEntry())
         {
             case NPC_FROST_SPHERE:
+                pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
                 pSumm->GetMotionMaster()->MoveIdle();
                 pSumm->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly
                 break;
@@ -203,13 +204,14 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
     {
         if (!pSumm)
             return;
-        SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
 
         if (pSumm->GetEntry() == NPC_FROST_SPHERE)
         {
             pSumm->MonsterMove(pSumm->GetPositionX(), pSumm->GetPositionY(), FLOOR_HEIGHT, 1);  //move to ground
             pSumm->CastSpell(pSumm, SPELL_PERMAFROST, true);
         }
+        else
+            SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
     }
 
     void KilledUnit(Unit *who)
@@ -228,7 +230,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             {
                 float x, y;
                 GetRandomPointInCircle(x, y, 54.0f, FrostSpherePos[0], FrostSpherePos[1]);
-                SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+                SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
             }
         }
         else    // scarabs and burrowers
