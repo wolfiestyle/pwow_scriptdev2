@@ -228,7 +228,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
             {
                 float x, y;
                 GetRandomPointInCircle(x, y, 54.0f, FrostSpherePos[0], FrostSpherePos[1]);
-                SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                SummonMgr.SummonCreature(NPC_FROST_SPHERE, x, y, FrostSpherePos[2], 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
             }
         }
         else    // scarabs and burrowers
@@ -346,16 +346,17 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
 struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 {
+    ScriptedInstance *m_pInstance;
+    Difficulty m_Difficulty;
     bool m_bIsHeroic;
     EventMap Events;
-    ScriptedInstance *m_pInstance;
 
     mob_toc_nerubian_burrowerAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_Difficulty(pCreature->GetMap()->GetDifficulty()),
+        m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC)
     {
-        Difficulty diff = pCreature->GetMap()->GetDifficulty();
-        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
     }
 
     void Reset()
@@ -367,8 +368,8 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
     {
         if (Spell->Id == SPELL_SUBMERGE_ATTEMPT)
         {
-            Creature *FrostSphere = GetClosestCreatureWithEntry(m_creature, NPC_FROST_SPHERE, 8.0f);
-            if (!FrostSphere)
+            DynamicObject *Permafrost = GetClosestDynamicObjectWithEntry(m_creature, GetSpellIdWithDifficulty(SPELL_PERMAFROST, m_Difficulty), 8.0f);
+            if (!Permafrost)
             {
                 DoCast(m_creature, SPELL_SUBMERGE_BURROWER);
                 m_creature->SetHealth(m_creature->GetMaxHealth());
