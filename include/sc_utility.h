@@ -33,25 +33,27 @@ private:
     EventMap& operator= (EventMap const&);
 };
 
-// helper for static initialization of containers
+// helper for static initialization of map containers
+// (map, multimap, unordered_map, unordered_multimap)
 template <typename ContainerType>
 class map_initializer
 {
 protected:
     typedef typename ContainerType::key_type    KeyType;
-    typedef typename ContainerType::mapped_type ValueType;
+    typedef typename ContainerType::mapped_type MappedType;
+    typedef typename ContainerType::value_type  ValueType;
 
     ContainerType m_map;
 
 public:
-    map_initializer(KeyType const& key, ValueType const& val)
+    map_initializer(KeyType const& key, MappedType const& val)
     {
-        m_map[key] = val;
+        m_map.insert(ValueType(key, val));
     }
 
-    map_initializer& operator() (KeyType const& key, ValueType const& val)
+    map_initializer& operator() (KeyType const& key, MappedType const& val)
     {
-        m_map[key] = val;
+        m_map.insert(ValueType(key, val));
         return *this;
     }
 
