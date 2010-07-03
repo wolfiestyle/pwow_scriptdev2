@@ -74,16 +74,17 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     void OnEncounterComplete(uint32 uiType)
     {
-        uint32 loot_id = 0, door_id = 0, door_id2 = 0;
+        uint32 loot_id = 0;
+        std::list<uint32> door_ids;
         switch (uiType)
         {
             case TYPE_MARROWGAR:    
-                door_id = DATA_MARROWGAR_DOOR_1;
-                door_id2 = DATA_MARROWGAR_DOOR_2;
+                door_ids.push_back(DATA_MARROWGAR_DOOR_1);
+                door_ids.push_back(DATA_MARROWGAR_DOOR_2);
                 break;
             case TYPE_SAURFANG:
                 loot_id = DATA_SAURFANG_CHEST;
-                door_id = DATA_SAURFANG_DOOR;
+                door_ids.push_back(DATA_SAURFANG_DOOR);
                 break;
             default:
                 return;
@@ -92,11 +93,9 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         if (loot_id)
             if (uint64 LootGuid = GetData64(loot_id))
                 DoRespawnGameObject(LootGuid, 7*DAY);
-        if (door_id)
-            if (uint64 DoorGuid = GetData64(door_id))
-                DoUseDoorOrButton(DoorGuid);
-        if (door_id2)
-            if (uint64 DoorGuid = GetData64(door_id2))
+
+        for (std::list<uint32>::const_iterator i = door_ids.begin(); i != door_ids.end(); ++i)
+            if (uint64 DoorGuid = GetData64(*i))
                 DoUseDoorOrButton(DoorGuid);
     }
 
