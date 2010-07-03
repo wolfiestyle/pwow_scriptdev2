@@ -120,6 +120,8 @@ enum Phases
 
 #define MAX_ALIVE_FROST_SPHERES     6
 #define FLOOR_HEIGHT                143.0f
+#define WALK_SPEED                  1.0f
+#define RUN_SPEED                   1.14286f
 
 static const float SummonPositions[4][2] = 
 {
@@ -350,14 +352,18 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     Difficulty m_Difficulty;
-    bool m_bIsHeroic;
+    bool m_bIsHeroic :1;
+    bool m_bInPermafrost :1;
+    bool m_bIsSlowed :1;
     EventMap Events;
 
     mob_toc_nerubian_burrowerAI(Creature* pCreature):
         ScriptedAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_Difficulty(pCreature->GetMap()->GetDifficulty()),
-        m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC)
+        m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC),
+        m_bInPermafrost(false),
+        m_bIsSlowed(false)
     {
     }
 
@@ -368,15 +374,11 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 
     void SpellHit(Unit *who, const SpellEntry *Spell) 
     {
-        if (Spell->Id == SPELL_SUBMERGE_ATTEMPT)
+        if (Spell->Id == SPELL_SUBMERGE_ATTEMPT && !m_bInPermafrost)
         {
-            DynamicObject *Permafrost = GetClosestDynamicObjectWithEntry(m_creature, GetSpellIdWithDifficulty(SPELL_PERMAFROST, m_Difficulty), 8.0f);
-            if (!Permafrost)
-            {
-                DoCast(m_creature, SPELL_SUBMERGE_BURROWER);
-                m_creature->SetHealth(m_creature->GetMaxHealth());
-                Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
-            }
+            DoCast(m_creature, SPELL_SUBMERGE_BURROWER);
+            m_creature->SetHealth(m_creature->GetMaxHealth());
+            Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
         }
     }
 
@@ -400,6 +402,33 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        DynamicObject *Permafrost = GetClosestDynamicObjectWithEntry(m_creature, GetSpellIdWithDifficulty(SPELL_PERMAFROST, m_Difficulty), 8.0f);
+        if (Permafrost)
+        {
+            m_bInPermafrost = true;
+            if (!m_bIsSlowed)
+            {
+                // since Permafrost doesn't want to affect mobs, we'll slow them manually (hack)
+                m_bIsSlowed = true;
+                float speed_mod = 1.0f;
+                SpellEntry const* spellInfo = GetSpellStore()->LookupEntry(Permafrost->GetSpellId());
+                if (spellInfo)
+                    speed_mod = float(100 + spellInfo->EffectBasePoints[Permafrost->GetEffIndex()]) / 100.0f;
+                m_creature->SetSpeedRate(MOVE_WALK, WALK_SPEED * speed_mod, true);
+                m_creature->SetSpeedRate(MOVE_RUN,  RUN_SPEED * speed_mod,  true);
+            }
+        }
+        else
+        {
+            m_bInPermafrost = false;
+            if (m_bIsSlowed)
+            {
+                m_bIsSlowed = false;
+                m_creature->SetSpeedRate(MOVE_WALK, WALK_SPEED, true);
+                m_creature->SetSpeedRate(MOVE_RUN,  RUN_SPEED,  true);
+            }
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -431,11 +460,15 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
 struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
+    Difficulty m_Difficulty;
+    bool m_bIsSlowed;
     EventMap Events;
 
     mob_toc_swarm_scarabAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_Difficulty(pCreature->GetMap()->GetDifficulty()),
+        m_bIsSlowed(false)
     {
     }
 
@@ -461,6 +494,31 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        DynamicObject *Permafrost = GetClosestDynamicObjectWithEntry(m_creature, GetSpellIdWithDifficulty(SPELL_PERMAFROST, m_Difficulty), 8.0f);
+        if (Permafrost)
+        {
+            if (!m_bIsSlowed)
+            {
+                // since Permafrost doesn't want to affect mobs, we'll slow them manually (hack)
+                m_bIsSlowed = true;
+                float speed_mod = 1.0f;
+                SpellEntry const* spellInfo = GetSpellStore()->LookupEntry(Permafrost->GetSpellId());
+                if (spellInfo)
+                    speed_mod = float(100 + spellInfo->EffectBasePoints[Permafrost->GetEffIndex()]) / 100.0f;
+                m_creature->SetSpeedRate(MOVE_WALK, WALK_SPEED * speed_mod, true);
+                m_creature->SetSpeedRate(MOVE_RUN,  RUN_SPEED * speed_mod,  true);
+            }
+        }
+        else
+        {
+            if (m_bIsSlowed)
+            {
+                m_bIsSlowed = false;
+                m_creature->SetSpeedRate(MOVE_WALK, WALK_SPEED, true);
+                m_creature->SetSpeedRate(MOVE_RUN,  RUN_SPEED,  true);
+            }
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
