@@ -93,12 +93,12 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 {
     boss_maexxnaAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
     uint32 m_uiWebWrapTimer;
@@ -116,9 +116,6 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         m_uiNecroticPoisonTimer = 30000;                    //30 seconds
         m_uiSummonSpiderlingTimer = 30000;                  //30 sec init, 40 sec normal
         m_bEnraged = false;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_MAEXXNA, NOT_STARTED);
     }
 
     void Aggro(Unit* pWho)
@@ -131,6 +128,12 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_MAEXXNA, DONE);
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_MAEXXNA, FAIL);
     }
 
     void DoCastWebWrap()
@@ -203,7 +206,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         // Web Spray
         if (m_uiWebSprayTimer < uiDiff)
         {
-            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_WEBSPRAY : H_SPELL_WEBSPRAY);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_WEBSPRAY);
             m_uiWebSprayTimer = 40000;
         }
         else
@@ -212,7 +215,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         // Poison Shock
         if (m_uiPoisonShockTimer < uiDiff)
         {
-            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_POISONSHOCK : H_SPELL_POISONSHOCK);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_POISONSHOCK);
             m_uiPoisonShockTimer = 20000;
         }
         else
@@ -221,7 +224,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         // Necrotic Poison
         if (m_uiNecroticPoisonTimer < uiDiff)
         {
-            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_NECROTICPOISON : H_SPELL_NECROTICPOISON);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_NECROTICPOISON);
             m_uiNecroticPoisonTimer = 30000;
         }
         else
@@ -239,7 +242,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //Enrage if not already enraged and below 30%
         if (!m_bEnraged && m_creature->GetHealthPercent() < 30.0f)
         {
-            DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_FRENZY : H_SPELL_FRENZY);
+            DoCastSpellIfCan(m_creature, SPELL_FRENZY);
             m_bEnraged = true;
         }
 

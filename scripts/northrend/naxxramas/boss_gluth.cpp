@@ -77,12 +77,12 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
 {
     boss_gluthAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
     uint32 m_uiMortalWoundTimer;
@@ -100,9 +100,6 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         m_uiSummonTimer = 10000;
 
         m_uiBerserkTimer = MINUTE*8*IN_MILLISECONDS;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_GLUTH, NOT_STARTED);
     }
 
     void JustDied(Unit* pKiller)
@@ -115,6 +112,12 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_GLUTH, IN_PROGRESS);
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_GLUTH, FAIL);
     }
 
     void UpdateAI(const uint32 uiDiff)

@@ -88,7 +88,6 @@ enum
     H_SPELL_HOLY_WRATH      = 57466,
     SPELL_HOLY_BOLT         = 57376,
     H_SPELL_HOLY_BOLT       = 57465,
-    SPELL_CONDEMNATION      = 57377,
 
     // horseman spirits
     NPC_SPIRIT_OF_BLAUMEUX    = 16776,
@@ -99,52 +98,24 @@ enum
 
 struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
 {
-    boss_lady_blaumeuxAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    boss_lady_blaumeuxAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
     uint32 Mark_Timer;
     uint32 VoidZone_Timer;
-    uint32 UnyieldingPain_Timer;
-    uint32 Shadowbolt_Timer;
     bool ShieldWall1;
     bool ShieldWall2;
-
-    uint64 KorthazzGUID;
-    uint64 RivendareGUID;
-    uint64 ZeliekGUID;
-    uint64 LootChestGUID;
 
     void Reset()
     {
         Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
-        VoidZone_Timer = 15000;
-        UnyieldingPain_Timer = 5000;
-        Shadowbolt_Timer = 2000 + rand()%500;
+        VoidZone_Timer = 12000;                             // right
         ShieldWall1 = true;
         ShieldWall2 = true;
-
-        KorthazzGUID = 0;
-        RivendareGUID = 0;
-        ZeliekGUID = 0;
-        LootChestGUID = 0;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_BLAU_AGGRO, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* Victim)
@@ -155,27 +126,6 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_BLAU_DEATH, m_creature);
-
-        if (m_pInstance)
-        {
-            KorthazzGUID = m_pInstance->GetData64(NPC_THANE);
-            RivendareGUID = m_pInstance->GetData64(NPC_RIVENDARE);
-            ZeliekGUID = m_pInstance->GetData64(NPC_ZELIEK);
-            LootChestGUID = m_pInstance->GetData64(GO_CHEST_HORSEMEN_NORM);
-
-            if (RivendareGUID && KorthazzGUID && ZeliekGUID && LootChestGUID)
-            {
-                Creature* Rivendare = ((Creature*)Unit::GetUnit((*m_creature), RivendareGUID));
-                Creature* Korthazz = ((Creature*)Unit::GetUnit((*m_creature), KorthazzGUID));
-                Creature* Zeliek = ((Creature*)Unit::GetUnit((*m_creature), ZeliekGUID));
-
-                if (Rivendare && Korthazz && Zeliek && !Rivendare->isAlive() && !Korthazz->isAlive() && !Zeliek->isAlive())
-                {
-                    m_pInstance->DoRespawnGameObject(LootChestGUID);
-                    m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
-                }
-            }
-        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -211,24 +161,11 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         // Void Zone
         if (VoidZone_Timer < uiDiff)
         {
-            DoCastSpellIfCan(m_creature->getVictim(),m_bIsRegularMode ? SPELL_VOIDZONE : H_SPELL_VOIDZONE);
-            VoidZone_Timer = 15000;
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_VOIDZONE);
+            VoidZone_Timer = 12000;
         }else VoidZone_Timer -= uiDiff;
 
-        // Unyielding Pain
-        if (UnyieldingPain_Timer < uiDiff)
-        {
-            if (!m_creature->IsWithinDist(m_creature->getVictim(),55.0f))
-                DoCast(m_creature->getVictim(),SPELL_UNYILDING_PAIN);
-            UnyieldingPain_Timer = 5000;
-        }else UnyieldingPain_Timer -= uiDiff;
-
-        //Uses Shadow Bolt instead of Melee
-        if (Shadowbolt_Timer < uiDiff)
-        {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BOLT : H_SPELL_SHADOW_BOLT);
-            Shadowbolt_Timer = 2000 + rand()%500;
-        }else Shadowbolt_Timer -= uiDiff;
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -239,40 +176,10 @@ CreatureAI* GetAI_boss_lady_blaumeux(Creature* pCreature)
 
 struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
 {
-    boss_rivendare_naxxAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-
-    uint32 Mark_Timer;
-    uint32 UnholyShadow_Timer;
-    bool ShieldWall1;
-    bool ShieldWall2;
-
-    uint64 KorthazzGUID;
-    uint64 BlaumeuxGUID;
-    uint64 ZeliekGUID;
-    uint64 LootChestGUID;
+    boss_rivendare_naxxAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset()
     {
-        Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
-        UnholyShadow_Timer = 15000;
-        ShieldWall1 = true;
-        ShieldWall2 = true;
-
-        KorthazzGUID = 0;
-        BlaumeuxGUID = 0;
-        ZeliekGUID = 0;
-        LootChestGUID = 0;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
@@ -283,9 +190,6 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
             case 1: DoScriptText(SAY_RIVE_AGGRO2, m_creature); break;
             case 2: DoScriptText(SAY_RIVE_AGGRO3, m_creature); break;
         }
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* Victim)
@@ -296,65 +200,12 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_RIVE_DEATH, m_creature);
-
-        if (m_pInstance)
-        {
-            KorthazzGUID = m_pInstance->GetData64(NPC_THANE);
-            BlaumeuxGUID = m_pInstance->GetData64(NPC_BLAUMEUX);
-            ZeliekGUID = m_pInstance->GetData64(NPC_ZELIEK);
-            LootChestGUID = m_pInstance->GetData64(GO_CHEST_HORSEMEN_NORM);
-
-            if (KorthazzGUID && BlaumeuxGUID && ZeliekGUID && LootChestGUID)
-            {
-                Creature* Korthazz = ((Creature*)Unit::GetUnit((*m_creature), KorthazzGUID));
-                Creature* Blaumeux = ((Creature*)Unit::GetUnit((*m_creature), BlaumeuxGUID));
-                Creature* Zeliek = ((Creature*)Unit::GetUnit((*m_creature), ZeliekGUID));
-
-                if (Korthazz && Blaumeux && Zeliek && !Korthazz->isAlive() && !Blaumeux->isAlive() && !Zeliek->isAlive())
-                {
-                    m_pInstance->DoRespawnGameObject(LootChestGUID);
-                    m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
-                }
-            }
-        }
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
-
-        // Mark of Rivendare
-        if (Mark_Timer < uiDiff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_RIVENDARE);
-            Mark_Timer = 12000;
-        }else Mark_Timer -= uiDiff;
-
-        // Shield Wall - All 4 horsemen will shield wall at 50% hp and 20% hp for 20 seconds
-        if (ShieldWall1 && m_creature->GetHealthPercent() < 50.0f)
-        {
-            if (ShieldWall1)
-            {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall1 = false;
-            }
-        }
-        if (ShieldWall2 && m_creature->GetHealthPercent() < 20.0f)
-        {
-            if (ShieldWall2)
-            {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall2 = false;
-            }
-        }
-
-        // Unholy Shadow
-        if (UnholyShadow_Timer < uiDiff)
-        {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_UNHOLY_SHADOW : H_SPELL_UNHOLY_SHADOW);
-            UnholyShadow_Timer = 15000;
-        }else UnholyShadow_Timer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
@@ -367,48 +218,24 @@ CreatureAI* GetAI_boss_rivendare_naxx(Creature* pCreature)
 
 struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 {
-    boss_thane_korthazzAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    boss_thane_korthazzAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
     uint32 Mark_Timer;
     uint32 Meteor_Timer;
     bool ShieldWall1;
     bool ShieldWall2;
 
-    uint64 RivendareGUID;
-    uint64 BlaumeuxGUID;
-    uint64 ZeliekGUID;
-    uint64 LootChestGUID;
-
     void Reset()
     {
         Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
-        Meteor_Timer = 15000;
+        Meteor_Timer = 30000;                               // wrong
         ShieldWall1 = true;
         ShieldWall2 = true;
-
-        RivendareGUID = 0;
-        BlaumeuxGUID = 0;
-        ZeliekGUID = 0;
-        LootChestGUID = 0;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_KORT_AGGRO, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* Victim)
@@ -419,27 +246,6 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_KORT_DEATH, m_creature);
-
-        if (m_pInstance)
-        {
-            RivendareGUID = m_pInstance->GetData64(NPC_RIVENDARE);
-            BlaumeuxGUID = m_pInstance->GetData64(NPC_BLAUMEUX);
-            ZeliekGUID = m_pInstance->GetData64(NPC_ZELIEK);
-            LootChestGUID = m_pInstance->GetData64(GO_CHEST_HORSEMEN_NORM);
-
-            if (RivendareGUID && BlaumeuxGUID && ZeliekGUID && LootChestGUID)
-            {
-                Creature* Rivendare = ((Creature*)Unit::GetUnit((*m_creature), RivendareGUID));
-                Creature* Blaumeux = ((Creature*)Unit::GetUnit((*m_creature), BlaumeuxGUID));
-                Creature* Zeliek = ((Creature*)Unit::GetUnit((*m_creature), ZeliekGUID));
-
-                if (Rivendare && Blaumeux && Zeliek && !Rivendare->isAlive() && !Blaumeux->isAlive() && !Zeliek->isAlive())
-                {
-                    m_pInstance->DoRespawnGameObject(LootChestGUID);
-                    m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
-                }
-            }
-        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -476,7 +282,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         if (Meteor_Timer < uiDiff)
         {
             DoCastSpellIfCan(m_creature->getVictim(),SPELL_METEOR);
-            Meteor_Timer = 15000;
+            Meteor_Timer = 20000;                           // wrong
         }else Meteor_Timer -= uiDiff;
 
         DoMeleeAttackIfReady();
@@ -490,52 +296,24 @@ CreatureAI* GetAI_boss_thane_korthazz(Creature* pCreature)
 
 struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
 {
-    boss_sir_zeliekAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    boss_sir_zeliekAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
     uint32 Mark_Timer;
     uint32 HolyWrath_Timer;
-    uint32 Condemnation_Timer;
-    uint32 HolyBolt_Timer;
     bool ShieldWall1;
     bool ShieldWall2;
-
-    uint64 KorthazzGUID;
-    uint64 RivendareGUID;
-    uint64 BlaumeuxGUID;
-    uint64 LootChestGUID;
 
     void Reset()
     {
         Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
-        HolyWrath_Timer = 15000;
-        Condemnation_Timer = 5000;
-        HolyBolt_Timer = 2000 + rand()%500;
+        HolyWrath_Timer = 12000;                            // right
         ShieldWall1 = true;
         ShieldWall2 = true;
-
-        KorthazzGUID = 0;
-        RivendareGUID = 0;
-        BlaumeuxGUID = 0;
-        LootChestGUID = 0;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_ZELI_AGGRO, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_FOUR_HORSEMEN, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* Victim)
@@ -546,27 +324,6 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_ZELI_DEATH, m_creature);
-
-        if (m_pInstance)
-        {
-            RivendareGUID = m_pInstance->GetData64(NPC_RIVENDARE);
-            BlaumeuxGUID = m_pInstance->GetData64(NPC_BLAUMEUX);
-            KorthazzGUID = m_pInstance->GetData64(NPC_THANE);
-            LootChestGUID = m_pInstance->GetData64(GO_CHEST_HORSEMEN_NORM);
-
-            if (RivendareGUID && BlaumeuxGUID && KorthazzGUID && LootChestGUID)
-            {
-                Creature* Rivendare = ((Creature*)Unit::GetUnit((*m_creature), RivendareGUID));
-                Creature* Blaumeux = ((Creature*)Unit::GetUnit((*m_creature), BlaumeuxGUID));
-                Creature* Korthazz = ((Creature*)Unit::GetUnit((*m_creature), KorthazzGUID));
-
-                if (Rivendare && Blaumeux && Korthazz && !Rivendare->isAlive() && !Blaumeux->isAlive() && !Korthazz->isAlive())
-                {
-                    m_pInstance->DoRespawnGameObject(LootChestGUID);
-                    m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
-                }
-            }
-        }
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -603,25 +360,11 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         // Holy Wrath
         if (HolyWrath_Timer < uiDiff)
         {
-            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_HOLY_WRATH : H_SPELL_HOLY_WRATH);
-            HolyWrath_Timer = 15000;
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_HOLY_WRATH);
+            HolyWrath_Timer = 12000;
         }else HolyWrath_Timer -= uiDiff;
 
-        // Condemnation
-        if (Condemnation_Timer < uiDiff)
-        {
-            if (!m_creature->IsWithinDist(m_creature->getVictim(),55.0f))
-                DoCast(m_creature->getVictim(),SPELL_CONDEMNATION);
-            Condemnation_Timer = 5000;
-        }else Condemnation_Timer -= uiDiff;
-
-        //Uses Holy Bolt instead of Melee
-        if (HolyBolt_Timer < uiDiff)
-        {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_HOLY_BOLT : H_SPELL_HOLY_BOLT);
-            HolyBolt_Timer = 2000 + rand()%500;
-        }else HolyBolt_Timer -= uiDiff;
+        DoMeleeAttackIfReady();
     }
 };
 

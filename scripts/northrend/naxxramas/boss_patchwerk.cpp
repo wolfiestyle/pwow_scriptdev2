@@ -45,12 +45,12 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 {
     boss_patchwerkAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
     uint32 m_uiHatefulStrikeTimer;
@@ -66,9 +66,6 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
         m_uiSlimeboltTimer = 10000;
         m_bEnraged = false;
         m_bBerserk = false;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_PATCHWERK, NOT_STARTED);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -93,6 +90,12 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_PATCHWERK, IN_PROGRESS);
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_PATCHWERK, FAIL);
     }
 
     void DoHatefulStrike()

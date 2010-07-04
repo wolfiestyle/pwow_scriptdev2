@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Heigan
-SD%Complete: 70%
-SDComment: Verify
+SD%Complete: 65
+SDComment: Missing traps dance
 SDCategory: Naxxramas
 EndScriptData */
 
@@ -26,74 +26,76 @@ EndScriptData */
 
 enum
 {
-    SAY_AGGRO1      = -1533109,
-    SAY_AGGRO2      = -1533110,
-    SAY_AGGRO3      = -1533111,
-    SAY_SLAY        = -1533112,
-    SAY_TAUNT1      = -1533113,
-    SAY_TAUNT2      = -1533114,
-    SAY_TAUNT3      = -1533115,
-    SAY_TAUNT4      = -1533116,
-    SAY_TAUNT5      = -1533117,
-    SAY_DEATH       = -1533118,
+    PHASE_GROUND            = 1,
+    PHASE_PLATFORM          = 2,
 
-    //Spell used by floor peices to cause damage to players
-    SPELL_ERUPTION  = 29371,
+    SAY_AGGRO1              = -1533109,
+    SAY_AGGRO2              = -1533110,
+    SAY_AGGRO3              = -1533111,
+    SAY_SLAY                = -1533112,
+    SAY_TAUNT1              = -1533113,
+    SAY_TAUNT2              = -1533114,
+    SAY_TAUNT3              = -1533115,
+    SAY_TAUNT4              = -1533117,
+    SAY_CHANNELING          = -1533116,
+    SAY_DEATH               = -1533118,
+    EMOTE_TELEPORT          = -1533136,
+    EMOTE_RETURN            = -1533137,
+
+    SPELL_ERUPTION          = 29371,                        //Spell used by floor pieces to cause damage to players
 
     //Spells by boss
-    SPELL_DISRUPTION = 29310,
-    SPELL_FEVER      = 29998,
-    SPELL_FEVER_H    = 55011,
-    SPELL_PLAGUE     = 30122
+    SPELL_DECREPIT_FEVER_N  = 29998,
+    SPELL_DECREPIT_FEVER_H  = 55011,
+    SPELL_DISRUPTION        = 29310,
+    SPELL_TELEPORT          = 30211,
+    SPELL_PLAGUE_CLOUD      = 29350
 };
-
-//Teleport to Platform Positions
-#define TELE_X         2793.860107
-#define TELE_Y         -3707.379883
-#define TELE_Z         276.627014
-#define TELE_O         0.593412
-
 
 struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
 {
     boss_heiganAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
-    uint32 Disruption_Timer;
-    uint32 Fever_Timer;
-    uint32 Eruption1_Timer;
-    uint32 Eruption2_Timer;
-    uint32 Say_Timer;
-    uint32 Phase1to2_Timer;
-    uint32 Phase2to1_Timer;
-    uint32 phase;
+    uint8 m_uiPhase;
+    uint8 m_uiPhaseEruption;
+
+    uint32 m_uiFeverTimer;
+    uint32 m_uiDisruptionTimer;
+    uint32 m_uiEruptionTimer;
+    uint32 m_uiPhaseTimer;
+    uint32 m_uiTauntTimer;
+    uint32 m_uiStartChannelingTimer;
+
+    void ResetPhase()
+    {
+        m_uiPhaseEruption = 0;
+        m_uiFeverTimer = 4000;
+        m_uiEruptionTimer = m_uiPhase == PHASE_GROUND ? urand(8000, 12000) : urand(2000, 3000);
+        m_uiDisruptionTimer = 5000;
+        m_uiStartChannelingTimer = 1000;
+        m_uiPhaseTimer = m_uiPhase == PHASE_GROUND ? 90000 : 45000;
+    }
 
     void Reset()
     {
-        Disruption_Timer = 15000;           //15 seconds
-        Fever_Timer = 40000;                //40 seconds
-        Eruption1_Timer = 8000;             //8 seconds
-        Eruption2_Timer = 2500;             //2.5 seconds
-        Say_Timer = (rand()%30+15)*1000;    //15-45 seconds
-        Phase1to2_Timer = 90000;            //90 seconds
-        Phase2to1_Timer = 45000;            //45 seconds
-        phase = 1;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_HEIGAN, NOT_STARTED);
+        m_uiPhase = PHASE_GROUND;
+        m_uiTauntTimer = urand(20000,60000);                // TODO, find information
+        ResetPhase();
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
-        //Say some stuff
-        switch(rand()%3)
+        m_creature->SetInCombatWithZone();
+        
+        switch(urand(0, 2))
         {
             case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
             case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
@@ -104,130 +106,110 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
             m_pInstance->SetData(TYPE_HEIGAN, IN_PROGRESS);
     }
 
-    void KilledUnit()
+    void KilledUnit(Unit* pVictim)
     {
-        //Say some stuff
         DoScriptText(SAY_SLAY, m_creature);
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* pKiller)
     {
-        //Say some stuff
         DoScriptText(SAY_DEATH, m_creature);
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_HEIGAN, DONE);
     }
 
-    void UpdateAI(const uint32 diff)
+    void JustReachedHome()
     {
-        //Return since we have no target
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_HEIGAN, FAIL);
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Say some stuff
-        if (Say_Timer < diff)
+        if (m_uiPhase == PHASE_GROUND)
         {
-            switch(rand()%4)
+            // Teleport to platform
+            if (m_uiPhaseTimer < uiDiff)
+            {
+                if (DoCastSpellIfCan(m_creature, SPELL_TELEPORT) == CAST_OK)
+                {
+                    DoScriptText(EMOTE_TELEPORT, m_creature);
+                    m_creature->GetMotionMaster()->MoveIdle();
+
+                    m_uiPhase = PHASE_PLATFORM;
+                    ResetPhase();
+                    return;
+                }
+            }
+            else
+                m_uiPhaseTimer -= uiDiff;
+
+            // Fever
+            if (m_uiFeverTimer < uiDiff)
+            {
+                DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_DECREPIT_FEVER_N : SPELL_DECREPIT_FEVER_H);
+                m_uiFeverTimer = 21000;
+            }
+            else
+                m_uiFeverTimer -= uiDiff;
+
+            // Disruption
+            if (m_uiDisruptionTimer < uiDiff)
+            {
+                DoCastSpellIfCan(m_creature, SPELL_DISRUPTION);
+                m_uiDisruptionTimer = 10000;
+            }
+            else
+                m_uiDisruptionTimer -= uiDiff;
+        }
+        else                                                //Platform Phase
+        {
+            if (m_uiPhaseTimer <= uiDiff)                   // return to fight
+            {
+                m_creature->InterruptNonMeleeSpells(true);
+                DoScriptText(EMOTE_RETURN, m_creature);
+                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+
+                m_uiPhase = PHASE_GROUND;
+                ResetPhase();
+                return;
+            }
+            else
+                m_uiPhaseTimer -= uiDiff;
+
+            if (m_uiStartChannelingTimer)
+            {
+                if (m_uiStartChannelingTimer <=uiDiff)
+                {
+                    DoScriptText(SAY_CHANNELING, m_creature);
+                    DoCastSpellIfCan(m_creature, SPELL_PLAGUE_CLOUD);
+                    m_uiStartChannelingTimer = 0;           // no more
+                }
+                else
+                    m_uiStartChannelingTimer -= uiDiff;
+            }
+        }
+
+        // Taunt
+        if (m_uiTauntTimer < uiDiff)
+        {
+            switch(urand(0, 3))
             {
                 case 0: DoScriptText(SAY_TAUNT1, m_creature); break;
                 case 1: DoScriptText(SAY_TAUNT2, m_creature); break;
                 case 2: DoScriptText(SAY_TAUNT3, m_creature); break;
-                case 3: DoScriptText(SAY_TAUNT5, m_creature); break;
+                case 3: DoScriptText(SAY_TAUNT4, m_creature); break;
             }
-
-            Say_Timer = (rand()%30+15)*1000;
-        }else Say_Timer -= diff;
-
-        //Phase 1
-        if (phase == 1)
-        {
-            //Phase 1 to 2 timer
-			/*
-            if (Phase1to2_Timer < diff)
-            {
-                //Teleport to platform
-                m_creature->NearTeleportTo(TELE_X,TELE_Y, TELE_Z, TELE_O);
-
-                //Say some stuff
-                DoScriptText(SAY_TAUNT4, m_creature);
-
-                //We switch to phase 2
-                phase = 2;
-
-                //Reset timer
-                Phase1to2_Timer = 90000;
-
-                //Terminate phase 1
-                return;
-            }else Phase1to2_Timer -= diff;
-			*/
-
-            //Spell Disruption timer
-            if (Disruption_Timer < diff)
-            {
-                DoCast(m_creature,SPELL_DISRUPTION);
-
-                Disruption_Timer = 15000;
-            }else Disruption_Timer -= diff;
-
-            //Decrepit Fever timer
-            if (Fever_Timer < diff)
-            {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                    DoCast(target,m_bIsRegularMode ? SPELL_FEVER : SPELL_FEVER_H);
-
-                Fever_Timer = 40000;
-            }else Fever_Timer -= diff;
-
-            //Eruption timer
-            /*
-            if (Eruption1_Timer < diff)
-            {
-                DoCast(m_creature->getVictim(),SPELL_ERUPTION);
-
-                Eruption1_Timer = 8000;
-            }else Eruption1_Timer -= diff;
-            */
-
-            DoMeleeAttackIfReady();
+            m_uiTauntTimer = urand(20000, 70000);
         }
+        else
+            m_uiTauntTimer -= uiDiff;
 
-        //Phase 2
-        if (phase == 2)
-        {
-            //Phase 2 to 1 timer
-            if (Phase2to1_Timer < diff)
-            {
-                //Enable movement
-                DoStartMovement(m_creature->getVictim());
-
-                //We switch to phase 1
-                phase = 1;
-
-                //Reset timer
-                Phase2to1_Timer = 45000;
-
-                //Terminate phase 2
-                return;
-            }else Phase2to1_Timer -= diff;
-
-            //Disable movement
-            DoStartNoMovement(m_creature->getVictim());
-
-            //Eruption timer
-            /*
-            if (Eruption2_Timer < diff)
-            {
-                DoCast(m_creature->getVictim(),SPELL_ERUPTION);
-
-                Eruption2_Timer = 2500;
-            }else Eruption2_Timer -= diff;
-            */
-
-            //Heigan channels this spell throughout phase 2
-            DoCast(m_creature,SPELL_PLAGUE);
-        } 
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -238,10 +220,10 @@ CreatureAI* GetAI_boss_heigan(Creature* pCreature)
 
 void AddSC_boss_heigan()
 {
-    Script *newscript;
-
-    newscript = new Script;
-    newscript->Name = "boss_heigan";
-    newscript->GetAI = &GetAI_boss_heigan;
-    newscript->RegisterSelf();
+    Script* NewScript;
+    NewScript = new Script;
+    NewScript->Name = "boss_heigan";
+    NewScript->GetAI = &GetAI_boss_heigan;
+    NewScript->RegisterSelf();
 }
+

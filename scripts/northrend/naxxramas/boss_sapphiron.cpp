@@ -30,66 +30,52 @@ enum
     EMOTE_ENRAGE       = -1533083,
 
     SPELL_ICEBOLT      = 28522,
-    SPELL_ICEBOLT_H    = 28526,
     SPELL_FROST_BREATH = 29318,
-    SPELL_FROST_BREATH_H = 28524,
     SPELL_FROST_AURA   = 28531,
-    SPELL_FROST_AURA_H = 55799,
     SPELL_LIFE_DRAIN   = 28542,
-    SPELL_LIFE_DRAIN_H = 55665,
     SPELL_BLIZZARD     = 28547,
-    SPELL_BLIZZARD_H   = 55699,
-    SPELL_BESERK       = 26662,
-    SPELL_CLEAVE       = 19983,
-    SPELL_TAIL_SWEEP   = 55697,
-    SPELL_TAIL_SWEEP_H = 55696
+    SPELL_BESERK       = 26662
 };
 
 struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 {
     boss_sapphironAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
     uint32 Icebolt_Count;
     uint32 Icebolt_Timer;
     uint32 FrostBreath_Timer;
-    bool FrostBreath_Check;
     uint32 FrostAura_Timer;
     uint32 LifeDrain_Timer;
     uint32 Blizzard_Timer;
-    uint32 Cleave_Timer;
-    uint32 TailSweep_Timer;
     uint32 Fly_Timer;
     uint32 Beserk_Timer;
     uint32 phase;
-    uint32 Phase1to2_Timer;
-    uint32 Phase2to1_Timer;
+    bool landoff;
+    uint32 land_Timer;
 
     void Reset()
     {
-        Icebolt_Count = 0;
-        Icebolt_Timer = 4000;                     //4 seconds
-        FrostBreath_Timer = 15000;                //15 seconds, 7 seconds after seconds Ice Bolt
-        FrostBreath_Check = true;
-        FrostAura_Timer = 2000;                   //2 seconds
-        LifeDrain_Timer = 24000;                  //24 seconds
-        Blizzard_Timer = 20000;                   //20 seconds
-        Cleave_Timer = 15000 + rand()%30000;      //15-45 seconds
-        TailSweep_Timer = 15000 + rand()%30000;   //15-45 seconds
-        Beserk_Timer = 900000;                    //900 seconds or 15 minutes
+        FrostAura_Timer = 2000;
+        FrostBreath_Timer = 2500;
+        LifeDrain_Timer = 24000;
+        Blizzard_Timer = 20000;
+        Fly_Timer = 45000;
+        Icebolt_Timer = 4000;
+        land_Timer = 2000;
+        Beserk_Timer = 0;
         phase = 1;
-        Phase1to2_Timer = 45000;                  //45 seconds
-        Phase2to1_Timer = 17000;                  //17 seconds, 2 seconds after Frost Breath
+        Icebolt_Count = 0;
+        landoff = false;
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_SAPPHIRON, NOT_STARTED);
+        //m_creature->ApplySpellMod(SPELL_FROST_AURA, SPELLMOD_DURATION, -1);
     }
 
     void Aggro(Unit* pWho)
@@ -117,114 +103,97 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
         if (phase == 1)
         {
-			/*
-            if (m_creature->GetHealthPercent() > 10.0f)
+            if (FrostAura_Timer < uiDiff)
             {
-                if (Phase1to2_Timer < uiDiff)
-                {
-                    m_creature->InterruptNonMeleeSpells(false);
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                    m_creature->GetMotionMaster()->Clear(false);
-                    m_creature->GetMotionMaster()->MoveIdle();
-                    m_creature->SetHover(true);
-
-                    Phase1to2_Timer = 45000;
-                    phase = 2;
-
-                    //Terminate phase 1
-                    return;
-                }else Phase1to2_Timer -= uiDiff;
-            }
-			*/
-
-            if (Cleave_Timer < uiDiff)
-            {
-                DoCast(m_creature->getVictim(),SPELL_CLEAVE);
-                Cleave_Timer = 15000 + rand()%30000;
-            }else Cleave_Timer -= uiDiff;
-
-            if (TailSweep_Timer < uiDiff)
-            {
-				DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_TAIL_SWEEP : SPELL_TAIL_SWEEP_H);
-                TailSweep_Timer = 15000 + rand()%30000;
-            }else TailSweep_Timer -= uiDiff;
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_FROST_AURA);
+                FrostAura_Timer = 5000;
+            }else FrostAura_Timer -= uiDiff;
 
             if (LifeDrain_Timer < uiDiff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                    DoCast(target, m_bIsRegularMode ? SPELL_LIFE_DRAIN : SPELL_LIFE_DRAIN_H);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target,SPELL_LIFE_DRAIN);
 
                 LifeDrain_Timer = 24000;
             }else LifeDrain_Timer -= uiDiff;
 
             if (Blizzard_Timer < uiDiff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                    DoCast(target, m_bIsRegularMode ? SPELL_BLIZZARD : SPELL_BLIZZARD_H);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target,SPELL_BLIZZARD);
 
                 Blizzard_Timer = 20000;
             }else Blizzard_Timer -= uiDiff;
 
-            if (FrostAura_Timer < uiDiff)
+            if (m_creature->GetHealthPercent() > 10.0f)
             {
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FROST_AURA : SPELL_FROST_AURA_H);
-                FrostAura_Timer = 5000;
-            }else FrostAura_Timer -= uiDiff;
-
-            DoMeleeAttackIfReady();
+                if (Fly_Timer < uiDiff)
+                {
+                    phase = 2;
+                    m_creature->InterruptNonMeleeSpells(false);
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                    m_creature->GetMotionMaster()->Clear(false);
+                    m_creature->GetMotionMaster()->MoveIdle();
+                    DoCastSpellIfCan(m_creature,11010);
+                    m_creature->SetHover(true);
+                    DoCastSpellIfCan(m_creature,18430);
+                    Icebolt_Timer = 4000;
+                    Icebolt_Count = 0;
+                    landoff = false;
+                }else Fly_Timer -= uiDiff;
+            }
         }
 
-        //Phase 2
         if (phase == 2)
         {
-            if (Phase2to1_Timer < uiDiff)
+            if (Icebolt_Timer < uiDiff && Icebolt_Count < 5)
             {
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                m_creature->SetHover(false);
-                m_creature->GetMotionMaster()->Clear(false);
-                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target,SPELL_ICEBOLT);
 
-                Icebolt_Count = 0;
-                FrostBreath_Check = true;
-                Phase2to1_Timer = 17000;
-                phase = 1;
+                ++Icebolt_Count;
+                Icebolt_Timer = 4000;
+            }else Icebolt_Timer -= uiDiff;
 
-                 //Terminate phase 2
-                 return;
-             }else Phase2to1_Timer -= uiDiff;
-
-            if (Icebolt_Count < 2)
-            {
-                if (Icebolt_Timer < uiDiff)
-                {
-                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-						DoCast(target, m_bIsRegularMode ? SPELL_ICEBOLT : SPELL_ICEBOLT_H);
-
-                    Icebolt_Count++;
-                    Icebolt_Timer = 4000;
-                }else Icebolt_Timer -= uiDiff;
-            }
-
-            if (FrostBreath_Check)
+            if (Icebolt_Count == 5 && !landoff)
             {
                 if (FrostBreath_Timer < uiDiff)
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
-                    DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FROST_BREATH : SPELL_FROST_BREATH_H);
-
-                    FrostBreath_Check = false;
-                    FrostBreath_Timer = 15000;
+                    DoCastSpellIfCan(m_creature->getVictim(),SPELL_FROST_BREATH);
+                    land_Timer = 2000;
+                    landoff = true;
+                    FrostBreath_Timer = 6000;
                 }else FrostBreath_Timer -= uiDiff;
+            }
+
+            if (landoff)
+            {
+                if (land_Timer < uiDiff)
+                {
+                    phase = 1;
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    m_creature->SetHover(false);
+                    m_creature->GetMotionMaster()->Clear(false);
+                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                    Fly_Timer = 67000;
+                }else land_Timer -= uiDiff;
             }
         }
 
-        if (Beserk_Timer < uiDiff)
+        if (m_creature->GetHealthPercent() <= 10.0f)
         {
-            DoScriptText(EMOTE_ENRAGE, m_creature);
-            DoCast(m_creature,SPELL_BESERK);
-            Beserk_Timer = 300000;
-        }else Beserk_Timer -= uiDiff;
-    }   
+            if (Beserk_Timer < uiDiff)
+            {
+                DoScriptText(EMOTE_ENRAGE, m_creature);
+                DoCastSpellIfCan(m_creature,SPELL_BESERK);
+                Beserk_Timer = 300000;
+            }else Beserk_Timer -= uiDiff;
+        }
+
+        if (phase!=2)
+            DoMeleeAttackIfReady();
+    }
 };
 
 CreatureAI* GetAI_boss_sapphiron(Creature* pCreature)

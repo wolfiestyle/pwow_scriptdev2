@@ -54,13 +54,13 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 {
     boss_anubrekhanAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         m_bHasTaunted = false;
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
     uint32 m_uiImpaleTimer;
@@ -73,9 +73,6 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         m_uiImpaleTimer = 15000;                            // 15 seconds
         m_uiLocustSwarmTimer = urand(80000, 120000);        // Random time between 80 seconds and 2 minutes for initial cast
         m_uiSummonTimer = m_uiLocustSwarmTimer + 45000;     // 45 seconds after initial locust swarm
-
-		if (m_pInstance)
-            m_pInstance->SetData(TYPE_ANUB_REKHAN, NOT_STARTED);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -107,6 +104,12 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ANUB_REKHAN, DONE);
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_ANUB_REKHAN, FAIL);
     }
 
     void MoveInLineOfSight(Unit* pWho)
