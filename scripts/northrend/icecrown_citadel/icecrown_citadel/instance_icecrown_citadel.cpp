@@ -33,6 +33,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 {
     std::vector<uint32> m_auiEncounter;
     std::string m_strInstData;
+    uint32 m_uiPlayerTeam;
 
     typedef std::vector<uint64> GuidContainer;  // data_id => guid
     GuidContainer m_guidsStore;
@@ -47,10 +48,13 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     void OnPlayerEnter(Player *pWho)
     {
+        if (!m_uiPlayerTeam)
+            m_uiPlayerTeam = pWho->GetTeam();
     }
 
     void Initialize()
     {
+        m_uiPlayerTeam = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -136,6 +140,8 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
         switch(uiType)
         {
+            case DATA_FACTION:
+                return m_uiPlayerTeam;
             default:
                 return 0;
         }

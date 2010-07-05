@@ -42,15 +42,27 @@ enum Spells
     SPELL_ADD_BLOOD_LINK            = 72176,
     SPELL_RESISTANT_SKIN            = 72723,
     SPELL_SCENT_OF_BLOOD            = 72769,
+
+    SPELL_INTRO_CHOKE               = 72305, // NOT actual spell. I cannot find the real one though.
 };
 
 enum Npcs
 {
+    // intro NPCs
+    NPC_HIGH_OVERLORD_SAURFANG      = 37187,
+    NPC_KORKRON_REAVER              = 37920,
+    NPC_MURADIN_BRONZEBEARD         = 37200,
+    NPC_SKYBREAKER_MARINE           = 37830,
+    NPC_VARIAN_WYRM                 = 37879,
+    NPC_JAINA_PROUDMOORE            = 37188,
+
+    // adds
     NPC_BLOOD_BEAST                 = 38508,
 };
 
 enum Says
 {
+    // intro
     SAY_DEATHFANG_ALLIANCE_INTRO1   = -1300430,
     SAY_DEATHFANG_ALLIANCE_INTRO2   = -1300431,
     SAY_MURADIN_ALLIANCE_INTRO3     = -1300432,
@@ -67,6 +79,7 @@ enum Says
     EMOTE_SAURFANG_HORDE_INTRO8     = -1300442,
     SAY_DEATHFANG_HORDE_INTRO9      = -1300443,
 
+    // Deathbringer Saurfang
     SAY_AGGRO                       = -1300444,
     SAY_MARK_OF_THE_FALLEN_CHAMPION = -1300445,
     SAY_SUMMON_ADDS                 = -1300446,
@@ -74,6 +87,30 @@ enum Says
     SAY_KILLED_PLAYER2              = -1300448,
     SAY_BERSERK                     = -1300449,
     SAY_DEATH                       = -1300450,
+
+    // outro
+    EMOTE_MURADIN_ALLIANCE_OUTRO1   = -1300451,
+    SAY_MURADIN_ALLIANCE_OUTRO2     = -1300452,
+    SAY_MURADIN_ALLIANCE_OUTRO3     = -1300453,
+    SAY_MURADIN_ALLIANCE_OUTRO4     = -1300454,
+    SAY_MURADIN_ALLIANCE_OUTRO5     = -1300455,
+    SAY_SAURFANG_ALLIANCE_OUTRO6    = -1300456,
+    SAY_MURADIN_ALLIANCE_OUTRO7     = -1300457,
+    SAY_VARIAN_ALLIANCE_OUTRO8      = -1300458,
+    SAY_MURADIN_ALLIANCE_OUTRO9     = -1300459,
+    SAY_SAURFANG_ALLIANCE_OUTRO10   = -1300460,
+    SAY_SAURFANG_ALLIANCE_OUTRO11   = -1300461,
+    SAY_VARIAN_ALLIANCE_OUTRO12     = -1300462,
+    EMOTE_JANIA_ALLIANCE_OUTRO13    = -1300463,
+    SAY_VARIAN_ALLIANCE_OUTRO14     = -1300464,
+    SAY_JANIA_ALLIANCE_OUTRO15      = -1300465,
+    SAY_VARIAN_ALLIANCE_OUTRO16     = -1300466,
+    SAY_MURADIN_ALLIANCE_OUTRO17    = -1300467,
+
+    EMOTE_SAURFANG_HORDE_OUTRO1     = -1300468,
+    EMOTE_SAURFANG_HORDE_OUTRO2     = -1300469,
+    SAY_SAURFANG_HORDE_OUTRO3       = -1300470,
+    SAY_SAURFANG_HORDE_OUTRO4       = -1300471,
 };
 
 enum Events
@@ -87,6 +124,10 @@ enum Events
     EVENT_BUFF_ADDS,
 };
 
+static const float IntroSummonPosition[2] = {-563.5f, 2211.6f};
+
+#define FLOOR_HEIGHT            539.3f
+
 #define TIMER_BERSERK           8*MINUTE*IN_MILLISECONDS
 #define TIMER_BOILING_BLOOD     15*IN_MILLISECONDS
 #define TIMER_RUNE_OF_BLOOD     25*IN_MILLISECONDS
@@ -97,12 +138,20 @@ enum Events
 struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
-    bool IsSoftEnraged;
+    bool IsSoftEnraged :1;
+    bool HasDoneIntro :1;
+    bool IsHorde :1;
+    uint32 TalkTimer;
+    uint32 TalkPhase;
 
     boss_deathbringer_saurfangAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
-        IsSoftEnraged(false)
+        IsSoftEnraged(false),
+        HasDoneIntro(false),
+        IsHorde(true),
+        TalkTimer(0),
+        TalkPhase(0)
     {
         m_creature->setPowerType(POWER_ENERGY);
         m_creature->SetMaxPower(POWER_ENERGY, 100);
@@ -111,7 +160,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
     void Reset()
     {
         IsSoftEnraged = false;
-        SummonMgr.UnsummonAll();
+        SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         m_creature->SetPower(POWER_ENERGY, 0);
         RemoveAuras();
         boss_icecrown_citadelAI::Reset();
@@ -127,6 +176,54 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 continue;
             pPlayer->RemoveAurasDueToSpell(SPELL_MARK_FALLEN_CHAMPION);
         }
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !HasDoneIntro)
+        {
+            HasDoneIntro = true;
+            IsHorde = IS_HORDE;
+            TalkPhase = 1;
+            uint32 LeaderId;
+            uint32 FollowerId;
+            if (IsHorde)
+            {
+                LeaderId = NPC_HIGH_OVERLORD_SAURFANG;
+                FollowerId = NPC_KORKRON_REAVER;
+                TalkTimer = 6*IN_MILLISECONDS;
+            }
+            else
+            {
+                LeaderId = NPC_MURADIN_BRONZEBEARD;
+                FollowerId = NPC_SKYBREAKER_MARINE;
+                TalkTimer = 18*IN_MILLISECONDS;
+            }
+            Creature *Leader = SummonMgr.SummonCreature(LeaderId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT);
+            if (Leader)
+            {
+                Leader->StopAttackFaction(m_creature->getFaction());
+                Leader->MonsterMove(-544.1f, 2211.2f, 539.2f, 2000);
+                if (IsHorde)
+                    DoScriptText(SAY_SAURFANG_HORDE_INTRO1, Leader);
+                else
+                    DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO1, m_creature);
+                Leader->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+            SummonMgr.SummonCreatures(FollowerId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT, 4);
+            std::vector<Creature*> Followers;
+            Followers.reserve(4);
+            SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
+            for (size_t i = 0; i < Followers.size(); i++)
+            {
+                Followers[i]->StopAttackFaction(m_creature->getFaction());
+                Followers[i]->MonsterMove(-537.0f, 2202 + 5*i, FLOOR_HEIGHT, 2000);
+                Followers[i]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
+        else if (!TalkPhase)
+            ScriptedAI::MoveInLineOfSight(pWho);
     }
 
     void Aggro(Unit* pWho)
@@ -152,10 +249,15 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void JustDied(Unit* pKiller)
     {
-        SummonMgr.UnsummonAll();
+        SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         DoScriptText(SAY_DEATH, m_creature);
         RemoveAuras();
+        TalkPhase = 9;
         m_BossEncounter = DONE;
+        m_creature->setDeathState(JUST_ALIVED);
+        m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void SpellHitTarget(Unit *pVictim, const SpellEntry *pSpell)
@@ -178,8 +280,324 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
     }
 
+    void DoIntroCharge(Creature *Leader, uint32 FollowerId)   
+    {
+        Leader->MonsterMove(m_creature->GetPositionX()-10, Leader->GetPositionY(), FLOOR_HEIGHT+5, 1000);
+        std::list<Creature*> Followers;
+        SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
+        for(std::list<Creature*>::const_iterator i = Followers.begin(); i != Followers.end(); ++i)
+            (*i)->MonsterMove(m_creature->GetPositionX()-10, (*i)->GetPositionY(), FLOOR_HEIGHT+5, 1000);
+    }
+
     void UpdateAI(uint32 const uiDiff)
     {
+        if (TalkPhase)
+        {
+            if (TalkTimer < uiDiff)
+            {
+                Creature *HighSaurfang = SummonMgr.GetFirstFoundSummonWithId(NPC_HIGH_OVERLORD_SAURFANG);
+                TalkPhase++;
+                if (IsHorde)
+                {
+                    switch (TalkPhase)
+                    {
+                        // Intro
+                        case 2:
+                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO2, m_creature);
+                            TalkTimer = 14*IN_MILLISECONDS;
+                            break;
+                        case 3:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_INTRO3, HighSaurfang);
+                            TalkTimer = 7*IN_MILLISECONDS;
+                            break;
+                        case 4:
+                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO4, m_creature);
+                            TalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 5:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_INTRO5, HighSaurfang);
+                            TalkTimer = 15*IN_MILLISECONDS;
+                            break;
+                        case 6:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_INTRO6, HighSaurfang);
+                            TalkTimer = 14*IN_MILLISECONDS;
+                            break;
+                        case 7:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_INTRO7, HighSaurfang);
+                            TalkTimer = 4*IN_MILLISECONDS;
+                            break;
+                        case 8:
+                            if (HighSaurfang)
+                            {
+                                DoScriptText(EMOTE_SAURFANG_HORDE_INTRO8, HighSaurfang);
+                                DoIntroCharge(HighSaurfang, NPC_KORKRON_REAVER);
+                            }
+                            TalkTimer = 1000;
+                            break;
+                        case 9:
+                            if (HighSaurfang)
+                            {
+                                HighSaurfang->CastSpell(HighSaurfang, SPELL_INTRO_CHOKE, true);
+                                HighSaurfang->StopMoving();
+                                std::list<Creature*> Korkron; 
+                                SummonMgr.GetAllSummonsWithId(Korkron, NPC_KORKRON_REAVER);
+                                for (std::list<Creature*>::const_iterator i = Korkron.begin(); i!= Korkron.end(); ++i)
+                                {
+                                    (*i)->CastSpell(*i, SPELL_INTRO_CHOKE, true);
+                                    (*i)->StopMoving();
+                                }
+                            }
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO9, m_creature);
+                            TalkPhase = 0;
+                            break;
+                        // Outro
+                        case 10:
+                            if (HighSaurfang)
+                            {
+                                HighSaurfang->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
+                                HighSaurfang->MonsterMove(HighSaurfang->GetPositionX(), HighSaurfang->GetPositionY(), FLOOR_HEIGHT, 100);
+                                std::list<Creature*> Korkron; 
+                                SummonMgr.GetAllSummonsWithId(Korkron, NPC_KORKRON_REAVER);
+                                for (std::list<Creature*>::const_iterator i = Korkron.begin(); i != Korkron.end(); ++i)
+                                {
+                                    (*i)->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
+                                    (*i)->MonsterMove((*i)->GetPositionX(), (*i)->GetPositionY(), FLOOR_HEIGHT, 100);
+                                }
+                                DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO1, HighSaurfang);
+                            }
+                            TalkTimer = 2*IN_MILLISECONDS;
+                            break;
+                        case 11:
+                            if (HighSaurfang)
+                            {
+                                HighSaurfang->MonsterMoveWithSpeed(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+                                DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
+                            }
+                            TalkTimer = 6*IN_MILLISECONDS;
+                            break;
+                        case 12:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_OUTRO3, HighSaurfang);
+                            TalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 13:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_HORDE_OUTRO4, HighSaurfang);
+                            TalkTimer = 7*IN_MILLISECONDS;
+                            break;
+                        case 14:
+                            SummonMgr.UnsummonAll();
+                            TalkPhase = 0;
+                            break;
+                        default:
+                            TalkPhase = 0;
+                            break;
+                    }
+                }
+                else // Alliance
+                {
+                    Creature *Muradin = SummonMgr.GetFirstFoundSummonWithId(NPC_MURADIN_BRONZEBEARD);
+                    switch (TalkPhase)
+                    {
+                        // Intro
+                        case 2:
+                            DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO2, m_creature);
+                            TalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 3:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_INTRO3, Muradin);
+                            TalkTimer = 5*IN_MILLISECONDS;
+                            break;
+                        case 4:
+                            if (Muradin)
+                            {
+                                DoScriptText(SAY_MURADIN_ALLIANCE_INTRO4, Muradin);
+                                DoIntroCharge(Muradin, NPC_SKYBREAKER_MARINE);
+                            }
+                            TalkTimer = 1000;
+                            break;
+                        case 5:
+                            if (Muradin)
+                            {
+                                Muradin->CastSpell(Muradin, SPELL_INTRO_CHOKE, true);
+                                Muradin->StopMoving();
+                                std::list<Creature*> Marines;
+                                SummonMgr.GetAllSummonsWithId(Marines, NPC_SKYBREAKER_MARINE);
+                                for (std::list<Creature*>::const_iterator i = Marines.begin(); i != Marines.end(); ++i)
+                                {
+                                    (*i)->CastSpell(*i, SPELL_INTRO_CHOKE, true);
+                                    (*i)->StopMoving();
+                                }
+                            }
+                            TalkTimer = 1*IN_MILLISECONDS;
+                            break;
+                        case 6:
+                            DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO5, m_creature);
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            TalkPhase = 0;
+                            break;
+                        // Outro
+                        case 10:
+                            if (Muradin)
+                            {
+                                Muradin->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
+                                Muradin->MonsterMove(Muradin->GetPositionX(), Muradin->GetPositionY(), FLOOR_HEIGHT, 100);
+                                std::list<Creature*> Marines; 
+                                SummonMgr.GetAllSummonsWithId(Marines, NPC_SKYBREAKER_MARINE);
+                                for (std::list<Creature*>::const_iterator i = Marines.begin(); i != Marines.end(); ++i)
+                                {
+                                    (*i)->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
+                                    (*i)->MonsterMove((*i)->GetPositionX(), (*i)->GetPositionY(), FLOOR_HEIGHT, 100);
+                                }
+                                DoScriptText(EMOTE_MURADIN_ALLIANCE_OUTRO1, Muradin);
+                            }
+                            TalkTimer = 1*IN_MILLISECONDS;
+                            break;
+                        case 11:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO2, Muradin);
+                            TalkTimer = 6*IN_MILLISECONDS;
+                            break;
+                        case 12:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO3, Muradin);
+                            TalkTimer = 3*IN_MILLISECONDS;
+                            break;
+                        case 13:
+                            if (Muradin)
+                            {
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO4, Muradin);
+                                Muradin->MonsterMove(-510.3f, 2231.7f, 539.2f, 3000);
+                                std::vector<Creature*> Skybreakers;
+                                Skybreakers.reserve(4);
+                                SummonMgr.GetAllSummonsWithId(Skybreakers, NPC_SKYBREAKER_MARINE);
+                                for (size_t i = 0; i < Skybreakers.size(); i++)
+                                    Skybreakers[i]->MonsterMove(-519.0f + 5*i, 2227.0f, FLOOR_HEIGHT, 3000);
+                            }
+                            TalkTimer = 5*IN_MILLISECONDS;
+                            if (Creature *Saurfang = SummonMgr.SummonCreature(NPC_HIGH_OVERLORD_SAURFANG, -518.0f, 2247.0f, FLOOR_HEIGHT, 5.33f))
+                                Saurfang->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            break;
+                        case 14:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO5, Muradin);
+                            if (HighSaurfang)
+                                HighSaurfang->MonsterMoveWithSpeed(-511.5f, 2236.2f, FLOOR_HEIGHT);
+                            TalkTimer = 6*IN_MILLISECONDS;
+                            break;
+                        case 15:
+                            if (HighSaurfang)
+                                DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO6, HighSaurfang);
+                            TalkTimer = 7.5*IN_MILLISECONDS;
+                            break;
+                        case 16:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO7, Muradin);
+                            TalkTimer = 7*IN_MILLISECONDS;
+                            break;
+                        case 17:
+                        {
+                            SummonMgr.SummonCreature(NPC_JAINA_PROUDMOORE, -521.0f, 2220.4f, FLOOR_HEIGHT, 0.789f);
+                            Creature *Varian = SummonMgr.SummonCreature(NPC_VARIAN_WYRM, -524.0f, 2221.4f, FLOOR_HEIGHT, 0.789f);
+                            if (Varian)
+                                DoScriptText(SAY_VARIAN_ALLIANCE_OUTRO8, Varian);
+                            TalkTimer = 5*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 18:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO9, Muradin);
+                            TalkTimer = 2*IN_MILLISECONDS;
+                            break;
+                        case 19:
+                            if (HighSaurfang)
+                                HighSaurfang->MonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 8*IN_MILLISECONDS);
+                            TalkTimer = 8*IN_MILLISECONDS;
+                            break;
+                        case 20:
+                            if (HighSaurfang) // needs to pick up m_creature, not sure how to do so.
+                                DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO10, HighSaurfang);
+                            TalkTimer = 5*IN_MILLISECONDS;
+                            break;
+                        case 21:
+                            if (HighSaurfang)
+                                HighSaurfang->MonsterMove(-518.0f, 2247.0f, FLOOR_HEIGHT, 10*IN_MILLISECONDS);
+                            TalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 22:
+                            if (HighSaurfang)
+                            {
+                                HighSaurfang->SetOrientation(4.73f);
+                                DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO11, HighSaurfang);
+                            }
+                            TalkTimer = 8*IN_MILLISECONDS;
+                            break;
+                        case 23:
+                        {
+                            Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
+                            if (Varian)
+                                DoScriptText(SAY_VARIAN_ALLIANCE_OUTRO12, Varian);
+                            TalkTimer = 17*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 24:
+                        {
+                            SummonMgr.UnsummonAllWithId(NPC_HIGH_OVERLORD_SAURFANG);
+                            Creature *Jaina = SummonMgr.GetFirstFoundSummonWithId(NPC_JAINA_PROUDMOORE);
+                            if (Jaina)
+                                DoScriptText(EMOTE_JANIA_ALLIANCE_OUTRO13, Jaina);
+                            TalkTimer = 4*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 25:
+                        {
+                            Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
+                            if (Varian)
+                                DoScriptText(SAY_VARIAN_ALLIANCE_OUTRO14, Varian);
+                            TalkTimer = 3*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 26:
+                        {
+                            Creature *Jaina = SummonMgr.GetFirstFoundSummonWithId(NPC_JAINA_PROUDMOORE);
+                            if (Jaina)
+                                DoScriptText(SAY_JANIA_ALLIANCE_OUTRO15, Jaina);
+                            TalkTimer = 7*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 27:
+                        {
+                            Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
+                            if (Varian)
+                                DoScriptText(SAY_VARIAN_ALLIANCE_OUTRO16, Varian);
+                            TalkTimer = 10*IN_MILLISECONDS;
+                            break;
+                        }
+                        case 28:
+                            if (Muradin)
+                                DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO17, Muradin);
+                            TalkTimer = 3*IN_MILLISECONDS;
+                            break;
+                        case 29:
+                            SummonMgr.UnsummonAll();
+                            TalkPhase = 0;
+                            break;
+                        default:
+                            TalkPhase = 0;
+                            break;
+                    }
+                }
+            }
+            else
+                TalkTimer -= uiDiff;
+        }
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -190,6 +608,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
             if (pTarget)
                 DoCast(pTarget, SPELL_MARK_FALLEN_CHAMPION);
+            DoScriptText(SAY_MARK_OF_THE_FALLEN_CHAMPION, m_creature);
             m_creature->SetPower(POWER_ENERGY, 0);
         }
 

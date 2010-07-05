@@ -9,6 +9,8 @@
 // schedules an event
 #define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
 
+#define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE : false)
+
 enum
 {
     MAX_ENCOUNTER           = 14,
@@ -42,6 +44,9 @@ enum
 
     // total count of guid values stored
     DATA_MAX,
+
+    // instance variables
+    DATA_FACTION,
 
     // creature entries
     NPC_MARROWGAR           = 36612,
