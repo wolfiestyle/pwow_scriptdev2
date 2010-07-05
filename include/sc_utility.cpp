@@ -182,6 +182,27 @@ uint32 SummonManager::GetSummonCount(uint32 Id) const
     return count;
 }
 
+template <typename ContainerType>
+void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
+{
+    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
+        if (i->GetEntry() == Id)
+            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+                list.push_back(pSummon);
+}
+
+template void SummonManager::GetAllSummonsWithId(std::vector<Creature*>&, uint32) const;
+template void SummonManager::GetAllSummonsWithId(std::deque<Creature*>&,  uint32) const;
+template void SummonManager::GetAllSummonsWithId(std::list<Creature*>&,   uint32) const;
+
+Creature* SummonManager::GetFirstFoundSummonWithId(uint32 Id) const
+{
+    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
+        if (i->GetEntry() == Id)
+            return m_creature->GetMap()->GetCreature(*i);
+    return NULL;
+}
+
 void SummonManager::UnsummonCreature(Creature *pSummon)
 {
     if (!pSummon)

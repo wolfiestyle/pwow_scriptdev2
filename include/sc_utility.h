@@ -264,6 +264,7 @@ public:
 
     template <typename ContainerType>
     void GetAllSummonsWithId(ContainerType& list, uint32 Id) const;
+    Creature* GetFirstFoundSummonWithId(uint32 Id) const;
     SummonContainer const& GetSummonList() const { return m_Summons; }
 
     void UnsummonCreature(Creature*);
@@ -279,15 +280,6 @@ private:
     SummonManager(SummonManager const&);
     SummonManager& operator= (SummonManager const&);
 };
-
-template <typename ContainerType>
-void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
-{
-    for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (i->GetEntry() == Id)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                list.push_back(pSummon);
-}
 
 // get random point inside area delimited by circle
 void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, float cy = 0.0f);
