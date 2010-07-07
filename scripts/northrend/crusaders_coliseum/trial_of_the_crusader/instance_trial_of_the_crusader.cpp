@@ -33,46 +33,41 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 {
     std::vector<uint32> m_auiEncounter;
     std::string m_strInstData;
-    uint32 m_uiPlayerTeam;
-    uint32 m_uiAchievementProgressCounter;
-    uint32 m_uiAttemptCounter;
-    uint32 m_uiInTalkPhase;
-    uint32 m_bImmortal;
-
-    typedef std::vector<uint64> GuidContainer;  // data_id => guid
-    GuidContainer m_guidsStore;
+    std::vector<uint64> m_guidsStore;               // data_id => guid
+    UNORDERED_MAP<uint32, uint32> m_InstanceVars;   // data_id => value
 
     instance_trial_of_the_crusader(Map *pMap):
         ScriptedInstance(pMap),
         m_auiEncounter(MAX_ENCOUNTER, 0),
-        m_guidsStore(DATA_MAX, 0)
+        m_guidsStore(DATA_GUID_MAX, 0)
     {
         Initialize();
     }
 
     void OnPlayerEnter(Player *pWho)
     {
-        if (!m_uiPlayerTeam)
-            m_uiPlayerTeam = pWho->GetTeam();
+        if (!m_InstanceVars[DATA_FACTION])
+            m_InstanceVars[DATA_FACTION] = pWho->GetTeam();
+
         if ((instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC) &&
-            (m_uiAttemptCounter != 50 || IsEncounterInProgress()))
+            (m_InstanceVars[DATA_ATTEMPT_COUNTER] != 50 || IsEncounterInProgress()))
             return;
         pWho->SendUpdateWorldState(WORLD_STATE_TOTGC, 0);
     }
 
     void Initialize()
     {
-        m_uiAttemptCounter              = 50;
-        m_uiPlayerTeam                  = 0;
-        m_uiAchievementProgressCounter  = 0;
-        m_uiInTalkPhase                 = 0;
-        m_bImmortal                     = 1;
+        m_InstanceVars[DATA_FACTION]                = 0;
+        m_InstanceVars[DATA_ACHIEVEMENT_COUNTER]    = 0;
+        m_InstanceVars[DATA_ATTEMPT_COUNTER]        = 50;
+        m_InstanceVars[DATA_IN_TALK_PHASE]          = 0;
+        m_InstanceVars[DATA_IMMORTAL]               = 1;
     }
 
     void InitWorldState(bool Enable = true)
     {
         DoUpdateWorldState(WORLD_STATE_TOTGC, Enable ? 1 : 0);
-        DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_uiAttemptCounter);
+        DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_InstanceVars[DATA_ATTEMPT_COUNTER]);
     }
 
     bool IsEncounterInProgress() const
@@ -83,14 +78,14 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
     void OnCreatureCreate(Creature *pCreature)
     {
         uint32 data_id = toc::GetType(pCreature);
-        if (data_id < DATA_MAX)
+        if (data_id < DATA_GUID_MAX)
             m_guidsStore[data_id] = pCreature->GetGUID();
     }
 
     void OnObjectCreate(GameObject *pGo)
     {
         uint32 data_id = toc::GetType(pGo);
-        if (data_id < DATA_MAX)
+        if (data_id < DATA_GUID_MAX)
             m_guidsStore[data_id] = pGo->GetGUID();
     }
 
@@ -102,13 +97,14 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case TYPE_ANUBARAK:
                 if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
                 {
-                    if (m_uiAttemptCounter >= 50)
+                    uint32 AttemptCounter = m_InstanceVars[DATA_ATTEMPT_COUNTER];
+                    if (AttemptCounter >= 50)
                         loot_id = TYPE_ANUBARAK_CHEST_50;
-                    else if (m_uiAttemptCounter >= 45)
+                    else if (AttemptCounter >= 45)
                         loot_id = TYPE_ANUBARAK_CHEST_45;
-                    else if (m_uiAttemptCounter >= 25)
+                    else if (AttemptCounter >= 25)
                         loot_id = TYPE_ANUBARAK_CHEST_25;
-                    else // m_uiAttemptCounter < 25
+                    else // AttemptCounter < 25
                         loot_id = TYPE_ANUBARAK_CHEST_FAIL;
                 }
                 break;
@@ -138,26 +134,13 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        switch (uiType)
-        {
-            case DATA_ACHIEVEMENT_COUNTER:
-                m_uiAchievementProgressCounter = uiData;
-                break;
-            case DATA_ATTEMPT_COUNTER:
-                m_uiAttemptCounter = uiData;
-                DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, m_uiAttemptCounter);
-                break;
-            case DATA_IN_TALK_PHASE:
-                m_uiInTalkPhase = uiData;
-                break;
-            case DATA_IMMORTAL:
-                m_bImmortal = uiData;
-                break;
-            default:
-                if (uiType < MAX_ENCOUNTER)
-                    m_auiEncounter[uiType] = uiData;
-                break;
-        }
+        if (uiType < MAX_ENCOUNTER)
+            m_auiEncounter[uiType] = uiData;
+        else if (uiType > DATA_GUID_MAX)
+            m_InstanceVars[uiType] = uiData;
+
+        if (uiType == DATA_ATTEMPT_COUNTER)
+            DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, uiData);
 
         if (uiType < MAX_ENCOUNTER && uiData == IN_PROGRESS)
             if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
@@ -165,8 +148,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
         std::ostringstream saveStream;
         std::copy(m_auiEncounter.begin(), m_auiEncounter.end(), std::ostream_iterator<uint32>(saveStream, " "));
-        saveStream << m_uiAttemptCounter << " ";
-        saveStream << m_bImmortal << " ";
+        saveStream << m_InstanceVars[DATA_ATTEMPT_COUNTER] << " ";
+        saveStream << m_InstanceVars[DATA_IMMORTAL] << " ";
 
         m_strInstData = saveStream.str();
 
@@ -182,27 +165,15 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     uint64 GetData64(uint32 uiData)
     {
-        return uiData < DATA_MAX ? m_guidsStore[uiData] : 0;
+        return uiData < DATA_GUID_MAX ? m_guidsStore[uiData] : 0;
     }
 
     uint32 GetData(uint32 uiType)
     {
         if (uiType < MAX_ENCOUNTER)
             return m_auiEncounter[uiType];
-
-        switch (uiType)
-        {
-            case DATA_FACTION:
-                return m_uiPlayerTeam;
-            case DATA_ACHIEVEMENT_COUNTER:
-                return m_uiAchievementProgressCounter;
-            case DATA_ATTEMPT_COUNTER:
-                return m_uiAttemptCounter;
-            case DATA_IN_TALK_PHASE:
-                return m_uiInTalkPhase;
-            case DATA_IMMORTAL:
-                return m_bImmortal;
-        }
+        else if (uiType > DATA_GUID_MAX)
+            return map_find(m_InstanceVars, uiType);
 
         return 0;
     }
@@ -226,8 +197,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
         for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
             loadStream >> m_auiEncounter[i];
-        loadStream >> m_uiAttemptCounter;
-        loadStream >> m_bImmortal;
+        loadStream >> m_InstanceVars[DATA_ATTEMPT_COUNTER];
+        loadStream >> m_InstanceVars[DATA_IMMORTAL];
 
         std::replace(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS, NOT_STARTED);
 
@@ -236,7 +207,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
     {
-        switch(CriteriaId)
+        switch (CriteriaId)
         {
             case THREE_SIXTY_CRITERIA_N10:
             case THREE_SIXTY_CRITERIA_N25:
@@ -244,24 +215,24 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case THREE_SIXTY_CRITERIA_H25:
             case UPPER_BACK_PAIN_CRITERIA_N10:
             case UPPER_BACK_PAIN_CRITERIA_H10:
-                return m_uiAchievementProgressCounter >= 2;
+                return m_InstanceVars[DATA_ACHIEVEMENT_COUNTER] >= 2;
             case UPPER_BACK_PAIN_CRITERIA_N25:
             case UPPER_BACK_PAIN_CRITERIA_H25:
-                return m_uiAchievementProgressCounter >= 4;
+                return m_InstanceVars[DATA_ACHIEVEMENT_COUNTER] >= 4;
             case TRIBUTE_TO_SKILL_CRITERIA_10H1:
             case TRIBUTE_TO_SKILL_CRITERIA_25H1:
-                return m_uiAttemptCounter >= 25;
+                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 25;
             case TRIBUTE_TO_MAD_SKILL_CRITERIA_10H1:
             case TRIBUTE_TO_MAD_SKILL_CRITERIA_25H1:
-                return m_uiAttemptCounter >= 45;
+                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 45;
             case TRIBUTE_TO_INSANITY_CRITERIA_10H1:
             case TRIBUTE_TO_INSANITY_CRITERIA_25H1:
             //case TRIBUTE_TO_DEDICATED_INSANITY:      //TODO: uncomment this line once the checks for gear get applied for every encounter
             case REALMFIRST_GRAND_CRUSADER_CRITERIA:
-                return m_uiAttemptCounter >= 50;
+                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
             case TRIBUTE_TO_IMMORTALITY_CRITERIA_25H:  //TODO: achievement reward into DB (missing item templates)
             case TRIBUTE_TO_IMMORTALITY_CRITERIA_25A:
-                return m_uiAttemptCounter >= 50 && m_bImmortal;
+                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50 && m_InstanceVars[DATA_IMMORTAL];
             default:
                 return false;
         }

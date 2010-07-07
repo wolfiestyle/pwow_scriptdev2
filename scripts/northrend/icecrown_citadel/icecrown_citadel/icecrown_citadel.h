@@ -43,7 +43,7 @@ enum
     DATA_SAURFANG_DOOR,
 
     // total count of guid values stored
-    DATA_MAX,
+    DATA_GUID_MAX,
 
     // instance variables
     DATA_FACTION,

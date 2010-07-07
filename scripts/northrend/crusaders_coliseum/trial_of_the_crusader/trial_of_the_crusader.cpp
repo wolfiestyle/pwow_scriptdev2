@@ -70,12 +70,12 @@ namespace toc {
 
 uint32 GetType(Creature *pCreature)
 {
-    return map_find(CreatureEntryToType, pCreature->GetEntry(), DATA_MAX);
+    return map_find(CreatureEntryToType, pCreature->GetEntry(), DATA_GUID_MAX);
 }
 
 uint32 GetType(GameObject *pGO)
 {
-    return map_find(GameObjectEntryToType, pGO->GetEntry(), DATA_MAX);
+    return map_find(GameObjectEntryToType, pGO->GetEntry(), DATA_GUID_MAX);
 }
 
 } // namespace toc

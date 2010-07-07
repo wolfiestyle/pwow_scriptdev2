@@ -33,28 +33,26 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 {
     std::vector<uint32> m_auiEncounter;
     std::string m_strInstData;
-    uint32 m_uiPlayerTeam;
-
-    typedef std::vector<uint64> GuidContainer;  // data_id => guid
-    GuidContainer m_guidsStore;
+    std::vector<uint64> m_guidsStore;               // data_id => guid
+    UNORDERED_MAP<uint32, uint32> m_InstanceVars;   // data_id => value
 
     instance_icecrown_citadel(Map *pMap):
         ScriptedInstance(pMap),
         m_auiEncounter(MAX_ENCOUNTER, 0),
-        m_guidsStore(DATA_MAX, 0)
+        m_guidsStore(DATA_GUID_MAX, 0)
     {
         Initialize();
     }
 
     void OnPlayerEnter(Player *pWho)
     {
-        if (!m_uiPlayerTeam)
-            m_uiPlayerTeam = pWho->GetTeam();
+        if (!m_InstanceVars[DATA_FACTION])
+            m_InstanceVars[DATA_FACTION] = pWho->GetTeam();
     }
 
     void Initialize()
     {
-        m_uiPlayerTeam = 0;
+        m_InstanceVars[DATA_FACTION] = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -65,14 +63,14 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void OnCreatureCreate(Creature *pCreature)
     {
         uint32 data_id = icc::GetType(pCreature);
-        if (data_id < DATA_MAX)
+        if (data_id < DATA_GUID_MAX)
             m_guidsStore[data_id] = pCreature->GetGUID();
     }
 
     void OnObjectCreate(GameObject *pGo)
     {
         uint32 data_id = icc::GetType(pGo);
-        if (data_id < DATA_MAX)
+        if (data_id < DATA_GUID_MAX)
             m_guidsStore[data_id] = pGo->GetGUID();
     }
 
@@ -105,13 +103,10 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        switch (uiType)
-        {
-            default:
-                if (uiType < MAX_ENCOUNTER)
-                    m_auiEncounter[uiType] = uiData;
-                break;
-        }
+        if (uiType < MAX_ENCOUNTER)
+            m_auiEncounter[uiType] = uiData;
+        else if (uiType > DATA_GUID_MAX)
+            m_InstanceVars[uiType] = uiData;
 
         std::ostringstream saveStream;
         std::copy(m_auiEncounter.begin(), m_auiEncounter.end(), std::ostream_iterator<uint32>(saveStream, " "));
@@ -130,21 +125,17 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     uint64 GetData64(uint32 uiData)
     {
-        return uiData < DATA_MAX ? m_guidsStore[uiData] : 0;
+        return uiData < DATA_GUID_MAX ? m_guidsStore[uiData] : 0;
     }
 
     uint32 GetData(uint32 uiType)
     {
         if (uiType < MAX_ENCOUNTER)
             return m_auiEncounter[uiType];
+        else if (uiType > DATA_GUID_MAX)
+            return map_find(m_InstanceVars, uiType);
 
-        switch(uiType)
-        {
-            case DATA_FACTION:
-                return m_uiPlayerTeam;
-            default:
-                return 0;
-        }
+        return 0;
     }
 
     const char* Save()

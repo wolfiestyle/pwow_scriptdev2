@@ -80,7 +80,7 @@ enum
     TYPE_ENTRANCE_DOOR,
     TYPE_MAIN_GATE,
     // total count of guid values stored
-    DATA_MAX,
+    DATA_GUID_MAX,
 
     // instance variables
     DATA_FACTION,
