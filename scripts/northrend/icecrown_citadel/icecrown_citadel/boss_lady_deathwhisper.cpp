@@ -219,7 +219,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
             RESCHEDULE_EVENT(FROSTBOLT);
             RESCHEDULE_EVENT(TOUCH_OF_INSIGNIFICANCE);
             RESCHEDULE_EVENT(SUMMON_SHADE);
-            m_creature->MonsterTextEmote("Lady Deathwhisper's Mana Barrier shimmers and fades away!", NULL, true);
+            m_creature->MonsterTextEmote("Lady Deathwhisper's Mana Barrier shimmers and fades away!", 0, true);
         }
         else
         {
@@ -232,7 +232,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
     {
         if (!OriginalSummon)
             return;
-        if (Creature *pSummon = SummonMgr.SummonCreatureAt(OriginalSummon, NextSummonId, TEMPSUMMON_CORPSE_DESPAWN))
+        if (Creature *pSummon = SummonMgr.SummonCreatureAt(OriginalSummon, NextSummonId, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
         {
             SummonMgr.UnsummonCreature(OriginalSummon);
             pSummon->SetInCombatWithZone();
@@ -388,8 +388,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                 {
                     RESCHEDULE_EVENT(BUFF_ADD);
 
-                    std::vector<Creature*> ApplicableSummons;
-                    ApplicableSummons.reserve(SummonMgr.GetSummonCount());
+                    std::deque<Creature*> ApplicableSummons;
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_FANATIC);
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_ADHERENT);
                     if (ApplicableSummons.empty())
@@ -438,7 +437,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                 {
                     float x, y;
                     GetRandomPointInCircle(x, y, 40.0f, m_creature->GetPositionX(), m_creature->GetPositionY());
-                    Creature *pSumm = SummonMgr.SummonCreature(NPC_VENGEFUL_SHADE, x, y, m_creature->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN);
+                    Creature *pSumm = SummonMgr.SummonCreature(NPC_VENGEFUL_SHADE, x, y, m_creature->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
                     if (pSumm)
                     {
                         pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -646,7 +645,9 @@ struct MANGOS_DLL_DECL mob_vengeful_shadeAI: public ScriptedAI
     {
     }
 
-    void Reset() {}
+    void Reset()
+    {
+    }
 
     void Explode()
     {
