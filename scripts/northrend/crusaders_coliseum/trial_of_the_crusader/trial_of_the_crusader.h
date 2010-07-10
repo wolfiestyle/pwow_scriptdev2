@@ -11,6 +11,9 @@
 
 #define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE : false)
 
+#define DESPAWN_CREATURE \
+    do { if (m_creature->isTemporarySummon()) static_cast<TemporarySummon*>(m_creature)->UnSummon(); else m_creature->ForcedDespawn(); } while (0)
+
 enum
 {
     MAX_ENCOUNTER               = 22,

@@ -72,14 +72,14 @@ enum Events
     EVENT_BUFF,
 };
 
-#define BUFF_TIMER          urand(30,45)*IN_MILLISECONDS
-#define PORTAL_TIMER        2*MINUTE*IN_MILLISECONDS
 #define BERSERK_TIMER       10*MINUTE*IN_MILLISECONDS
+#define PORTAL_TIMER        2*MINUTE*IN_MILLISECONDS
 #define VOLCANO_TIMER       2*MINUTE*IN_MILLISECONDS
 #define FIREBALL_TIMER      urand(10,15)*IN_MILLISECONDS
 #define LIGHTNING_TIMER     urand(15,20)*IN_MILLISECONDS
 #define INCINERATE_TIMER    urand(25,30)*IN_MILLISECONDS
 #define LEGION_FLAME_TIMER  urand(30,40)*IN_MILLISECONDS
+#define BUFF_TIMER          urand(30,45)*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
@@ -139,10 +139,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
         SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
 
         if (!m_bIsHeroic && (pSummon->GetEntry() == NPC_NETHER_PORTAL || pSummon->GetEntry() == NPC_VOLCANO))
-        {
-            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        }
+            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
         switch (pSummon->GetEntry())
         {
@@ -182,6 +179,16 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
+                case EVENT_BERSERK:
+                    m_creature->InterruptNonMeleeSpells(false);
+                    m_creature->CastSpell(m_creature, SPELL_BERSERK, false);
+                    break;
+                case EVENT_INCINERATE_FLESH:
+                    DoScriptText(SAY_INCINERATE, m_creature);
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        m_creature->CastSpell(pTarget, SPELL_INCINERATE_FLESH, false);
+                    Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
+                    break;
                 case EVENT_FEL_FIREBALL:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEL_FIREBALL);
                     Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
@@ -190,12 +197,6 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, SPELL_FEL_LIGHTNING);
                     Events.ScheduleEvent(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER);
-                    break;
-                case EVENT_INCINERATE_FLESH:
-                    DoScriptText(SAY_INCINERATE, m_creature);
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->CastSpell(pTarget, SPELL_INCINERATE_FLESH, false);
-                    Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
                     break;
                 case EVENT_LEGION_FLAME:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
@@ -211,10 +212,6 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     DoScriptText(SAY_SUMMON_MISTRESS_OF_PAIN, m_creature);
                     m_creature->CastSpell(m_creature, SPELL_NETHER_PORTAL, false);
                     Events.ScheduleEvent(EVENT_SUMMON_PORTAL, PORTAL_TIMER);
-                    break;
-                case EVENT_BERSERK:
-                    m_creature->InterruptNonMeleeSpells(false);
-                    m_creature->CastSpell(m_creature, SPELL_BERSERK, false);
                     break;
                 case EVENT_BUFF:
                     DoCastSpellIfCan(m_creature, SPELL_NETHER_POWER);
@@ -257,16 +254,20 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     EventMap Events;
     InstanceVar<uint32> m_AchievementCounter;
+    bool m_bIsHeroic;
 
     mob_mistress_of_painAI(Creature* pCreature):
         ScriptedAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
+        Difficulty diff = m_creature->GetMap()->GetDifficulty();
+        m_bIsHeroic = diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
     }
 
     void Reset()
     {
+        Events.Reset();
     }
 
     void KilledUnit(Unit *pWho)
@@ -277,7 +278,8 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
+        if (m_bIsHeroic)
+            Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
         Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
         Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
         ++m_AchievementCounter;
@@ -286,16 +288,14 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
     void JustDied(Unit* pSlayer)
     {
         --m_AchievementCounter;
-       if (m_creature->isTemporarySummon())
-           static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        DESPAWN_CREATURE;
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            DESPAWN_CREATURE;
             return;
         }
 
@@ -356,8 +356,7 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
     void JustDied(Unit* pSlayer)
     {
-       if (m_creature->isTemporarySummon())
-           static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        DESPAWN_CREATURE;
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -370,8 +369,8 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 
 struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 {
-    EventMap Events;
     ScriptedInstance *m_pInstance;
+    EventMap Events;
 
     mob_felflame_infernalAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -381,6 +380,7 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void Reset()
     {
+        Events.Reset();
     }
 
     void KilledUnit(Unit *pWho)
@@ -397,16 +397,14 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void JustDied(Unit* pSlayer)
     {
-       if (m_creature->isTemporarySummon())
-           static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        DESPAWN_CREATURE;
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            DESPAWN_CREATURE;
             return;
         }
 
@@ -432,16 +430,19 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
     }
 };
 
+#define FLAME_DESPAWN_TIMER 60*IN_MILLISECONDS
+
 struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
 {
     ScriptedInstance *m_pInstance;
+    uint32 m_uiDespawnTimer;
 
     mob_legion_flameAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_uiDespawnTimer(0)
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetDisplayId(11686);
         m_creature->CastSpell(m_creature, SPELL_LEGION_FLAMES, false);
     }
@@ -458,8 +459,10 @@ struct MANGOS_DLL_DECL mob_legion_flameAI: public Scripted_NoMovementAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_pInstance->IsEncounterInProgress())
-            m_creature->ForcedDespawn();
+        m_uiDespawnTimer += uiDiff;
+
+        if (m_uiDespawnTimer > FLAME_DESPAWN_TIMER || !m_pInstance->IsEncounterInProgress())
+            DESPAWN_CREATURE;
     }
 };
 
