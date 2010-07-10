@@ -134,6 +134,8 @@ void EventMap::CancelEventsByGCD(uint32 gcd)
 
 void SummonManager::AddSummonToList(ObjectGuid const& guid)
 {
+    if (guid.GetHigh() != HIGHGUID_UNIT)
+        return;
     m_Summons.push_back(guid);
 }
 
@@ -207,11 +209,9 @@ void SummonManager::UnsummonCreature(Creature *pSummon)
 {
     if (!pSummon)
         return;
+    RemoveSummonFromList(pSummon->GetObjectGuid());
     if (pSummon->isTemporarySummon())
-    {
-        RemoveSummonFromList(pSummon->GetObjectGuid());
         static_cast<TemporarySummon*>(pSummon)->UnSummon();
-    }
     else    // called for non-summoned unit
         pSummon->ForcedDespawn();
 }
@@ -229,7 +229,12 @@ void SummonManager::UnsummonAllWithId(uint32 Id)
         if (i->GetEntry() == Id)
         {
             if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-                static_cast<TemporarySummon*>(pSummon)->UnSummon();
+            {
+                if (pSummon->isTemporarySummon())
+                    static_cast<TemporarySummon*>(pSummon)->UnSummon();
+                else    // non-summoned creature in list
+                    pSummon->ForcedDespawn();
+            }
             i = m_Summons.erase(i);
         }
         else
@@ -241,7 +246,12 @@ void SummonManager::UnsummonAll()
 {
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
-            static_cast<TemporarySummon*>(pSummon)->UnSummon();
+        {
+            if (pSummon->isTemporarySummon())
+                static_cast<TemporarySummon*>(pSummon)->UnSummon();
+            else    // non-summoned creature in list
+                pSummon->ForcedDespawn();
+        }
 
     m_Summons.clear();
 }
