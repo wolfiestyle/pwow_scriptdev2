@@ -276,3 +276,41 @@ uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
         return spell_id;
     return diff_entry->spellId[diff];
 }
+
+//--- Script Messaging ----------------------------------------------
+
+void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
+{
+    AllCreaturesInRangeCheck check(pSender, fMaxRange);
+    ScriptMessageDeliverer<AllCreaturesInRangeCheck> deliverer(pSender, check, data1, data2, to_self);
+
+    Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
+}
+
+void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
+{
+    AllCreaturesOfEntryInRange check(pSender, entry, fMaxRange);
+    ScriptMessageDeliverer<AllCreaturesOfEntryInRange> deliverer(pSender, check, data1, data2, to_self);
+
+    Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
+}
+
+ScriptEventInterface::ScriptEventInterface(Creature *pSender):
+    m_sender(pSender)
+{
+}
+
+void ScriptEventInterface::ScriptMessage(Creature* from, uint32 event_id, uint32 event_timer)
+{
+    Events.ScheduleEvent(event_id, event_timer);
+}
+
+void ScriptEventInterface::BroadcastEvent(uint32 event_id, uint32 event_timer, float max_range, bool to_self)
+{
+    BroadcastScriptMessage(m_sender, max_range, event_id, event_timer, to_self);
+}
+
+void ScriptEventInterface::BroadcastEventToEntry(uint32 entry, uint32 event_id, uint32 event_timer, float max_range, bool to_self)
+{
+    BroadcastScriptMessageToEntry(m_sender, entry, max_range, event_id, event_timer, to_self);
+}

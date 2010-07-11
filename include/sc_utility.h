@@ -287,4 +287,89 @@ void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, 
 // get correct spell_id for the given difficulty
 uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
 
-#endif
+// --- Script Messaging System ---
+
+// defines a callback function used for receiving script messages
+struct ScriptMessageInterface
+{
+    virtual ~ScriptMessageInterface() {}
+    virtual void ScriptMessage(Creature* /*sender*/, uint32 /*data1*/, uint32 /*data2*/) = 0;
+};
+
+// grid notifier that does the script messaging (internal usage)
+template <class Check>
+class ScriptMessageDeliverer
+{
+public:
+    ScriptMessageDeliverer(Creature* sender, Check& check, uint32 data1, uint32 data2, bool to_self):
+        i_sender(sender), i_check(check), i_data1(data1), i_data2(data2), i_toSelf(to_self)
+    {
+    }
+
+    void Visit(CreatureMapType& m)
+    {
+        for (CreatureMapType::iterator i = m.begin(); i != m.end(); ++i)
+            if (i_toSelf || i->getSource() != i_sender)
+                if (i_check(i->getSource()))
+                    if (ScriptMessageInterface *smi = dynamic_cast<ScriptMessageInterface*>(i->getSource()->AI()))
+                        smi->ScriptMessage(i_sender, i_data1, i_data2);
+    }
+
+    template <class SKIP> void Visit(GridRefManager<SKIP>&) {}
+
+private:
+    Creature *i_sender;
+    Check &i_check;
+    uint32 i_data1, i_data2;
+    bool i_toSelf;
+};
+
+// check for any creature in range (internal usage)
+class AllCreaturesInRangeCheck
+{
+public:
+    AllCreaturesInRangeCheck(WorldObject const* source, float range):
+        i_source(source), i_range(range)
+    {
+    }
+
+    bool operator() (Unit* pUnit)
+    {
+        return i_source->IsWithinDist(pUnit, i_range);
+    }
+
+private:
+    WorldObject const* i_source;
+    float i_range;
+
+    AllCreaturesInRangeCheck(AllCreaturesInRangeCheck const&);
+};
+
+// sends a script message to all creatures in range
+void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
+
+// sends a script message to all creatures with entry in range
+void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
+
+// base class that implements event broadcasting using EventMap
+class ScriptEventInterface: public ScriptMessageInterface
+{
+public:
+    EventMap Events;
+
+    // callback function that schedules a remote event
+    void ScriptMessage(Creature* from, uint32 event_id, uint32 event_timer);
+
+    // sends an event to all creatures in range
+    void BroadcastEvent(uint32 event_id, uint32 event_timer, float max_range, bool to_self = false);
+
+    // sends an event to all creatures with entry in range
+    void BroadcastEventToEntry(uint32 entry, uint32 event_id, uint32 event_timer, float max_range, bool to_self = false);
+
+protected:
+    Creature *m_sender;
+
+    explicit ScriptEventInterface(Creature *pSender);
+};
+
+#endif // SC_UTILITY_H
