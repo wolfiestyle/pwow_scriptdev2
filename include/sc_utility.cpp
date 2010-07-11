@@ -134,7 +134,7 @@ void EventMap::CancelEventsByGCD(uint32 gcd)
 
 void SummonManager::AddSummonToList(ObjectGuid const& guid)
 {
-    if (guid.GetHigh() != HIGHGUID_UNIT)
+    if (!guid.IsCreature())
         return;
     m_Summons.push_back(guid);
 }
