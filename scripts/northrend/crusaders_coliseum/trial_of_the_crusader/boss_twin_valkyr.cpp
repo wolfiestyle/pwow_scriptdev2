@@ -229,7 +229,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                 Darkbane->AI()->JustDied(NULL);
         }
         // for some odd reason, SummonCreatureJustDied() is not called when using setDeathState() + setHealth()...
-        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
+        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
             if (barrett->AI())
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
     }
@@ -427,7 +427,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                 Lightbane->AI()->JustDied(NULL);
         }
         // for some odd reason, SummonCreatureJustDied() is not called when using setDeathState() + setHealth()...
-        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
+        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
             if (barrett->AI())
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
 

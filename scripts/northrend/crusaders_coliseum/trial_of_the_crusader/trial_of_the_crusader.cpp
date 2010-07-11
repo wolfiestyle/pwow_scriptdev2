@@ -40,7 +40,7 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_FJOLA_LIGHTBANE,       TYPE_FJOLA_LIGHTBANE)
     (NPC_EYDIS_DARKBANE,        TYPE_EYDIS_DARKBANE)
     (NPC_ANUBARAK,              TYPE_ANUBARAK)
-    (NPC_BARRETT_RAMSAY,        TYPE_BARRETT_RAMSAY)
+    (NPC_BARRETT_RAMSEY,        TYPE_BARRETT_RAMSEY)
     (NPC_VARIAN_WYRM,           TYPE_VARIAN_WYRM)
     (NPC_GARROSH_HELLSCREAM,    TYPE_GARROSH_HELLSCREAM)
     (NPC_TIRION_FORDRING,       TYPE_TIRION_FORDRING)
@@ -95,7 +95,7 @@ void boss_trial_of_the_crusaderAI::Reset()
 {
     Events.Reset();
     m_BossEncounter = NOT_STARTED;
-    if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
+    if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
         if (ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
 }

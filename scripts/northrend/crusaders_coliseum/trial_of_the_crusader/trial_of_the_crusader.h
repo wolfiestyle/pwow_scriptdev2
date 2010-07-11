@@ -7,7 +7,7 @@
 #define GET_GAMEOBJECT(G)   (InstanceVar<uint64>(G, m_pInstance).getObject<GameObject>())
 
 // schedules an event
-#define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV);
+#define RESCHEDULE_EVENT(EV) Events.RescheduleEvent(EVENT_##EV, TIMER_##EV)
 
 #define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE : false)
 
@@ -63,7 +63,7 @@ enum
     // 'suprise' boss
     TYPE_ANUBARAK               = 21,
     // controller guy
-    TYPE_BARRETT_RAMSAY,
+    TYPE_BARRETT_RAMSEY,
     // spectators
     TYPE_VARIAN_WYRM,
     TYPE_GARROSH_HELLSCREAM,
@@ -129,7 +129,7 @@ enum
     NPC_EYDIS_DARKBANE          = 34496,
     NPC_ANUBARAK                = 34564, // 'suprise' boss
 
-    NPC_BARRETT_RAMSAY          = 34816,
+    NPC_BARRETT_RAMSEY          = 34816,
     NPC_VARIAN_WYRM             = 34990,
     NPC_GARROSH_HELLSCREAM      = 34995,
     NPC_TIRION_FORDRING         = 34996,

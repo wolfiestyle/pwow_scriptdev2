@@ -342,7 +342,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
         Events.Reset();
         DoScriptText(SAY_DEATH, m_creature);
         //only non-summoned boss, so to streamline things its easier to do this
-        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSAY))
+        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
             if (barrett->AI())
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
     }

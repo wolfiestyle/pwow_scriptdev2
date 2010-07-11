@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: NPC Barret Ramsey
 SD%Complete: 90
-SDComment: event not fully implemented, just the necessary parts to make it doable
+SDComment: 
 SDCategory: Trial of the Crusader
 EndScriptData */
 
@@ -101,7 +101,8 @@ enum Says
 };
 
 #define GOSSIP_START_NEXT_BOSS  "We are ready to begin the next challenge."  //not the actual text, but I cant find a source for it. If you know them, change it
-#define GOSSIP_TEXT_ID          45323
+#define GOSSIP_TEXT_ID          14664
+#define GOSSIP_TEXT_FAIL        14833
 
 #define DESPAWN_TIME            4*MINUTE*IN_MILLISECONDS
 #define SUMMON_TIMER            3*MINUTE*IN_MILLISECONDS
@@ -838,8 +839,6 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
 
         if (m_AttemptCounter == 0)
         {
-            if (m_creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))
-                m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             if (Creature* Anub = GET_CREATURE(TYPE_ANUBARAK))
                 Anub->ForcedDespawn();
         }
@@ -904,8 +903,13 @@ bool GossipHello_npc_barrett_ramsey(Player *pPlayer, Creature *pCreature)
     npc_barrett_ramseyAI *Ai = dynamic_cast<npc_barrett_ramseyAI*>(pCreature->AI());
     if (Ai && !Ai->IsEncounterInProgress())
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_NEXT_BOSS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, pCreature->GetGUID());
+        if (Ai->m_AttemptCounter)
+        {
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_NEXT_BOSS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, pCreature->GetGUID());
+        }
+        else
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_FAIL, pCreature->GetGUID());
     }
     return true;
 }
@@ -915,7 +919,7 @@ bool GossipSelect_npc_barrett_ramsey(Player *pPlayer, Creature *pCreature, uint3
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
         npc_barrett_ramseyAI *Ai = dynamic_cast<npc_barrett_ramseyAI*>(pCreature->AI());
-        if (Ai && !Ai->IsEncounterInProgress())
+        if (Ai && !Ai->IsEncounterInProgress() && Ai->m_AttemptCounter)
             Ai->StartNextPhase();
     }
     pPlayer->CLOSE_GOSSIP_MENU();
