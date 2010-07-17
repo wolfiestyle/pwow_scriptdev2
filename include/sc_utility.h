@@ -87,18 +87,18 @@ public:
 
     uint32 ExecuteEvent();                  // process and return next pending event
 
-    // helper for calculating bit masks
-    static uint32 PhaseMask(int a) { return 1 << a; }
-    static uint32 PhaseMask(int a, int b) { return 1 << a | 1 << b; }
-    static uint32 PhaseMask(int a, int b, int c) { return 1 << a | 1 << b | 1 << c; }
-    static uint32 PhaseMask(int a, int b, int c, int d) { return 1 << a | 1 << b | 1 << c | 1 << d; }
-    static uint32 PhaseMask(int a, int b, int c, int d, int e) { return 1 << a | 1 << b | 1 << c | 1 << d | 1 << e; }
-    static uint32 PhaseMask(int a, int b, int c, int d, int e, int f) { return 1 << a | 1 << b | 1 << c | 1 << d | 1 << e | 1 << f; }
+    // helper for calculating bit masks (compile time constant that can be used in enums)
+    // usage: EventManager::PhaseMask<phase_num, ...>::value
+    template <int N1, int N2 = -1, int N3 = -1, int N4 = -1, int N5 = -1, int N6 = -1>
+    struct PhaseMask { enum { value = 1 << N1 | PhaseMask<N2, N3, N4, N5, N6, -1>::value }; };
 
 private:
     EventManager(EventManager const&);
     EventManager& operator= (EventManager const&);
 };
+
+template <>
+struct EventManager::PhaseMask<-1, -1, -1, -1, -1, -1> { enum { value = 0 }; };
 
 // helper for static initialization of map containers
 // (map, multimap, unordered_map, unordered_multimap)
