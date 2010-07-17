@@ -149,7 +149,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
     uint32 phase;
 
     boss_steelbreakerAI(Creature* pCreature):
@@ -281,7 +281,7 @@ struct MANGOS_DLL_DECL boss_runemaster_molgeimAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
     uint32 phase;
 
     boss_runemaster_molgeimAI(Creature* pCreature):
@@ -422,7 +422,7 @@ struct MANGOS_DLL_DECL boss_stormcaller_brundirAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
     uint32 phase;
 
     boss_stormcaller_brundirAI(Creature* pCreature):
@@ -614,7 +614,7 @@ struct MANGOS_DLL_DECL mob_lightning_elementalAI : public ScriptedAI
 struct MANGOS_DLL_DECL mob_rune_of_summoningAI : public ScriptedAI
 {
     uint32 n_summons;
-    EventMap events;
+    EventManager events;
 
     mob_rune_of_summoningAI(Creature *pCreature):
         ScriptedAI(pCreature)

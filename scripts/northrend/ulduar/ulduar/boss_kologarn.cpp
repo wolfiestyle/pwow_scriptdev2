@@ -79,7 +79,7 @@ struct MANGOS_DLL_DECL boss_kologarnAI: public Scripted_NoMovementAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     boss_kologarnAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature),
@@ -207,7 +207,7 @@ struct MANGOS_DLL_DECL boss_kologarn_armAI: public Scripted_NoMovementAI
 {
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
     uint32 m_uiUngripDamage;
 
     boss_kologarn_armAI(Creature* pCreature):

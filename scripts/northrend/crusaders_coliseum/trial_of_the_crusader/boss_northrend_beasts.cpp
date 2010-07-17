@@ -135,14 +135,14 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
 #define TIMER_FIRE_BOMB     urand(20, 25)*IN_MILLISECONDS
 #define TIMER_HEAD_CRACK    urand(30, 45)*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance* m_pInstance;
-    EventMap Events;
     InstanceVar<uint32> m_AchievementCounter;
 
     mob_snobold_vassalAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
@@ -242,6 +242,9 @@ enum JormungarPhases
     PHASE_ON_GROUND,
 };
 
+#define PHASEMASK_ROOTED    EventManager::PhaseMask(PHASE_ROOTED)
+#define PHASEMASK_ON_GROUND EventManager::PhaseMask(PHASE_ON_GROUND)
+
 static const float RoomCenter[] = { 563.67f, 139.57f, 393.83f };
 
 #define PHASE_TIMER 45*IN_MILLISECONDS
@@ -268,9 +271,9 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
         m_uiStep = 0;
         m_bIsRooted = true;
         Events.SetPhase(PHASE_ROOTED);
-        Events.RescheduleEvent(EVENT_SPIT,  SPIT_TIMER,  0, PHASE_ROOTED);
-        Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
-        Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
+        Events.RescheduleEvent(EVENT_SPIT,  SPIT_TIMER,  0, 0, 0, PHASEMASK_ROOTED);
+        Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
+        Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER);
         SetCombatMovement(false);
         m_BossEncounter = IN_PROGRESS;
@@ -304,47 +307,47 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                         Events.SetPhase(PHASE_ON_GROUND);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
                         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
                         m_bIsRooted = false;
                     }
                     else
                     {
                         Events.Reset();
                         Events.SetPhase(PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND,0);
+                        Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
                         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ROOTED);
+                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ROOTED);
+                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
+                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
                         m_bIsRooted = true;
                     }
                     break;
                 case EVENT_SPEW:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_ACIDIC_SPEW, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_BITE:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_PARALYTIC_BITE, false);
-                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SPIT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_ACID_SPIT, false);
-                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_PARALYTIC_SPRAY, true);
-                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
                     DoCastSpellIfCan(m_creature, SPELL_SLIME_POOL, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
                 {
@@ -412,9 +415,9 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
         m_bIsRooted = false;
         Events.SetPhase(PHASE_ON_GROUND);
         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER);
-        Events.ScheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
-        Events.ScheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
-        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
+        Events.ScheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
+        Events.ScheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
+        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -446,9 +449,9 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                         Events.SetPhase(PHASE_ON_GROUND);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
                         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ON_GROUND);
+                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
                         DoStartMovement(m_creature->getVictim());
                         m_bIsRooted = false;
                     }
@@ -456,39 +459,39 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     {
                         Events.Reset();
                         Events.SetPhase(PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND,0);
+                        Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
                         Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ROOTED);
-                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, PHASE_ROOTED);
+                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ROOTED);
+                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
+                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
                         DoStartNoMovement(m_creature->getVictim());
                         m_bIsRooted = true;
                     }
                     break;
                 case EVENT_SPEW:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_MOLTEN_SPEW, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_BITE:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_BURNING_BITE, false);
-                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SPIT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FIRE_SPIT, false);
-                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                          m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_BURNING_SPRAY, true);
-                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SLIME_POOL, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, PHASE_ON_GROUND);
+                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, PHASE_ROOTED);
+                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
                 {
@@ -571,6 +574,9 @@ enum IcehowlPhases
     PHASE_SPECIAL,
 };
 
+#define PHASEMASK_NORMAL    EventManager::PhaseMask(PHASE_NORMAL)
+#define PHASEMASK_SPECIAL   EventManager::PhaseMask(PHASE_SPECIAL)
+
 #define TIMER_BERSERK   15*MINUTE*IN_MILLISECONDS
 #define WHIRL_TIMER     urand(10, 20)*IN_MILLISECONDS
 #define BREATH_TIMER    urand(15, 20)*IN_MILLISECONDS
@@ -601,9 +607,9 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
         m_creature->SetSpeedRate(MOVE_WALK, 2.0f, true);
         m_creature->SetSpeedRate(MOVE_RUN,  2.0f, true);
         Events.SetPhase(PHASE_NORMAL);
-        Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, PHASE_NORMAL);
-        Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
-        Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
+        Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
+        Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
+        Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
         Events.ScheduleEvent(EVENT_PHASE_CHANGE, PHASE_TIMER);
         Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
         m_BossEncounter = IN_PROGRESS;
@@ -624,21 +630,21 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_WHIRL:
                     m_creature->CastSpell(m_creature, SPELL_WHIRL, false);
-                    Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, PHASE_NORMAL);
+                    Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_BUTT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FEROCIOUS_BUTT, false);
-                    Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
+                    Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_BREATH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(target, SPELL_ARCTIC_BREATH, false);
-                    Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
+                    Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_PHASE_CHANGE:
                     Events.SetPhase(PHASE_SPECIAL);
                     Events.ScheduleEvent(EVENT_PHASE_CHANGE, SPECIAL_TIMER);
-                    Events.ScheduleEvent(EVENT_SPECIAL, 0, 0, PHASE_SPECIAL);
+                    Events.ScheduleEvent(EVENT_SPECIAL, 0, 0, 0, 0, PHASEMASK_SPECIAL);
                     break;
                 case EVENT_SPECIAL:
                     switch(m_uiStep)
@@ -647,13 +653,13 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             DoStartNoMovement(m_creature->getVictim());
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
                             m_creature->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 2000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 2000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 1:
                             m_creature->GetMotionMaster()->MoveIdle();
                             m_creature->CastSpell(m_creature, SPELL_MASSIVE_CRASH, false);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 2:
@@ -665,12 +671,12 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 m_creature->SetFacingTo(m_creature->GetAngle(pTargetX, pTargetY));
                                 m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget->GetGUID(), true);
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 3:
                             m_creature->HandleEmote(EMOTE_ONESHOT_BATTLEROAR); //FIXME: doesn't display animation
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1500, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1500, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 4:
@@ -683,7 +689,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 y = radius*sin(angle) + RoomCenter[1];
                                 m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 5:
@@ -699,14 +705,14 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                             i->getSource()->CastSpell(i->getSource(), SPELL_SURGE_OF_ADRENALINE, true);
                                 }
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 6:
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
                             m_creature->SetSpeedRate(MOVE_WALK, 10.0f, true);
                             m_creature->GetMotionMaster()->MovePoint(0, pTargetX, pTargetY, m_creature->GetPositionZ());
-                            Events.ScheduleEvent(EVENT_SPECIAL, 2500, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 2500, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 7:
@@ -731,7 +737,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             }
                             else
                                 m_creature->CastSpell(m_creature, SPELL_FROTHING_RAGE, false);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, PHASE_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         }
@@ -741,9 +747,9 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             DoStartMovement(m_creature->getVictim());
                             m_uiStep = 0;
                             Events.SetPhase(PHASE_NORMAL);
-                            Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, PHASE_NORMAL);
-                            Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, PHASE_NORMAL);
-                            Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 7500, PHASE_NORMAL);
+                            Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
+                            Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
+                            Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
                             break;
                     }
                     break;

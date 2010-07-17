@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL boss_yoggsaronAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     typedef std::list<uint64> GuidList;
     GuidList m_SummonList;

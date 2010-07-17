@@ -348,17 +348,17 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
     }
 };
 
-struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
     Difficulty m_Difficulty;
     bool m_bIsHeroic :1;
     bool m_bInPermafrost :1;
     bool m_bIsSlowed :1;
-    EventMap Events;
 
     mob_toc_nerubian_burrowerAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_Difficulty(pCreature->GetMap()->GetDifficulty()),
         m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC),
@@ -457,15 +457,15 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
     Difficulty m_Difficulty;
     bool m_bIsSlowed;
-    EventMap Events;
 
     mob_toc_swarm_scarabAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_Difficulty(pCreature->GetMap()->GetDifficulty()),
         m_bIsSlowed(false)

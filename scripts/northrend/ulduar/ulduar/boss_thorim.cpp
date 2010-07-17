@@ -74,7 +74,7 @@ struct MANGOS_DLL_DECL boss_thorimAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     boss_thorimAI(Creature* pCreature):
         ScriptedAI(pCreature),

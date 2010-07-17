@@ -99,7 +99,7 @@ struct MANGOS_DLL_DECL boss_auriayaAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     boss_auriayaAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_auriaya_sentryAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
     //float m_fFollowAngle;
 
     boss_auriaya_sentryAI(Creature* pCreature):
@@ -283,7 +283,7 @@ struct MANGOS_DLL_DECL boss_auriaya_defenderAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     boss_auriaya_defenderAI(Creature* pCreature):
         ScriptedAI(pCreature)

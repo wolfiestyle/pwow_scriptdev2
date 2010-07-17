@@ -81,7 +81,7 @@ struct MANGOS_DLL_DECL boss_freyaAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
+    EventManager events;
 
     boss_freyaAI(Creature* pCreature):
         ScriptedAI(pCreature),

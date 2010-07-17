@@ -98,14 +98,13 @@ uint32 GetType(GameObject*);
 } // namespace icc
 
 // basic start point for bosses
-struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI
+struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
     Difficulty m_Difficulty;
     bool m_bIsHeroic :1;
     bool m_bIs10Man :1;
     InstanceVar<uint32> m_BossEncounter;
-    EventMap Events;
 
     boss_icecrown_citadelAI(Creature*);
 

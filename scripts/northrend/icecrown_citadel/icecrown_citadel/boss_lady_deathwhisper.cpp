@@ -455,12 +455,11 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI, public ScriptEventInterface
 {
-    EventMap Events;
-
     mob_deathwhisper_fanaticAI(Creature *pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature)
     {
         switch (m_creature->GetEntry())
         {
@@ -543,12 +542,11 @@ struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public ScriptEventInterface
 {
-    EventMap Events;
-
     mob_deathwhisper_adherentAI(Creature *pCreature):
-        ScriptedAI(pCreature)
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature)
     {
         switch (m_creature->GetEntry())
         {

@@ -44,6 +44,7 @@ uint32 GetType(GameObject *pGO)
 
 boss_icecrown_citadelAI::boss_icecrown_citadelAI(Creature* pCreature):
     ScriptedAI(pCreature),
+    ScriptEventInterface(pCreature),
     m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
     m_Difficulty(pCreature->GetMap()->GetDifficulty()),
     m_bIsHeroic(m_Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || m_Difficulty == RAID_DIFFICULTY_25MAN_HEROIC),

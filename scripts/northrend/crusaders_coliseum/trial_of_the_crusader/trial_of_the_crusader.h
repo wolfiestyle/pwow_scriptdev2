@@ -219,14 +219,13 @@ uint32 GetType(GameObject*);
 } // namespace toc
 
 // basic start point for bosses
-struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI
+struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
     Difficulty m_Difficulty;
     bool m_bIsHeroic :1;
     bool m_bIs10Man :1;
     InstanceVar<uint32> m_BossEncounter;
-    EventMap Events;
 
     boss_trial_of_the_crusaderAI(Creature*);
 

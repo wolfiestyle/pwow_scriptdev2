@@ -249,15 +249,15 @@ enum AddEvents
 #define SLASH_TIMER     urand(30,45)*IN_MILLISECONDS
 #define SPIKE_TIMER     urand(15,30)*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
-    EventMap Events;
     InstanceVar<uint32> m_AchievementCounter;
     bool m_bIsHeroic;
 
     mob_mistress_of_painAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_AchievementCounter(DATA_ACHIEVEMENT_COUNTER, m_pInstance)
     {
@@ -281,7 +281,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
         if (m_bIsHeroic)
             Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
         Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
-        Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
+        Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 0, 4000);
         ++m_AchievementCounter;
     }
 
@@ -315,7 +315,7 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI
                 case EVENT_SPIKE:
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_SPINNING_PAIN_SPIKE, false);
-                    Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 4000);
+                    Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 0, 4000);
                     break;
                 default:
                     break;
@@ -367,13 +367,13 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
 #define FELSTREAK_TIMER     urand(15,30)*IN_MILLISECONDS
 #define FEL_INFERNO_TIMER   urand(15,30)*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
-    EventMap Events;
 
     mob_felflame_infernalAI(Creature* pCreature):
         ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
     }
@@ -391,8 +391,8 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 6000);
-        Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 7500);
+        Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 0, 6000);
+        Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 0, 7500);
     }
 
     void JustDied(Unit* pSlayer)
@@ -415,12 +415,12 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI
                 case EVENT_FELSTREAK:
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_FEL_STREAK, false);
-                    Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 7500);
+                    Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 0, 7500);
                     break;
                 case EVENT_FEL_INFERNO:
                     m_creature->StopMoving();
                     m_creature->CastSpell(m_creature, SPELL_FEL_INFERNO, false);
-                    Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 6000);
+                    Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 0, 6000);
                     break;
                 default:
                     break;

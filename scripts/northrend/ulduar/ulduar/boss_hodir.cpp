@@ -65,7 +65,7 @@ struct MANGOS_DLL_DECL boss_hodirAI: public ScriptedAI
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
     uint32 m_uiHardModeTimer;
-    EventMap events;
+    EventManager events;
 
     boss_hodirAI(Creature* pCreature):
         ScriptedAI(pCreature),

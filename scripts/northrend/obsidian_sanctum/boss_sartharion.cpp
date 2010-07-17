@@ -222,9 +222,9 @@ static Location const TwilightEggsSarth[] =
 ## Boss Sartharion
 ######*/
 
-struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
+struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEventInterface
 {
-    boss_sartharionAI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_sartharionAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
@@ -236,14 +236,13 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
     bool m_bIsBerserk :1;
     bool m_bIsSoftEnraged :1;
     bool m_bIsHardEnraged :1;
-    EventMap events;
 
     void Reset()
     {
         m_bIsBerserk = false;
         m_bIsSoftEnraged = false;
         m_bIsHardEnraged = false;
-        events.Reset();
+        Events.Reset();
 
         if (m_creature->HasAura(SPELL_TWILIGHT_REVENGE))
             m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_REVENGE);
@@ -270,12 +269,12 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             FetchDragons();
         }
 
-        events.ScheduleEvent(EVENT_HARD_ENRAGE, MINUTE*15*IN_MILLISECONDS);
-        events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
-        events.ScheduleEvent(EVENT_FLAME_BREATH, 20000);
-        events.ScheduleEvent(EVENT_TAIL_SWEEP, 20000);
-        events.ScheduleEvent(EVENT_CLEAVE, 7000);
-        events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
+        Events.ScheduleEvent(EVENT_HARD_ENRAGE, MINUTE*15*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
+        Events.ScheduleEvent(EVENT_FLAME_BREATH, 20000);
+        Events.ScheduleEvent(EVENT_TAIL_SWEEP, 20000);
+        Events.ScheduleEvent(EVENT_CLEAVE, 7000);
+        Events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
     }
 
     void JustDied(Unit* pKiller)
@@ -317,7 +316,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             drakeCount++;
             pTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0].x, m_aTene[0].y, m_aTene[0].z);
 
-            events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
+            Events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
             if (!pTene->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 pTene->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -327,7 +326,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             drakeCount++;
             pShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0].x, m_aShad[0].y, m_aShad[0].z);
 
-            events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
+            Events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
             if (!pShad->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 pShad->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -337,7 +336,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             drakeCount++;
             pVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0].x, m_aVesp[0].y, m_aVesp[0].z);
 
-            events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
+            Events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
             if (!pVesp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 pVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -445,16 +444,16 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             m_bIsSoftEnraged = true;
         }
 
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
         {
             switch (eventId)
             {
                 case EVENT_HARD_ENRAGE:
                     DoCastSpellIfCan(m_creature, SPELL_PYROBUFFET, CAST_TRIGGERED);
                     m_bIsHardEnraged = true;
-                    events.ScheduleEvent(EVENT_HARD_ENRAGE, 5000);
+                    Events.ScheduleEvent(EVENT_HARD_ENRAGE, 5000);
                     break;
                 case EVENT_FLAME_TSUNAMI:
                     SendFlameTsunami();
@@ -477,20 +476,20 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                             break;
                         }
                     }
-                    events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
+                    Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
                     break;
                 case EVENT_FLAME_BREATH:
                     DoScriptText(SAY_SARTHARION_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_FLAME_BREATH));
-                    events.ScheduleEvent(EVENT_FLAME_BREATH,urand(25000, 35000));
+                    Events.ScheduleEvent(EVENT_FLAME_BREATH, urand(25000, 35000));
                     break;
                 case EVENT_TAIL_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_TAIL_LASH));
-                    events.ScheduleEvent(EVENT_TAIL_SWEEP,urand(15000, 20000));
+                    Events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(15000, 20000));
                     break;
                 case EVENT_CLEAVE:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
-                    events.ScheduleEvent(EVENT_CLEAVE, urand(7000, 10000));
+                    Events.ScheduleEvent(EVENT_CLEAVE, urand(7000, 10000));
                     break;
                 case EVENT_LAVA_STRIKE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
@@ -504,7 +503,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                             case 2: DoScriptText(SAY_SARTHARION_SPECIAL_3, m_creature); break;
                         }
                     }
-                    events.ScheduleEvent(EVENT_LAVA_STRIKE, urand(5000, 20000));
+                    Events.ScheduleEvent(EVENT_LAVA_STRIKE, urand(5000, 20000));
                     break;
                 case EVENT_CALL_TENEBRON:
                     CallDragon(DATA_TENEBRON);
@@ -568,9 +567,9 @@ enum VespText
 };
 
 //to control each dragons common abilities
-struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI
+struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInterface
 {
-    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
+    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
@@ -775,11 +774,9 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
 {
     mob_tenebronAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
 
-    EventMap events;
-
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
@@ -790,9 +787,9 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             DoScriptText(SAY_TENEBRON_AGGRO, m_creature);
         else
             DoScriptText(SAY_TENEBRON_RESPOND, m_creature);
-        events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
-        events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 30000);
-        events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
+        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
+        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 30000);
+        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
         m_creature->SetInCombatWithZone();
         DoCastSpellIfCan(m_creature, SPELL_POWER_OF_TENEBRON);
     }
@@ -810,24 +807,24 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             dummy_dragonAI::UpdateAI(uiDiff);
             return;
         }
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
+                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(30000, 45000));
+                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(30000, 45000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_TENEBRON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
+                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
 
@@ -844,11 +841,9 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
 {
     mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
 
-    EventMap events;
-
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
@@ -861,9 +856,9 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
 
     void Aggro(Unit* pWho)
     {
-        events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
-        events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
-        events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
+        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
+        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
+        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
         if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
             DoScriptText(SAY_SHADRON_AGGRO, m_creature);
         else
@@ -886,27 +881,27 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
             return;
         }
 
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
+                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
                     if (!m_creature->HasAura(SPELL_GIFT_OF_TWILIGHT_SHA))
                     {    
                         OpenPortal();
                     }
-                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 65000));
+                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 65000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_SHADRON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
+                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
                 }
 
@@ -923,20 +918,18 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
 {
     mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
 
-    EventMap events;
-
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void Aggro(Unit* pWho)
     {
-        events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
-        events.ScheduleEvent(EVENT_SHADOW_FISSURE,5000);
-        events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
+        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
+        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
+        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
 
         if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
             DoScriptText(SAY_VESPERON_AGGRO, m_creature);
@@ -961,26 +954,26 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
             return;
         }
 
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
                 {
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
+                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 }
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 70000));
+                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 70000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_VESPERON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
+                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
 
@@ -991,37 +984,36 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
 ## Mob Portal of Shadron 
 ######*/
 
-struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public ScriptEventInterface
 {
-    mob_portal_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    mob_portal_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
     ScriptedInstance *m_pInstance;
-    EventMap events;
 
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         m_creature->SetDisplayId(11686);
-        events.ScheduleEvent(EVENT_SUMMON, 1000);
-        events.ScheduleEvent(EVENT_DEBUFF, 1000);
-        events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000);
+        Events.ScheduleEvent(EVENT_SUMMON, 1000);
+        Events.ScheduleEvent(EVENT_DEBUFF, 1000);
+        Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000);
     }
 
     void SummonedCreatureJustDied(Creature *pSummon)
     {
         if (pSummon)
-            events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SUMMON:
@@ -1099,39 +1091,38 @@ struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
 ## Mob Vesperon Controller
 ######*/
 
-struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public ScriptEventInterface
 {
-    mob_vesperon_controllerAI(Creature* pCreature) : ScriptedAI(pCreature)
+    mob_vesperon_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
-    EventMap events;
     ScriptedInstance* m_pInstance;
 
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         m_creature->SetDisplayId(11686);
-        events.ScheduleEvent(EVENT_SUMMON, 1000);
-        events.ScheduleEvent(EVENT_DEBUFF, 1000);
-        events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000);
+        Events.ScheduleEvent(EVENT_SUMMON, 1000);
+        Events.ScheduleEvent(EVENT_DEBUFF, 1000);
+        Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000);
     }
 
     void SummonedCreatureJustDied(Creature *pSummon)
     {
         if (pSummon)
         {
-            events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
         }
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SUMMON:
@@ -1215,9 +1206,9 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
 ## Mob Tenebron Egg Controller
 ######*/
 
-struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI, public ScriptEventInterface
 {
-    mob_tenebron_egg_controllerAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    mob_tenebron_egg_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
@@ -1225,19 +1216,18 @@ struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI
 
     ScriptedInstance* m_pInstance;
     bool done, summoned;
-    EventMap events;
 
     typedef std::list<uint64> GuidList;
     GuidList m_SummonList;
 
     void Reset()
     {
-        events.Reset();
+        Events.Reset();
         m_creature->SetDisplayId(11686);
         done = false;
         summoned = false;
-        events.ScheduleEvent(EVENT_SUMMON, 100);
-        events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 20100);
+        Events.ScheduleEvent(EVENT_SUMMON, 100);
+        Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 20100);
     }
 
     void JustSummoned(Creature *pSummon)
@@ -1256,13 +1246,13 @@ struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI
     {
         if (m_SummonList.empty() && summoned && !done)
         {
-            events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
             done = true;
         }
 
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SUMMON:

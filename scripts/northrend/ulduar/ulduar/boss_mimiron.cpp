@@ -196,7 +196,7 @@ struct MANGOS_DLL_DECL boss_mimironAI: public Scripted_NoMovementAI
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
     bool HasFinished;
-    EventMap Events;
+    EventManager Events;
     uint64 LeviathanGUID;
     uint64 VX001_GUID;
     uint64 AerialCommandGUID;
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap Events;
+    EventManager Events;
     uint64 MimironGUID;
     bool IsInUse;
     bool IsVoltron;
@@ -839,7 +839,7 @@ struct MANGOS_DLL_DECL mob_bomb_botAI : public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_assault_botAI : public ScriptedAI
 {
-    EventMap Events;
+    EventManager Events;
 
     mob_assault_botAI(Creature *pCreature) : ScriptedAI(pCreature) 
     {

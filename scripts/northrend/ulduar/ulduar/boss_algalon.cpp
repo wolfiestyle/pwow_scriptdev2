@@ -154,9 +154,9 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
     uint32 const m_uiBossEncounterId;
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    EventMap events;
-    EventMap SayEvents;      //for speeches that encompass > 1 line (eg- despawn, killed)
-    uint32 m_uiDespawnTimer; //not using EventMap b/c needed in all phases, and can not be affected by EventMap::Reset()
+    EventManager events;
+    EventManager SayEvents;  //for speeches that encompass > 1 line (eg- despawn, killed)
+    uint32 m_uiDespawnTimer; //not using EventManager b/c needed in all phases, and can not be affected by EventManager::Reset()
     bool IsFirstTime;
     bool HasSaidBeginningStuff;
     bool IsPhase2;
