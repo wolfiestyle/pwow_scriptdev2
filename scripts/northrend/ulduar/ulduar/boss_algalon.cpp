@@ -50,7 +50,7 @@ enum Spells
 
 enum Events
 {
-    EVENT_BERSERK,
+    EVENT_BERSERK = 1,
     EVENT_ASCEND_TO_HEAVENS,
     EVENT_QUANTUM_STRIKE,
     EVENT_PHASE_PUNCH,

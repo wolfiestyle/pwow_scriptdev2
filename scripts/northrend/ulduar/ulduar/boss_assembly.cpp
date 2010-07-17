@@ -66,7 +66,7 @@ enum Spells
 
 enum Events
 {
-    EVENT_BERSERK,
+    EVENT_BERSERK = 1,
     // Steelbreaker
     EVENT_FUSION_PUNCH,
     EVENT_STATIC_DISRUPTION,

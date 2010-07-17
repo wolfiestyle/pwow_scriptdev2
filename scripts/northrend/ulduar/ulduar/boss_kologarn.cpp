@@ -51,8 +51,7 @@ enum Spells
 
 enum Events
 {
-    EVENT_NONE,
-    EVENT_EYEBEAM,
+    EVENT_EYEBEAM = 1,
     EVENT_SMASH,
     EVENT_BREATH,
     EVENT_GRIP,

@@ -56,7 +56,7 @@ enum Spells
 enum Events
 {
     // Auriaya
-    EVENT_BERSERK,
+    EVENT_BERSERK = 1,
     EVENT_SONIC_SCREECH,
     EVENT_SENTINEL_BLAST,
     EVENT_TERRIFY_SCREECH,

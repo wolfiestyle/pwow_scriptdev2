@@ -37,7 +37,7 @@ enum Spells
 
 enum Events
 {
-    EVENT_BERSERK,
+    EVENT_BERSERK = 1,
     EVENT_FREEZE,
     EVENT_FROZEN_BLOWS
 };
