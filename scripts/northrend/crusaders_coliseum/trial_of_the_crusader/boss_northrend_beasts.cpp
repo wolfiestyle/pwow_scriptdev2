@@ -62,8 +62,8 @@ enum GormokEvents
 };
 
 #define TIMER_IMPALE            10*IN_MILLISECONDS
-#define TIMER_STAGGERING_STOMP  urand(20, 25)*IN_MILLISECONDS
-#define TIMER_THROW_SNOBOLD     urand(20, 45)*IN_MILLISECONDS
+#define TIMER_STAGGERING_STOMP  20*IN_MILLISECONDS, 25*IN_MILLISECONDS
+#define TIMER_THROW_SNOBOLD     20*IN_MILLISECONDS, 45*IN_MILLISECONDS
 
 #define MAX_SNOBOLD             5
 
@@ -88,9 +88,9 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
-        Events.RescheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
-        Events.RescheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
-        Events.RescheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
+        Events.ScheduleEvent(EVENT_IMPALE, TIMER_IMPALE, TIMER_IMPALE);
+        Events.ScheduleEventInRange(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
+        Events.ScheduleEventInRange(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -111,17 +111,15 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
             {
                 case EVENT_IMPALE:
                     DoCast(m_creature->getVictim(), SPELL_IMPALE);
-                    Events.ScheduleEvent(EVENT_IMPALE, TIMER_IMPALE);
                     break;
                 case EVENT_STAGGERING_STOMP:
                     DoCast(m_creature, SPELL_STAGGERING_STOMP);
-                    Events.ScheduleEvent(EVENT_STAGGERING_STOMP, TIMER_STAGGERING_STOMP);
                     break;
                 case EVENT_THROW_SNOBOLD:
                     SummonMgr.SummonCreatureAt(m_creature, NPC_SNOBOLD_VASSAL, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
                     DoCast(m_creature, SPELL_RISING_ANGER);
-                    if (++m_uiSnoboldCount < MAX_SNOBOLD)
-                        Events.ScheduleEvent(EVENT_THROW_SNOBOLD, TIMER_THROW_SNOBOLD);
+                    if (++m_uiSnoboldCount >= MAX_SNOBOLD)
+                        Events.CancelEvent(EVENT_THROW_SNOBOLD);
                     break;
                 default:
                     break;
@@ -131,9 +129,9 @@ struct MANGOS_DLL_DECL boss_gormokAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-#define TIMER_BATTER        urand(10, 20)*IN_MILLISECONDS
-#define TIMER_FIRE_BOMB     urand(20, 25)*IN_MILLISECONDS
-#define TIMER_HEAD_CRACK    urand(30, 45)*IN_MILLISECONDS
+#define TIMER_BATTER        10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define TIMER_FIRE_BOMB     20*IN_MILLISECONDS, 25*IN_MILLISECONDS
+#define TIMER_HEAD_CRACK    30*IN_MILLISECONDS, 45*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI, public ScriptEventInterface
 {
@@ -160,9 +158,9 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI, public ScriptEve
 
     void Aggro(Unit *pWho)
     {
-        Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);
-        Events.RescheduleEvent(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB);
-        Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
+        Events.RescheduleEventInRange(EVENT_BATTER, TIMER_BATTER, TIMER_BATTER);
+        Events.RescheduleEventInRange(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB, TIMER_FIRE_BOMB);
+        Events.RescheduleEventInRange(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK, TIMER_HEAD_CRACK);
         ++m_AchievementCounter;
     }
 
@@ -182,15 +180,14 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI, public ScriptEve
             {   
                 case EVENT_BATTER:
                     DoCast(m_creature->getVictim(), SPELL_BATTER);
-                    Events.RescheduleEvent(EVENT_BATTER, TIMER_BATTER);
                     break;
                 case EVENT_FIRE_BOMB:
                     DoCast(m_creature->getVictim(), SPELL_FIRE_BOMB);
-                    Events.RescheduleEvent(EVENT_FIRE_BOMB, TIMER_FIRE_BOMB);
                     break;
                 case EVENT_HEAD_CRACK:
                     DoCast(m_creature->getVictim(), SPELL_HEAD_CRACK);
-                    Events.RescheduleEvent(EVENT_HEAD_CRACK, TIMER_HEAD_CRACK);
+                    break;
+                default:
                     break;
             }
 
@@ -238,22 +235,23 @@ enum JormungarEvents
 
 enum JormungarPhases
 {
-    PHASE_ROOTED = 1,
+    PHASE_ROOTED    = 1,
     PHASE_ON_GROUND,
+    PMASK_ROOTED    = EventManager::PhaseMask<PHASE_ROOTED>::value,
+    PMASK_ON_GROUND = EventManager::PhaseMask<PHASE_ON_GROUND>::value,
 };
-
-#define PHASEMASK_ROOTED    EventManager::PhaseMask(PHASE_ROOTED)
-#define PHASEMASK_ON_GROUND EventManager::PhaseMask(PHASE_ON_GROUND)
 
 static const float RoomCenter[] = { 563.67f, 139.57f, 393.83f };
 
 #define PHASE_TIMER 45*IN_MILLISECONDS
-#define SPEW_TIMER  urand(10, 20)*IN_MILLISECONDS
-#define BITE_TIMER  urand(15, 20)*IN_MILLISECONDS
+// rooted
 #define SPIT_TIMER  1200
-#define SPRAY_TIMER urand(10, 20)*IN_MILLISECONDS
-#define SLIME_TIMER urand(15, 20)*IN_MILLISECONDS
-#define SWEEP_TIMER urand(15, 20)*IN_MILLISECONDS
+#define SPRAY_TIMER 10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define SWEEP_TIMER 15*IN_MILLISECONDS, 20*IN_MILLISECONDS
+// movile
+#define SPEW_TIMER  10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define SLIME_TIMER 15*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define BITE_TIMER  15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
 {
@@ -271,10 +269,13 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
         m_uiStep = 0;
         m_bIsRooted = true;
         Events.SetPhase(PHASE_ROOTED);
-        Events.RescheduleEvent(EVENT_SPIT,  SPIT_TIMER,  0, 0, 0, PHASEMASK_ROOTED);
-        Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
-        Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
-        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER);
+        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER, PHASE_TIMER + 10*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER,  SPIT_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SPRAY, SPRAY_TIMER, SPRAY_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SWEEP, SWEEP_TIMER, SWEEP_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SPEW,  SPEW_TIMER,  SPEW_TIMER, 0, 0, PMASK_ON_GROUND);
+        Events.ScheduleEventInRange(EVENT_SLIME_POOL, SLIME_TIMER, SLIME_TIMER, 0, 0, PMASK_ON_GROUND);
+        Events.ScheduleEventInRange(EVENT_BITE,  BITE_TIMER,  BITE_TIMER, 0, 0, PMASK_ON_GROUND);
         SetCombatMovement(false);
         m_BossEncounter = IN_PROGRESS;
     }
@@ -303,51 +304,37 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     if (m_bIsRooted)
                     {
-                        Events.Reset();
                         Events.SetPhase(PHASE_ON_GROUND);
+                        Events.DelayEvents(10*IN_MILLISECONDS, PMASK_ON_GROUND);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
-                        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
                         m_bIsRooted = false;
                     }
                     else
                     {
-                        Events.Reset();
                         Events.SetPhase(PHASE_ROOTED);
+                        Events.DelayEvents(10*IN_MILLISECONDS, PMASK_ROOTED);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
-                        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ROOTED);
-                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
-                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
                         m_bIsRooted = true;
                     }
                     break;
                 case EVENT_SPEW:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_ACIDIC_SPEW, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_BITE:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_PARALYTIC_BITE, false);
-                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SPIT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_ACID_SPIT, false);
-                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_PARALYTIC_SPRAY, true);
-                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
                     DoCastSpellIfCan(m_creature, SPELL_SLIME_POOL, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
                 {
@@ -414,10 +401,13 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
         m_uiStep = 0;
         m_bIsRooted = false;
         Events.SetPhase(PHASE_ON_GROUND);
-        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER);
-        Events.ScheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
-        Events.ScheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
-        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
+        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER, PHASE_TIMER + 10*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER,  SPIT_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SPRAY, SPRAY_TIMER, SPRAY_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SWEEP, SWEEP_TIMER, SWEEP_TIMER, 0, 0, PMASK_ROOTED);
+        Events.ScheduleEventInRange(EVENT_SPEW, SPEW_TIMER, SPEW_TIMER, 0, 0, PMASK_ON_GROUND);
+        Events.ScheduleEventInRange(EVENT_SLIME_POOL, SLIME_TIMER, SLIME_TIMER, 0, 0, PMASK_ON_GROUND);
+        Events.ScheduleEventInRange(EVENT_BITE, BITE_TIMER, BITE_TIMER, 0, 0, PMASK_ON_GROUND);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -445,53 +435,39 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     if (m_bIsRooted)
                     {
-                        Events.Reset();
                         Events.SetPhase(PHASE_ON_GROUND);
+                        Events.DelayEvents(10*IN_MILLISECONDS, PMASK_ON_GROUND);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
-                        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPEW,  SPEW_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ON_GROUND);
-                        Events.ScheduleEvent(EVENT_BITE,  BITE_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ON_GROUND);
                         DoStartMovement(m_creature->getVictim());
                         m_bIsRooted = false;
                     }
                     else
                     {
-                        Events.Reset();
                         Events.SetPhase(PHASE_ROOTED);
+                        Events.DelayEvents(10*IN_MILLISECONDS, PMASK_ROOTED);
                         Events.ScheduleEvent(EVENT_MOVE_UNDERGROUND, 0);
-                        Events.ScheduleEvent(EVENT_PHASE_SWITCH, PHASE_TIMER + 10*IN_MILLISECONDS);
-                        Events.ScheduleEvent(EVENT_SPIT,  SPIT_TIMER + 10*IN_MILLISECONDS,  0, 0, 0, PHASEMASK_ROOTED);
-                        Events.ScheduleEvent(EVENT_SPRAY, SPRAY_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
-                        Events.ScheduleEvent(EVENT_SWEEP, SWEEP_TIMER + 10*IN_MILLISECONDS, 0, 0, 0, PHASEMASK_ROOTED);
                         DoStartNoMovement(m_creature->getVictim());
                         m_bIsRooted = true;
                     }
                     break;
                 case EVENT_SPEW:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_MOLTEN_SPEW, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SPEW, SPEW_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_BITE:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_BURNING_BITE, false);
-                    Events.RescheduleEvent(EVENT_BITE, BITE_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SPIT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FIRE_SPIT, false);
-                    Events.RescheduleEvent(EVENT_SPIT, SPIT_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SPRAY:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                          m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_BURNING_SPRAY, true);
-                    Events.RescheduleEvent(EVENT_SPRAY, SPRAY_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_SLIME_POOL:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SLIME_POOL, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SLIME_POOL, SLIME_TIMER, 0, 0, 0, PHASEMASK_ON_GROUND);
                     break;
                 case EVENT_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SWEEP, CAST_TRIGGERED);
-                    Events.RescheduleEvent(EVENT_SWEEP, SWEEP_TIMER, 0, 0, 0, PHASEMASK_ROOTED);
                     break;
                 case EVENT_MOVE_UNDERGROUND:
                 {
@@ -572,17 +548,16 @@ enum IcehowlPhases
 {
     PHASE_NORMAL = 1,
     PHASE_SPECIAL,
+    PMASK_NORMAL    = EventManager::PhaseMask<PHASE_NORMAL>::value,
+    PMASK_SPECIAL   = EventManager::PhaseMask<PHASE_SPECIAL>::value,
 };
 
-#define PHASEMASK_NORMAL    EventManager::PhaseMask(PHASE_NORMAL)
-#define PHASEMASK_SPECIAL   EventManager::PhaseMask(PHASE_SPECIAL)
-
 #define TIMER_BERSERK   15*MINUTE*IN_MILLISECONDS
-#define WHIRL_TIMER     urand(10, 20)*IN_MILLISECONDS
-#define BREATH_TIMER    urand(15, 20)*IN_MILLISECONDS
-#define BUTT_TIMER      urand(20, 30)*IN_MILLISECONDS
+#define PHASE_TIMER     30*IN_MILLISECONDS, 45*IN_MILLISECONDS
 #define SPECIAL_TIMER   60*IN_MILLISECONDS
-#define PHASE_TIMER     urand(30, 45)*IN_MILLISECONDS
+#define WHIRL_TIMER     10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define BREATH_TIMER    15*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define BUTT_TIMER      20*IN_MILLISECONDS, 30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
 {
@@ -607,11 +582,11 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
         m_creature->SetSpeedRate(MOVE_WALK, 2.0f, true);
         m_creature->SetSpeedRate(MOVE_RUN,  2.0f, true);
         Events.SetPhase(PHASE_NORMAL);
-        Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
-        Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
-        Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
-        Events.ScheduleEvent(EVENT_PHASE_CHANGE, PHASE_TIMER);
-        Events.RescheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
+        Events.ScheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
+        Events.ScheduleEventInRange(EVENT_PHASE_CHANGE, PHASE_TIMER, SPECIAL_TIMER);
+        Events.ScheduleEventInRange(EVENT_WHIRL, WHIRL_TIMER, WHIRL_TIMER, 0, 0, PMASK_NORMAL);
+        Events.ScheduleEventInRange(EVENT_BUTT, BUTT_TIMER, BUTT_TIMER, 0, 0, PMASK_NORMAL);
+        Events.ScheduleEventInRange(EVENT_BREATH, BREATH_TIMER, BREATH_TIMER, 7500, 0, PMASK_NORMAL);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -630,21 +605,17 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_WHIRL:
                     m_creature->CastSpell(m_creature, SPELL_WHIRL, false);
-                    Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_BUTT:
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FEROCIOUS_BUTT, false);
-                    Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_BREATH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(target, SPELL_ARCTIC_BREATH, false);
-                    Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
                     break;
                 case EVENT_PHASE_CHANGE:
                     Events.SetPhase(PHASE_SPECIAL);
-                    Events.ScheduleEvent(EVENT_PHASE_CHANGE, SPECIAL_TIMER);
-                    Events.ScheduleEvent(EVENT_SPECIAL, 0, 0, 0, 0, PHASEMASK_SPECIAL);
+                    Events.ScheduleEvent(EVENT_SPECIAL, 0, 0, 0, 0, PMASK_SPECIAL);
                     break;
                 case EVENT_SPECIAL:
                     switch(m_uiStep)
@@ -653,13 +624,13 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             DoStartNoMovement(m_creature->getVictim());
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
                             m_creature->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1], RoomCenter[2]);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 2000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 2000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 1:
                             m_creature->GetMotionMaster()->MoveIdle();
                             m_creature->CastSpell(m_creature, SPELL_MASSIVE_CRASH, false);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 3000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 2:
@@ -671,12 +642,12 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 m_creature->SetFacingTo(m_creature->GetAngle(pTargetX, pTargetY));
                                 m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget->GetGUID(), true);
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 3:
                             m_creature->HandleEmote(EMOTE_ONESHOT_BATTLEROAR); //FIXME: doesn't display animation
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1500, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1500, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 4:
@@ -689,7 +660,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 y = radius*sin(angle) + RoomCenter[1];
                                 m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 5:
@@ -705,14 +676,14 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                             i->getSource()->CastSpell(i->getSource(), SPELL_SURGE_OF_ADRENALINE, true);
                                 }
                             }
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 6:
                             m_creature->SetSpeedRate(MOVE_RUN, 10.0f, true);
                             m_creature->SetSpeedRate(MOVE_WALK, 10.0f, true);
                             m_creature->GetMotionMaster()->MovePoint(0, pTargetX, pTargetY, m_creature->GetPositionZ());
-                            Events.ScheduleEvent(EVENT_SPECIAL, 2500, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 2500, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         case 7:
@@ -737,7 +708,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             }
                             else
                                 m_creature->CastSpell(m_creature, SPELL_FROTHING_RAGE, false);
-                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PHASEMASK_SPECIAL);
+                            Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
                             break;
                         }
@@ -747,9 +718,6 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             DoStartMovement(m_creature->getVictim());
                             m_uiStep = 0;
                             Events.SetPhase(PHASE_NORMAL);
-                            Events.ScheduleEvent(EVENT_WHIRL, WHIRL_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
-                            Events.ScheduleEvent(EVENT_BUTT, BUTT_TIMER, 0, 0, 0, PHASEMASK_NORMAL);
-                            Events.ScheduleEvent(EVENT_BREATH, BREATH_TIMER, 0, 7500, 0, PHASEMASK_NORMAL);
                             break;
                     }
                     break;
