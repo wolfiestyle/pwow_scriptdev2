@@ -87,18 +87,18 @@ public:
 
     uint32 ExecuteEvent();                  // process and return next pending event
 
-    // helper for calculating bit masks (compile time constant that can be used in enums)
-    // usage: EventManager::PhaseMask<phase_num, ...>::value
-    template <int N1, int N2 = -1, int N3 = -1, int N4 = -1, int N5 = -1, int N6 = -1>
-    struct PhaseMask { enum { value = 1 << N1 | PhaseMask<N2, N3, N4, N5, N6, -1>::value }; };
-
 private:
     EventManager(EventManager const&);
     EventManager& operator= (EventManager const&);
 };
 
+// helper for calculating bit masks (compile time constant that can be used in enums)
+// usage: bit_mask<bit_num, ...>::value
+template <int N1, int N2 = -1, int N3 = -1, int N4 = -1, int N5 = -1, int N6 = -1>
+struct bit_mask { enum { value = 1 << N1 | bit_mask<N2, N3, N4, N5, N6, -1>::value }; };
+
 template <>
-struct EventManager::PhaseMask<-1, -1, -1, -1, -1, -1> { enum { value = 0 }; };
+struct bit_mask<-1, -1, -1, -1, -1, -1> { enum { value = 0 }; };
 
 // helper for static initialization of map containers
 // (map, multimap, unordered_map, unordered_multimap)
