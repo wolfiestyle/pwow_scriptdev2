@@ -237,8 +237,8 @@ enum JormungarPhases
 {
     PHASE_ROOTED    = 1,
     PHASE_ON_GROUND,
-    PMASK_ROOTED    = EventManager::PhaseMask<PHASE_ROOTED>::value,
-    PMASK_ON_GROUND = EventManager::PhaseMask<PHASE_ON_GROUND>::value,
+    PMASK_ROOTED    = bit_mask<PHASE_ROOTED>::value,
+    PMASK_ON_GROUND = bit_mask<PHASE_ON_GROUND>::value,
 };
 
 static const float RoomCenter[] = { 563.67f, 139.57f, 393.83f };
@@ -548,8 +548,8 @@ enum IcehowlPhases
 {
     PHASE_NORMAL = 1,
     PHASE_SPECIAL,
-    PMASK_NORMAL    = EventManager::PhaseMask<PHASE_NORMAL>::value,
-    PMASK_SPECIAL   = EventManager::PhaseMask<PHASE_SPECIAL>::value,
+    PMASK_NORMAL    = bit_mask<PHASE_NORMAL>::value,
+    PMASK_SPECIAL   = bit_mask<PHASE_SPECIAL>::value,
 };
 
 #define TIMER_BERSERK   15*MINUTE*IN_MILLISECONDS

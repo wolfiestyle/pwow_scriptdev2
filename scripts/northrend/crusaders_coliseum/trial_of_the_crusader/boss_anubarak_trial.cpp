@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss Anub'arak
-SD%Complete: 0
+SD%Complete: 70
 SDComment: most add timers need verification, pursuing spikes not working (no idea about how it works), Spider Frenzy buffs players instead of adds
 SDCategory: Trial of the Crusader
 EndScriptData */
@@ -96,11 +96,12 @@ enum Events
 
 enum Phases
 {
-    PHASE_NOTSTARTED,
-    PHASE_ABOVEGROUND,
+    PHASE_ABOVEGROUND = 1,
     PHASE_BELOWGROUND,
     PHASE_THREE,
-    PHASE_DONE
+    PMASK_ABOVE         = bit_mask<PHASE_ABOVEGROUND>::value,
+    PMASK_BELOW         = bit_mask<PHASE_BELOWGROUND>::value,
+    PMASK_ABOVE_THREE   = bit_mask<PHASE_ABOVEGROUND, PHASE_THREE>::value,
 };
 
 // Anub'arak
@@ -108,15 +109,15 @@ enum Phases
 #define TIMER_SUMMON_SWARM_SCARAB   4*IN_MILLISECONDS
 #define TIMER_SUMMON_BURROWER       45*IN_MILLISECONDS
 #define TIMER_PENETRATING_COLD      18*IN_MILLISECONDS           //not sure about this one
-#define TIMER_FREEZING_SLASH        urand(19,21)*IN_MILLISECONDS
+#define TIMER_FREEZING_SLASH        19*IN_MILLISECONDS, 21*IN_MILLISECONDS
 #define TIMER_SUBMERGE              75*IN_MILLISECONDS
 #define TIMER_UNSUBMERGE            65*IN_MILLISECONDS
 // Nerubian Burrower
 #define TIMER_ATTEMPT_SUBMERGE      50*IN_MILLISECONDS           //not sure
-#define TIMER_EXPOSE_WEAKNESS       urand(3,10)*IN_MILLISECONDS  //unsure
-#define TIMER_SHADOW_STRIKE         30.5*IN_MILLISECONDS
+#define TIMER_EXPOSE_WEAKNESS       3*IN_MILLISECONDS, 10*IN_MILLISECONDS   //unsure
+#define TIMER_SHADOW_STRIKE         31*IN_MILLISECONDS
 // Swarm Scarab
-#define TIMER_DETERMINATION         urand(30,400)*IN_MILLISECONDS    //unsure (wowwiki says "random chance")
+#define TIMER_DETERMINATION         30*IN_MILLISECONDS, 400*IN_MILLISECONDS //unsure (wowwiki says "random chance")
 
 #define MAX_ALIVE_FROST_SPHERES     6
 #define FLOOR_HEIGHT                143.0f
@@ -136,13 +137,11 @@ static const float FrostSpherePos[3] = {741.0f, 133.6f, 163.0f};
 struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderAI
 {
     SummonManager SummonMgr;
-    uint32 CurrPhase;
     bool m_bSaidBeginningStuff;
 
     boss_anubarak_trialAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
         SummonMgr(pCreature),
-        CurrPhase(PHASE_NOTSTARTED),
         m_bSaidBeginningStuff(false)
     {
     }
@@ -161,7 +160,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
     {
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         SummonMgr.UnsummonAll();
-        CurrPhase = PHASE_NOTSTARTED;
         m_creature->RemoveAllAuras();
         boss_trial_of_the_crusaderAI::Reset();
     }
@@ -169,13 +167,14 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
     void Aggro(Unit *pWho)
     {
         Events.Reset();
-        CurrPhase = PHASE_ABOVEGROUND;
+        Events.SetPhase(PHASE_ABOVEGROUND);
 
-        RESCHEDULE_EVENT(SUMMON_BURROWER);
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(FREEZING_SLASH);
-        RESCHEDULE_EVENT(PENETRATING_COLD);
-        RESCHEDULE_EVENT(SUBMERGE);
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT(SUMMON_BURROWER);
+        SCHEDULE_EVENT(PENETRATING_COLD, 0, 0, PMASK_ABOVE_THREE);
+        SCHEDULE_EVENT_R(FREEZING_SLASH, 0, 0, PMASK_ABOVE_THREE);
+        SCHEDULE_EVENT(SUMMON_SWARM_SCARAB, 0, 0, PMASK_BELOW);
+        Events.ScheduleEvent(EVENT_SUBMERGE, TIMER_SUBMERGE, 0, 0, 0, PMASK_ABOVE);
 
         SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES);
 
@@ -257,15 +256,12 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                 SummonAdds(NPC_FROST_SPHERE, MAX_ALIVE_FROST_SPHERES - AliveFrostSpheres);
         }
 
-        if (CurrPhase != PHASE_THREE && m_creature->GetHealthPercent() < 30.0f)
+        if (Events.GetPhase() != PHASE_THREE && m_creature->GetHealthPercent() < 30.0f)
         {
-            m_creature->InterruptNonMeleeSpells(true);
-            CurrPhase = PHASE_THREE;
-            RESCHEDULE_EVENT(PENETRATING_COLD);
-            RESCHEDULE_EVENT(FREEZING_SLASH);
-            Events.CancelEvent(EVENT_SUMMON_SWARM_SCARAB);
-            Events.CancelEvent(EVENT_SUBMERGE);
-            Events.CancelEvent(EVENT_UNSUBMERGE);
+            Events.SetPhase(PHASE_THREE);
+            m_creature->InterruptNonMeleeSpells(false);
+            m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE_ANUBARAK);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             if (!m_bIsHeroic)
                 Events.CancelEvent(EVENT_SUMMON_BURROWER);
             DoScriptText(SAY_LEECHING_SWARM, m_creature);
@@ -283,12 +279,10 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     break;
                 case EVENT_FREEZING_SLASH:
                     DoCast(m_creature->getVictim(), SPELL_FREEZING_SLASH);
-                    RESCHEDULE_EVENT(FREEZING_SLASH);
                     break;
                 case EVENT_PENETRATING_COLD:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_PENETRATING_COLD);
-                    RESCHEDULE_EVENT(PENETRATING_COLD);
                     break;
                 case EVENT_SUMMON_BURROWER:
                     /* 1 will spawn on 10man normal
@@ -297,36 +291,27 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                      * 4 will spawn on 25man heroic (and keep spawning even during phase 3)
                      */
                     SummonAdds(NPC_NERUBIAN_BURROWER, DIFF_SELECT(1, 2, 2, 4));
-                    RESCHEDULE_EVENT(SUMMON_BURROWER);
                     break;
                 case EVENT_SUMMON_SWARM_SCARAB:
                     SummonAdds(NPC_SWARM_SCARAB);
-                    RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
                     break;
                 case EVENT_SUBMERGE:
                 {
-                    CurrPhase = PHASE_BELOWGROUND;
+                    Events.SetPhase(PHASE_BELOWGROUND);
                     DoScriptText(SAY_SUBMERGE, m_creature);
                     m_creature->InterruptNonMeleeSpells(false);
                     DoCast(m_creature, SPELL_SUBMERGE_ANUBARAK, true);
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     //DoCast(m_creature, SPELL_UNDERGROUND_VISUAL, true); //doesn't show
                     DoResetThreat();
-
-                    Events.CancelEvent(EVENT_PENETRATING_COLD);
-                    Events.CancelEvent(EVENT_FREEZING_SLASH);
-                    RESCHEDULE_EVENT(SUMMON_SWARM_SCARAB);
-                    RESCHEDULE_EVENT(UNSUBMERGE);
+                    Events.ScheduleEvent(EVENT_UNSUBMERGE, TIMER_UNSUBMERGE, 0, 0, 0, PMASK_BELOW);
                     break;
                 }
                 case EVENT_UNSUBMERGE:
                     m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE_ANUBARAK);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    CurrPhase = PHASE_ABOVEGROUND;
-                    Events.CancelEvent(EVENT_SUMMON_SWARM_SCARAB);
-                    RESCHEDULE_EVENT(FREEZING_SLASH);
-                    RESCHEDULE_EVENT(PENETRATING_COLD);
-                    RESCHEDULE_EVENT(SUBMERGE);
+                    Events.SetPhase(PHASE_ABOVEGROUND);
+                    Events.ScheduleEvent(EVENT_SUBMERGE, TIMER_SUBMERGE, 0, 0, 0, PMASK_ABOVE);
                     break;
                 default:
                     break;
@@ -378,7 +363,7 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public Sc
         {
             DoCast(m_creature, SPELL_SUBMERGE_BURROWER);
             m_creature->SetHealth(m_creature->GetMaxHealth());
-            Events.RescheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
+            Events.ScheduleEvent(EVENT_UNSUBMERGE, 1*IN_MILLISECONDS);
         }
     }
 
@@ -391,11 +376,11 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public Sc
     void Aggro(Unit *who)
     {
         Events.Reset();
-        RESCHEDULE_EVENT(ATTEMPT_SUBMERGE);
-        RESCHEDULE_EVENT(EXPOSE_WEAKNESS);
+        SCHEDULE_EVENT(ATTEMPT_SUBMERGE);
+        SCHEDULE_EVENT_R(EXPOSE_WEAKNESS);
         //DoCast(m_creature, SPELL_SPIDER_FRENZY, true);
         if (m_bIsHeroic)
-            RESCHEDULE_EVENT(SHADOW_STRIKE);
+            SCHEDULE_EVENT(SHADOW_STRIKE);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -436,20 +421,18 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public Sc
             {
                 case EVENT_ATTEMPT_SUBMERGE:
                     DoCast(m_creature, SPELL_SUBMERGE_ATTEMPT);
-                    RESCHEDULE_EVENT(UNSUBMERGE);
-                    RESCHEDULE_EVENT(ATTEMPT_SUBMERGE);
                     break;
                 case EVENT_EXPOSE_WEAKNESS:
                     DoCast(m_creature->getVictim(), SPELL_EXPOSE_WEAKNESS);
-                    RESCHEDULE_EVENT(EXPOSE_WEAKNESS);
                     break;
                 case EVENT_SHADOW_STRIKE:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        DoCast(target, SPELL_EXPOSE_WEAKNESS);
-                    RESCHEDULE_EVENT(SHADOW_STRIKE);
+                        DoCast(target, SPELL_SHADOW_STRIKE);
                     break;
                 case EVENT_UNSUBMERGE:
                     m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE_BURROWER);
+                    break;
+                default:
                     break;
             }
 
@@ -487,7 +470,7 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI, public ScriptE
     {
         Events.Reset();
         DoCast(m_creature, SPELL_SWARM_SCARAB_PASSIVE);
-        RESCHEDULE_EVENT(DETERMINATION);
+        Events.ScheduleEventInRange(EVENT_DETERMINATION, TIMER_DETERMINATION);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -526,6 +509,8 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI, public ScriptE
             {
                 case EVENT_DETERMINATION:
                     DoCast(m_creature, SPELL_DETERMINATION);
+                    break;
+                default:
                     break;
             }
 

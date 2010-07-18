@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss Jaraxxus
-SD%Complete: 0
+SD%Complete: 90
 SDComment:
 SDCategory: Trial of the Crusader
 EndScriptData */
@@ -75,11 +75,11 @@ enum Events
 #define BERSERK_TIMER       10*MINUTE*IN_MILLISECONDS
 #define PORTAL_TIMER        2*MINUTE*IN_MILLISECONDS
 #define VOLCANO_TIMER       2*MINUTE*IN_MILLISECONDS
-#define FIREBALL_TIMER      urand(10,15)*IN_MILLISECONDS
-#define LIGHTNING_TIMER     urand(15,20)*IN_MILLISECONDS
-#define INCINERATE_TIMER    urand(25,30)*IN_MILLISECONDS
-#define LEGION_FLAME_TIMER  urand(30,40)*IN_MILLISECONDS
-#define BUFF_TIMER          urand(30,45)*IN_MILLISECONDS
+#define FIREBALL_TIMER      10*IN_MILLISECONDS, 15*IN_MILLISECONDS
+#define LIGHTNING_TIMER     15*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define INCINERATE_TIMER    25*IN_MILLISECONDS, 30*IN_MILLISECONDS
+#define LEGION_FLAME_TIMER  30*IN_MILLISECONDS, 40*IN_MILLISECONDS
+#define BUFF_TIMER          30*IN_MILLISECONDS, 45*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
 {
@@ -106,13 +106,13 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
             return;
         DoScriptText(SAY_AGGRO, m_creature);
         Events.ScheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
-        Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
-        Events.ScheduleEvent(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER);
-        Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
-        Events.ScheduleEvent(EVENT_LEGION_FLAME, LEGION_FLAME_TIMER);
-        Events.ScheduleEvent(EVENT_SUMMON_VOLCANO, 90*IN_MILLISECONDS);
-        Events.ScheduleEvent(EVENT_SUMMON_PORTAL, 30*IN_MILLISECONDS);
-        Events.ScheduleEvent(EVENT_BUFF, BUFF_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_PORTAL, 30*IN_MILLISECONDS, PORTAL_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_VOLCANO, 90*IN_MILLISECONDS, VOLCANO_TIMER);
+        Events.ScheduleEventInRange(EVENT_FEL_FIREBALL, FIREBALL_TIMER, FIREBALL_TIMER);
+        Events.ScheduleEventInRange(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER, LIGHTNING_TIMER);
+        Events.ScheduleEventInRange(EVENT_INCINERATE_FLESH, INCINERATE_TIMER, INCINERATE_TIMER);
+        Events.ScheduleEventInRange(EVENT_LEGION_FLAME, LEGION_FLAME_TIMER, LEGION_FLAME_TIMER);
+        Events.ScheduleEventInRange(EVENT_BUFF, BUFF_TIMER, BUFF_TIMER);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -187,35 +187,28 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     DoScriptText(SAY_INCINERATE, m_creature);
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_INCINERATE_FLESH, false);
-                    Events.ScheduleEvent(EVENT_INCINERATE_FLESH, INCINERATE_TIMER);
                     break;
                 case EVENT_FEL_FIREBALL:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEL_FIREBALL);
-                    Events.ScheduleEvent(EVENT_FEL_FIREBALL, FIREBALL_TIMER);
                     break;
                 case EVENT_FEL_LIGHTNING:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, SPELL_FEL_LIGHTNING);
-                    Events.ScheduleEvent(EVENT_FEL_LIGHTNING, LIGHTNING_TIMER);
                     break;
                 case EVENT_LEGION_FLAME:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(pTarget, SPELL_LEGION_FLAME);
-                    Events.ScheduleEvent(EVENT_LEGION_FLAME, LEGION_FLAME_TIMER);
                     break;
                 case EVENT_SUMMON_VOLCANO:
                     DoScriptText(SAY_SUMMON_INFERNO, m_creature);
                     m_creature->CastSpell(m_creature, SPELL_INFERNAL_ERUPTION, false);
-                    Events.ScheduleEvent(EVENT_SUMMON_VOLCANO, VOLCANO_TIMER);
                     break;
                 case EVENT_SUMMON_PORTAL:
                     DoScriptText(SAY_SUMMON_MISTRESS_OF_PAIN, m_creature);
                     m_creature->CastSpell(m_creature, SPELL_NETHER_PORTAL, false);
-                    Events.ScheduleEvent(EVENT_SUMMON_PORTAL, PORTAL_TIMER);
                     break;
                 case EVENT_BUFF:
                     DoCastSpellIfCan(m_creature, SPELL_NETHER_POWER);
-                    Events.ScheduleEvent(EVENT_BUFF, BUFF_TIMER);
                     break;
                 default:
                     break;
@@ -245,9 +238,9 @@ enum AddEvents
     EVENT_BURN,
 };
 
-#define KISS_TIMER      urand(20,30)*IN_MILLISECONDS
-#define SLASH_TIMER     urand(30,45)*IN_MILLISECONDS
-#define SPIKE_TIMER     urand(15,30)*IN_MILLISECONDS
+#define KISS_TIMER      20*IN_MILLISECONDS, 30*IN_MILLISECONDS
+#define SLASH_TIMER     30*IN_MILLISECONDS, 45*IN_MILLISECONDS
+#define SPIKE_TIMER     15*IN_MILLISECONDS, 30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI, public ScriptEventInterface
 {
@@ -279,9 +272,9 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI, public ScriptE
     void Aggro(Unit* pWho)
     {
         if (m_bIsHeroic)
-            Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
-        Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
-        Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 0, 4000);
+            Events.ScheduleEventInRange(EVENT_KISS, KISS_TIMER, KISS_TIMER);
+        Events.ScheduleEventInRange(EVENT_SHIVAN_SLASH, SLASH_TIMER, SLASH_TIMER);
+        Events.ScheduleEventInRange(EVENT_SPIKE, SPIKE_TIMER, SPIKE_TIMER, 4000);
         ++m_AchievementCounter;
     }
 
@@ -306,16 +299,13 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI, public ScriptE
                 case EVENT_KISS:
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_MISTRESS_KISS, false);
-                    Events.ScheduleEvent(EVENT_KISS, KISS_TIMER);
                     break;
                 case EVENT_SHIVAN_SLASH:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHIVAN_SLASH);
-                    Events.ScheduleEvent(EVENT_SHIVAN_SLASH, SLASH_TIMER);
                     break;
                 case EVENT_SPIKE:
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_SPINNING_PAIN_SPIKE, false);
-                    Events.ScheduleEvent(EVENT_SPIKE, SPIKE_TIMER, 0, 4000);
                     break;
                 default:
                     break;
@@ -364,8 +354,8 @@ struct MANGOS_DLL_DECL mob_jaraxxus_add_summonerAI: public Scripted_NoMovementAI
     }
 };
 
-#define FELSTREAK_TIMER     urand(15,30)*IN_MILLISECONDS
-#define FEL_INFERNO_TIMER   urand(15,30)*IN_MILLISECONDS
+#define FELSTREAK_TIMER     15*IN_MILLISECONDS, 30*IN_MILLISECONDS
+#define FEL_INFERNO_TIMER   15*IN_MILLISECONDS, 30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI, public ScriptEventInterface
 {
@@ -391,8 +381,8 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI, public Script
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 0, 6000);
-        Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 0, 7500);
+        Events.ScheduleEventInRange(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, FEL_INFERNO_TIMER, 6000);
+        Events.ScheduleEventInRange(EVENT_FELSTREAK, FELSTREAK_TIMER, FELSTREAK_TIMER, 7500);
     }
 
     void JustDied(Unit* pSlayer)
@@ -415,12 +405,10 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI, public Script
                 case EVENT_FELSTREAK:
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         m_creature->CastSpell(pTarget, SPELL_FEL_STREAK, false);
-                    Events.ScheduleEvent(EVENT_FELSTREAK, FELSTREAK_TIMER, 0, 7500);
                     break;
                 case EVENT_FEL_INFERNO:
                     m_creature->StopMoving();
                     m_creature->CastSpell(m_creature, SPELL_FEL_INFERNO, false);
-                    Events.ScheduleEvent(EVENT_FEL_INFERNO, FEL_INFERNO_TIMER, 0, 6000);
                     break;
                 default:
                     break;

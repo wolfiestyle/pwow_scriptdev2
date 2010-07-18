@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Bosses Faction Champions
-SD%Complete: 0
+SD%Complete: 75
 SDComment: 28 champions, divided equally between horde/alliance, each pair sharing AIs. The warrior's Overpower is not implemented correctly. Not sure how to do so.
 SDCategory: Trial of the Crusader
 EndScriptData */
@@ -168,7 +168,7 @@ enum Spells
     SPELL_REPENTANCE        = 66008,
     SPELL_SEAL_OF_COMMAND   = 66004,
 
-    //disipline priest
+    //discipline priest
     SPELL_DISPEL_MAGIC      = 65546,
     SPELL_FLASH_HEAL        = 66104,
     SPELL_MANA_BURN         = 66100,
@@ -277,12 +277,17 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
 
     void Aggro(Unit *who)
     {
-        RESCHEDULE_EVENT(CAST);
-        Events.RescheduleEvent(EVENT_SWITCH_TARGET, 0); //force acquire target
-        if (m_creature->getPowerType() == POWER_MANA)
-            Events.RescheduleEvent(EVENT_REGAIN_MANA, 1000);
-        if (m_creature->getPowerType() == POWER_ENERGY)
-            Events.RescheduleEvent(EVENT_REGAIN_ENERGY, 1000);
+        SCHEDULE_EVENT(CAST);
+        Events.ScheduleEvent(EVENT_SWITCH_TARGET, 0, TIMER_SWITCH_TARGET); //force acquire target
+        switch (m_creature->getPowerType())
+        {
+            case POWER_MANA:
+                Events.ScheduleEvent(EVENT_REGAIN_MANA, 1000, 1000);
+                break;
+            case POWER_ENERGY:
+                Events.ScheduleEvent(EVENT_REGAIN_ENERGY, 1000, 1000);
+                break;
+        }
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -316,8 +321,8 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         if (players.isEmpty())
             return NULL;
 
-        typedef std::multimap<float /*weight*/, Unit* /*player*/> AggroMap;
-        AggroMap PossibleTargets;
+        float min_value = FLT_MAX;
+        Unit *min_target = NULL;
         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         {
             Unit *target = i->getSource();
@@ -329,12 +334,17 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                 float resist = std::min(target->GetResistance(m_DamageClass) / (m_DamageClass == SPELL_SCHOOL_NORMAL ? 20000.0f : 300.0f), 1.0f);
                                                                                                         // less resistance/armor
                 float random = (rand_norm() - 0.5f) / 10.0f;                                            // (add some random noise)
-                PossibleTargets.insert(std::make_pair(health + distance + resist + random, target));
+                float value = health + distance + resist + random;
+                // pick lowest value (most vulnerable target)
+                if (value < min_value)
+                {
+                    min_value = value;
+                    min_target = target;
+                }
             }
         }
 
-        // pick lowest value (most vulnerable target)
-        return PossibleTargets.begin()->second;
+        return min_target;
     }
 
     bool SpellIsOnCooldown(uint32 uiSpell) const
@@ -448,7 +458,6 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                             }
                         }
                     }
-                    RESCHEDULE_EVENT(CAST);
                     break;
                 }
                 case EVENT_SWITCH_TARGET:
@@ -467,21 +476,16 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
                                 m_creature->Attack(CurrHostileTarget, IsMelee);
                         }
                     }
-                    RESCHEDULE_EVENT(SWITCH_TARGET);
                     break;
                 case EVENT_REGAIN_MANA:
                 {
                     uint32 mana = m_creature->GetMaxPower(POWER_MANA)*0.05;
                     m_creature->SetPower(POWER_MANA, m_creature->GetPower(POWER_MANA) + mana);
-                    Events.RescheduleEvent(EVENT_REGAIN_MANA, urand(1,2)*IN_MILLISECONDS);
                     break;
                 }
                 case EVENT_REGAIN_ENERGY:
-                {
                     m_creature->SetPower(POWER_ENERGY, m_creature->GetPower(POWER_ENERGY) + 10);
-                    Events.RescheduleEvent(EVENT_REGAIN_ENERGY, 1000);
                     break;
-                }
                 default:
                     break;
             }

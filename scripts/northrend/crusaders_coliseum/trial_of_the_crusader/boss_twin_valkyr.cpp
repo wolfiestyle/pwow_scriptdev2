@@ -109,10 +109,10 @@ enum Says
 #define ORB_NUMBER          urand(25,30)
 
 #define TIMER_BERSERK       6*MINUTE*IN_MILLISECONDS
-#define TIMER_SPAWN_ORBS    urand(30,40)*IN_MILLISECONDS
+#define TIMER_SPAWN_ORBS    30*IN_MILLISECONDS, 40*IN_MILLISECONDS
 #define TIMER_TWIN_SPIKE    20*IN_MILLISECONDS
 #define TIMER_SPECIAL       45*IN_MILLISECONDS
-#define TIMER_TOUCH         urand(15,20)*IN_MILLISECONDS
+#define TIMER_TOUCH         15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 
 // Used for Light/Dark essence damage effect (aura 303)
 // core should do this on apply/remove aura, but don't know that info
@@ -165,10 +165,10 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
     {
         DoCast(m_creature, SPELL_SURGE_OF_LIGHT);
         m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(TWIN_SPIKE);
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT(TWIN_SPIKE);
         if (m_bIsHeroic)
-            RESCHEDULE_EVENT(TOUCH);
+            SCHEDULE_EVENT_R(TOUCH);
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
     }
@@ -204,12 +204,10 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_TWIN_SPIKE:
                     DoCast(m_creature->getVictim(), SPELL_EYDIS_TWIN_SPIKE);
-                    RESCHEDULE_EVENT(TWIN_SPIKE);
                     break;
                 case EVENT_TOUCH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_TOUCH_OF_LIGHT);
-                    RESCHEDULE_EVENT(TOUCH);
                     break;
                 default:
                     break;
@@ -289,12 +287,12 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         DoCast(m_creature, SPELL_SURGE_OF_DARKNESS);
         m_creature->ModifyAuraState(AURA_STATE_DARK, true);
 
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(SPAWN_ORBS);
-        RESCHEDULE_EVENT(TWIN_SPIKE);
-        RESCHEDULE_EVENT(SPECIAL);
-        if(m_bIsHeroic)
-            RESCHEDULE_EVENT(TOUCH);
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT_R(SPAWN_ORBS);
+        SCHEDULE_EVENT(TWIN_SPIKE);
+        SCHEDULE_EVENT(SPECIAL);
+        if (m_bIsHeroic)
+            SCHEDULE_EVENT_R(TOUCH);
 
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
@@ -352,12 +350,10 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                         GetPointOnCircle(48.5, rand_norm()*2*M_PI, x, y);
                         SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                     }
-                    RESCHEDULE_EVENT(SPAWN_ORBS);
                     break;
                 }
                 case EVENT_TWIN_SPIKE:
                     DoCast(m_creature->getVictim(), SPELL_EYDIS_TWIN_SPIKE);
-                    RESCHEDULE_EVENT(TWIN_SPIKE);
                     break;
                 case EVENT_SPECIAL:
                 {
@@ -400,14 +396,11 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                             DoCast(m_creature, SPELL_POWER_OF_THE_TWINS);
                             break;
                     }
-
-                    RESCHEDULE_EVENT(SPECIAL);
                     break;
                 }
                 case EVENT_TOUCH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_TOUCH_OF_DARKNESS);
-                    RESCHEDULE_EVENT(TOUCH);
                     break;
                 default:
                     break;
