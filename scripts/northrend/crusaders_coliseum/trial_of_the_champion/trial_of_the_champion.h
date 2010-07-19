@@ -94,8 +94,6 @@ struct MANGOS_DLL_DECL boss_trial_of_the_championAI: public ScriptedAI
     bool m_bIsRegularMode;
 
     boss_trial_of_the_championAI(Creature *pCreature);
-
-    Player* SelectRandomPlayer();
 };
 
 // helper for the script register process

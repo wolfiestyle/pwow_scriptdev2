@@ -145,7 +145,7 @@ struct MANGOS_DLL_DECL boss_freyaAI: public ScriptedAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_SUNBEAM:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, HEROIC(SPELL_SUNBEAM, SPELL_SUNBEAM_H));
                     events.ScheduleEvent(EVENT_SUNBEAM, SUNBEAM_TIMER);
                     break;

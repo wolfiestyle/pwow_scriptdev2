@@ -413,7 +413,7 @@ struct MANGOS_DLL_DECL mob_leviathan_mk_II_AI : public VoltronPieceAI
             case EVENT_NAHPALM_SHELLS:
                 if (Player *victim = GetPlayerAtMinimumRange(15))   // ranged player
                     DoCast(victim, HEROIC(SPELL_NAHPALM_SHELLS_N, SPELL_NAHPALM_SHELLS_H));
-                else if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                else if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, HEROIC(SPELL_NAHPALM_SHELLS_N, SPELL_NAHPALM_SHELLS_H));
                 Events.RescheduleEvent(EVENT_NAHPALM_SHELLS, TIMER_NAHPALM_SHELLS);
                 break;
@@ -573,7 +573,7 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
                 //fall through
             case EVENT_RAPID_BURST:
                 if(!LaserTar)
-                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
                         if(IsVoltron)
                             DoCast(Target, HEROIC(SPELL_HAND_PULSE_N, SPELL_HAND_PULSE_H));
@@ -588,7 +588,7 @@ struct MANGOS_DLL_DECL mob_VX001_AI : public VoltronPieceAI
                 Events.RescheduleEvent(EVENT_ROCKET_STRIKE, TIMER_ROCKET_STRIKE);
             case EVENT_ROCKET_STRIKE2:
                 if(!LaserTar)
-                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
                         float x, y, z;
                         Target->GetPosition(x, y, z);
@@ -734,7 +734,7 @@ struct MANGOS_DLL_DECL mob_aerial_command_unitAI : public VoltronPieceAI
             {
             case EVENT_PLASMA_BALL:
                 if(!IsOnGround)
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO_PLAYER, 0))
                         DoCast(target, HEROIC(SPELL_PLASMA_BALL_N, SPELL_PLASMA_BALL_H));
                 Events.RescheduleEvent(EVENT_PLASMA_BALL, TIMER_PLASMA_BALL);
                 break;

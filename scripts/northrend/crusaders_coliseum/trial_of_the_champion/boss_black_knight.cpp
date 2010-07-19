@@ -85,7 +85,7 @@ struct MANGOS_DLL_DECL mob_toc5_risen_ghoulAI: public boss_trial_of_the_champion
             if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 4.0f))
             {
                 DoCast(m_creature->getVictim(), SPELL_CLAW);
-                if (Player *target = SelectRandomPlayer())
+                if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     AttackStart(target);
                 Attack_Timer = 2500;
             }
@@ -241,7 +241,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 
         if (Choke_Timer < diff && phase1)
         {
-            if (Player *target = SelectRandomPlayer())
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(m_creature->getVictim(), SPELL_CHOKE);
             Choke_Timer = 15000;
         }
@@ -259,7 +259,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 
         if (Mark_Timer < diff && phase3)
         {
-            if (Player *target = SelectRandomPlayer())
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, SPELL_MARK);
             Mark_Timer = 15000;
         }

@@ -189,7 +189,7 @@ struct MANGOS_DLL_DECL boss_auriayaAI: public ScriptedAI
                     events.ScheduleEvent(EVENT_TERRIFY_SCREECH, TERRIFY_SCREECH_TIMER);
                     break;
                 case EVENT_GUARDIAN_SWARM:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
                         UnSummonGuardianSwarm();
                         DoCast(target, SPELL_GUARDIAN_SWARM);
@@ -316,7 +316,7 @@ struct MANGOS_DLL_DECL boss_auriaya_defenderAI: public ScriptedAI
             switch (eventId)
             {
                 case EVENT_FERAL_RUSH:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, HEROIC(SPELL_FERAL_RUSH, SPELL_FERAL_RUSH_H));
                     events.ScheduleEvent(EVENT_FERAL_RUSH, FERAL_RUSH_TIMER);
                     break;

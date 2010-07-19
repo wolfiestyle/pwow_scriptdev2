@@ -158,29 +158,6 @@ boss_trial_of_the_championAI::boss_trial_of_the_championAI(Creature *pCreature):
     m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
 }
 
-Player* boss_trial_of_the_championAI::SelectRandomPlayer()
-{
-    ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
-    if (tlist.empty())
-        return NULL;
-    ThreatList::const_iterator itr = tlist.begin();
-    size_t count = tlist.size();
-    std::advance(itr, urand(0, count-1));
-    while (count > 0)
-    {
-        Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-        if (target && target->GetTypeId() == TYPEID_PLAYER && m_creature->IsInMap(target))
-            return static_cast<Player*>(target);
-        else
-        {
-            if (++itr == tlist.end())
-                itr = tlist.begin();
-            count--;
-        }
-    }
-    return NULL;
-}
-
 void AddSC_trial_of_the_champion()
 {
     Script* NewScript;

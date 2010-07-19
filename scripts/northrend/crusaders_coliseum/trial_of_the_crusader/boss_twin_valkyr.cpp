@@ -206,7 +206,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                     DoCast(m_creature->getVictim(), SPELL_EYDIS_TWIN_SPIKE);
                     break;
                 case EVENT_TOUCH:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_TOUCH_OF_LIGHT);
                     break;
                 default:
@@ -399,7 +399,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     break;
                 }
                 case EVENT_TOUCH:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_TOUCH_OF_DARKNESS);
                     break;
                 default:

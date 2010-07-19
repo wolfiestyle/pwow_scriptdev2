@@ -187,7 +187,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
     {
         SpellEntry const *CompareSpell = GetSpellStore()->LookupEntry(SPELL_BONE_SPIKE_GRAVEYARD);
         if (CompareSpell && pSpell->SpellDifficultyId == CompareSpell->SpellDifficultyId)
-            if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 2)) //do not attack tanks.
+            if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) //do not attack tanks.
                 if (Creature *pSumm = SummonMgr.SummonCreatureAt(pTarget, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
                     if (mob_bone_spikeAI *SpikeAI = dynamic_cast<mob_bone_spikeAI*>(pSumm->AI()))
                         SpikeAI->DoImpale(pTarget);
@@ -282,7 +282,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                     break;
                 case EVENT_BONE_STORM_MOVE:
                     DoResetThreat();
-                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->GetMotionMaster()->MovePoint(0, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
                     break;
                 case EVENT_BONE_STORM_STOP:

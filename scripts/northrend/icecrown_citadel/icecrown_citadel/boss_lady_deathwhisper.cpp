@@ -321,16 +321,16 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_BERSERK, m_creature);
                     break;
                 case EVENT_SHADOWBOLT:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_SHADOWBOLT);
                     break;
                 case EVENT_DEATH_AND_DECAY:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_DEATH_AND_DECAY);
                     break;
                 case EVENT_DOMINATE_MIND:
                     for (uint32 count = !m_bIs10Man && m_bIsHeroic ? 3 : 1; count; --count)
-                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                             DoCast(target, SPELL_DOMINATE_MIND);
                     DoScriptText(SAY_DOMINATE_MIND, m_creature);
                     break;
@@ -415,7 +415,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     break;
                 }
                 case EVENT_FROSTBOLT:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_FROSTBOLT);
                     break;
                 case EVENT_TOUCH_OF_INSIGNIFICANCE:

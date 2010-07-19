@@ -603,9 +603,9 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
         if (m_creature->GetPower(POWER_ENERGY) == 100)
         {
-            Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 2);
+            Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2);
             if (!pTarget)
-                pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
             if (pTarget)
                 DoCast(pTarget, SPELL_MARK_FALLEN_CHAMPION);
             DoScriptText(SAY_MARK_OF_THE_FALLEN_CHAMPION, m_creature);
@@ -643,7 +643,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                     break;
                 }
                 case EVENT_BOILING_BLOOD:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_BOILING_BLOOD);
                     break;
                 case EVENT_RUNE_OF_BLOOD:
@@ -653,7 +653,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 {
                     Unit *pTarget = GetPlayerAtMinimumRange(10.0f);
                     if (!pTarget)
-                        pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                        pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
                     if (pTarget)
                         DoCast(pTarget, SPELL_BLOOD_NOVA); //targets ranged targets. Problem: the visual for this spell does not trigger the actual spell.
                     break;

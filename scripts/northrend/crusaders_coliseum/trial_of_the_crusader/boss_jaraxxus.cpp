@@ -185,18 +185,18 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI: public boss_trial_of_the_crusaderAI
                     break;
                 case EVENT_INCINERATE_FLESH:
                     DoScriptText(SAY_INCINERATE, m_creature);
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(pTarget, SPELL_INCINERATE_FLESH, false);
                     break;
                 case EVENT_FEL_FIREBALL:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEL_FIREBALL);
                     break;
                 case EVENT_FEL_LIGHTNING:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, SPELL_FEL_LIGHTNING);
                     break;
                 case EVENT_LEGION_FLAME:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, SPELL_LEGION_FLAME);
                     break;
                 case EVENT_SUMMON_VOLCANO:
@@ -297,14 +297,14 @@ struct MANGOS_DLL_DECL mob_mistress_of_painAI: public ScriptedAI, public ScriptE
             switch (uiEventId)
             {
                 case EVENT_KISS:
-                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(pTarget, SPELL_MISTRESS_KISS, false);
                     break;
                 case EVENT_SHIVAN_SLASH:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHIVAN_SLASH);
                     break;
                 case EVENT_SPIKE:
-                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(pTarget, SPELL_SPINNING_PAIN_SPIKE, false);
                     break;
                 default:
@@ -403,7 +403,7 @@ struct MANGOS_DLL_DECL mob_felflame_infernalAI: public ScriptedAI, public Script
             switch (uiEventId)
             {
                 case EVENT_FELSTREAK:
-                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(pTarget, SPELL_FEL_STREAK, false);
                     break;
                 case EVENT_FEL_INFERNO:

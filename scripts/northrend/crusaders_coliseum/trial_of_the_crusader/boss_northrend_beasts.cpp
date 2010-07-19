@@ -327,7 +327,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_ACID_SPIT, false);
                     break;
                 case EVENT_SPRAY:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_PARALYTIC_SPRAY, true);
                     break;
                 case EVENT_SLIME_POOL:
@@ -460,7 +460,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FIRE_SPIT, false);
                     break;
                 case EVENT_SPRAY:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                          m_creature->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_BURNING_SPRAY, true);
                     break;
                 case EVENT_SLIME_POOL:
@@ -610,7 +610,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_FEROCIOUS_BUTT, false);
                     break;
                 case EVENT_BREATH:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         m_creature->CastSpell(target, SPELL_ARCTIC_BREATH, false);
                     break;
                 case EVENT_PHASE_CHANGE:
@@ -634,7 +634,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                             m_uiStep++;
                             break;
                         case 2:
-                            pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                            pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
                             if (pTarget)
                             {
                                 pTargetX = pTarget->GetPositionX();

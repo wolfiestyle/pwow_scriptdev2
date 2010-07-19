@@ -112,7 +112,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
         if (SlagPot_Timer < diff)
         {
             DoScriptText(SAY_SLAG_POT, m_creature);
-            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, HEROIC(SPELL_SLAG_POT, SPELL_SLAG_POT_H));
 
             SlagPot_Timer = 30000;

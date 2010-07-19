@@ -492,7 +492,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
                     Events.ScheduleEvent(EVENT_CLEAVE, urand(7000, 10000));
                     break;
                 case EVENT_LAVA_STRIKE:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
                         DoCastSpellIfCan(pTarget, SPELL_LAVA_STRIKE);
 
@@ -813,7 +813,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
                     Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
@@ -887,7 +887,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
                     Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
@@ -961,7 +961,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
             {
                 case EVENT_SHADOW_FISSURE:
                 {
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
                     Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;

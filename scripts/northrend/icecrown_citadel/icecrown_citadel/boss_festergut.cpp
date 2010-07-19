@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_MALLEABLE_GOO:
                     if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                             Putricide->CastSpell(target, SPELL_MALLEABLE_GOO, false);
                     break;
                 case EVENT_START_GAS_CLOUD:

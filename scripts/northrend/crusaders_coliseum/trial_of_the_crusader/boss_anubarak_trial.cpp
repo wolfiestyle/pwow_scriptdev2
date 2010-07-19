@@ -281,7 +281,7 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
                     DoCast(m_creature->getVictim(), SPELL_FREEZING_SLASH);
                     break;
                 case EVENT_PENETRATING_COLD:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_PENETRATING_COLD);
                     break;
                 case EVENT_SUMMON_BURROWER:
@@ -426,7 +426,7 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public Sc
                     DoCast(m_creature->getVictim(), SPELL_EXPOSE_WEAKNESS);
                     break;
                 case EVENT_SHADOW_STRIKE:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_SHADOW_STRIKE);
                     break;
                 case EVENT_UNSUBMERGE:

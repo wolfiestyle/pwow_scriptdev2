@@ -145,7 +145,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
 
         if (Hammer_Timer < diff)
         {
-            if (Player *target = SelectRandomPlayer())
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
             {
                 DoCast(target, SPELL_HAMMER_OF_JUSTICE);
                 HammerTarget = target->GetGUID();
@@ -221,7 +221,7 @@ struct MANGOS_DLL_DECL boss_paletressAI: public boss_trial_of_the_championAI
 
         if (Smite_Timer < diff)
         {
-            if (Player* target = SelectRandomPlayer())
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, DIFFICULTY(SPELL_SMITE));
             Smite_Timer = 2000;
         }
@@ -231,7 +231,7 @@ struct MANGOS_DLL_DECL boss_paletressAI: public boss_trial_of_the_championAI
         if (Holy_Fire_Timer < diff)
         {
             m_creature->InterruptNonMeleeSpells(true);
-            if (Player *target = SelectRandomPlayer())
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, DIFFICULTY(SPELL_HOLY_FIRE));
             Holy_Fire_Timer = 10000;
         }
@@ -330,7 +330,7 @@ struct MANGOS_DLL_DECL mob_toc5_memoryAI: public boss_trial_of_the_championAI
 
         if (Old_Wounds_Timer < diff)
         {
-            if (Player* target = SelectRandomPlayer())
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, DIFFICULTY(SPELL_OLD_WOUNDS));
             Old_Wounds_Timer = 10000;
         }
@@ -347,7 +347,7 @@ struct MANGOS_DLL_DECL mob_toc5_memoryAI: public boss_trial_of_the_championAI
 
         if (Shadows_Timer < diff)
         {
-            if (Player* target = SelectRandomPlayer())
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, DIFFICULTY(SPELL_SHADOWS));
             Shadows_Timer = 10000;
         }

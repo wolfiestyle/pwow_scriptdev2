@@ -364,7 +364,7 @@ struct MANGOS_DLL_DECL npc_corruptor_tentacleAI: public npc_yogg_tentacleAI
 
         if (m_uiCastTimer < uiDiff)
         {
-            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, CorruptorSpells[urand(0, 3)]);
             m_uiCastTimer = 10*IN_MILLISECONDS;
         }

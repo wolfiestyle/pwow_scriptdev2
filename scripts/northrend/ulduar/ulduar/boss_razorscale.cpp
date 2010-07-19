@@ -159,7 +159,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
             //Fireball timer
             if (Fireball_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, HEROIC(SPELL_FIREBALL, SPELL_FIREBALL_H));
                 Fireball_Timer = FIREBALL_TIMER;
             }
@@ -183,7 +183,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
             //Devouring Flame timer
             if (DevouringFlame_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, HEROIC(SPELL_DEVOURING_FLAME, SPELL_DEVOURING_FLAME_H));
                 DevouringFlame_Timer = DEVOURING_FAME_TIMER;
             }
@@ -197,7 +197,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
             //Fuse Armor timer
             if (FuseArmor_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target,SPELL_FUSE_ARMOR);
                 FuseArmor_Timer = FUSE_ARMOR_TIMER;
             }
@@ -207,7 +207,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
             //Flame Buffet timer
             if (FlameBuffet_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, HEROIC(SPELL_FLAME_BUFFET, SPELL_FLAME_BUFFET_H));
 
                 FlameBuffet_Timer = FLAME_BUFFET_TIMER;

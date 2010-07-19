@@ -406,11 +406,11 @@ struct MANGOS_DLL_DECL boss_algalonAI: public ScriptedAI
         }
 
         //switch targets to next top aggro if phase punch stacks >= 5
-        if (Unit *TopAggro = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0))
+        if (Unit *TopAggro = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO_PLAYER, 0))
         {
             Aura *aur = TopAggro->GetAura(SPELL_PHASE_PUNCH, EFFECT_INDEX_0);
             if (aur && aur->GetStackAmount() >= 5)
-                if (Unit *NextTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 1))
+                if (Unit *NextTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO_PLAYER, 1))
                     m_creature->Attack(NextTarget, true);
         }
 
