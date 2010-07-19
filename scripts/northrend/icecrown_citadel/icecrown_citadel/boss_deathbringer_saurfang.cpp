@@ -228,11 +228,11 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Aggro(Unit* pWho)
     {
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(SUMMON_ADDS);
-        RESCHEDULE_EVENT(BOILING_BLOOD);
-        RESCHEDULE_EVENT(RUNE_OF_BLOOD);
-        RESCHEDULE_EVENT(BLOOD_NOVA);
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT(SUMMON_ADDS);
+        SCHEDULE_EVENT(BOILING_BLOOD);
+        SCHEDULE_EVENT(RUNE_OF_BLOOD);
+        SCHEDULE_EVENT(BLOOD_NOVA);
         DoScriptText(SAY_AGGRO, m_creature);
         DoCast(m_creature, SPELL_BLOOD_LINK, true);
         DoCast(m_creature, SPELL_RUNE_OF_BLOOD_AURA, true);
@@ -639,18 +639,15 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                             SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
 
                     if (m_bIsHeroic)
-                        RESCHEDULE_EVENT(BUFF_ADDS);
-                    RESCHEDULE_EVENT(SUMMON_ADDS);
+                        Events.ScheduleEvent(EVENT_BUFF_ADDS, TIMER_BUFF_ADDS);
                     break;
                 }
                 case EVENT_BOILING_BLOOD:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_BOILING_BLOOD);
-                    RESCHEDULE_EVENT(BOILING_BLOOD);
                     break;
                 case EVENT_RUNE_OF_BLOOD:
                     DoCast(m_creature->getVictim(), SPELL_RUNE_OF_BLOOD);
-                    RESCHEDULE_EVENT(RUNE_OF_BLOOD);
                     break;
                 case EVENT_BLOOD_NOVA:
                 {
@@ -659,15 +656,15 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                         pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                     if (pTarget)
                         DoCast(pTarget, SPELL_BLOOD_NOVA); //targets ranged targets. Problem: the visual for this spell does not trigger the actual spell.
-                    RESCHEDULE_EVENT(BLOOD_NOVA);
                     break;
                 }
                 case EVENT_BUFF_ADDS:
                 {
                     std::list<Creature*> Adds;
                     SummonMgr.GetAllSummonsWithId(Adds, NPC_BLOOD_BEAST);
-                    for (std::list<Creature*>::iterator i = Adds.begin(); i!= Adds.end(); ++i)
+                    for (std::list<Creature*>::const_iterator i = Adds.begin(); i!= Adds.end(); ++i)
                         (*i)->CastSpell(*i, SPELL_SCENT_OF_BLOOD, false);
+                    break;
                 }
                 default:
                     break;

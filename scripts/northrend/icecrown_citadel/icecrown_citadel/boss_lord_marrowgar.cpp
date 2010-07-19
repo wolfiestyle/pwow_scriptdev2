@@ -67,7 +67,7 @@ enum Events
 };
 
 #define TIMER_BONE_SLICE            1*IN_MILLISECONDS
-#define TIMER_COLDFLAME             urand(4,6)*IN_MILLISECONDS
+#define TIMER_COLDFLAME             4*IN_MILLISECONDS, 6*IN_MILLISECONDS
 #define TIMER_COLDFLAME_MOVE        10  // creature is updated rougly every 500ms, so this might not work as expected
 #define TIMER_BONE_STORM            50*IN_MILLISECONDS
 #define TIMER_BONE_STORM_MOVE       5*IN_MILLISECONDS
@@ -119,20 +119,22 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
 {
-    bool m_bSaidBeginningStuff;
     SummonManager SummonMgr;
-    std::vector<std::pair<WorldLocation/*start point*/, uint32/*dist*/> > ColdflameAttribs;
+    bool m_bSaidBeginningStuff :1;
+    bool m_bInBoneStorm :1;
+    std::list<std::pair<WorldLocation/*start point*/, uint32/*dist*/> > ColdflameAttribs;
 
     boss_lord_marrowgarAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
+        SummonMgr(m_creature),
         m_bSaidBeginningStuff(false),
-        SummonMgr(m_creature)
+        m_bInBoneStorm(false)
     {
     }
 
     void Reset()
     {
-        Events.Reset();
+        m_bInBoneStorm = false;
         SummonMgr.UnsummonAll();
         ColdflameAttribs.clear();
 
@@ -161,11 +163,11 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
     void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO, m_creature);
-        RESCHEDULE_EVENT(COLDFLAME);
-        RESCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);
-        RESCHEDULE_EVENT(BONE_STORM);
-        Events.ScheduleEvent(EVENT_BONE_SLICE, 10*IN_MILLISECONDS);
-        RESCHEDULE_EVENT(ENRAGE);
+        SCHEDULE_EVENT_R(COLDFLAME);
+        SCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);
+        SCHEDULE_EVENT(BONE_STORM);
+        Events.ScheduleEvent(EVENT_BONE_SLICE, 10*IN_MILLISECONDS, TIMER_BONE_SLICE);
+        SCHEDULE_EVENT(ENRAGE);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -212,15 +214,14 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             switch (uiEventId)
             {
                 case EVENT_BONE_SLICE:
-                    if (!m_creature->HasAuraByDifficulty(SPELL_BONE_STORM))
+                    if (!m_bInBoneStorm)
                         DoCast(m_creature->getVictim(), SPELL_BONE_SLICE);
-                    RESCHEDULE_EVENT(BONE_SLICE);
                     break;
                 case EVENT_COLDFLAME:
                 {
                     WorldLocation StartPos;
                     m_creature->GetPosition(StartPos);
-                    if (m_creature->HasAuraByDifficulty(SPELL_BONE_STORM))
+                    if (m_bInBoneStorm)
                     {
                         for (uint32 i = 0; i < 4; i++)
                         {
@@ -236,11 +237,11 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                             ColdflameAttribs.push_back(std::make_pair(StartPos, 4));
                         }
                     }
-                    RESCHEDULE_EVENT(COLDFLAME);
+                    // (no break)
                 }
                 case EVENT_COLDFLAME_MOVE:
                 {
-                    for (std::vector<std::pair<WorldLocation, uint32> >::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
+                    for (std::list<std::pair<WorldLocation, uint32> >::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
                     {
                         if (i->second <= 25)
                         {
@@ -250,7 +251,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                             Creature *flame = SummonMgr.SummonCreature(NPC_COLDFLAME, i->first.coord_x+x, i->first.coord_y+y, i->first.coord_z, i->first.orientation, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000);
                             if (flame)
                                 flame->CastSpell(m_creature, SPELL_COLDFLAME_DAMAGE_AURA, false);
-                            RESCHEDULE_EVENT(COLDFLAME_MOVE);
+                            Events.ScheduleEvent(EVENT_COLDFLAME_MOVE, TIMER_COLDFLAME_MOVE);
                             ++i;
                         }
                         else
@@ -260,8 +261,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_BONE_SPIKE_GRAVEYARD:
                 {
-                    RESCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);
-                    if (!m_bIsHeroic && m_creature->HasAura(SPELL_BONE_STORM))
+                    if (!m_bIsHeroic && m_bInBoneStorm)
                         break;
                     switch (urand(0, 2))
                     {
@@ -275,19 +275,21 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 case EVENT_BONE_STORM:
                     DoScriptText(SAY_BONE_STORM, m_creature);
                     DoCast(m_creature, SPELL_BONE_STORM);
-                    RESCHEDULE_EVENT(BONE_STORM);
+                    m_bInBoneStorm = true;
                     for (uint32 i = 0; i < (m_bIsHeroic ? 4 : 3); i++)
                         Events.ScheduleEvent(EVENT_BONE_STORM_MOVE, 4000 + i*TIMER_BONE_STORM_MOVE);
-                    Events.RescheduleEvent(EVENT_BONE_STORM_STOP, TIMER_BONE_STORM_MOVE*(m_bIsHeroic ? 5 : 4));
+                    Events.ScheduleEvent(EVENT_BONE_STORM_STOP, TIMER_BONE_STORM_MOVE*(m_bIsHeroic ? 5 : 4));
                     break;
                 case EVENT_BONE_STORM_MOVE:
                     DoResetThreat();
                     if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        m_creature->MonsterMove(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 1000);
+                        m_creature->GetMotionMaster()->MovePoint(0, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
                     break;
                 case EVENT_BONE_STORM_STOP:
                     m_creature->RemoveAurasDueToSpell(SPELL_BONE_STORM);
-                    Events.RescheduleEvent(EVENT_BONE_SLICE, 10*IN_MILLISECONDS);
+                    m_bInBoneStorm = false;
+                    DoStartMovement(m_creature->getVictim());
+                    Events.DelayEventsWithId(EVENT_BONE_SLICE, 10*IN_MILLISECONDS);
                     break;
                 case EVENT_ENRAGE:  //you lose!
                     DoScriptText(SAY_ENRAGE, m_creature);

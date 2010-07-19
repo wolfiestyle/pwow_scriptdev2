@@ -117,6 +117,15 @@ enum Events
     EVENT_SHROUD_OF_THE_OCCULT,
 };
 
+enum Phases
+{
+    PHASE_ONE = 1,
+    PHASE_TWO,
+    PMASK_ONE = bit_mask<PHASE_ONE>::value,
+    PMASK_TWO = bit_mask<PHASE_TWO>::value,
+    PMASK_ALL = bit_mask<PHASE_ONE, PHASE_TWO>::value,
+};
+
 static const float XSummonPositions[3] = {-618.7f, -599.4f, -578.2f};
 
 #define LEFT_SUMMON_Y                   2155.5f
@@ -128,27 +137,26 @@ static const float EntranceSummonPosition[3] = {-519.7f, 2210.8f, 62.8f};
 
 #define TIMER_BERSERK                   10*MINUTE*IN_MILLISECONDS
 #define TIMER_SHADOWBOLT                2500
-#define TIMER_DEATH_AND_DECAY           urand(19,22)*IN_MILLISECONDS
+#define TIMER_DEATH_AND_DECAY           19*IN_MILLISECONDS, 22*IN_MILLISECONDS
 #define TIMER_DOMINATE_MIND             40*IN_MILLISECONDS
 #define TIMER_SUMMON_ADDS               60*IN_MILLISECONDS
-#define TIMER_BUFF_ADD                  urand(3,80)*IN_MILLISECONDS //'randomly' buffs adds
-#define TIMER_FROSTBOLT                 urand(9,11)*IN_MILLISECONDS
-#define TIMER_FROST_VOLLEY              urand(18,23)*IN_MILLISECONDS
-#define TIMER_TOUCH_OF_INSIGNIFICANCE   urand(6,7)*IN_MILLISECONDS
-#define TIMER_SUMMON_SHADE              urand(7,10)*IN_MILLISECONDS
+#define TIMER_BUFF_ADD                  3*IN_MILLISECONDS, 80*IN_MILLISECONDS //'randomly' buffs adds
+#define TIMER_FROSTBOLT                 9*IN_MILLISECONDS, 11*IN_MILLISECONDS
+#define TIMER_FROST_VOLLEY              18*IN_MILLISECONDS, 23*IN_MILLISECONDS
+#define TIMER_TOUCH_OF_INSIGNIFICANCE   6*IN_MILLISECONDS, 7*IN_MILLISECONDS
+#define TIMER_SUMMON_SHADE              7*IN_MILLISECONDS, 10*IN_MILLISECONDS
 #define TIMER_SHADOW_CLEAVE             6*IN_MILLISECONDS
 #define TIMER_NECROTIC_STRIKE           20*IN_MILLISECONDS
-#define TIMER_VAMPIRIC_MIGHT            urand(20,100)*IN_MILLISECONDS
-#define TIMER_CURSE_OF_TORPOR           urand(20,100)*IN_MILLISECONDS
-#define TIMER_FROST_FEVER               urand(30,35)*IN_MILLISECONDS
+#define TIMER_VAMPIRIC_MIGHT            20*IN_MILLISECONDS, 100*IN_MILLISECONDS
+#define TIMER_CURSE_OF_TORPOR           20*IN_MILLISECONDS, 100*IN_MILLISECONDS
+#define TIMER_FROST_FEVER               30*IN_MILLISECONDS, 35*IN_MILLISECONDS
 #define TIMER_DEATHCHILL_CAST           3*IN_MILLISECONDS
-#define TIMER_SHROUD_OF_THE_OCCULT      urand(25,70)*IN_MILLISECONDS
+#define TIMER_SHROUD_OF_THE_OCCULT      25*IN_MILLISECONDS, 70*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
     bool HasDoneIntro :1;
-    bool IsPhase1 :1;
     bool LastSummonSideIsLeft :1;
     uint32 IntroPhase;
     uint32 IntroTimer;
@@ -157,7 +165,6 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
         HasDoneIntro(false),
-        IsPhase1(true),
         LastSummonSideIsLeft(false),
         IntroPhase(0),
         IntroTimer(0)
@@ -166,7 +173,6 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void Reset()
     {
-        IsPhase1 = true;
         LastSummonSideIsLeft = false;
         SummonMgr.UnsummonAll();
         boss_icecrown_citadelAI::Reset();
@@ -184,15 +190,19 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
-        IsPhase1 = true;
+        Events.SetPhase(PHASE_ONE);
         DoScriptText(SAY_AGGRO, m_creature);
         //if (!m_bIs10Man || m_bIsHeroic)
-        //    RESCHEDULE_EVENT(DOMINATE_MIND); // spell doesn't work!
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(SHADOWBOLT);
-        RESCHEDULE_EVENT(DEATH_AND_DECAY);
-        RESCHEDULE_EVENT(BUFF_ADD);
-        Events.ScheduleEvent(EVENT_SUMMON_ADDS, 5*IN_MILLISECONDS);
+        //    SCHEDULE_EVENT(DOMINATE_MIND); // spell doesn't work!
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT_R(DEATH_AND_DECAY);
+        SCHEDULE_EVENT(SHADOWBOLT, 0, 0, PMASK_ONE);
+        SCHEDULE_EVENT_R(FROST_VOLLEY, 0, 0, PMASK_TWO);
+        SCHEDULE_EVENT_R(FROSTBOLT, 0, 0, PMASK_TWO);
+        SCHEDULE_EVENT_R(TOUCH_OF_INSIGNIFICANCE, 0, 0, PMASK_TWO);
+        SCHEDULE_EVENT_R(SUMMON_SHADE, 0, 0, PMASK_TWO);
+        Events.ScheduleEvent(EVENT_SUMMON_ADDS, 5*IN_MILLISECONDS, TIMER_SUMMON_ADDS, 0, 0, m_bIsHeroic ? PMASK_ALL : PMASK_ONE);
+        SCHEDULE_EVENT_R(BUFF_ADD, 0, 0, m_bIsHeroic ? PMASK_ALL : PMASK_ONE);
         DoCast(m_creature, SPELL_MANA_BARRIER);
         m_BossEncounter = IN_PROGRESS;
     }
@@ -206,19 +216,9 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
             damage -= m_creature->GetPower(POWER_MANA);
             m_creature->SetPower(POWER_MANA, 0);
             m_creature->RemoveAurasDueToSpell(SPELL_MANA_BARRIER);
-            IsPhase1 = false;
+            Events.SetPhase(PHASE_TWO);
             DoStartMovement(m_creature->getVictim());
             DoScriptText(SAY_PHASE2, m_creature);
-            Events.CancelEvent(EVENT_SHADOWBOLT);
-            if (!m_bIsHeroic)
-            {
-                Events.CancelEvent(EVENT_SUMMON_ADDS);
-                Events.CancelEvent(EVENT_BUFF_ADD);
-            }
-            RESCHEDULE_EVENT(FROST_VOLLEY);
-            RESCHEDULE_EVENT(FROSTBOLT);
-            RESCHEDULE_EVENT(TOUCH_OF_INSIGNIFICANCE);
-            RESCHEDULE_EVENT(SUMMON_SHADE);
             m_creature->MonsterTextEmote("Lady Deathwhisper's Mana Barrier shimmers and fades away!", 0, true);
         }
         else
@@ -308,7 +308,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (IsPhase1)
+        if (Events.GetPhase() == PHASE_ONE)
             DoStartNoMovement(m_creature->getVictim());
 
         Events.Update(uiDiff);
@@ -323,19 +323,16 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                 case EVENT_SHADOWBOLT:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_SHADOWBOLT);
-                    RESCHEDULE_EVENT(SHADOWBOLT);
                     break;
                 case EVENT_DEATH_AND_DECAY:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_DEATH_AND_DECAY);
-                    RESCHEDULE_EVENT(DEATH_AND_DECAY);
                     break;
                 case EVENT_DOMINATE_MIND:
                     for (uint32 count = !m_bIs10Man && m_bIsHeroic ? 3 : 1; count; --count)
                         if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_DOMINATE_MIND);
                     DoScriptText(SAY_DOMINATE_MIND, m_creature);
-                    RESCHEDULE_EVENT(DOMINATE_MIND);
                     break;
                 case EVENT_SUMMON_ADDS:
                     if (m_bIs10Man)
@@ -382,12 +379,9 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                             pSumm->SetOwnerGUID(m_creature->GetGUID());
                         }
                     }
-                    RESCHEDULE_EVENT(SUMMON_ADDS);
                     break;
                 case EVENT_BUFF_ADD:
                 {
-                    RESCHEDULE_EVENT(BUFF_ADD);
-
                     std::deque<Creature*> ApplicableSummons;
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_FANATIC);
                     SummonMgr.GetAllSummonsWithId(ApplicableSummons, NPC_CULT_ADHERENT);
@@ -423,15 +417,12 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                 case EVENT_FROSTBOLT:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_FROSTBOLT);
-                    RESCHEDULE_EVENT(FROSTBOLT);
                     break;
                 case EVENT_TOUCH_OF_INSIGNIFICANCE:
                     DoCast(m_creature->getVictim(), SPELL_TOUCH_OF_INSIGNIFICANCE);
-                    RESCHEDULE_EVENT(TOUCH_OF_INSIGNIFICANCE);
                     break;
                 case EVENT_FROST_VOLLEY:
                     DoCast(m_creature->getVictim(), SPELL_FROST_VOLLEY);
-                    RESCHEDULE_EVENT(FROST_VOLLEY);
                     break;
                 case EVENT_SUMMON_SHADE:
                 {
@@ -443,14 +434,13 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                         pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         pSumm->SetInCombatWithZone();
                     }
-                    RESCHEDULE_EVENT(SUMMON_SHADE);
                     break;
                 }
                 default:
                     break;
             }
 
-        if (!IsPhase1)
+        if (Events.GetPhase() != PHASE_ONE)
             DoMeleeAttackIfReady();
     }
 };
@@ -504,9 +494,9 @@ struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI, public Scr
 
     void Aggro(Unit *pWho)
     {
-        RESCHEDULE_EVENT(SHADOW_CLEAVE);
-        RESCHEDULE_EVENT(NECROTIC_STRIKE);
-        RESCHEDULE_EVENT(VAMPIRIC_MIGHT);
+        SCHEDULE_EVENT(SHADOW_CLEAVE);
+        SCHEDULE_EVENT(NECROTIC_STRIKE);
+        SCHEDULE_EVENT_R(VAMPIRIC_MIGHT);
     }
 
     void DamageDeal(Unit *pVictim, uint32& uiDamage)
@@ -526,15 +516,12 @@ struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI, public Scr
             {
                 case EVENT_SHADOW_CLEAVE:
                     DoCast(m_creature->getVictim(), SPELL_SHADOW_CLEAVE);
-                    RESCHEDULE_EVENT(SHADOW_CLEAVE);
                     break;
                 case EVENT_NECROTIC_STRIKE:
                     DoCast(m_creature->getVictim(), SPELL_NECROTIC_STRIKE);
-                    RESCHEDULE_EVENT(NECROTIC_STRIKE);
                     break;
                 case EVENT_VAMPIRIC_MIGHT:
                     DoCast(m_creature->getVictim(), SPELL_VAMPIRIC_MIGHT);
-                    RESCHEDULE_EVENT(VAMPIRIC_MIGHT);
                     break;
             }
 
@@ -591,10 +578,10 @@ struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public Sc
 
     void Aggro(Unit *pWho)
     {
-        //RESCHEDULE_EVENT(CURSE_OF_TORPOR); //not working at all
-        RESCHEDULE_EVENT(DEATHCHILL_CAST);
-        RESCHEDULE_EVENT(FROST_FEVER);
-        RESCHEDULE_EVENT(SHROUD_OF_THE_OCCULT);
+        //SCHEDULE_EVENT_R(CURSE_OF_TORPOR); //not working at all
+        SCHEDULE_EVENT(DEATHCHILL_CAST);
+        SCHEDULE_EVENT_R(FROST_FEVER);
+        SCHEDULE_EVENT_R(SHROUD_OF_THE_OCCULT);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -613,19 +600,15 @@ struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public Sc
             {
                 case EVENT_CURSE_OF_TORPOR:
                     DoCast(m_creature->getVictim(), SPELL_CURSE_OF_TORPOR);
-                    RESCHEDULE_EVENT(CURSE_OF_TORPOR);
                     break;
                 case EVENT_DEATHCHILL_CAST:
                     DoCast(m_creature->getVictim(), m_creature->GetEntry() == NPC_EMPOWERED_ADHERANT ? SPELL_DEATHCHILL_BLAST : SPELL_DEATHCHILL_BOLT);
-                    RESCHEDULE_EVENT(DEATHCHILL_CAST);
                     break;
                 case EVENT_FROST_FEVER:
                     DoCast(m_creature->getVictim(), SPELL_FROST_FEVER);
-                    RESCHEDULE_EVENT(FROST_FEVER);
                     break;
                 case EVENT_SHROUD_OF_THE_OCCULT:
                     DoCast(m_creature, SPELL_SHROUD_OF_THE_OCCULT);
-                    RESCHEDULE_EVENT(SHROUD_OF_THE_OCCULT);
                     break;
             }
     }

@@ -85,10 +85,10 @@ enum Events
 
 #define TIMER_BERSERK           5*MINUTE*IN_MILLISECONDS
 #define TIMER_GAS_SPORE         35*IN_MILLISECONDS
-#define TIMER_VILE_GAS          urand(20,30)*IN_MILLISECONDS
-#define TIMER_INHALE_BLIGHT     urand(30,35)*IN_MILLISECONDS
-#define TIMER_GASTRIC_BLOAT     urand(8,12)*IN_MILLISECONDS
-#define TIMER_MALLEABLE_GOO     urand(17,23)*IN_MILLISECONDS
+#define TIMER_VILE_GAS          20*IN_MILLISECONDS, 30*IN_MILLISECONDS
+#define TIMER_INHALE_BLIGHT     30*IN_MILLISECONDS, 35*IN_MILLISECONDS
+#define TIMER_GASTRIC_BLOAT     8*IN_MILLISECONDS, 12*IN_MILLISECONDS
+#define TIMER_MALLEABLE_GOO     17*IN_MILLISECONDS, 23*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 {
@@ -112,7 +112,6 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
-        m_BossEncounter = IN_PROGRESS;
         Creature *GasTarget = SummonMgr.SummonCreatureAt(m_creature, NPC_VILE_GAS_STALKER);
         if (GasTarget)
         {
@@ -122,15 +121,16 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         CurrBlightStrength = 0;
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4300.9f, 3192.2f, 389.4f);
-        RESCHEDULE_EVENT(BERSERK);
-        RESCHEDULE_EVENT(GAS_SPORE);
-        RESCHEDULE_EVENT(INHALE_BLIGHT);
-        RESCHEDULE_EVENT(VILE_GAS);
-        RESCHEDULE_EVENT(GASTRIC_BLOAT);
-        Events.RescheduleEvent(EVENT_START_GAS_CLOUD, 5000);
+        SCHEDULE_EVENT(BERSERK);
+        SCHEDULE_EVENT(GAS_SPORE);
+        SCHEDULE_EVENT_R(INHALE_BLIGHT);
+        SCHEDULE_EVENT_R(VILE_GAS);
+        SCHEDULE_EVENT_R(GASTRIC_BLOAT);
         if (m_bIsHeroic)
-            RESCHEDULE_EVENT(MALLEABLE_GOO);
+            SCHEDULE_EVENT_R(MALLEABLE_GOO);
+        Events.ScheduleEvent(EVENT_START_GAS_CLOUD, 5000);
         DoScriptText(SAY_AGGRO, m_creature);
+        m_BossEncounter = IN_PROGRESS;
     }
 
     void KilledUnit(Unit* pWho)
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                 return;
             }
         }
-        if (pSpell->SpellDifficultyId == 1988)  // Pungent Blight
+        else if (pSpell->SpellDifficultyId == 1988)  // Pungent Blight
         {
             Creature *BlightTarget = SummonMgr.GetFirstFoundSummonWithId(NPC_VILE_GAS_STALKER);
             if (BlightTarget && CurrBlightStrength == 3)
@@ -222,11 +222,11 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                                 break;
                         }
                         while (Target == LastTarget);
-                        DoCast(Target, SPELL_GAS_SPORE, true);
+                        if (Target)
+                            DoCast(Target, SPELL_GAS_SPORE, true);
                         LastTarget = Target;
                     }
                     DoScriptText(SAY_GAS_SPORE, m_creature);
-                    RESCHEDULE_EVENT(GAS_SPORE);
                     break;
                 }
                 case EVENT_INHALE_BLIGHT:
@@ -237,15 +237,14 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     }
                     else
                         DoCast(m_creature, SPELL_INHALE_BLIGHT);
-                    RESCHEDULE_EVENT(INHALE_BLIGHT);
                     break;
                 case EVENT_VILE_GAS:
                 {
                     Unit *Target = GetPlayerAtMinimumRange(10);
                     if (!Target)
                         Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
-                    DoCast(Target, SPELL_VILE_GAS);
-                    RESCHEDULE_EVENT(VILE_GAS);
+                    if (Target)
+                        DoCast(Target, SPELL_VILE_GAS);
                     break;
                 }
                 case EVENT_GASTRIC_BLOAT:
@@ -255,13 +254,12 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                         if (PlayerAura->GetStackAmount() >= 9)
                             m_creature->getVictim()->CastSpell(m_creature->getVictim(), SPELL_GASTRIC_EXPLOSION, true);
                     DoCast(m_creature->getVictim(), SPELL_GASTRIC_BLOAT);
-                    RESCHEDULE_EVENT(GASTRIC_BLOAT);
                     break;
                 }
                 case EVENT_MALLEABLE_GOO:
                     if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-                        Putricide->CastSpell(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), SPELL_MALLEABLE_GOO, false);
-                    RESCHEDULE_EVENT(MALLEABLE_GOO);
+                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                            Putricide->CastSpell(target, SPELL_MALLEABLE_GOO, false);
                     break;
                 case EVENT_START_GAS_CLOUD:
                     if (Creature *GasTarget = SummonMgr.GetFirstFoundSummonWithId(NPC_VILE_GAS_STALKER))
