@@ -91,6 +91,17 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 loot_id = DATA_SAURFANG_CHEST;
                 door_ids.push_back(DATA_SAURFANG_DOOR);
                 break;
+            case TYPE_VALITHRIA:
+                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
+                door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
+                door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
+                door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);
+                if( instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                {
+                    door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_2);
+                    door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
+                }
+                loot_id = DATA_VALITHRIA_CHEST;
             default:
                 return;
         }
