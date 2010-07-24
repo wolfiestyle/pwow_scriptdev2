@@ -48,11 +48,11 @@ enum Spells
 
 enum Npcs
 {
-    NPC_PUDDLE_STALKER      = 37013,    // Ooze flood creator/reciver
-    NPC_STICKY_OOZE         = 37006,    // Sticky Ooze damage NPC
-    NPC_OOZE_SPRAY_STALKER  = 37986,    // Reciver of Slime Spray
-    NPC_BIG_OOZE            = 36899,
-    NPC_LITTLE_OOZE         = 36897,
+    NPC_PUDDLE_STALKER              = 37013,    // Ooze flood creator/receiver
+    NPC_STICKY_OOZE                 = 37006,    // Sticky Ooze damage NPC
+    NPC_OOZE_SPRAY_STALKER          = 37986,    // Reciver of Slime Spray
+    NPC_BIG_OOZE                    = 36899,
+    NPC_LITTLE_OOZE                 = 36897,
 };
 
 enum Says
@@ -98,7 +98,7 @@ static const float CenterPosition[2] = {4445.6f, 3137.21f};
 struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
-    uint32 NumInfections;
+    int32 NumInfections;
     std::bitset<4> OozeFloodPositionsUsed;
 
     boss_rotfaceAI(Creature* pCreature):
@@ -111,14 +111,15 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     void Reset()
     {
         SummonMgr.UnsummonAll();
-        boss_icecrown_citadelAI::Reset();
+        NumInfections = 0;
+        OozeFloodPositionsUsed.reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 384.4f);
+        boss_icecrown_citadelAI::Reset();
     }
 
     void Aggro(Unit* pWho)
     {
-        NumInfections = 0;
         m_BossEncounter = IN_PROGRESS;
         SCHEDULE_EVENT(OOZE_FLOOD);
         //SCHEDULE_EVENT(SLIME_SPRAY);
@@ -173,16 +174,16 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     {
         if (pSender && pSender->GetEntry() == NPC_LITTLE_OOZE)
         {
-            if (Creature *BigOoze = SummonMgr.SummonCreatureAt(pSender, NPC_BIG_OOZE, TEMPSUMMON_CORPSE_DESPAWN))
+            if (Creature *BigOoze = SummonMgr.SummonCreatureAt(pSender, NPC_BIG_OOZE, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 500))
             {
                 BigOoze->CastSpell(BigOoze, SPELL_RADIATING_OOZE, true);
                 BigOoze->SetInCombatWithZone();
                 BigOoze->SetSpeedRate(MOVE_RUN, 0.5f);
             }
             SummonMgr.UnsummonCreature(pSender);
+            return;
         }
-        else
-            ScriptEventInterface::ScriptMessage(pSender, data1, data2);
+        ScriptEventInterface::ScriptMessage(pSender, data1, data2);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -231,7 +232,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                 case EVENT_MUTATED_INFECTION:
                 {
                     DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0), SPELL_MUTATED_INFECTION);
-                    int NextInfectionTime = TIMER_MUTATED_INFECTION - NumInfections*0.25*IN_MILLISECONDS;
+                    int NextInfectionTime = TIMER_MUTATED_INFECTION - 25*NumInfections*IN_MILLISECONDS / 100;
                     if (NextInfectionTime < 4000)
                         NextInfectionTime = 4000;
                     Events.RescheduleEvent(EVENT_MUTATED_INFECTION, NextInfectionTime);
@@ -337,6 +338,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI : public ScriptedAI
                     break;
                 case EVENT_DESPAWN_OOZE:
                     DoStartNoMovement(m_creature->getVictim());
+                    SetCombatMovement(false);
                     m_creature->SetVisibility(VISIBILITY_OFF);
                     m_creature->ForcedDespawn(20*IN_MILLISECONDS);  // Damage does not appply if original caster is nonexistant
                     break;

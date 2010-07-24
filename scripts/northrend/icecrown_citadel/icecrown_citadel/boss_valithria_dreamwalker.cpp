@@ -130,9 +130,16 @@ enum Says
 
 };
 
+enum Factions
+{
+    FACTION_FRIENDLY            = 35,
+    FACTION_HOSTILE             = 14,
+};
+
 // Following timers are gotten from video-research
-static const uint32 blazingtimers[] = {50, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 5, 5, 5, 5};
-static const uint32 abomtimers[] = {20, 60, 55, 50, 50, 50, 45, 45, 45, 40, 40, 40, 35, 35, 35, 30, 30, 30, 25, 25, 25};
+static const uint32 BlazingTimers[] = {50, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10,  5,  5,  5,  5, 5};
+static const uint32 AbomTimers[]    = {20, 60, 55, 50, 50, 50, 45, 45, 45, 40, 40, 40, 35, 35, 35, 30, 30, 30, 25, 25, 25};
+
 static const float locations[4][2] =
 {
     {4241.56f, 2424.29f}, //L1
@@ -141,23 +148,20 @@ static const float locations[4][2] =
     {4165.97f, 2546.83f}, //R2
 };
 
-#define ZOMBIE_SUMMON_TIMER 30*IN_MILLISECONDS
-#define RISEN_SUMMON_TIMER 30*IN_MILLISECONDS
+#define ZOMBIE_SUMMON_TIMER     30*IN_MILLISECONDS
+#define RISEN_SUMMON_TIMER      30*IN_MILLISECONDS
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
-#define PORTAL_TIMER 55*IN_MILLISECONDS
-#define BERSERK_TIMER 7*MINUTE*IN_MILLISECONDS
-#define FACTION_FRIENDLY 35
-#define FACTION_HOSTILE 14
+#define PORTAL_TIMER            55*IN_MILLISECONDS
+#define BERSERK_TIMER           7*MINUTE*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
-    uint32 m_auiSays;
+    std::bitset<5> m_abSays;
 
     boss_valithriaAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
-        SummonMgr(pCreature),
-        m_auiSays(0)
+        SummonMgr(pCreature)
     {
         pCreature->SetHealthPercent(50.0f);
         pCreature->CastSpell(pCreature, SPELL_CORRUPTION, false);
@@ -168,7 +172,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
     void Reset()
     {
-        m_auiSays = 0;
+        m_abSays.reset();
         SummonMgr.UnsummonAll();
 
         m_creature->SetHealthPercent(50.0f);
@@ -188,10 +192,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                 Door->SetGoState(GO_STATE_READY);
         }
 
-        m_BossEncounter = NOT_STARTED;
         boss_icecrown_citadelAI::Reset();
     }
-    
 
     void Aggro(Unit* pWho)
     {
@@ -200,12 +202,14 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if ( pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(pWho, 65.0f) && !(m_auiSays & 0x00001))
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !m_abSays[0] && m_creature->IsWithinDistInMap(pWho, 65.0f))
         {
-            Unit* LK = m_creature->SummonCreature(NPC_LICH_KING_VOICE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() , 0, TEMPSUMMON_TIMED_DESPAWN, 5000);
+            Unit* LK = m_creature->SummonCreature(NPC_LICH_KING_VOICE,
+                    m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0,
+                    TEMPSUMMON_TIMED_DESPAWN, 5000);
             LK->SetDisplayId(11686);
             DoScriptText(SAY_LICH_KING_GREEN_DRAGON, LK);
-            m_auiSays |= 0x00001;
+            m_abSays[0] = true;
 
             if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_ENTRANCE)) //LK talk -> Doors Close and players enter in combat
                 Door->SetGoState(GO_STATE_READY);
@@ -214,9 +218,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             Events.RescheduleEvent(EVENT_INIT_SCRIPT, 3500);
             m_BossEncounter = IN_PROGRESS;
         }
-        else
-            return;
-
     }
 
     void JustDied(Unit* pKiller)
@@ -227,22 +228,31 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_BossEncounter = NOT_STARTED;
             m_creature->Respawn();
         }
-    }       
+    }
+
     void JustSummoned(Creature* pSummon)
     {
         SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
-        if (pSummon->GetEntry() == NPC_DREAM_PORTAL || pSummon->GetEntry() == NPC_NIGHTMARE_PORTAL || pSummon->GetEntry() == NPC_DREAM_PORTAL_PRE || pSummon->GetEntry() == NPC_NIGHTMARE_PORTAL_PRE)
+
+        switch (pSummon->GetEntry())
         {
-            pSummon->setFaction(FACTION_FRIENDLY);
-            return;
+            case NPC_DREAM_PORTAL:
+            case NPC_NIGHTMARE_PORTAL:
+            case NPC_DREAM_PORTAL_PRE:
+            case NPC_NIGHTMARE_PORTAL_PRE:
+                pSummon->setFaction(FACTION_FRIENDLY);
+                break;
+            default:
+                pSummon->SetInCombatWithZone();
+                break;
         }
-        pSummon->SetInCombatWithZone();
     }
 
     void SummonedCreatureJustDied(Creature* pSummon)
     {
         SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
-        if (urand(0,100) < 15)
+
+        if (roll_chance_i(15))
             DoScriptText(SAY_VALITHRIA_SLAY_BAD, m_creature);
     }
 
@@ -251,31 +261,34 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         if (m_BossEncounter != IN_PROGRESS)
             return;
 
-        m_creature->SetTargetGUID(0); 
+        m_creature->SetTargetGUID(0);
+
         /*if(!m_creature->HasAura(SPELL_NIGHTMARES))        // Undocumented boss-related Spell
             DoCast(m_creature, SPELL_NIGHTMARES, false);*/
-        if (m_creature->GetHealthPercent() <= 25.0f && !(m_auiSays & 0x00100))
+
+        if (!m_abSays[2] && m_creature->GetHealthPercent() <= 25.0f)
         {
             DoScriptText(SAY_VALITHRIA_25, m_creature);
-            m_auiSays |= 0x00100;
+            m_abSays[2] = true;
         }
-        if (m_creature->GetHealthPercent() >= 75.0f && !(m_auiSays & 0x01000))
+
+        if (!m_abSays[3] && m_creature->GetHealthPercent() >= 75.0f)
         {
             DoScriptText(SAY_VALITHRIA_75, m_creature);
-            m_auiSays |= 0x01000;
+            m_abSays[3] = true;
         }
-        if (m_creature->GetHealthPercent() >= 99.7f && !(m_auiSays & 0x10000))
-        {
-            if (m_creature->HasAura(SPELL_CORRUPTION))
-                m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
 
+        if (!m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f)
+        {
+            m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
             SummonMgr.UnsummonAllWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER);
-            m_auiSays |= 0x10000;
+            m_abSays[4] = true;
             Events.Reset();
-            Events.ScheduleEvent(EVENT_DESPAWN,5*IN_MILLISECONDS);
+            Events.ScheduleEvent(EVENT_DESPAWN, 5*IN_MILLISECONDS);
         }
+
         if (Unit* CombatTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
             if (CombatTrigger->getThreatManager().getThreatList().size() == 0)
             {
@@ -288,51 +301,50 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             switch (uiEventId)
             {
                 case EVENT_INIT_SCRIPT:
+                    //spawn a combat trigger to keep track of players
+                    SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f, 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000);
+
+                    Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41500); // first portal timer (taken from DBM database)
+                    Events.RescheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
+
+                    if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_1))
+                        Door->SetGoState(GO_STATE_ACTIVE);
+                    if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_RIGHT_1))
+                        Door->SetGoState(GO_STATE_ACTIVE);
+                    if (!m_bIs10Man)
                     {
-                        SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f , 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000); //spawn a combat trigger to keep track of players
-
-                        Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41.5f*IN_MILLISECONDS); // first portal timer (taken from DBM database)
-                        Events.RescheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
-
-                        if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_1))
+                        if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_2))
                             Door->SetGoState(GO_STATE_ACTIVE);
-                        if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_RIGHT_1))
+                        if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_RIGHT_2))
                             Door->SetGoState(GO_STATE_ACTIVE);
-                        if (!m_bIs10Man)
-                        {
-                            if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_2))
-                                Door->SetGoState(GO_STATE_ACTIVE);
-                            if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_RIGHT_2))
-                                Door->SetGoState(GO_STATE_ACTIVE);
-                        }
-                        break;
                     }
-                case EVENT_BEGIN_FIGHT:
-                    {
-                        if (!(m_auiSays & 0x00010))
-                        {
-                            DoScriptText(SAY_VALITHRIA_AGGRO, m_creature);
-                            m_auiSays |= 0x00010;
-                        }
                     break;
+                case EVENT_BEGIN_FIGHT:
+                    if (!m_abSays[1])
+                    {
+                        DoScriptText(SAY_VALITHRIA_AGGRO, m_creature);
+                        m_abSays[1] = true;
                     }
+                    break;
                 case EVENT_SUMMON_PORTALS:
                     if (!m_bIsHeroic)
                         DoScriptText(SAY_VALITHRIA_PORTALS, m_creature);
 
-                    for (uint8 i = 0 ; i < (m_bIs10Man ? 3  : 6 ); i++)
+                    for (uint32 i = m_bIs10Man ? 3 : 6; i; i--)
                         DoCast(m_creature, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, PORTAL_TIMER);
                     break;
-                case EVENT_BERSERK: // either you die cause of add overwhelming or she dies (berserk spell is not documented) perhaps she turns unfriendly and casts the same rage she casts at win, but noone lasts long enough to see that
+                case EVENT_BERSERK:
+                    // either you die cause of add overwhelming or she dies (berserk spell is not documented)
+                    // perhaps she turns unfriendly and casts the same rage she casts at win, but noone lasts long enough to see that
                     DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
                     m_creature->RemoveAllAttackers();
                     Reset();
                     break;
                 case EVENT_DESPAWN:
                     m_creature->SetPhaseMask(16, true);
-                    m_BossEncounter = DONE; 
-                    m_creature->DealDamage(m_creature,m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                    m_BossEncounter = DONE;
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 default:
                     break;
             }
@@ -341,8 +353,10 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
 bool GossipHello_mob_valithria_portal(Player *player, Creature* pCreature)
 {
-    player->CastSpell(player, SPELL_DREAM_STATE, false);
+    player->CastSpell(player, SPELL_DREAM_STATE, true);
     if (pCreature->isTemporarySummon())
+        static_cast<TemporarySummon*>(pCreature)->UnSummon();
+    else
         pCreature->ForcedDespawn();
     return true;
 };
@@ -359,21 +373,21 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
 
     mob_green_dragon_combat_triggerAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature),
+        SummonMgr(pCreature),
         abomWaveCount(0),
         blazingWaveCount(0),
-        started(0),
-        SummonMgr(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-        m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC)
+        m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC),
+        started(false)
     {
         pCreature->setFaction(FACTION_HOSTILE);
         pCreature->SetInCombatWithZone();
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        Events.RescheduleEvent(EVENT_SUMMON_RISEN, RISEN_SUMMON_TIMER+urand(5,6)*IN_MILLISECONDS);
-        Events.RescheduleEvent(EVENT_SUMMON_BLAZING, blazingtimers[blazingWaveCount++]*IN_MILLISECONDS);
-        Events.RescheduleEvent(EVENT_SUMMON_SUPPRESSERS, 23*IN_MILLISECONDS);
-        Events.RescheduleEvent(EVENT_SUMMON_ABOMS, abomtimers[abomWaveCount++]*IN_MILLISECONDS);
-        Events.RescheduleEvent(EVENT_SUMMON_ZOMBIE, ZOMBIE_SUMMON_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_RISEN, RISEN_SUMMON_TIMER + urand(5, 6)*IN_MILLISECONDS, RISEN_SUMMON_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_SUPPRESSERS, 23*IN_MILLISECONDS, SUPPRESSER_SUMMON_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_ZOMBIE, ZOMBIE_SUMMON_TIMER, ZOMBIE_SUMMON_TIMER);
+        Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[abomWaveCount++]*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[blazingWaveCount++]*IN_MILLISECONDS);
     }
 
     void Reset()
@@ -387,8 +401,9 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
     void SummonedCreatureJustDied(Creature* pSummon)
     {
         SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
-        if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
-            if (urand(0,100) < 10) //10% chance of having her say stuff for killing adds
+
+        if (roll_chance_i(10))  //10% chance of having her say stuff for killing adds
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
                 DoScriptText(SAY_VALITHRIA_SLAY_BAD, Valithria);
     }
 
@@ -405,7 +420,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
 
     void SummonAdd(uint32 entry)
     {
-        uint32 loc = urand(0, m_bIs10man? 1:3) ;
+        uint32 loc = urand(0, m_bIs10man ? 1 : 3);
         SummonMgr.SummonCreature(entry, locations[loc][0], locations[loc][1], m_creature->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6*IN_MILLISECONDS);
     }
 
@@ -418,26 +433,27 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-                case EVENT_SUMMON_BLAZING:
-                    SummonAdd(NPC_BLAZING_SKELETON);
-                    Events.RescheduleEvent(EVENT_SUMMON_BLAZING, blazingtimers[blazingWaveCount++]*IN_MILLISECONDS);
-                    break;
                 case EVENT_SUMMON_ZOMBIE:
                     SummonAdd(NPC_BLISTERING_ZOMBIE);
-                    Events.RescheduleEvent(EVENT_SUMMON_ZOMBIE, ZOMBIE_SUMMON_TIMER);
                     break;
                 case EVENT_SUMMON_SUPPRESSERS:
-                    for (int32 count = 0; count < (m_bIs10man ? 5 : 7); count++)
+                    for (uint32 count = m_bIs10man ? 5 : 7; count; count--)
                         SummonAdd(NPC_SUPPRESSER);
-                    Events.RescheduleEvent(EVENT_SUMMON_SUPPRESSERS, SUPPRESSER_SUMMON_TIMER);
                     break;
                 case EVENT_SUMMON_RISEN:
                     SummonAdd(NPC_RISEN_ARCHMAGE);
-                    Events.RescheduleEvent(EVENT_SUMMON_RISEN, RISEN_SUMMON_TIMER);
                     break;
                 case EVENT_SUMMON_ABOMS:
                     SummonAdd(NPC_GLUTTONOUS_ABOMINATION);
-                    Events.RescheduleEvent(EVENT_SUMMON_ABOMS, abomtimers[abomWaveCount++]*IN_MILLISECONDS);
+                    Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[abomWaveCount]*IN_MILLISECONDS);
+                    if (abomWaveCount < sizeof(AbomTimers)/sizeof(uint32) - 1)
+                        abomWaveCount++;
+                    break;
+                case EVENT_SUMMON_BLAZING:
+                    SummonAdd(NPC_BLAZING_SKELETON);
+                    Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[blazingWaveCount]*IN_MILLISECONDS);
+                    if (blazingWaveCount < sizeof(BlazingTimers)/sizeof(uint32) - 1)
+                        blazingWaveCount++;
                     break;
                 default:
                     break;
@@ -457,11 +473,11 @@ struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void Reset(){}
+    void Reset() {}
 
     void JustSummoned(Creature* pSummon)
     {
-        pSummon->CastSpell(pSummon, pSummon->GetEntry() == NPC_DREAM_PORTAL?SPELL_DREAM_PORTAL_VIS:SPELL_NIGHTMARE_PORTAL_VIS, false);
+        pSummon->CastSpell(pSummon, pSummon->GetEntry() == NPC_DREAM_PORTAL ? SPELL_DREAM_PORTAL_VIS : SPELL_NIGHTMARE_PORTAL_VIS, false);
         pSummon->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
@@ -469,10 +485,16 @@ struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
     {
         if (timer <= uiDiff)
         {
-            m_creature->SummonCreature( m_creature->GetEntry() == NPC_DREAM_PORTAL_PRE ? NPC_DREAM_PORTAL : NPC_NIGHTMARE_PORTAL, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10*IN_MILLISECONDS);
+            m_creature->SummonCreature(m_creature->GetEntry() == NPC_DREAM_PORTAL_PRE ? NPC_DREAM_PORTAL : NPC_NIGHTMARE_PORTAL,
+                    m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(),
+                    TEMPSUMMON_TIMED_DESPAWN, 10*IN_MILLISECONDS);
             if (m_creature->isTemporarySummon())
+                static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            else
                 m_creature->ForcedDespawn();
-        } else timer -=uiDiff;
+        }
+        else
+            timer -= uiDiff;
     }
 };
 
@@ -486,13 +508,13 @@ struct MANGOS_DLL_DECL mob_valithria_cloudAI: public ScriptedAI
     {
         Reset();
     }
-    
+
     void Reset()
     {
-        m_creature->setFaction(14);
+        m_creature->setFaction(FACTION_HOSTILE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         m_bIsUsed = false;
-        m_creature->CastSpell(m_creature, m_creature->GetEntry()== NPC_DREAM_CLOUD? SPELL_DREAM_CLOUD_VIS :SPELL_NIGHTMARE_CLOUD_VIS, false);
+        m_creature->CastSpell(m_creature, m_creature->GetEntry()== NPC_DREAM_CLOUD ? SPELL_DREAM_CLOUD_VIS : SPELL_NIGHTMARE_CLOUD_VIS, false);
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -539,8 +561,8 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
         SummonMgr(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-       switch(pCreature->GetEntry())
-           {
+        switch(pCreature->GetEntry())
+        {
            case NPC_BLISTERING_ZOMBIE:
                pCreature->CastSpell(pCreature, SPELL_CORROSION_PASSIVE, false);
                break;
@@ -552,19 +574,19 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
                if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
                {
                    pCreature->AddThreat(Valithria, 1000000.0f);
-                   pCreature->GetMotionMaster()->MoveChase(Valithria, 15.0f);
+                   //pCreature->GetMotionMaster()->MoveChase(Valithria, 15.0f);
                }
                break;
            default:
                break;
-           }
+        }
     }
     
     void Reset()
     {
         SummonMgr.UnsummonAll();
         if (m_creature->isTemporarySummon())
-            ((TemporarySummon*)m_creature)->UnSummon(); 
+            static_cast<TemporarySummon*>(m_creature)->UnSummon(); 
         else 
             m_creature->ForcedDespawn(500);
     }
@@ -572,26 +594,35 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
     void SummonedCreatureJustDied(Creature* pSummon)
     {
         SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
-        if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
-            if (urand(0,100) < 10) //10% chance of having her say stuff for killing adds
+        if (roll_chance_i(10)) //10% chance of having her say stuff for killing adds
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
                 DoScriptText(SAY_VALITHRIA_SLAY_BAD, Valithria);
     }
 
     void JustSummoned(Creature* pSummon)
     {
         SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
-        if (m_creature->GetEntry() != NPC_MANA_VOID && m_creature->GetEntry() != NPC_COLUMN_OF_FROST)
-            pSummon->SetInCombatWithZone();        
+
+        switch (m_creature->GetEntry())
+        {
+            case NPC_MANA_VOID:
+            case NPC_COLUMN_OF_FROST:
+                break;
+            default:
+                pSummon->SetInCombatWithZone();
+                break;
+        }
     }
 
     void KilledUnit(Unit* pKilled)
     {
-        if (pKilled->GetTypeId() == TYPEID_PLAYER)
-            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
-                if (urand(0,100) < 50) //50% chance of having her say stuff for killing players
-                    DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
+        if (pKilled->GetTypeId() != TYPEID_PLAYER)
+            return;
+        if (roll_chance_i(50)) //50% chance of having her say stuff for killing players
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))        
+                DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
     }
-   
+
     void Aggro(Unit* pWho)
     {
         switch (m_creature->GetEntry())
@@ -617,6 +648,7 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() ||  !m_creature->getVictim())
             return;
+
         if (m_creature->GetEntry() == NPC_BLISTERING_ZOMBIE && m_creature->GetHealthPercent() < 10.0f)
         {
             DoCastSpellIfCan(m_creature, SPELL_ACID_BURST);
@@ -683,8 +715,8 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
         Scripted_NoMovementAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-       switch(pCreature->GetEntry())
-           {
+        switch(pCreature->GetEntry())
+        {
            case NPC_MANA_VOID:
                pCreature->SetDisplayId(11686);
                pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -699,22 +731,22 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
                break;
            default:
                break;
-           }
+        }
     }
 
-    void Reset(){}
+    void Reset() {}
 
     void KilledUnit(Unit* pKilled)
     {
-        if (pKilled->GetTypeId() == TYPEID_PLAYER)
+        if (pKilled->GetTypeId() != TYPEID_PLAYER)
+            return;
+        if (roll_chance_i(50)) //50% chance of having her say stuff for killing players
             if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
-                if (urand(0,100) < 50) //50% chance of having her say stuff for killing players
-                    DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
+                DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-
         m_creature->SetTargetGUID(0);   // prevent void/column from targetting ppl or moving
 
         Events.Update(uiDiff);
@@ -727,7 +759,7 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
                     break;
                 case EVENT_DIE:
                     if (m_creature->isTemporarySummon())
-                        ((TemporarySummon*)m_creature)->UnSummon(); 
+                        static_cast<TemporarySummon*>(m_creature)->UnSummon(); 
                     else 
                         m_creature->ForcedDespawn(500);
                     break;
@@ -752,5 +784,4 @@ void AddSC_boss_valithria()
     newscript->Name = "mob_valithria_portal";
     newscript->pGossipHello = &GossipHello_mob_valithria_portal;
     newscript->RegisterSelf();
-
 }
