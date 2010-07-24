@@ -419,7 +419,7 @@ ScriptEventInterface::ScriptEventInterface(Creature *pSender):
 
 void ScriptEventInterface::ScriptMessage(Creature* from, uint32 event_id, uint32 event_timer)
 {
-    Events.ScheduleEvent(event_id, event_timer);
+    Events.ScheduleEvent(event_id, event_timer, 0, 0, UINT_MAX);
 }
 
 void ScriptEventInterface::BroadcastEvent(uint32 event_id, uint32 event_timer, float max_range, bool to_self)
