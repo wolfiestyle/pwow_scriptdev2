@@ -102,6 +102,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
                 }
                 loot_id = DATA_VALITHRIA_CHEST;
+                break;
             default:
                 return;
         }

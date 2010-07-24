@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+#include "temporarysummon.h"
 
 enum Spells
 {
@@ -40,8 +41,31 @@ enum Spells
     SPELL_NIGHTMARE_CLOUD_VIS   = 71939,
     SPELL_TWISTING_NIGHTMARES   = 71941,
     SPELL_SUMMON_DREAM_PORTAL   = 71301,
-    SPELL_SUMMON_NIGHTMARE_PORT = 72480,
+    SPELL_SUMMON_NIGHTMARE_PORT = 71977,
     //SPELL_NIGHTMARES            = 71946, // no reports of this being used actually
+    // Blazing Skeletons
+    SPELL_FIREBALL              = 70754,
+    SPELL_LAY_WASTE             = 69325,
+    // Risen Archmages
+    SPELL_FROSTBOLT_VOLLEY      = 70759,
+    SPELL_MANA_VOID             = 71179,
+    SPELL_COLUMN_OF_FROST_SUM   = 70704,
+    // Column of Frost
+    SPELL_COLUMN_OF_FROST_DMG   = 70702,
+    SPELL_COLUMN_OF_FROST_VIS   = 70715,
+    // Mana Void
+    SPELL_MANA_VOID_PASSIVE     = 71085,
+    // Blistering Zombies
+    SPELL_ACID_BURST            = 70744,
+    SPELL_CORROSION_PASSIVE     = 70749,
+    // Gluttonous Abominations
+    SPELL_GUT_SPRAY             = 71283,
+    SPELL_ROT_WORM              = 70675,
+    // Rot Worms
+    SPELL_ROT_PASSIVE           = 72962,
+    SPELL_ROT_SPAWN             = 70668,
+    // Suppressers
+    SPELL_SUPPRESSION           = 70588,
 };
 
 enum Adds
@@ -60,6 +84,8 @@ enum Adds
     NPC_SUPPRESSER              = 37863,
     NPC_LICH_KING_VOICE         = 28765,
     NPC_GREEN_DRAGON_COMBAT_TRIGGER = 38752,
+    NPC_MANA_VOID               = 38068,
+    NPC_COLUMN_OF_FROST         = 37918,
 };
 
 enum Events
@@ -74,6 +100,19 @@ enum Events
     EVENT_SUMMON_SUPPRESSERS,
     EVENT_SUMMON_ABOMS,
     EVENT_SUMMON_ZOMBIE,
+    // Blazing Skeletons
+    EVENT_FIREBALL,
+    EVENT_LAY_WASTE,
+    // Risen Archmages
+    EVENT_FROSTBOLT,
+    EVENT_MANA_VOID,
+    EVENT_COLUMN_OF_FROST,
+    // Column of Frost
+    EVENT_BLAST,    
+    // Gluttonous Abomination
+    EVENT_GUT_SPRAY,
+    // Blistering Zombie and lesser adds
+    EVENT_DIE,
 };
 
 enum Says
@@ -107,6 +146,7 @@ static const float locations[4][2] =
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
 #define PORTAL_TIMER 55*IN_MILLISECONDS
 #define BERSERK_TIMER 7*MINUTE*IN_MILLISECONDS
+#define FACTION_FRIENDLY 35
 #define FACTION_HOSTILE 14
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
@@ -126,7 +166,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         SetCombatMovement(false);
     }
 
-    
     void Reset()
     {
         m_auiSays = 0;
@@ -179,9 +218,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             return;
 
     }
-    void KilledUnit(Unit* pWho)
-    {
-    }
 
     void JustDied(Unit* pKiller)
     {
@@ -196,7 +232,10 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     {
         SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
         if (pSummon->GetEntry() == NPC_DREAM_PORTAL || pSummon->GetEntry() == NPC_NIGHTMARE_PORTAL || pSummon->GetEntry() == NPC_DREAM_PORTAL_PRE || pSummon->GetEntry() == NPC_NIGHTMARE_PORTAL_PRE)
+        {
+            pSummon->setFaction(FACTION_FRIENDLY);
             return;
+        }
         pSummon->SetInCombatWithZone();
     }
 
@@ -239,7 +278,10 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         }
         if (Unit* CombatTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
             if (CombatTrigger->getThreatManager().getThreatList().size() == 0)
+            {
+                CombatTrigger->DealDamage(CombatTrigger, CombatTrigger->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 Reset();
+            }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -247,7 +289,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             {
                 case EVENT_INIT_SCRIPT:
                     {
-                        Creature* CT = SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f , 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000); //spawn a combat trigger to keep track of players
+                        SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f , 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000); //spawn a combat trigger to keep track of players
 
                         Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41.5f*IN_MILLISECONDS); // first portal timer (taken from DBM database)
                         Events.RescheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
@@ -356,6 +398,11 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         pSummon->SetInCombatWithZone();        
     }
 
+    void JustDied(Unit* pSlayer)
+    {
+        SummonMgr.UnsummonAll();
+    }
+
     void SummonAdd(uint32 entry)
     {
         uint32 loc = urand(0, m_bIs10man? 1:3) ;
@@ -380,7 +427,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     Events.RescheduleEvent(EVENT_SUMMON_ZOMBIE, ZOMBIE_SUMMON_TIMER);
                     break;
                 case EVENT_SUMMON_SUPPRESSERS:
-                    for (int32 count = 0; count < (m_bIs10man ? 5 : 8); count++)
+                    for (int32 count = 0; count < (m_bIs10man ? 5 : 7); count++)
                         SummonAdd(NPC_SUPPRESSER);
                     Events.RescheduleEvent(EVENT_SUMMON_SUPPRESSERS, SUPPRESSER_SUMMON_TIMER);
                     break;
@@ -474,6 +521,222 @@ struct MANGOS_DLL_DECL mob_valithria_cloudAI: public ScriptedAI
     }
 };
 
+#define FIREBALL_TIMER      10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define LAY_WASTE_TIMER     20*IN_MILLISECONDS, 40*IN_MILLISECONDS
+#define FROSTBOLT_TIMER     10*IN_MILLISECONDS, 20*IN_MILLISECONDS
+#define MANA_VOID_TIMER     25*IN_MILLISECONDS, 45*IN_MILLISECONDS
+#define FROST_COLUMN_TIMER  25*IN_MILLISECONDS, 45*IN_MILLISECONDS
+#define GUT_SPRAY_TIMER     15*IN_MILLISECONDS, 30*IN_MILLISECONDS
+
+struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
+{
+    EventManager Events;
+    SummonManager SummonMgr;
+    ScriptedInstance* m_pInstance;
+
+    mob_valithria_addAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        SummonMgr(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+    {
+       switch(pCreature->GetEntry())
+           {
+           case NPC_BLISTERING_ZOMBIE:
+               pCreature->CastSpell(pCreature, SPELL_CORROSION_PASSIVE, false);
+               break;
+           case NPC_ROT_WORM:
+               pCreature->CastSpell(pCreature, SPELL_ROT_PASSIVE, false);
+               pCreature->CastSpell(pCreature, SPELL_ROT_SPAWN, false);
+               break;
+           case NPC_SUPPRESSER:
+               if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+               {
+                   pCreature->AddThreat(Valithria, 1000000.0f);
+                   pCreature->GetMotionMaster()->MoveChase(Valithria, 15.0f);
+               }
+               break;
+           default:
+               break;
+           }
+    }
+    
+    void Reset()
+    {
+        SummonMgr.UnsummonAll();
+        if (m_creature->isTemporarySummon())
+            ((TemporarySummon*)m_creature)->UnSummon(); 
+        else 
+            m_creature->ForcedDespawn(500);
+    }
+
+    void SummonedCreatureJustDied(Creature* pSummon)
+    {
+        SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
+        if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+            if (urand(0,100) < 10) //10% chance of having her say stuff for killing adds
+                DoScriptText(SAY_VALITHRIA_SLAY_BAD, Valithria);
+    }
+
+    void JustSummoned(Creature* pSummon)
+    {
+        SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
+        if (m_creature->GetEntry() != NPC_MANA_VOID && m_creature->GetEntry() != NPC_COLUMN_OF_FROST)
+            pSummon->SetInCombatWithZone();        
+    }
+
+    void KilledUnit(Unit* pKilled)
+    {
+        if (pKilled->GetTypeId() == TYPEID_PLAYER)
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+                if (urand(0,100) < 50) //50% chance of having her say stuff for killing players
+                    DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
+    }
+   
+    void Aggro(Unit* pWho)
+    {
+        switch (m_creature->GetEntry())
+        {
+            case NPC_BLAZING_SKELETON:
+                Events.ScheduleEventInRange(EVENT_FIREBALL, 0, 0, FIREBALL_TIMER);
+                Events.ScheduleEventInRange(EVENT_LAY_WASTE, LAY_WASTE_TIMER, LAY_WASTE_TIMER);
+                break;
+            case NPC_RISEN_ARCHMAGE:
+                Events.ScheduleEventInRange(EVENT_FROSTBOLT, FROSTBOLT_TIMER, FROSTBOLT_TIMER);
+                Events.ScheduleEventInRange(EVENT_MANA_VOID, MANA_VOID_TIMER, MANA_VOID_TIMER);
+                Events.ScheduleEventInRange(EVENT_COLUMN_OF_FROST, FROST_COLUMN_TIMER, FROST_COLUMN_TIMER);
+                break;
+            case NPC_GLUTTONOUS_ABOMINATION:
+                Events.ScheduleEventInRange(EVENT_GUT_SPRAY, GUT_SPRAY_TIMER, GUT_SPRAY_TIMER);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() ||  !m_creature->getVictim())
+            return;
+        if (m_creature->GetEntry() == NPC_BLISTERING_ZOMBIE && m_creature->GetHealthPercent() < 10.0f)
+        {
+            DoCastSpellIfCan(m_creature, SPELL_ACID_BURST);
+            Events.ScheduleEvent(EVENT_DIE, 2*IN_MILLISECONDS);
+        }
+    
+        if (m_creature->GetEntry() == NPC_SUPPRESSER)
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+                if (m_creature->IsWithinDist(Valithria, 20.0f))
+                {
+                    m_creature->SetTargetGUID(Valithria->GetGUID());
+                    m_creature->CastSpell(Valithria, SPELL_SUPPRESSION, true);
+                }
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_FIREBALL:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_FIREBALL);
+                    break;
+                case EVENT_LAY_WASTE:
+                    DoCastSpellIfCan(m_creature, SPELL_LAY_WASTE);
+                    break;
+                case EVENT_FROSTBOLT:
+                    DoCastSpellIfCan(m_creature, SPELL_FROSTBOLT_VOLLEY);
+                    break;
+                case EVENT_MANA_VOID:
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                        SummonMgr.SummonCreature(NPC_MANA_VOID, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
+                    break;
+                case EVENT_COLUMN_OF_FROST:
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                        SummonMgr.SummonCreature(NPC_COLUMN_OF_FROST,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
+                    break;
+                case EVENT_GUT_SPRAY:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_GUT_SPRAY);
+                    break;
+                case EVENT_DIE:
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                    break;
+                default:
+                    break;
+            }
+
+        if (m_creature->GetEntry() != NPC_MANA_VOID && m_creature->GetEntry() != NPC_COLUMN_OF_FROST)
+            DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit* pSlayer)
+    {
+        if (m_creature->GetEntry() == NPC_GLUTTONOUS_ABOMINATION)   // since npc's cant casts spells on death... i make the killer cast the spell (summon-worm spell)
+            pSlayer->CastSpell(pSlayer, SPELL_ROT_WORM, true);      // TODO: make abom cast the spell
+    }
+
+};
+
+struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
+{
+    EventManager Events;
+    ScriptedInstance* m_pInstance;
+
+    mob_valithria_add_nmAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+    {
+       switch(pCreature->GetEntry())
+           {
+           case NPC_MANA_VOID:
+               pCreature->SetDisplayId(11686);
+               pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+               pCreature->CastSpell(pCreature, SPELL_MANA_VOID_PASSIVE, false);
+               Events.ScheduleEvent(EVENT_DIE, 30*IN_MILLISECONDS);
+               break;
+           case NPC_COLUMN_OF_FROST:
+               pCreature->SetDisplayId(11686);
+               pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+               pCreature->CastSpell(pCreature, SPELL_COLUMN_OF_FROST_VIS, false);
+               Events.ScheduleEvent(EVENT_BLAST, 2*IN_MILLISECONDS);
+               break;
+           default:
+               break;
+           }
+    }
+
+    void Reset(){}
+
+    void KilledUnit(Unit* pKilled)
+    {
+        if (pKilled->GetTypeId() == TYPEID_PLAYER)
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+                if (urand(0,100) < 50) //50% chance of having her say stuff for killing players
+                    DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+
+        m_creature->SetTargetGUID(0);   // prevent void/column from targetting ppl or moving
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_BLAST:
+                    DoCastSpellIfCan(m_creature, SPELL_COLUMN_OF_FROST_DMG);
+                    Events.ScheduleEvent(EVENT_DIE, 5*IN_MILLISECONDS);
+                    break;
+                case EVENT_DIE:
+                    if (m_creature->isTemporarySummon())
+                        ((TemporarySummon*)m_creature)->UnSummon(); 
+                    else 
+                        m_creature->ForcedDespawn(500);
+                    break;
+                default:
+                    break;
+            }
+    }
+};
+
 void AddSC_boss_valithria()
 {
     Script *newscript;
@@ -482,6 +745,8 @@ void AddSC_boss_valithria()
     REGISTER_SCRIPT(mob_valithria_cloud);
     REGISTER_SCRIPT(mob_valithria_pre_portal);
     REGISTER_SCRIPT(mob_green_dragon_combat_trigger);
+    REGISTER_SCRIPT(mob_valithria_add);
+    REGISTER_SCRIPT(mob_valithria_add_nm);
 
     newscript = new Script;
     newscript->Name = "mob_valithria_portal";
