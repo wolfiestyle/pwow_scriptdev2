@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "temporarysummon.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
