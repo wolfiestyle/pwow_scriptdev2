@@ -174,7 +174,7 @@ std::istream& operator>> (std::istream& in, std::map<K, V>& m)
 {
     std::pair<K, V> value;
     while (in >> value)
-        m.insert(value);
+        m[value.first] = value.second;
     return in;
 }
 
