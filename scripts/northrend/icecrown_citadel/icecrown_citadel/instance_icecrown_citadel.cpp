@@ -81,7 +81,17 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     {
         uint32 data_id = icc::GetType(pGo);
         if (data_id < DATA_GUID_MAX)
+        {
             m_guidsStore[data_id] = pGo->GetGUID();
+
+            // restore door state on create
+            if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR)
+            {
+                uint32 state = map_find(m_InstanceVars, data_id, MAX_GO_STATE);
+                if (state < MAX_GO_STATE)
+                    pGo->SetGoState(GOState(state));
+            }
+        }
     }
 
     void OnEncounterComplete(uint32 uiType)
@@ -138,22 +148,32 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
         for (std::list<uint32>::const_iterator i = door_ids.begin(); i != door_ids.end(); ++i)
             if (uint64 DoorGuid = GetData64(*i))
+            {
                 DoUseDoorOrButton(DoorGuid);
+                // store door state for saving
+                if (GameObject *pGo = instance->GetGameObject(DoorGuid))
+                    m_InstanceVars[*i] = pGo->GetGoState();
+            }
     }
 
     void SetData(uint32 uiType, uint32 uiData)
     {
         m_InstanceVars[uiType] = uiData;
 
+        bool do_save = false;
+        if (uiType < MAX_ENCOUNTER && uiData == DONE)
+        {
+            OnEncounterComplete(uiType);
+            do_save = true;
+        }
+
         std::ostringstream saveStream;
         saveStream << INSTANCE_DATA_MAGIC << ' ' << m_InstanceVars;
 
         m_strInstData = saveStream.str();
 
-        if (uiType < MAX_ENCOUNTER && uiData == DONE)
+        if (do_save)
         {
-            OnEncounterComplete(uiType);
-
             OUT_SAVE_INST_DATA;
             SaveToDB();
             OUT_SAVE_INST_DATA_COMPLETE;
@@ -196,12 +216,25 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
         loadStream >> m_InstanceVars;
 
-        for (InstanceDataMap::iterator i = m_InstanceVars.begin(); i != m_InstanceVars.end(); ++i)
+        InstanceDataMap::iterator i = m_InstanceVars.begin();
+        for (; i != m_InstanceVars.end(); ++i)
         {
             if (i->first >= MAX_ENCOUNTER)
                 break;
             if (i->second == IN_PROGRESS)
                 i->second = NOT_STARTED;
+        }
+        // restore door state on load
+        for (; i != m_InstanceVars.end(); ++i)
+        {
+            if (i->first >= DATA_GUID_MAX)
+                break;
+            if (i->second >= MAX_GO_STATE)
+                continue;
+            if (uint64 guid = GetData64(i->first))
+                if (GameObject *pGO = instance->GetGameObject(guid))
+                    if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
+                        pGO->SetGoState(GOState(i->second));
         }
 
         OUT_LOAD_INST_DATA_COMPLETE;
