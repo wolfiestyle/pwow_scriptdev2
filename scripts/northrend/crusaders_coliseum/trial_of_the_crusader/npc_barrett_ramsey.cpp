@@ -264,7 +264,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
             Gate->SetGoState(GO_STATE_READY);
 
-        if(CurrPhase != PHASE_ANUBARAK)
+        if (CurrPhase != PHASE_ANUBARAK)
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
@@ -558,14 +558,13 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             {
                                 if (Creature* Varian = GET_CREATURE(TYPE_VARIAN_WYRM))
                                     DoScriptText(SAY_VARIAN_FACTION_CHAMPIONS_HORDE_INTRO4, Varian);
-                                m_uiTalkTimer =10*IN_MILLISECONDS;
                             }
                             else
                             {
                                 if (Creature* Garrosh = GET_CREATURE(TYPE_GARROSH_HELLSCREAM))
                                     DoScriptText(SAY_GARROSH_FACTION_CHAMPIONS_ALLIANCE_INTRO4, Garrosh);
-                                m_uiTalkTimer = 10*IN_MILLISECONDS;
                             }
+                            m_uiTalkTimer = 10*IN_MILLISECONDS;
                             break;
                         default:
                             m_bIsInTalkPhase = false;
@@ -588,14 +587,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 Fizzlebang = Fordring->SummonCreature(NPC_WILFRED_FIZZLEBANG, summon_pos[0], summon_pos[1]+40.0f, summon_pos[2], summon_pos[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                             if (Fizzlebang)
                                 Fizzlebang->GetMotionMaster()->MovePoint(0, RoomCenter[0], RoomCenter[1]+10.0f, RoomCenter[2]);
-                            m_uiTalkTimer = 30*IN_MILLISECONDS;
+                            m_uiTalkTimer = 29*IN_MILLISECONDS;
                             break;
                         case 1:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
                                 DoScriptText(SAY_WILFRED_JARAXXUS_INTRO2, Fizzlebang);
                             if (GameObject *Gate = GET_GAMEOBJECT(TYPE_MAIN_GATE))
                                 Gate->SetGoState(GO_STATE_READY);
-                            m_uiTalkTimer = 12*IN_MILLISECONDS;
+                            m_uiTalkTimer = 10*IN_MILLISECONDS;
                             break;
                         case 2:
                             if (Creature *Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
@@ -619,9 +618,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             break;
                         case 3:
                             if (Creature* Portal = GET_CREATURE(TYPE_PORTAL_TARGET))
-                            {
                                 Portal->CastSpell(Portal, SPELL_WILFRED_PORTAL, false);
-                            }
                             m_uiTalkTimer = 6*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
@@ -642,7 +639,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 Portal->RemoveAllAuras();
                                 Portal->SetPhaseMask(256, true);
                             }
-                            m_uiTalkTimer = 7*IN_MILLISECONDS;
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 6:
@@ -666,7 +663,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                                 if (Creature* Fizzlebang = GET_CREATURE(TYPE_FIZZLEBANG))
                                     Jaraxxus->CastSpell(Fizzlebang, SPELL_FEL_LIGHTNING, false);
                             }
-                            m_uiTalkTimer = 4.5*IN_MILLISECONDS;
+                            m_uiTalkTimer = 2.5*IN_MILLISECONDS;
                             m_bIsInTalkPhase = true;
                             break;
                         case 9:
