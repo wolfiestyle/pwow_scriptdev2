@@ -372,13 +372,13 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                             DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
                             DoCast(m_creature, SPELL_SHIELD_OF_DARKNESS, true);
                             DoCast(m_creature, SPELL_TWINS_PACT_EYDIS);
-                            BroadcastEvent(EVENT_DARK_PACT, 0, 150.0f, false);
+                            BroadcastEventToEntry(NPC_FJOLA_LIGHTBANE, EVENT_DARK_PACT, 0, 150.0f);
                             break;
                         case SPECIAL_LIGHT_VORTEX:
-                            BroadcastEvent(EVENT_LIGHT_VORTEX, 0, 150.0f, false);
+                            BroadcastEventToEntry(NPC_FJOLA_LIGHTBANE, EVENT_LIGHT_VORTEX, 0, 150.0f);
                             break;
                         case SPECIAL_LIGHT_PACT:
-                            BroadcastEvent(EVENT_LIGHT_PACT, 0, 150.0f, false);
+                            BroadcastEventToEntry(NPC_FJOLA_LIGHTBANE, EVENT_LIGHT_PACT, 0, 150.0f);
                             DoCast(m_creature, SPELL_POWER_OF_THE_TWINS);
                             break;
                     }
@@ -491,10 +491,9 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 
     void UpdateMovement(float cur_x, float cur_y)
     {
-        if (abs(tar_x - cur_x) < 0.2f && abs(tar_y - cur_y) < 0.2f) // 0.3 is a random value (less than 1y will make it look "smooth" when re-initting movement
-        {
+        // 0.2 is a random value (less than 1y will make it look "smooth" when re-initting movement
+        if (abs(tar_x - cur_x) < 0.2f && abs(tar_y - cur_y) < 0.2f)
             InitMovement();
-        }
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -509,11 +508,14 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 
         if (m_bIsUsed)
         {
-            if (m_uiDieTimer < uiDiff) // if creature is "despawned" it never enters the "SummonedCreatureJustDied".
+            // if creature is "despawned" it never enters the "SummonedCreatureJustDied".
+            if (m_uiDieTimer < uiDiff)
             {
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                m_creature->ForcedDespawn();
-            } else m_uiDieTimer -= uiDiff;
+                m_creature->ForcedDespawn(100);
+            }
+            else
+                m_uiDieTimer -= uiDiff;
         }
     }
 };
