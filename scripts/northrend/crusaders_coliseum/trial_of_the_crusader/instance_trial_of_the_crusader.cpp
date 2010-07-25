@@ -27,18 +27,21 @@ EndContentData */
 
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
-#include <iterator>
+
+#define INSTANCE_DATA_MAGIC "TotC"
+
+using namespace serialize;
 
 struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 {
-    std::vector<uint32> m_auiEncounter;
+    typedef std::map<uint32, uint32> InstanceDataMap;
+
     std::string m_strInstData;
-    std::vector<uint64> m_guidsStore;               // data_id => guid
-    UNORDERED_MAP<uint32, uint32> m_InstanceVars;   // data_id => value
+    InstanceDataMap m_InstanceVars;     // data_id => value
+    std::vector<uint64> m_guidsStore;   // data_id => guid
 
     instance_trial_of_the_crusader(Map *pMap):
         ScriptedInstance(pMap),
-        m_auiEncounter(MAX_ENCOUNTER, 0),
         m_guidsStore(DATA_GUID_MAX, 0)
     {
         Initialize();
@@ -72,7 +75,14 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        return std::find(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS) != m_auiEncounter.end();
+        for (InstanceDataMap::const_iterator i = m_InstanceVars.begin(); i != m_InstanceVars.end(); ++i)
+        {
+            if (i->first >= MAX_ENCOUNTER)
+                break;
+            if (i->second == IN_PROGRESS)
+                return true;
+        }
+        return false;
     }
 
     void OnCreatureCreate(Creature *pCreature)
@@ -134,10 +144,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        if (uiType < MAX_ENCOUNTER)
-            m_auiEncounter[uiType] = uiData;
-        else if (uiType > DATA_GUID_MAX)
-            m_InstanceVars[uiType] = uiData;
+        m_InstanceVars[uiType] = uiData;
 
         if (uiType == DATA_ATTEMPT_COUNTER)
             DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, uiData);
@@ -147,9 +154,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
                 InitWorldState();
 
         std::ostringstream saveStream;
-        std::copy(m_auiEncounter.begin(), m_auiEncounter.end(), std::ostream_iterator<uint32>(saveStream, " "));
-        saveStream << m_InstanceVars[DATA_ATTEMPT_COUNTER] << " ";
-        saveStream << m_InstanceVars[DATA_IMMORTAL] << " ";
+        saveStream << INSTANCE_DATA_MAGIC << ' ' << m_InstanceVars;
 
         m_strInstData = saveStream.str();
 
@@ -170,12 +175,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
     uint32 GetData(uint32 uiType)
     {
-        if (uiType < MAX_ENCOUNTER)
-            return m_auiEncounter[uiType];
-        else if (uiType > DATA_GUID_MAX)
-            return map_find(m_InstanceVars, uiType);
-
-        return 0;
+        return map_find(m_InstanceVars, uiType);
     }
 
     const char* Save()
@@ -191,16 +191,26 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             return;
         }
 
+        std::istringstream loadStream(strIn);
+        std::string magic;
+        loadStream >> magic;
+        if (magic != INSTANCE_DATA_MAGIC)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
         OUT_LOAD_INST_DATA(strIn);
 
-        std::istringstream loadStream(strIn);
+        loadStream >> m_InstanceVars;
 
-        for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
-            loadStream >> m_auiEncounter[i];
-        loadStream >> m_InstanceVars[DATA_ATTEMPT_COUNTER];
-        loadStream >> m_InstanceVars[DATA_IMMORTAL];
-
-        std::replace(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS, NOT_STARTED);
+        for (InstanceDataMap::iterator i = m_InstanceVars.begin(); i != m_InstanceVars.end(); ++i)
+        {
+            if (i->first >= MAX_ENCOUNTER)
+                break;
+            if (i->second == IN_PROGRESS)
+                i->second = NOT_STARTED;
+        }
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }

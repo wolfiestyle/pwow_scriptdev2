@@ -140,6 +140,46 @@ typename MapType::mapped_type map_find(MapType const& map,
     return it != map.end() ? it->second : fail_value;
 }
 
+// defines stream operators to serialize a std::map container
+namespace serialize {
+
+// outputs a std::pair to a stream
+template <typename T1, typename T2>
+std::ostream& operator<< (std::ostream& out, std::pair<T1, T2> const& p)
+{
+    out << p.first << ' ' << p.second;
+    return out;
+}
+
+// reads a std::pair from a stream
+template <typename T1, typename T2>
+std::istream& operator>> (std::istream& in, std::pair<T1, T2>& p)
+{
+    in >> p.first >> p.second;
+    return in;
+}
+
+// outputs content of std::map into a stream
+template <typename K, typename V>
+std::ostream& operator<< (std::ostream& out, std::map<K, V> const& m)
+{
+    for (typename std::map<K, V>::const_iterator i = m.begin(); i != m.end(); ++i)
+        out << *i << ' ';
+    return out;
+}
+
+// reads content of a std::map from a stream
+template <typename K, typename V>
+std::istream& operator>> (std::istream& in, std::map<K, V>& m)
+{
+    std::pair<K, V> value;
+    while (in >> value)
+        m.insert(value);
+    return in;
+}
+
+} // namespace serialize
+
 // wrapper for accessing data variables in instance scripts
 template <typename T>
 class InstanceVarBase

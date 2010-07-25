@@ -27,18 +27,21 @@ EndContentData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include <iterator>
+
+#define INSTANCE_DATA_MAGIC "ICC"
+
+using namespace serialize;
 
 struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 {
-    std::vector<uint32> m_auiEncounter;
+    typedef std::map<uint32, uint32> InstanceDataMap;
+
     std::string m_strInstData;
-    std::vector<uint64> m_guidsStore;               // data_id => guid
-    UNORDERED_MAP<uint32, uint32> m_InstanceVars;   // data_id => value
+    InstanceDataMap m_InstanceVars;     // data_id => value
+    std::vector<uint64> m_guidsStore;   // data_id => guid
 
     instance_icecrown_citadel(Map *pMap):
         ScriptedInstance(pMap),
-        m_auiEncounter(MAX_ENCOUNTER, 0),
         m_guidsStore(DATA_GUID_MAX, 0)
     {
         Initialize();
@@ -57,7 +60,14 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        return std::find(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS) != m_auiEncounter.end();
+        for (InstanceDataMap::const_iterator i = m_InstanceVars.begin(); i != m_InstanceVars.end(); ++i)
+        {
+            if (i->first >= MAX_ENCOUNTER)
+                break;
+            if (i->second == IN_PROGRESS)
+                return true;
+        }
+        return false;
     }
 
     void OnCreatureCreate(Creature *pCreature)
@@ -123,13 +133,10 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        if (uiType < MAX_ENCOUNTER)
-            m_auiEncounter[uiType] = uiData;
-        else if (uiType > DATA_GUID_MAX)
-            m_InstanceVars[uiType] = uiData;
+        m_InstanceVars[uiType] = uiData;
 
         std::ostringstream saveStream;
-        std::copy(m_auiEncounter.begin(), m_auiEncounter.end(), std::ostream_iterator<uint32>(saveStream, " "));
+        saveStream << INSTANCE_DATA_MAGIC << ' ' << m_InstanceVars;
 
         m_strInstData = saveStream.str();
 
@@ -150,12 +157,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
 
     uint32 GetData(uint32 uiType)
     {
-        if (uiType < MAX_ENCOUNTER)
-            return m_auiEncounter[uiType];
-        else if (uiType > DATA_GUID_MAX)
-            return map_find(m_InstanceVars, uiType);
-
-        return 0;
+        return map_find(m_InstanceVars, uiType);
     }
 
     const char* Save()
@@ -171,14 +173,26 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             return;
         }
 
+        std::istringstream loadStream(strIn);
+        std::string magic;
+        loadStream >> magic;
+        if (magic != INSTANCE_DATA_MAGIC)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
         OUT_LOAD_INST_DATA(strIn);
 
-        std::istringstream loadStream(strIn);
+        loadStream >> m_InstanceVars;
 
-        for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
-            loadStream >> m_auiEncounter[i];
-
-        std::replace(m_auiEncounter.begin(), m_auiEncounter.end(), IN_PROGRESS, NOT_STARTED);
+        for (InstanceDataMap::iterator i = m_InstanceVars.begin(); i != m_InstanceVars.end(); ++i)
+        {
+            if (i->first >= MAX_ENCOUNTER)
+                break;
+            if (i->second == IN_PROGRESS)
+                i->second = NOT_STARTED;
+        }
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }
