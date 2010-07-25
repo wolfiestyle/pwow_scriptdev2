@@ -105,7 +105,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
     void Reset()
     {
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 384.4f);
+            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
         SummonMgr.UnsummonAll();
         boss_icecrown_citadelAI::Reset();
     }

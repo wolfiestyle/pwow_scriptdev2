@@ -114,7 +114,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         NumInfections = 0;
         OozeFloodPositionsUsed.reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 384.4f);
+            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
         boss_icecrown_citadelAI::Reset();
     }
 
