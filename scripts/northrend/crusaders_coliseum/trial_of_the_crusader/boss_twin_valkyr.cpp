@@ -79,6 +79,9 @@ enum Events
     EVENT_SPAWN_ORBS,
     EVENT_TWIN_SPIKE,
     EVENT_SPECIAL,
+    EVENT_LIGHT_VORTEX,
+    EVENT_LIGHT_PACT,
+    EVENT_DARK_PACT,
     EVENT_TOUCH,
 };
 
@@ -108,9 +111,9 @@ enum Says
 
 #define ORB_NUMBER          urand(25,30)
 
-#define TIMER_BERSERK       6*MINUTE*IN_MILLISECONDS
+#define TIMER_BERSERK       m_bIsHeroic ? 6*MINUTE*IN_MILLISECONDS : 8*MINUTE*IN_MILLISECONDS
 #define TIMER_SPAWN_ORBS    30*IN_MILLISECONDS, 40*IN_MILLISECONDS
-#define TIMER_TWIN_SPIKE    20*IN_MILLISECONDS
+#define TIMER_TWIN_SPIKE    20*IN_MILLISECONDS, 30*IN_MILLISECONDS
 #define TIMER_SPECIAL       45*IN_MILLISECONDS
 #define TIMER_TOUCH         15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 
@@ -140,33 +143,12 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
             Darkbane->SetHealth(m_creature->GetHealth());
     }
 
-    void DoSpecial(Specials special)
-    {
-        switch (special)
-        {
-            case SPECIAL_LIGHT_PACT:
-                DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
-                DoCast(m_creature, SPELL_SHIELD_OF_LIGHTS, true);
-                DoCast(m_creature, SPELL_TWINS_PACT_FJOLA);
-                break;
-            case SPECIAL_LIGHT_VORTEX:
-                DoScriptText(SAY_TWIN_VALKYR_LIGHT_VORTEX, m_creature);
-                DoCast(m_creature, SPELL_LIGHT_VORTEX);
-                break;
-            case SPECIAL_DARK_PACT:
-                DoCast(m_creature, SPELL_POWER_OF_THE_TWINS);
-                break;
-            default:
-                break;
-        }
-    }
-
     void Aggro(Unit *pWho)
     {
         DoCast(m_creature, SPELL_SURGE_OF_LIGHT);
         m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
         SCHEDULE_EVENT(BERSERK);
-        SCHEDULE_EVENT(TWIN_SPIKE);
+        SCHEDULE_EVENT_R(TWIN_SPIKE);
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(TOUCH);
         DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
@@ -208,6 +190,18 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                 case EVENT_TOUCH:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCast(target, SPELL_TOUCH_OF_LIGHT);
+                    break;
+                case EVENT_LIGHT_PACT:
+                    DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
+                    DoCast(m_creature, SPELL_SHIELD_OF_LIGHTS, true);
+                    DoCast(m_creature, SPELL_TWINS_PACT_FJOLA);
+                    break;
+                case EVENT_LIGHT_VORTEX:
+                    DoScriptText(SAY_TWIN_VALKYR_LIGHT_VORTEX, m_creature);
+                    DoCast(m_creature, SPELL_LIGHT_VORTEX);
+                    break;
+                case EVENT_DARK_PACT:
+                    DoCast(m_creature, SPELL_POWER_OF_THE_TWINS);
                     break;
                 default:
                     break;
@@ -289,7 +283,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT_R(SPAWN_ORBS);
-        SCHEDULE_EVENT(TWIN_SPIKE);
+        SCHEDULE_EVENT_R(TWIN_SPIKE);
         SCHEDULE_EVENT(SPECIAL);
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(TOUCH);
@@ -348,7 +342,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     {
                         float x, y;
                         GetPointOnCircle(48.5, rand_norm()*2*M_PI, x, y);
-                        SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
+                        SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT+1.0f, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                     }
                     break;
                 }
@@ -368,11 +362,6 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     while (SpecialsUsed[SpecialNum]);
                     SpecialsUsed[SpecialNum] = true;
 
-                    Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE);
-                    boss_fjolaAI *LightbaneAI = NULL;
-                    if (Lightbane)
-                        boss_fjolaAI *LightbaneAI = dynamic_cast<boss_fjolaAI*>(Lightbane->AI());
-
                     switch (SpecialNum)
                     {
                         case SPECIAL_DARK_VORTEX:
@@ -383,16 +372,13 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                             DoScriptText(SAY_TWIN_VALKYR_TWIN_PACT, m_creature);
                             DoCast(m_creature, SPELL_SHIELD_OF_DARKNESS, true);
                             DoCast(m_creature, SPELL_TWINS_PACT_EYDIS);
-                            if (LightbaneAI)
-                                LightbaneAI->DoSpecial(SPECIAL_DARK_PACT);
+                            BroadcastEvent(EVENT_DARK_PACT, 0, 150.0f, false);
                             break;
                         case SPECIAL_LIGHT_VORTEX:
-                            if (LightbaneAI)
-                                LightbaneAI->DoSpecial(SPECIAL_LIGHT_VORTEX);
+                            BroadcastEvent(EVENT_LIGHT_VORTEX, 0, 150.0f, false);
                             break;
                         case SPECIAL_LIGHT_PACT:
-                            if (LightbaneAI)
-                                LightbaneAI->DoSpecial(SPECIAL_LIGHT_PACT);
+                            BroadcastEvent(EVENT_LIGHT_PACT, 0, 150.0f, false);
                             DoCast(m_creature, SPELL_POWER_OF_THE_TWINS);
                             break;
                     }
@@ -429,24 +415,36 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
     }
 };
 
-#define RANDOM_MOVE_TIMER   urand(10, 25)*IN_MILLISECONDS
+#define RANDOM_MOVE_TIMER   5*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 {
     uint32 m_uiMoveTimer;
+    uint32 m_uiDieTimer;
     bool m_bIsUsed;
+    float tar_x, tar_y;
 
     mob_concentrated_orbAI(Creature *pCreature):
         ScriptedAI(pCreature),
         m_uiMoveTimer(0),
-        m_bIsUsed(false)
+        m_bIsUsed(false),
+        m_uiDieTimer(500)
     {
+        pCreature->SetSpeedRate(MOVE_WALK, 1.0f, true);
+        pCreature->SetSpeedRate(MOVE_RUN, 1.0f, true);
+        InitMovement();
     }
 
     void Reset()
     {
         m_uiMoveTimer = 0;
         m_bIsUsed = false;
+    }
+
+    void InitMovement()
+    {
+        GetRandomPointInCircle(tar_x, tar_y, 48.5f, CENTER_X, CENTER_Y);
+        m_creature->GetMotionMaster()->MovePoint(0, tar_x, tar_y, m_creature->GetPositionZ());
     }
 
     void CastPowerUp(Unit* pTarget, bool IsLight)
@@ -462,7 +460,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (m_bIsUsed || !pWho || pWho->GetTypeId() != TYPEID_PLAYER || !m_creature->IsWithinDistInMap(pWho, 1.7f))
+        if (m_bIsUsed || !pWho || pWho->GetTypeId() != TYPEID_PLAYER || !m_creature->IsWithinDistInMap(pWho, 2.0f))
             return;
         switch (m_creature->GetEntry())
         {
@@ -489,20 +487,34 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
             default:
                 return;
         }
-        m_creature->ForcedDespawn(500);
+    }
+
+    void UpdateMovement(float cur_x, float cur_y)
+    {
+        if (abs(tar_x - cur_x) < 0.2f && abs(tar_y - cur_y) < 0.2f) // 0.3 is a random value (less than 1y will make it look "smooth" when re-initting movement
+        {
+            InitMovement();
+        }
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
         if (m_uiMoveTimer < uiDiff)
         {
-            float x, y;
-            GetRandomPointInCircle(x, y, 48.5f, CENTER_X, CENTER_Y);
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
+            UpdateMovement(m_creature->GetPositionX(), m_creature->GetPositionY());
             m_uiMoveTimer = RANDOM_MOVE_TIMER;
         }
         else
             m_uiMoveTimer -= uiDiff;
+
+        if (m_bIsUsed)
+        {
+            if (m_uiDieTimer < uiDiff) // if creature is "despawned" it never enters the "SummonedCreatureJustDied".
+            {
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->ForcedDespawn();
+            } else m_uiDieTimer -= uiDiff;
+        }
     }
 };
 
