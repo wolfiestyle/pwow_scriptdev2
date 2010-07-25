@@ -106,12 +106,22 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);
-                if( instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                if (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
                 {
                     door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_2);
                     door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
                 }
                 loot_id = DATA_VALITHRIA_CHEST;
+                break;
+            case TYPE_ROTFACE:
+            case TYPE_FESTERGUT:
+                if (m_InstanceVars[TYPE_ROTFACE] == DONE && m_InstanceVars[TYPE_FESTERGUT] == DONE)
+                {
+                    door_ids.push_back(DATA_PUTRICIDE_UPPER_DOOR);
+                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR);        // Note: does not animate opening of door.
+                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_ORANGE);
+                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
+                }
                 break;
             default:
                 return;
