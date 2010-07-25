@@ -351,7 +351,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 }
                 else
                     if (uiSummonTimer < (SUMMON_TIMER - 15*IN_MILLISECONDS))
-                        uiSummonTimer = 0;
+                        uiSummonTimer = 1;
                 NorthrendBeastsEncounterCheck();
                 break;
             case NPC_ACIDMAW:
@@ -363,7 +363,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 }
                 else
                     if (m_bIsHeroic && !m_pInstance->IsEncounterInProgress())
-                        uiSummonTimer = 0;
+                        uiSummonTimer = 1;
                 // (no break)
             case NPC_ICEHOWL:
                 NorthrendBeastsEncounterCheck();
@@ -433,7 +433,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
         if (CurrPhase == PHASE_BEASTS_OF_NORTHEREND && m_bIsHeroic) //start timed summons
         {
             // if they wiped once, we just spawn him
-            uiSummonTimer = m_AttemptCounter == 50 ? 27*IN_MILLISECONDS : 0;
+            uiSummonTimer = m_AttemptCounter == 50 ? 27*IN_MILLISECONDS : 1;
         }
     }
 
@@ -866,9 +866,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 m_uiAggroTimer -= uiDiff;
         }
 
-        if (m_bIsHeroic && CurrPhase == PHASE_BEASTS_OF_NORTHEREND)
+        if (m_bIsHeroic && CurrPhase == PHASE_BEASTS_OF_NORTHEREND && uiSummonTimer)
         {
-            if (uiSummonTimer < uiDiff)
+            if (uiSummonTimer <= uiDiff)
             {
                 switch (CurrBeastOfNortherendPhase)
                 {
@@ -885,15 +885,14 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                         break;
                     case PHASE_JORMUNGAR_TWINS:
                         SpawnBoss(NPC_ICEHOWL);
-                        uiSummonTimer = SUMMON_TIMER;
                         CurrBeastOfNortherendPhase++;
-                        break;
                     default:
-                        return;
+                        uiSummonTimer = 0;
+                        break;
                 }
             }
             else
-                uiSummonTimer-= uiDiff;
+                uiSummonTimer -= uiDiff;
         }
     }
 };
