@@ -148,8 +148,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
 
         if (uiType == DATA_ATTEMPT_COUNTER)
             DoUpdateWorldState(WORLD_STATE_TOTGC_ATTEMPT_COUNTER, uiData);
-
-        if (uiType < MAX_ENCOUNTER && uiData == IN_PROGRESS)
+        else if (uiType < MAX_ENCOUNTER && uiData == IN_PROGRESS)
             if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
                 InitWorldState();
 
@@ -159,9 +158,10 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         m_strInstData = saveStream.str();
 
         if (uiType < MAX_ENCOUNTER && uiData == DONE)
-        {
             OnEncounterComplete(uiType);
 
+        if ((uiType < MAX_ENCOUNTER && uiData == DONE) || uiType == DATA_ATTEMPT_COUNTER)
+        {
             OUT_SAVE_INST_DATA;
             SaveToDB();
             OUT_SAVE_INST_DATA_COMPLETE;
