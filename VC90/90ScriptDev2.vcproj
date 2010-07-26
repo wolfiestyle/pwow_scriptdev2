@@ -2286,6 +2286,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_sister_svalna.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_the_lich_king.cpp"
 							>
 						</File>

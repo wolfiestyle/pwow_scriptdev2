@@ -302,6 +302,7 @@ extern void AddSC_boss_lord_marrowgar();
 extern void AddSC_boss_proffesor_putricide();
 extern void AddSC_boss_rotface();
 extern void AddSC_boss_sindragosa();
+extern void AddSC_boss_sister_svalna();
 extern void AddSC_boss_the_lich_king();
 extern void AddSC_boss_valithria();
 extern void AddSC_instance_icecrown_citadel();
@@ -771,6 +772,7 @@ void AddScripts()
     AddSC_boss_proffesor_putricide();
     AddSC_boss_rotface();
     AddSC_boss_sindragosa();
+    AddSC_boss_sister_svalna();
     AddSC_boss_the_lich_king();
     AddSC_boss_valithria();
     AddSC_instance_icecrown_citadel();

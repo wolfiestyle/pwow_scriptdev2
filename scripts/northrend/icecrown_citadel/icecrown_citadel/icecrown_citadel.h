@@ -14,7 +14,7 @@
 
 enum
 {
-    MAX_ENCOUNTER           = 14,
+    MAX_ENCOUNTER           = 15,
 
     // The Lower Spire
     TYPE_MARROWGAR          = 0,
@@ -31,10 +31,11 @@ enum
     TYPE_TALDARAM           = 9,
     TYPE_LANATHEL           = 10,
     // The Frostwing Halls
-    TYPE_VALITHRIA          = 11,
-    TYPE_SINDRAGOSA         = 12,
+    TYPE_SVALNA             = 11,
+    TYPE_VALITHRIA          = 12,
+    TYPE_SINDRAGOSA         = 13,
     // The Frozen Throne
-    TYPE_LICH_KING          = 13,
+    TYPE_LICH_KING          = 14,
 
     // instance objects
     DATA_MARROWGAR_DOOR_1,
@@ -58,7 +59,7 @@ enum
     DATA_GUID_MAX,
 
     // instance variables
-    DATA_FACTION,
+    DATA_FACTION = 100,
 
     // creature entries
     NPC_MARROWGAR           = 36612,
@@ -71,6 +72,7 @@ enum
     NPC_KELESETH            = 37972,
     NPC_TALDARAM            = 37973,
     NPC_LANATHEL            = 37955,
+    NPC_SVALNA              = 37126,
     NPC_VALITHRIA           = 36789,
     NPC_SINDRAGOSA          = 36853,
     NPC_LICH_KING           = 36597,

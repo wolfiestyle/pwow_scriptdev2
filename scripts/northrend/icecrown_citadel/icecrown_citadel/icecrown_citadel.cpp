@@ -14,6 +14,7 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_KELESETH,          TYPE_KELESETH)
     (NPC_TALDARAM,          TYPE_TALDARAM)
     (NPC_LANATHEL,          TYPE_LANATHEL)
+    (NPC_SVALNA,            TYPE_SVALNA)
     (NPC_VALITHRIA,         TYPE_VALITHRIA)
     (NPC_SINDRAGOSA,        TYPE_SINDRAGOSA)
     (NPC_LICH_KING,         TYPE_LICH_KING);

@@ -376,6 +376,7 @@ scripts/northrend/icecrown_citadel/icecrown_citadel/boss_lord_marrowgar.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_proffesor_putricide.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_rotface.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_sindragosa.cpp \
+scripts/northrend/icecrown_citadel/icecrown_citadel/boss_sister_svalna.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_the_lich_king.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_valithria_dreamwalker.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/gunship_battle.cpp \
