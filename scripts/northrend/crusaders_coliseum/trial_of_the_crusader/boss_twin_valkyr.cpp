@@ -462,7 +462,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
             }
             else
                 aur->SetStackAmount(powerstack);
-        }   
+        }
     }
 
     void MoveInLineOfSight(Unit *pWho)
