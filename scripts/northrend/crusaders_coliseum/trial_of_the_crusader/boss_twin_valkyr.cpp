@@ -451,19 +451,17 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
     void CastPowerUp(Unit* pTarget, bool IsLight)
     {
         pTarget->CastSpell(pTarget, SPELL_POWERING_UP, true);
-        uint8 powerstack = urand (5,8);
         Aura *aur = pTarget->GetAura(SPELL_POWERING_UP, EFFECT_INDEX_0);
         if (aur)
         {
-            uint8 curstacks  = aur->GetStackAmount();
-            if (curstacks + powerstack >= 100)
+            uint8 powerstack = aur->GetStackAmount() + urand(5, 8);
+            if (powerstack >= 100)
             {
-                aur->SetStackAmount(100);
                 pTarget->RemoveAurasDueToSpell(SPELL_POWERING_UP);
                 pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
             }
             else
-                aur->SetStackAmount(powerstack+curstacks);
+                aur->SetStackAmount(powerstack);
         }   
     }
 
