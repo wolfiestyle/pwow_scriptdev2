@@ -305,6 +305,7 @@ extern void AddSC_boss_sindragosa();
 extern void AddSC_boss_sister_svalna();
 extern void AddSC_boss_the_lich_king();
 extern void AddSC_boss_valithria();
+extern void AddSC_scourge_transporter();
 extern void AddSC_instance_icecrown_citadel();
 extern void AddSC_boss_anubrekhan();                        //naxxramas
 extern void AddSC_boss_four_horsemen();
@@ -775,6 +776,7 @@ void AddScripts()
     AddSC_boss_sister_svalna();
     AddSC_boss_the_lich_king();
     AddSC_boss_valithria();
+    AddSC_scourge_transporter();
     AddSC_instance_icecrown_citadel();
     AddSC_boss_anubrekhan();                                //naxxramas
     AddSC_boss_four_horsemen();
