@@ -269,7 +269,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
-        bool IsDark = true;
+        bool IsDark = false;
         for (int i=1; i<8; i+=2)
         {
             float x, y;
@@ -430,6 +430,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
         m_bIsUsed(false),
         m_uiDieTimer(500)
     {
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         pCreature->SetSpeedRate(MOVE_WALK, 1.0f, true);
         pCreature->SetSpeedRate(MOVE_RUN, 1.0f, true);
         InitMovement();
@@ -450,12 +451,20 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
     void CastPowerUp(Unit* pTarget, bool IsLight)
     {
         pTarget->CastSpell(pTarget, SPELL_POWERING_UP, true);
+        uint8 powerstack = urand (5,8);
         Aura *aur = pTarget->GetAura(SPELL_POWERING_UP, EFFECT_INDEX_0);
-        if (aur && aur->GetStackAmount() >= 100)
+        if (aur)
         {
-            pTarget->RemoveAurasDueToSpell(SPELL_POWERING_UP);
-            pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
-        }
+            uint8 curstacks  = aur->GetStackAmount();
+            if (curstacks + powerstack >= 100)
+            {
+                aur->SetStackAmount(100);
+                pTarget->RemoveAurasDueToSpell(SPELL_POWERING_UP);
+                pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
+            }
+            else
+                aur->SetStackAmount(powerstack+curstacks);
+        }   
     }
 
     void MoveInLineOfSight(Unit *pWho)
