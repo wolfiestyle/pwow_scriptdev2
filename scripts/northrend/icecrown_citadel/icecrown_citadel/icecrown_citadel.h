@@ -110,6 +110,19 @@ enum
     GO_TP_FROZEN_THRONE     = 202223,
 };
 
+enum TeleportLocations
+{
+    TP_LIGHTS_HAMMER,
+    TP_ORATORY,
+    TP_RAMPART_OF_SKULLS,
+    TP_DEATHBRINGER_RISE,
+    TP_UPPER_SPIRE,
+    TP_SINDRAGOSA_LAIR,
+    TP_FROZEN_THRONE,
+    // values count
+    TP_MAX
+};
+
 //---------------------------------------------------------
 
 namespace icc {

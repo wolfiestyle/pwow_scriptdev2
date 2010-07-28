@@ -24,34 +24,10 @@ EndScriptData */
 #include "precompiled.h"
 #include "icecrown_citadel.h"
 
-enum TeleportLocations
-{
-    TP_LIGHTS_HAMMER,
-    TP_ORATORY,
-    TP_RAMPART_OF_SKULLS,
-    TP_DEATHBRINGER_RISE,
-    TP_UPPER_SPIRE,
-    TP_SINDRAGOSA_LAIR,
-    TP_FROZEN_THRONE,
-    // values count
-    TP_MAX
-};
-
 enum
 {
     GOSSIP_TEXT_ID      = 15221,
 };
-
-typedef UNORDERED_MAP<uint32, TeleportLocations> EntryLocationMap;
-
-static EntryLocationMap const EntryToLocation = map_initializer<EntryLocationMap>
-    (GO_TP_LIGHTS_HAMMER,       TP_LIGHTS_HAMMER)
-    (GO_TP_ORATORY,             TP_ORATORY)
-    (GO_TP_RAMPART_OF_SKULLS,   TP_RAMPART_OF_SKULLS)
-    (GO_TP_DEATHBRINGER_RISE,   TP_DEATHBRINGER_RISE)
-    (GO_TP_UPPER_SPIRE,         TP_UPPER_SPIRE)
-    (GO_TP_SINDRAGOSA_LAIR,     TP_SINDRAGOSA_LAIR)
-    (GO_TP_FROZEN_THRONE,       TP_FROZEN_THRONE);
 
 static float const TeleportCoords[TP_MAX][4] =
 {
@@ -64,13 +40,16 @@ static float const TeleportCoords[TP_MAX][4] =
     { 4356.93f, 2769.41f, 355.955f, -2.35619f}
 };
 
-#define G_LIGHTS_HAMMER     "Light's Hammer"
-#define G_ORATORY           "Oratory of the Damned"
-#define G_RAMPART_OF_SKULLS "Rampart of Skulls"
-#define G_DEATHBRINGER_RISE "Deathbringer's Rise"
-#define G_UPPER_SPIRE       "Upper Spire"
-#define G_SINDRAGOSA_LAIR   "Sindragosa's Lair"
-#define G_FROZEN_THRONE     "Frozen Throne"
+static char const* const GossipStrings[TP_MAX] =
+{
+    "Light's Hammer",
+    "Oratory of the Damned",
+    "Rampart of Skulls",
+    "Deathbringer's Rise",
+    "Upper Spire",
+    "Sindragosa's Lair",
+    "Frozen Throne"
+};
 
 bool GOHello_scourge_transporter(Player *pPlayer, GameObject *pGo)
 {
@@ -80,30 +59,9 @@ bool GOHello_scourge_transporter(Player *pPlayer, GameObject *pGo)
     bool skipCheck = pPlayer->isGameMaster();  // allow GM to teleport anywhere
     std::bitset<32> tpData = m_pInstance->GetData(DATA_TP_UNLOCKED);
 
-    // TODO: destinations should be enabled by AreaTrigger, using on GO click for now
-    TeleportLocations selectedLoc = map_find(EntryToLocation, pGo->GetEntry(), TP_MAX);
-    if (selectedLoc < TP_MAX)
-    {
-        tpData[selectedLoc] = true;
-        m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
-    }
-
-    if (skipCheck || tpData[TP_LIGHTS_HAMMER])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_LIGHTS_HAMMER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_LIGHTS_HAMMER);
-    if (skipCheck || tpData[TP_ORATORY])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_ORATORY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_ORATORY);
-    if (skipCheck || tpData[TP_RAMPART_OF_SKULLS])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_RAMPART_OF_SKULLS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_RAMPART_OF_SKULLS);
-    if (skipCheck || tpData[TP_DEATHBRINGER_RISE])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_DEATHBRINGER_RISE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_DEATHBRINGER_RISE);
-    if (skipCheck || tpData[TP_UPPER_SPIRE])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_UPPER_SPIRE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_UPPER_SPIRE);
-    if (skipCheck || tpData[TP_SINDRAGOSA_LAIR])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_SINDRAGOSA_LAIR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_SINDRAGOSA_LAIR);
-    /* FIXME: not sure how to do this one
-    if (skipCheck || tpData[TP_FROZEN_THRONE])
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, G_FROZEN_THRONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TP_FROZEN_THRONE);
-    */
+    for (uint32 i = 0; i < TP_MAX; ++i)
+        if (skipCheck || tpData[i])
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GossipStrings[i], GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + i);
 
     pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, pGo->GetGUID());
 

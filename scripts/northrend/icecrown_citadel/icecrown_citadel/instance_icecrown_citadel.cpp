@@ -56,6 +56,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void Initialize()
     {
         m_InstanceVars[DATA_FACTION] = 0;
+        m_InstanceVars[DATA_TP_UNLOCKED] = 1 << TP_LIGHTS_HAMMER;
     }
 
     bool IsEncounterInProgress() const
@@ -97,19 +98,28 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void OnEncounterComplete(uint32 uiType)
     {
         uint32 loot_id = 0, phased_id = 0;
+        TeleportLocations tp_unlocked = TP_MAX;
         std::list<uint32> door_ids;
         switch (uiType)
         {
             case TYPE_MARROWGAR:    
                 door_ids.push_back(DATA_MARROWGAR_DOOR_1);
                 door_ids.push_back(DATA_MARROWGAR_DOOR_2);
+                tp_unlocked = TP_ORATORY;
                 break;
             case TYPE_DEATHWHISPER:
                 phased_id = DATA_DEATHWHISPER_ELEV;
+                tp_unlocked = TP_RAMPART_OF_SKULLS;
+                // since Gunship Battle isn't implemented, we unlock it too
+                m_InstanceVars[DATA_TP_UNLOCKED] |= 1 << TP_DEATHBRINGER_RISE;
+                break;
+            case TYPE_GUNSHIP_BATTLE:
+                tp_unlocked = TP_DEATHBRINGER_RISE;
                 break;
             case TYPE_SAURFANG:
                 loot_id = DATA_SAURFANG_CHEST;
                 door_ids.push_back(DATA_SAURFANG_DOOR);
+                //tp_unlocked = TP_UPPER_SPIRE;
                 break;
             case TYPE_VALITHRIA:
                 door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
@@ -122,6 +132,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
                 }
                 loot_id = DATA_VALITHRIA_CHEST;
+                //tp_unlocked = TP_SINDRAGOSA_LAIR;
                 break;
             case TYPE_ROTFACE:
             case TYPE_FESTERGUT:
@@ -154,6 +165,9 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 if (GameObject *pGo = instance->GetGameObject(DoorGuid))
                     m_InstanceVars[*i] = pGo->GetGoState();
             }
+
+        if (tp_unlocked < TP_MAX)
+            m_InstanceVars[DATA_TP_UNLOCKED] |= 1 << tp_unlocked;
     }
 
     void SetData(uint32 uiType, uint32 uiData)
