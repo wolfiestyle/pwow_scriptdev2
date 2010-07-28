@@ -60,6 +60,7 @@ enum
 
     // instance variables
     DATA_FACTION = 100,
+    DATA_TP_UNLOCKED,
 
     // creature entries
     NPC_MARROWGAR           = 36612,
