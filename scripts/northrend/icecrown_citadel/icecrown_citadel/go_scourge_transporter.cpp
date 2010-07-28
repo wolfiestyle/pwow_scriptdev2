@@ -35,9 +35,10 @@ static float const TeleportCoords[TP_MAX][4] =
     { -503.62f, 2211.47f, 62.8235f, 3.13002f},
     {-615.145f, 2211.47f, 199.972f, 6.27553f},
     {-549.131f, 2211.29f, 539.291f, 6.26765f},
-    { 4199.35f, 2769.42f, 350.977f, 3.14159f},
+    { 4199.35f, 2769.42f, 350.977f, 0.0f},
     { 4356.58f, 2565.75f, 220.402f, -1.5708f},
-    { 4356.93f, 2769.41f, 355.955f, -2.35619f}
+    //{ 4356.93f, 2769.41f, 355.955f, -2.35619f},
+    { 529.3f,   -2124.7f, 1041.0f,  3.14159f} // this dest location for Frozen Throne teleport
 };
 
 static char const* const GossipStrings[TP_MAX] =
@@ -81,6 +82,81 @@ bool GOSelect_scourge_transporter(Player* pPlayer, GameObject* pGo, uint32 uiSen
     return true;
 }
 
+bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry *pAt)
+{
+    if (pPlayer && !pPlayer->isGameMaster()) // prevent GMs from activating transporters
+    {
+        ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData());
+
+        if (!m_pInstance)
+            return false;
+
+        std::bitset<32> tpData = m_pInstance->GetData(DATA_TP_UNLOCKED);
+
+        switch(pAt->id)
+        {
+            case 5736:  // Light's Hammer
+                if (!tpData[TP_LIGHTS_HAMMER])
+                {
+                    m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_LIGHTS_HAMMER));
+                    return false;
+                } else 
+                    return false;
+                break;
+            case 5649:  // Upper Spire
+                if (!tpData[TP_UPPER_SPIRE])
+                {
+                    if (m_pInstance->GetData(TYPE_SAURFANG) == DONE) // trigger enabled only if Saurfang is dead + someone actually gets there
+                    {
+                        pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f,   351.06f, 0.0f,TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
+                        m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_UPPER_SPIRE));
+                        return false;
+                    }
+                    else
+                        return false;  // we wont handle this event cause player shouldnt be here yet ;<
+                } else 
+                    return false;
+                break;
+            case 5604:  // 
+                if (!tpData[TP_SINDRAGOSA_LAIR])
+                {
+                    if(m_pInstance->GetData(TYPE_VALITHRIA) == DONE)
+                    {
+                        m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_SINDRAGOSA_LAIR));
+                        return false;
+                    }
+                    else
+                        return false;  // we wont handle this event cause player shouldnt be here yet ;<
+                }
+                break;
+            case 5718:  // LK Teleporter
+                if (!tpData[TP_FROZEN_THRONE])
+                {
+                    for (uint32 i = 0; i < MAX_ENCOUNTER -1; i++)
+                    {
+                        if (m_pInstance->GetData(i) != DONE)
+                            return false;
+                    }
+                    m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_FROZEN_THRONE));
+                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+                    return false;
+                } 
+                else
+                {
+                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+                    return false;
+                }
+                break;
+        }
+        return false;
+    }
+    else 
+    {
+        //pPlayer->MonsterSay("GM's have no control under the Lich King's citadel!", 0, 0);
+        return false;
+    }
+};
+
 void AddSC_scourge_transporter()
 {
     Script *newscript;
@@ -89,5 +165,10 @@ void AddSC_scourge_transporter()
     newscript->Name = "go_scourge_transporter";
     newscript->pGOGossipHello = &GOHello_scourge_transporter;
     newscript->pGOGossipSelect = &GOSelect_scourge_transporter;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "at_scourge_transporter";
+    newscript->pAreaTrigger = &AT_scourge_transporter_trigger;
     newscript->RegisterSelf();
 }
