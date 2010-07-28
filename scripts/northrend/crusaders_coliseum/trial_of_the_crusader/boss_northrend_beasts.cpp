@@ -552,7 +552,7 @@ enum IcehowlPhases
     PMASK_SPECIAL   = bit_mask<PHASE_SPECIAL>::value,
 };
 
-#define TIMER_BERSERK   15*MINUTE*IN_MILLISECONDS
+#define TIMER_BERSERK   4*MINUTE*IN_MILLISECONDS
 #define PHASE_TIMER     30*IN_MILLISECONDS, 45*IN_MILLISECONDS
 #define SPECIAL_TIMER   60*IN_MILLISECONDS
 #define WHIRL_TIMER     10*IN_MILLISECONDS, 20*IN_MILLISECONDS
@@ -582,7 +582,8 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
         m_creature->SetSpeedRate(MOVE_WALK, 2.0f, true);
         m_creature->SetSpeedRate(MOVE_RUN,  2.0f, true);
         Events.SetPhase(PHASE_NORMAL);
-        Events.ScheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
+        if (m_bIsHeroic)
+            Events.ScheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
         Events.ScheduleEventInRange(EVENT_PHASE_CHANGE, PHASE_TIMER, SPECIAL_TIMER);
         Events.ScheduleEventInRange(EVENT_WHIRL, WHIRL_TIMER, WHIRL_TIMER, 0, 0, PMASK_NORMAL);
         Events.ScheduleEventInRange(EVENT_BUTT, BUTT_TIMER, BUTT_TIMER, 0, 0, PMASK_NORMAL);
