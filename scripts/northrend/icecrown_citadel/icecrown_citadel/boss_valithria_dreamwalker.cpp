@@ -202,7 +202,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !m_abSays[0] && m_creature->IsWithinDistInMap(pWho, 65.0f))
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !m_abSays[0] &&
+            pWho->isTargetableForAttack() && m_creature->IsWithinDistInMap(pWho, 65.0f))
         {
             Unit* LK = m_creature->SummonCreature(NPC_LICH_KING_VOICE,
                     m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0,
