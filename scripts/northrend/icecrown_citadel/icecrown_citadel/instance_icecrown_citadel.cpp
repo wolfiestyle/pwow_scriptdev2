@@ -144,6 +144,14 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
                 }
                 break;
+            case TYPE_PUTRICIDE:
+                door_ids.push_back(DATA_BLOODWING_DOOR);
+                door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
+                break;
+            case TYPE_VALANAR:
+                door_ids.push_back(DATA_LANATHEL_DOOR_RIGHT);
+                door_ids.push_back(DATA_LANATHEL_DOOR_LEFT);
+                break;
             default:
                 return;
         }
