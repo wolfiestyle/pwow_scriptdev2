@@ -93,59 +93,57 @@ bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry *pAt)
 
         std::bitset<32> tpData = m_pInstance->GetData(DATA_TP_UNLOCKED);
 
-        switch(pAt->id)
+        switch (pAt->id)
         {
             case 5736:  // Light's Hammer
                 if (!tpData[TP_LIGHTS_HAMMER])
                 {
-                    m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_LIGHTS_HAMMER));
-                    return false;
-                } else 
-                    return false;
+                    tpData[TP_LIGHTS_HAMMER] = true;
+                    m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                    return true;
+                }
                 break;
             case 5649:  // Upper Spire
                 if (!tpData[TP_UPPER_SPIRE])
                 {
                     if (m_pInstance->GetData(TYPE_SAURFANG) == DONE) // trigger enabled only if Saurfang is dead + someone actually gets there
                     {
-                        pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f,   351.06f, 0.0f,TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
-                        m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_UPPER_SPIRE));
-                        return false;
+                        //pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f, 351.06f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
+                        tpData[TP_UPPER_SPIRE] = true;
+                        m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                        return true;
                     }
-                    else
-                        return false;  // we wont handle this event cause player shouldnt be here yet ;<
-                } else 
-                    return false;
+                    return false;  // we wont handle this event cause player shouldn't be here yet ;<
+                }
                 break;
-            case 5604:  // 
+            case 5604:  // Sindragosa's Lair
                 if (!tpData[TP_SINDRAGOSA_LAIR])
                 {
-                    if(m_pInstance->GetData(TYPE_VALITHRIA) == DONE)
+                    if (m_pInstance->GetData(TYPE_VALITHRIA) == DONE)
                     {
-                        m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_SINDRAGOSA_LAIR));
-                        return false;
+                        tpData[TP_SINDRAGOSA_LAIR] = true;
+                        m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                        return true;
                     }
-                    else
-                        return false;  // we wont handle this event cause player shouldnt be here yet ;<
+                    return false;  // we wont handle this event cause player shouldn't be here yet ;<
                 }
                 break;
             case 5718:  // LK Teleporter
                 if (!tpData[TP_FROZEN_THRONE])
                 {
-                    for (uint32 i = 0; i < MAX_ENCOUNTER -1; i++)
+                    for (uint32 i = 0; i < MAX_ENCOUNTER-1; i++)
                     {
                         if (m_pInstance->GetData(i) != DONE)
                             return false;
                     }
-                    m_pInstance->SetData(DATA_TP_UNLOCKED, m_pInstance->GetData(DATA_TP_UNLOCKED) | (1 << TP_FROZEN_THRONE));
+                    tpData[TP_FROZEN_THRONE] = true;
+                    m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
                     pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
-                    return false;
-                } 
-                else
-                {
-                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
-                    return false;
                 }
+                else
+                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+                break;
+            default:
                 break;
         }
         return false;
