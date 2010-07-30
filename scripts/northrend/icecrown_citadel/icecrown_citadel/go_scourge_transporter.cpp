@@ -108,7 +108,7 @@ bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry *pAt)
                 {
                     if (m_pInstance->GetData(TYPE_SAURFANG) == DONE) // trigger enabled only if Saurfang is dead + someone actually gets there
                     {
-                        //pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f, 351.06f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
+                        pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f, 351.06f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
                         tpData[TP_UPPER_SPIRE] = true;
                         m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
                         return true;

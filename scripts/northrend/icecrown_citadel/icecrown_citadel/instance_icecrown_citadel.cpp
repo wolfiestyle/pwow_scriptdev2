@@ -56,7 +56,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void Initialize()
     {
         m_InstanceVars[DATA_FACTION] = 0;
-        m_InstanceVars[DATA_TP_UNLOCKED] = 1 << TP_LIGHTS_HAMMER;
+        //m_InstanceVars[DATA_TP_UNLOCKED] = 1 << TP_LIGHTS_HAMMER;
     }
 
     bool IsEncounterInProgress() const
@@ -122,7 +122,6 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 //tp_unlocked = TP_UPPER_SPIRE;
                 break;
             case TYPE_VALITHRIA:
-                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);
@@ -133,6 +132,10 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 }
                 loot_id = DATA_VALITHRIA_CHEST;
                 //tp_unlocked = TP_SINDRAGOSA_LAIR;
+                break;
+            case TYPE_SVALNA:
+                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
+                door_ids.push_back(DATA_FROSTWING_DOOR_ENTRANCE);
                 break;
             case TYPE_ROTFACE:
             case TYPE_FESTERGUT:
