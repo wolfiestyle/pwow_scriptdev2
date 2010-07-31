@@ -255,6 +255,8 @@ static const float teleporterloc[2][3] =
     {4199.25f,  2769.26f,   351.06f},   // Teleporter Coords
 };
 
+#define COMBAT_CATEGORY 1
+
 struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 {
     boss_sister_svalnaAI(Creature* pCreature):
@@ -348,15 +350,16 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 };
 
 // Frostwing Halls Gauntlet-Event
-#define RESET_TIMER 1*IN_MILLISECONDS
-#define KILL_CAPTAIN_TIMER 2*MINUTE*IN_MILLISECONDS, 3*MINUTE*IN_MILLISECONDS
+#define RESET_TIMER             1*IN_MILLISECONDS
+#define KILL_CAPTAIN_TIMER      2*MINUTE*IN_MILLISECONDS,   3*MINUTE*IN_MILLISECONDS
+#define DEATH_STRIKE_TIMER      10*IN_MILLISECONDS,         15*IN_MILLISECONDS
+#define DEATH_COIL_TIMER        20*IN_MILLISECONDS,         30*IN_MILLISECONDS
+#define SCOURGE_STRIKE_TIMER    20*IN_MILLISECONDS,         30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public ScriptEventInterface
 {
     ScriptedInstance* m_pInstance;
     InstanceVar<uint32> m_BossEncounter;
-    EventManager CombatEvents;
-    EventManager ExtraEvents;
     uint32 currPosition;
     uint32 currWaypoint;
     uint32 m_uiTalkPhase;
@@ -402,7 +405,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
 
     void DoStart()
     {
-        ExtraEvents.ScheduleEventInRange(EVENT_TIMED_DEATH, KILL_CAPTAIN_TIMER, KILL_CAPTAIN_TIMER);
+        Events.ScheduleEventInRange(EVENT_TIMED_DEATH, KILL_CAPTAIN_TIMER, KILL_CAPTAIN_TIMER);
         BroadcastEvent(EVENT_START, 0, 30.0f);
         npc_escortAI::Start();
     }
@@ -423,7 +426,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
     {
      /*   if ( m_BossEncounter != IN_PROGRESS )
             EnterEvadeMode();*/
-        CombatEvents.Reset();
+        Events.CancelEventsWithCategory(COMBAT_CATEGORY);
         m_bLowHealth = false;
     }
 
@@ -433,6 +436,9 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         {
             pWho->AddThreat(m_creature, 30000.0f);
         }
+        Events.ScheduleEventInRange(EVENT_DEATH_STRIKE, DEATH_STRIKE_TIMER, DEATH_STRIKE_TIMER, 0, COMBAT_CATEGORY);
+        Events.ScheduleEventInRange(EVENT_DEATH_COIL, DEATH_COIL_TIMER, DEATH_COIL_TIMER, 0, COMBAT_CATEGORY);
+        Events.ScheduleEventInRange(EVENT_SCOURGE_STRIKE, SCOURGE_STRIKE_TIMER, SCOURGE_STRIKE_TIMER, 0, COMBAT_CATEGORY);
     }
 
     void UpdateTalk(uint32 const uiDiff)
@@ -546,7 +552,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                 switch (m_uiTalkPhase)
                 {
                     case 1:
-                        ExtraEvents.CancelEvent(EVENT_TIMED_DEATH);
+                        Events.CancelEvent(EVENT_TIMED_DEATH);
                         DoScriptText(FWH_CROK_SAY_PRE_ENGAGE, m_creature);
                         m_uiTalkTimer = 5*IN_MILLISECONDS;
                         m_uiTalkPhase++;
@@ -689,8 +695,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         // Must update npc_escortAI
         npc_escortAI::UpdateAI(uiDiff);
         
-        ExtraEvents.Update(uiDiff); // these ones will be queued and executed regardless of combat
-        while (uint32 uiEventId = ExtraEvents.ExecuteEvent())
+        Events.Update(uiDiff); // these ones will be queued and executed regardless of combat
+        while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
                 case EVENT_TIMED_DEATH:
@@ -702,7 +708,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                     while (CaptainsSpawned[index]);
                     CaptainsSpawned[index] = true;
                     if (CaptainsSpawned[0] && CaptainsSpawned[1] && CaptainsSpawned[2] && CaptainsSpawned[3]) //Brandon, Rupert, Grondel,Arnath
-                        ExtraEvents.CancelEvent(EVENT_TIMED_DEATH);
+                        Events.CancelEvent(EVENT_TIMED_DEATH);
                     switch(index)
                     {   
                         case 0:
@@ -733,42 +739,38 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                         break; // if all died by svalna's Hand... then there is no-one to report the win.
                     BroadcastEvent(EVENT_WIN, 0, 75.0f);
                     break;
+                case EVENT_DEATH_STRIKE:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_DEATH_STRIKE);
+                    break;
+                case EVENT_ICEBOUND_ARMOR:
+                    DoCastSpellIfCan(m_creature, SPELL_ICEBOUND_ARMOR);
+                    break;
+                case EVENT_DEATH_COIL:
+                    DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), SPELL_DEATH_COIL);
+                    break;
+                case EVENT_SCOURGE_STRIKE:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SCOURGE_STRIKE);
+                    break;
             }
         // Combat Check
         if (m_creature->getVictim())
         {
-            CombatEvents.Update(uiDiff);
-            while (uint32 uiEventId = CombatEvents.ExecuteEvent())
-                switch (uiEventId)
-                {
-                    case EVENT_DEATH_STRIKE:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_DEATH_STRIKE);
-                        break;
-                    case EVENT_ICEBOUND_ARMOR:
-                        DoCastSpellIfCan(m_creature, SPELL_ICEBOUND_ARMOR);
-                        break;
-                    case EVENT_DEATH_COIL:
-                        DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), SPELL_DEATH_COIL);
-                        break;
-                    case EVENT_SCOURGE_STRIKE:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_SCOURGE_STRIKE);
-                        break;
-                }
             DoMeleeAttackIfReady();
         // HP check only in combat
             if (m_creature->GetHealthPercent() < 25.0f && !m_bLowHealth)
             {
                 m_bLowHealth = true;
-                CombatEvents.ScheduleEvent(EVENT_ICEBOUND_ARMOR, 5*IN_MILLISECONDS, 1*MINUTE*IN_MILLISECONDS);
+                Events.ScheduleEvent(EVENT_ICEBOUND_ARMOR, 5*IN_MILLISECONDS, 1*MINUTE*IN_MILLISECONDS, 0, COMBAT_CATEGORY);
                 if (m_creature->getVictim()->GetEntry() == NPC_SVALNA)
                     DoScriptText(FWH_CROK_SAY_LOW_HEALTHBOSS, m_creature);
                 else
                     DoScriptText(FWH_CROK_SAY_LOW_HEALTH, m_creature);
             }
-            if (m_creature->GetHealthPercent() > 25.0f && m_bLowHealth)
+            if (m_creature->GetHealthPercent() > 25.0f && m_bLowHealth && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
             {
                 m_bLowHealth = false;
-                CombatEvents.CancelEvent(EVENT_ICEBOUND_ARMOR);
+                Events.CancelEvent(EVENT_ICEBOUND_ARMOR);
+                m_creature->RemoveAurasDueToSpell(SPELL_ICEBOUND_ARMOR);
             }
         }
         if (m_creature->GetHealthPercent() >= 100.0f && !m_creature->isInCombat() && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
@@ -801,7 +803,6 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
     bool fallen : 1;
     ScriptedInstance* m_pInstance;
     uint32 currWaypoint;
-    EventManager CombatEvents;
     bool m_bLowHealth   :1;
 
     npc_icecrown_argent_captainAI(Creature* pCreature):
@@ -818,7 +819,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
 
     void Reset()
     {
-        CombatEvents.Reset();
+        Events.CancelEventsWithCategory(COMBAT_CATEGORY);
         m_bLowHealth = false;
     }
 
@@ -853,27 +854,27 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
         switch (m_creature->GetEntry()) // prepare their skills
         {
             case NPC_BRANDON:
-                CombatEvents.ScheduleEventInRange(EVENT_CRUSADERS_STRIKE, C_S_TIMER, C_S_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_JUDGEMENT_OF_COMMAND, J_O_C_TIMER, J_O_C_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_HAMMER_OF_BETRAYAL, H_O_B_TIMER, H_O_B_TIMER);
+                Events.ScheduleEventInRange(EVENT_CRUSADERS_STRIKE, C_S_TIMER, C_S_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_JUDGEMENT_OF_COMMAND, J_O_C_TIMER, J_O_C_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_HAMMER_OF_BETRAYAL, H_O_B_TIMER, H_O_B_TIMER, 0, COMBAT_CATEGORY);
                 break;
             case NPC_GRONDEL:
-                CombatEvents.ScheduleEventInRange(EVENT_CHARGE, CHA_TIMER, CHA_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_MORTAL_STRIKE, M_S_TIMER, M_S_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_SUNDER_ARMOR, S_A_TIMER, S_A_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_CONFLAGRATION, CON_TIMER, CON_TIMER);
+                Events.ScheduleEventInRange(EVENT_CHARGE, CHA_TIMER, CHA_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_MORTAL_STRIKE, M_S_TIMER, M_S_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_SUNDER_ARMOR, S_A_TIMER, S_A_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_CONFLAGRATION, CON_TIMER, CON_TIMER, 0, COMBAT_CATEGORY);
                 break;
             case NPC_RUPERT:
-                CombatEvents.ScheduleEventInRange(EVENT_ROCKET_LAUNCH, R_L_TIMER, R_L_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_FEL_IRON_BOMB, F_I_B_TIMER, F_I_B_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_MACHINE_GUN, M_G_TIMER, M_G_TIMER);
+                Events.ScheduleEventInRange(EVENT_ROCKET_LAUNCH, R_L_TIMER, R_L_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_FEL_IRON_BOMB, F_I_B_TIMER, F_I_B_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_MACHINE_GUN, M_G_TIMER, M_G_TIMER, 0, COMBAT_CATEGORY);
                 break;
             case NPC_ARNATH:
                 /*if (!fallen) // Mind Control
-                    CombatEvents.ScheduleEventInRange(EVENT_DOMINATE_MIND, D_M_TIMER,  D_M_TIMER);*/
-                CombatEvents.ScheduleEventInRange(EVENT_FLASH_HEAL, F_H_TIMER, F_H_TIMER); // self heal only
-                CombatEvents.ScheduleEventInRange(EVENT_SMITE, SMI_TIMER, SMI_TIMER);
-                CombatEvents.ScheduleEventInRange(EVENT_PWS, P_W_S_TIMER, P_W_S_TIMER); // self buff 
+                    Events.ScheduleEventInRange(EVENT_DOMINATE_MIND, D_M_TIMER,  D_M_TIMER);*/
+                Events.ScheduleEventInRange(EVENT_FLASH_HEAL, F_H_TIMER, F_H_TIMER, 0, COMBAT_CATEGORY); // self heal only
+                Events.ScheduleEventInRange(EVENT_SMITE, SMI_TIMER, SMI_TIMER, 0, COMBAT_CATEGORY);
+                Events.ScheduleEventInRange(EVENT_PWS, P_W_S_TIMER, P_W_S_TIMER, 0, COMBAT_CATEGORY); // self buff 
                 break;
         }
         DoStartMovement(pWho);
@@ -1037,80 +1038,74 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                             break;
                     }
                     break;
+                // Individual AI spell events
+                // Arnath
+                case EVENT_DOMINATE_MIND: //possibly bugged... Mind Control
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_DOMINATE_MIND);
+                    break;
+                case EVENT_FLASH_HEAL:
+                    DoCastSpellIfCan(m_creature, fallen ? SPELL_FLASH_HEAL_UNDEAD : SPELL_FLASH_HEAL_ALIVE);
+                    break;
+                case EVENT_SMITE:
+                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_SMITE_UNDEAD : SPELL_SMITE_ALIVE);
+                    break;
+                case EVENT_PWS:
+                    DoCastSpellIfCan(m_creature, fallen ? SPELL_PWS_UNDEAD : SPELL_PWS_ALIVE);
+                    break;
+                // Brandon
+                case EVENT_CRUSADERS_STRIKE:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CRUSADERS_STRIKE);
+                    break;
+                case EVENT_DIVINE_SHIELD:
+                    DoCastSpellIfCan(m_creature, SPELL_DIVINE_SHIELD);
+                    break;
+                case EVENT_JUDGEMENT_OF_COMMAND:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
+                    break;
+                case EVENT_HAMMER_OF_BETRAYAL:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_HAMMER_OF_BETRAYAL);
+                    break;
+                // Grondel
+                case EVENT_CHARGE:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CHARGE);
+                    break;
+                case EVENT_MORTAL_STRIKE:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
+                    break;
+                case EVENT_SUNDER_ARMOR:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
+                    break;
+                case EVENT_CONFLAGRATION:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                    break;
+                // Rupert
+                case EVENT_ROCKET_LAUNCH:
+                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_ROCKET_LAUNCH_UNDEAD : SPELL_ROCKET_LAUNCH_ALIVE);
+                    break;
+                case EVENT_FEL_IRON_BOMB:
+                    DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), fallen ? SPELL_FEL_IRON_BOMB_UNDEAD : SPELL_FEL_IRON_BOMB_ALIVE);
+                    break;
+                case EVENT_MACHINE_GUN:
+                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_MACHINE_GUN_UNDEAD : SPELL_MACHINE_GUN_ALIVE);
+                    break;
                 default:
                     break;
             }
         //Combat check
         if (m_creature->getVictim())
         {
-            CombatEvents.Update(uiDiff);
-            while (uint32 uiEventId = CombatEvents.ExecuteEvent())
-                switch (uiEventId)
-                {
-                    // Individual AI spell events
-                    // Arnath
-                    case EVENT_DOMINATE_MIND: //possibly bugged... Mind Control
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_DOMINATE_MIND);
-                        break;
-                    case EVENT_FLASH_HEAL:
-                        DoCastSpellIfCan(m_creature, fallen ? SPELL_FLASH_HEAL_UNDEAD : SPELL_FLASH_HEAL_ALIVE);
-                        break;
-                    case EVENT_SMITE:
-                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_SMITE_UNDEAD : SPELL_SMITE_ALIVE);
-                        break;
-                    case EVENT_PWS:
-                        DoCastSpellIfCan(m_creature, fallen ? SPELL_PWS_UNDEAD : SPELL_PWS_ALIVE);
-                        break;
-                    // Brandon
-                    case EVENT_CRUSADERS_STRIKE:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CRUSADERS_STRIKE);
-                        break;
-                    case EVENT_DIVINE_SHIELD:
-                        DoCastSpellIfCan(m_creature, SPELL_DIVINE_SHIELD);
-                        break;
-                    case EVENT_JUDGEMENT_OF_COMMAND:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
-                        break;
-                    case EVENT_HAMMER_OF_BETRAYAL:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_HAMMER_OF_BETRAYAL);
-                        break;
-                    // Grondel
-                    case EVENT_CHARGE:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CHARGE);
-                        break;
-                    case EVENT_MORTAL_STRIKE:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
-                        break;
-                    case EVENT_SUNDER_ARMOR:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
-                        break;
-                    case EVENT_CONFLAGRATION:
-                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CONFLAGRATION);
-                        break;
-                    // Rupert
-                    case EVENT_ROCKET_LAUNCH:
-                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_ROCKET_LAUNCH_UNDEAD : SPELL_ROCKET_LAUNCH_ALIVE);
-                        break;
-                    case EVENT_FEL_IRON_BOMB:
-                        DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), fallen ? SPELL_FEL_IRON_BOMB_UNDEAD : SPELL_FEL_IRON_BOMB_ALIVE);
-                        break;
-                    case EVENT_MACHINE_GUN:
-                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_MACHINE_GUN_UNDEAD : SPELL_MACHINE_GUN_ALIVE);
-                        break;
-                }
             DoMeleeAttackIfReady();
             if (m_creature->GetHealthPercent() < 25.0f && !m_bLowHealth)
             {
                 m_bLowHealth = true;
                 if(m_creature->GetEntry() == NPC_BRANDON)
-                    CombatEvents.ScheduleEvent(EVENT_DIVINE_SHIELD, 1*IN_MILLISECONDS, 5*MINUTE*IN_MILLISECONDS); //Period = cooldown 
-                
+                    Events.ScheduleEvent(EVENT_DIVINE_SHIELD, 1*IN_MILLISECONDS, 5*MINUTE*IN_MILLISECONDS, 0, COMBAT_CATEGORY); //Period = cooldown
             }
             if (m_creature->GetHealthPercent() > 25.0f && m_bLowHealth)
             {
                 m_bLowHealth = false;
                 if(m_creature->GetEntry() == NPC_BRANDON)
-                    CombatEvents.CancelEvent(EVENT_DIVINE_SHIELD);
+                    Events.CancelEvent(EVENT_DIVINE_SHIELD);
             }
         }
     }
@@ -1180,8 +1175,8 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
         {
             case NPC_YMIRJAR_FROSTBINDER:
                 DoCast(m_creature, SPELL_ARCTIC_CHILL, false);
-                Events.ScheduleEventInRange(EVENT_FROZEN_ORB, FROZEN_ORB_TIMER, FROZEN_ORB_TIMER); 
-                Events.ScheduleEventInRange(EVENT_SPIRIT_STREAM, SPIRIT_STREAM_TIMER, SPIRIT_STREAM_TIMER);
+                Events.ScheduleEventInRange(EVENT_FROZEN_ORB, 0, 0, FROZEN_ORB_TIMER); // Instant cast on aggro
+                //Events.ScheduleEventInRange(EVENT_SPIRIT_STREAM, SPIRIT_STREAM_TIMER, SPIRIT_STREAM_TIMER); // not used by the mob but is listed in his abilities
                 Events.ScheduleEventInRange(EVENT_TWISTED_WINDS, TWISTED_WINDS_TIMER, TWISTED_WINDS_TIMER);
                 break;
             case NPC_YMIRJAR_DEATHBRINGER:
