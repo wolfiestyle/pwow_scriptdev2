@@ -228,6 +228,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Aggro(Unit* pWho)
     {
+        if (TalkPhase)
+            return;
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(SUMMON_ADDS);
         SCHEDULE_EVENT(BOILING_BLOOD);
@@ -249,15 +251,17 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void JustDied(Unit* pKiller)
     {
+        Events.Reset();
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         DoScriptText(SAY_DEATH, m_creature);
         RemoveAuras();
         TalkPhase = 9;
         m_BossEncounter = DONE;
+        // TODO: this seems to be hack to make outro work, should be moved to an external controller creature
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE);
         m_creature->setDeathState(JUST_ALIVED);
         m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
         m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void SpellHitTarget(Unit *pVictim, const SpellEntry *pSpell)
@@ -598,7 +602,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 TalkTimer -= uiDiff;
         }
 
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || TalkPhase)
             return;
 
         if (m_creature->GetPower(POWER_ENERGY) == 100)

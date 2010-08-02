@@ -321,8 +321,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_BERSERK, m_creature);
                     break;
                 case EVENT_SHADOWBOLT:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                        DoCast(target, SPELL_SHADOWBOLT);
+                    DoCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
                     break;
                 case EVENT_DEATH_AND_DECAY:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
@@ -415,8 +414,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     break;
                 }
                 case EVENT_FROSTBOLT:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                        DoCast(target, SPELL_FROSTBOLT);
+                    DoCast(m_creature->getVictim(), SPELL_FROSTBOLT);
                     break;
                 case EVENT_TOUCH_OF_INSIGNIFICANCE:
                     DoCast(m_creature->getVictim(), SPELL_TOUCH_OF_INSIGNIFICANCE);
