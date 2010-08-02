@@ -44,6 +44,7 @@ enum Spells
     SPELL_SCENT_OF_BLOOD            = 72769,
 
     SPELL_INTRO_CHOKE               = 72305, // NOT actual spell. I cannot find the real one though.
+    SPELL_ACHIEVEMENT               = 72928, // Saurfang kill credit
 };
 
 enum Npcs
@@ -257,6 +258,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         RemoveAuras();
         TalkPhase = 9;
         m_BossEncounter = DONE;
+        DoCast(m_creature, SPELL_ACHIEVEMENT, true);
         // TODO: this seems to be hack to make outro work, should be moved to an external controller creature
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE);
         m_creature->setDeathState(JUST_ALIVED);
