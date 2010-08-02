@@ -324,7 +324,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     DoCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
                     break;
                 case EVENT_DEATH_AND_DECAY:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
                         DoCast(target, SPELL_DEATH_AND_DECAY);
                     break;
                 case EVENT_DOMINATE_MIND:
