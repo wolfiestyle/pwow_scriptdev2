@@ -105,6 +105,13 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (!pTarget)
+            return;
+
+        if (pTarget->isAlive())
+            m_creature->SetTargetGUID(pTarget->GetGUID());
+        else
+            m_creature->ForcedDespawn();
     }
 
     void DoImpale(Unit* target)
@@ -283,27 +290,28 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 case EVENT_BONE_STORM:
                     DoScriptText(SAY_BONE_STORM, m_creature);
                     DoCast(m_creature, SPELL_BONE_STORM);
-                    DoStartNoMovement(m_creature->getVictim());
                     m_creature->SetSpeedRate(MOVE_WALK, 4.0f, true);
                     m_creature->SetSpeedRate(MOVE_RUN, 4.0f, true);
+                    DoStartNoMovement(m_creature->getVictim());
                     m_bInBoneStorm = true;
                     for (uint32 i = 0; i < (m_bIsHeroic ? 4 : 3); i++)
                         Events.ScheduleEvent(EVENT_BONE_STORM_MOVE, 4000 + i*TIMER_BONE_STORM_MOVE);
                     Events.ScheduleEvent(EVENT_BONE_STORM_STOP, TIMER_BONE_STORM_MOVE*(m_bIsHeroic ? 5 : 4));
                     break;
                 case EVENT_BONE_STORM_MOVE:
-                    //DoResetThreat(); // there is 6 spots to where he always "moves"
-                    {
-                        uint8 index = urand(0,5);
-                        m_creature->GetMotionMaster()->MovePoint(0, BoneStormStops[index][0], BoneStormStops[index][1], BoneStormStops[index][2]);
-                    }
+                {
+                    //DoResetThreat();
+                    // there is 6 spots to where he always "moves"
+                    uint8 index = urand(0,5);
+                    m_creature->GetMotionMaster()->MovePoint(0, BoneStormStops[index][0], BoneStormStops[index][1], BoneStormStops[index][2]);
                     break;
+                }
                 case EVENT_BONE_STORM_STOP:
                     m_creature->RemoveAurasDueToSpell(SPELL_BONE_STORM);
                     m_bInBoneStorm = false;
-                    DoStartMovement(m_creature->getVictim());
                     m_creature->SetSpeedRate(MOVE_WALK, 1.0f, true);
                     m_creature->SetSpeedRate(MOVE_RUN, 1.0f, true);
+                    DoStartMovement(m_creature->getVictim());
                     Events.DelayEventsWithId(EVENT_BONE_SLICE, 10*IN_MILLISECONDS);
                     break;
                 case EVENT_ENRAGE:  //you lose!
@@ -313,6 +321,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 default:
                     break;
             }
+
         if (!m_bInBoneStorm) // prevent melee damage while in bonestorm
             DoMeleeAttackIfReady();
     }
