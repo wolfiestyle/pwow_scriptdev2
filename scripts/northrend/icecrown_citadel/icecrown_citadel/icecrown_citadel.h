@@ -171,6 +171,8 @@ struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI, public Script
     InstanceVar<uint32> m_BossEncounter;
 
     boss_icecrown_citadelAI(Creature*);
+    // check if boss has been pulled too far from its place
+    bool IsOutOfCombatArea(Creature*);
 
     void Reset();
 };

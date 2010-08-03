@@ -252,6 +252,12 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         if ((Events.GetPhase() == PHASE_ONE && m_creature->GetHealthPercent() < 80.0f) ||
             (Events.GetPhase() == PHASE_TWO && m_creature->GetHealthPercent() < 35.0f))
             ChangePhase();

@@ -115,8 +115,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         Creature *GasTarget = SummonMgr.SummonCreatureAt(m_creature, NPC_VILE_GAS_STALKER);
         if (GasTarget)
         {
-            GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-            GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE );
         }
         CurrBlightStrength = 0;
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
@@ -200,6 +199,12 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (IsOutOfCombatArea(m_creature))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
