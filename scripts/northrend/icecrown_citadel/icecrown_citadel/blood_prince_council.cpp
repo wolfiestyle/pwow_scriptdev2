@@ -304,14 +304,8 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
             else
                 IntroTimer -= uiDiff;
 
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -497,14 +491,8 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         if (m_creature->IsWithinDist(m_creature->getVictim(), 30.0f))
             DoStartNoMovement(m_creature->getVictim());
@@ -700,14 +688,8 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())

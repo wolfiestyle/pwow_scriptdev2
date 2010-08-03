@@ -54,14 +54,8 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())

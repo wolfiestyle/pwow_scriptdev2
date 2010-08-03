@@ -604,7 +604,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 TalkTimer -= uiDiff;
         }
 
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || TalkPhase)
+        if (TalkPhase || !m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
         if (m_creature->GetPower(POWER_ENERGY) == 100)
@@ -622,12 +622,6 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         {
             DoCast(m_creature, SPELL_FRENZY);
             IsSoftEnraged = true;
-        }
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
         }
 
         Events.Update(uiDiff);

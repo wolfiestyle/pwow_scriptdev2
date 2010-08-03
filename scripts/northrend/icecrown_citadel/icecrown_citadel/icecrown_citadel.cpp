@@ -81,40 +81,54 @@ void boss_icecrown_citadelAI::Reset()
     if (m_creature->isAlive())
         m_BossEncounter = NOT_STARTED;
 }
-bool boss_icecrown_citadelAI::IsOutOfCombatArea(Creature *pCreature)
+
+bool boss_icecrown_citadelAI::IsOutOfCombatArea() const
 {
-    
-    if (pCreature->GetMapId() != 631)   // invalid check outside ICC
+    if (m_creature->GetMapId() != 631)  // invalid check outside ICC
         return false;
 
-    float z = pCreature->GetPositionZ();
-    uint32 areaId = pCreature->GetAreaId();
+    float z = m_creature->GetPositionZ();
+    uint32 areaId = m_creature->GetAreaId();
 
-    switch (pCreature->GetEntry())
+    switch (m_creature->GetEntry())
     {
         case NPC_MARROWGAR:
-            return !pCreature->IsWithinDist2d(-401.369f, 2211.1399f, 100.0f);
+            return !m_creature->IsWithinDist2d(-401.369f, 2211.1399f, 100.0f);
         case NPC_DEATHWHISPER:
-            return !pCreature->IsWithinDist2d(-583.15f, 2211.5f, 150.0f) || abs(z - 49.56f) >= 10.0f;
+            return std::abs(z - 49.56f) > 10.0f || !m_creature->IsWithinDist2d(-583.15f, 2211.5f, 150.0f);
         case NPC_SAURFANG:
-            return abs(z - 539.29f) >= 5.0f;
+            return std::abs(z - 539.29f) > 5.0f;
         case NPC_FESTERGUT:
-            return !pCreature->IsWithinDist2d(4267.939f, 3137.32f, 80.0f);
+            return !m_creature->IsWithinDist2d(4267.939f, 3137.32f, 80.0f);
         case NPC_ROTFACE:
-            return !pCreature->IsWithinDist2d(4445.60f, 3137.21f, 80.0f);
+            return !m_creature->IsWithinDist2d(4445.60f, 3137.21f, 80.0f);
         case NPC_PUTRICIDE:
-            return abs(z - 389.398f) > 4.0f;
+            return std::abs(z - 389.398f) > 4.0f;
         case NPC_VALANAR:
         case NPC_KELESETH:
         case NPC_TALDARAM:
-            return abs(z - 364.085f) > 6.0f;
+            return std::abs(z - 364.085f) > 6.0f;
         case NPC_LANATHEL:
-            return abs(z - 401.747f) > 5.0f;
+            return std::abs(z - 401.747f) > 5.0f;
         case NPC_SINDRAGOSA:
-            return !pCreature->IsWithinDist2d(4407.94f, 2483.47, 150.0f);
+            return !m_creature->IsWithinDist2d(4407.94f, 2483.47, 150.0f);
         case NPC_LICH_KING:
             return areaId != 4859;
         default:
-            return true;
+            return false;
     }
+}
+
+bool boss_icecrown_citadelAI::OutOfCombatAreaCheck()
+{
+    if (m_creature->IsInEvadeMode())
+        return false;
+
+    if (IsOutOfCombatArea())
+    {
+        EnterEvadeMode();
+        return true;
+    }
+
+    return false;
 }

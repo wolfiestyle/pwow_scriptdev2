@@ -305,14 +305,8 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
             return;
         }
 
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         if (Events.GetPhase() == PHASE_ONE)
             DoStartNoMovement(m_creature->getVictim());

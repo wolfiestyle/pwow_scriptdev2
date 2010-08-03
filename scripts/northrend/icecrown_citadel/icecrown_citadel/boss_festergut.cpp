@@ -197,14 +197,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
-
-        if (IsOutOfCombatArea(m_creature))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
