@@ -146,7 +146,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
-            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 384.4f);
+            Putricide->GetMotionMaster()->MoveTargetedHome();
         }
     }
 

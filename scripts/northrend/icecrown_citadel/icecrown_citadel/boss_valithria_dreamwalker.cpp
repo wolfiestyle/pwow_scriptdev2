@@ -151,7 +151,7 @@ static const float locations[4][2] =
 #define ZOMBIE_SUMMON_TIMER     30*IN_MILLISECONDS
 #define RISEN_SUMMON_TIMER      30*IN_MILLISECONDS
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
-#define PORTAL_TIMER            55*IN_MILLISECONDS
+#define PORTAL_TIMER            46.5*IN_MILLISECONDS
 #define BERSERK_TIMER           7*MINUTE*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
@@ -340,6 +340,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                     // perhaps she turns unfriendly and casts the same rage she casts at win, but noone lasts long enough to see that
                     DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
                     m_creature->RemoveAllAttackers();
+                    BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_BERSERK, 0, 150.0f, false);
                     Reset();
                     break;
                 case EVENT_DESPAWN:
@@ -455,6 +456,9 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[blazingWaveCount]*IN_MILLISECONDS);
                     if (blazingWaveCount < sizeof(BlazingTimers)/sizeof(uint32) - 1)
                         blazingWaveCount++;
+                    break;
+                case EVENT_BERSERK:
+                    Reset();
                     break;
                 default:
                     break;
@@ -695,7 +699,7 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
                     break;
             }
 
-        if (m_creature->GetEntry() != NPC_MANA_VOID && m_creature->GetEntry() != NPC_COLUMN_OF_FROST)
+        if (m_creature->GetEntry() != NPC_SUPPRESSER)
             DoMeleeAttackIfReady();
     }
 

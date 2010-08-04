@@ -144,6 +144,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 door_ids.push_back(DATA_FROSTWING_DOOR_ENTRANCE);
                 break;
             case TYPE_VALITHRIA:
+                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
                 door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);

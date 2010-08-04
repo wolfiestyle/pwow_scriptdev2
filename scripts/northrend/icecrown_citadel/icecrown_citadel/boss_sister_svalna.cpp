@@ -306,7 +306,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(urand(0,1) ? FWH_SVALNA_SAY_DEATH_01 : FWH_SVALNA_SAY_DEATH_02, m_creature);
-        //m_BossEncounter = DONE;
+        m_BossEncounter = DONE;
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -326,7 +326,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                     {
                         m_creature->CastSpell(pTarget, SPELL_IMPALING_SPEAR_PLA, false);
                         m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget->GetGUID(), true);
-                        if (Unit* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6*IN_MILLISECONDS))
+                        if (Unit* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*MINUTE*IN_MILLISECONDS))
                             Spear->AddThreat(pTarget, 10000.0f);
                         Events.ScheduleEvent(EVENT_SHIELD, 0);
                     }
@@ -596,6 +596,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                             }
                             m_uiTalkPhase++;
                         }
+                        break;
                     case 4:
                         DoScriptText(FWH_CROK_PRE_ENGAGE, m_creature);
                         if (Creature* Svalna = GET_CREATURE(TYPE_SVALNA))
@@ -678,7 +679,6 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                             break;
                     }
                 }
-                m_BossEncounter = DONE;
                 break;
         }
     }
@@ -770,7 +770,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                 m_creature->RemoveAurasDueToSpell(SPELL_ICEBOUND_ARMOR);
             }
         }
-        if (m_creature->GetHealthPercent() >= 100.0f && !m_creature->isInCombat() && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
+        if (m_creature->GetHealthPercent() >= 50.0f && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
             m_creature->RemoveAurasDueToSpell(SPELL_ICEBOUND_ARMOR);
     }
 
