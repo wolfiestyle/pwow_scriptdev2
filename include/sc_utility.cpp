@@ -412,6 +412,17 @@ void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRa
     Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
 }
 
+bool SendScriptMessageTo(Creature* pTarget, Creature* pSender, uint32 data1, uint32 data2)
+{
+    if (ScriptMessageInterface *smi = dynamic_cast<ScriptMessageInterface*>(pTarget->AI()))
+    {
+        smi->ScriptMessage(pSender, data1, data2);
+        return false;
+    }
+    // message failed, script not a derived class from 'ScriptMessageInterface'
+    return true;
+}
+
 ScriptEventInterface::ScriptEventInterface(Creature *pSender):
     m_sender(pSender)
 {
@@ -430,4 +441,23 @@ void ScriptEventInterface::BroadcastEvent(uint32 event_id, uint32 event_timer, f
 void ScriptEventInterface::BroadcastEventToEntry(uint32 entry, uint32 event_id, uint32 event_timer, float max_range, bool to_self)
 {
     BroadcastScriptMessageToEntry(m_sender, entry, max_range, event_id, event_timer, to_self);
+}
+
+bool ScriptEventInterface::SendEventTo(Creature* target, uint32 event_id, uint32 event_timer)
+{
+    return SendScriptMessageTo(target, m_sender, event_id, event_timer);
+}
+
+bool ScriptEventInterface::SendEventTo(uint32 data_id, uint32 event_id, uint32 event_timer)
+{
+    InstanceData *instance = m_sender->GetInstanceData();
+    if (!instance)
+        return true;
+    uint64 target_guid = instance->GetData64(data_id);
+    if (!target_guid)
+        return true;
+    Creature *target = m_sender->GetMap()->GetCreature(target_guid);
+    if (!target)
+        return true;
+    return SendScriptMessageTo(target, m_sender, event_id, event_timer);
 }

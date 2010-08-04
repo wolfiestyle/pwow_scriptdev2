@@ -458,6 +458,10 @@ void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1 = 0
 // sends a script message to all creatures with entry in range
 void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
 
+// sends a direct script message to target creature
+// returns 'true' if failed to send message
+bool SendScriptMessageTo(Creature* pTarget, Creature* pSender, uint32 data1 = 0, uint32 data2 = 0);
+
 // base class that implements event broadcasting using EventManager
 class ScriptEventInterface: public ScriptMessageInterface
 {
@@ -472,6 +476,12 @@ public:
 
     // sends an event to all creatures with entry in range
     void BroadcastEventToEntry(uint32 entry, uint32 event_id, uint32 event_timer, float max_range, bool to_self = false);
+
+    // sends an event to target creature
+    bool SendEventTo(Creature* target, uint32 event_id, uint32 event_timer);
+
+    // sends an event to target creature stored in instance data
+    bool SendEventTo(uint32 data_id, uint32 event_id, uint32 event_timer);
 
 protected:
     Creature *m_sender;
