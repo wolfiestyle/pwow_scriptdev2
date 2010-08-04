@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_rotface
-SD%Complete: 0%
+SD%Complete: 80%
 SDComment: Slime Spray not working from a target selection problem.
 SDCategory: Icecrown Citadel
 EndScriptData */

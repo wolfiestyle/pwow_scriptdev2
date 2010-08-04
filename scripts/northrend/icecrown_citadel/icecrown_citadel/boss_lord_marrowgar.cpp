@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: boss_lord_marrowgar
-SD%Complete: 0%
-SDComment: Bone Storm appears to have trouble damaging players -> probably needs core support or modification of the spell.
+SD%Complete: 80%
+SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
 

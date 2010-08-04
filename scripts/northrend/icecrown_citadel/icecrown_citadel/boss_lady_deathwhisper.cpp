@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_lady_deathwhisper
-SD%Complete: 0%
+SD%Complete: 85%
 SDComment: curse of torpor not working, dominate mind not working
 SDCategory: Icecrown Citadel
 EndScriptData */

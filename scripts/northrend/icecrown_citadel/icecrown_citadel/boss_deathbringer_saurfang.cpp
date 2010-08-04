@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: boss_deathbringer_saurfang
-SD%Complete: 0%
-SDComment:
+SD%Complete: 75%
+SDComment: Attacks players after "dead", causes some random teleport (add spell?)
 SDCategory: Icecrown Citadel
 EndScriptData */
 

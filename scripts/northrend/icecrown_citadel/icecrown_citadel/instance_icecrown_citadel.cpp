@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Instance Icecrown Citadel
-SD%Complete: 90
+SD%Complete: 95%
 SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
@@ -56,7 +56,6 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void Initialize()
     {
         m_InstanceVars[DATA_FACTION] = 0;
-        //m_InstanceVars[DATA_TP_UNLOCKED] = 1 << TP_LIGHTS_HAMMER;
     }
 
     bool IsEncounterInProgress() const
@@ -100,9 +99,10 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         uint32 loot_id = 0, phased_id = 0;
         TeleportLocations tp_unlocked = TP_MAX;
         std::list<uint32> door_ids;
+
         switch (uiType)
         {
-            case TYPE_MARROWGAR:    
+            case TYPE_MARROWGAR:
                 door_ids.push_back(DATA_MARROWGAR_DOOR_1);
                 door_ids.push_back(DATA_MARROWGAR_DOOR_2);
                 tp_unlocked = TP_ORATORY;
@@ -121,24 +121,8 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 door_ids.push_back(DATA_SAURFANG_DOOR);
                 //tp_unlocked = TP_UPPER_SPIRE;
                 break;
-            case TYPE_VALITHRIA:
-                door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
-                door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
-                door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);
-                if (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
-                {
-                    door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_2);
-                    door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
-                }
-                loot_id = DATA_VALITHRIA_CHEST;
-                //tp_unlocked = TP_SINDRAGOSA_LAIR;
-                break;
-            case TYPE_SVALNA:
-                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
-                door_ids.push_back(DATA_FROSTWING_DOOR_ENTRANCE);
-                break;
-            case TYPE_ROTFACE:
             case TYPE_FESTERGUT:
+            case TYPE_ROTFACE:
                 if (m_InstanceVars[TYPE_ROTFACE] == DONE && m_InstanceVars[TYPE_FESTERGUT] == DONE)
                 {
                     door_ids.push_back(DATA_PUTRICIDE_UPPER_DOOR);
@@ -154,6 +138,22 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             case TYPE_VALANAR:
                 door_ids.push_back(DATA_LANATHEL_DOOR_RIGHT);
                 door_ids.push_back(DATA_LANATHEL_DOOR_LEFT);
+                break;
+            case TYPE_SVALNA:
+                door_ids.push_back(DATA_VALITHRIA_DOOR_ENTRANCE);
+                door_ids.push_back(DATA_FROSTWING_DOOR_ENTRANCE);
+                break;
+            case TYPE_VALITHRIA:
+                door_ids.push_back(DATA_VALITHRIA_DOOR_EXIT);
+                door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_1);
+                door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_1);
+                if (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                {
+                    door_ids.push_back(DATA_VALITHRIA_DOOR_LEFT_2);
+                    door_ids.push_back(DATA_VALITHRIA_DOOR_RIGHT_2);
+                }
+                loot_id = DATA_VALITHRIA_CHEST;
+                //tp_unlocked = TP_SINDRAGOSA_LAIR;
                 break;
             default:
                 return;
@@ -265,6 +265,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 
+    /*
     bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
     {
         switch (CriteriaId)
@@ -273,6 +274,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 return false;
         }
     }
+    */
 };
 
 InstanceData* GetInstanceData_instance_icecrown_citadel(Map* pMap)

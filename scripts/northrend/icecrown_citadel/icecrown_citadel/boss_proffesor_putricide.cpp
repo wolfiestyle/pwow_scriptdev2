@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_proffesor_putricide
-SD%Complete: 0%
+SD%Complete: 50%
 SDComment: Mutated Transformation requires vehicle support. So, no slime puddles will be created, since the transformation is required to remove it. As well, adds will be slowed to 50% of normal speed. And, the add spells are non-functional.
 SDCategory: Icecrown Citadel
 EndScriptData */

@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: blood_prince_council
-SD%Complete: 0%
+SD%Complete: 90%
 SDComment: Kinetic Bomb movement choppy, Ball of flames does not shrink over time.
 SDCategory: Icecrown Citadel
 EndScriptData */

@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: go_scourge_transporter
-SD%Complete: 0%
+SD%Complete: 100%
 SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */

@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_sister_svalna
-SD%Complete: 0%
+SD%Complete: 90%
 SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
@@ -1401,11 +1401,6 @@ bool GossipHello_npc_impaling_spear(Player *pPlayer, Creature* pCreature)
     return false;
 }
 
-CreatureAI* GetAI_npc_icecrown_impaling_spearAI(Creature* pCreature)
-{
-    return new npc_icecrown_impaling_spearAI(pCreature);
-}
-
 void AddSC_boss_sister_svalna()
 {
     Script *newscript;
@@ -1419,7 +1414,7 @@ void AddSC_boss_sister_svalna()
     newscript = new Script;
     newscript->Name = "npc_icecrown_impaling_spear";
     newscript->pGossipHello = &GossipHello_npc_impaling_spear;
-    newscript->GetAI = &GetAI_npc_icecrown_impaling_spearAI;
+    newscript->GetAI = &icc::GetAI<npc_icecrown_impaling_spearAI>;
     newscript->RegisterSelf();
 
     newscript = new Script;
