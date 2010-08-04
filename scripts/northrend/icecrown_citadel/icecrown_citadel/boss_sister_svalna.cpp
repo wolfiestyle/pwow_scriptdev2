@@ -22,8 +22,8 @@ SDCategory: Icecrown Citadel
 EndScriptData */
 
 #include "precompiled.h"
-#include "icecrown_citadel.h"
 #include "escort_ai.h"
+#include "icecrown_citadel.h"
 
 enum Spells
 {
@@ -169,21 +169,21 @@ enum Events
 
 enum Says
 {
-// Captain Grondel
+    // Captain Grondel
     FWH_GRONDEL_SAY_DEATH       = -1301050,
     FWH_GRONDEL_SAY_RESURRECT   = -1301051,
     FWH_GRONDEL_SAY_SLAY        = -1301052,
     FWH_GRONDEL_SAY_REALDEATH   = -1301053,
     TELE_GRONDEL_SAY_01         = -1301054,
     FWH_GRONDEL_SAY_ALIVE       = -1301055,
-// Captain Brandon
+    // Captain Brandon
     FWH_BRANDON_SAY_DEATH       = -1301056,
     FWH_BRANDON_SAY_RESURRECT   = -1301057,
     FWH_BRANDON_SAY_SLAY        = -1301058,
     FWH_BRANDON_SAY_REALDEATH   = -1301059,
     TELE_BRANDON_SAY_01         = -1301060,
     FWH_BRANDON_SAY_ALIVE       = -1301061,
-// Captain Rupert
+    // Captain Rupert
     FWH_RUPERT_SAY_AGGRO        = -1301062,
     FWH_RUPERT_SAY_DEATH        = -1301063,
     FWH_RUPERT_SAY_RESURRECT    = -1301064,
@@ -191,14 +191,14 @@ enum Says
     FWH_RUPERT_SAY_REALDEATH    = -1301066,
     TELE_RUPERT_SAY_01          = -1301067,
     FWH_RUPERT_SAY_ALIVE        = -1301068,
-// Captain Arnath
+    // Captain Arnath
     FWH_ARNATH_SAY_01           = -1301069,
     FWH_ARNATH_SAY_DEATH        = -1301070,
     FWH_ARNATH_SAY_RESURRECT    = -1301071,
     FWH_ARNATH_SAY_SLAY         = -1301072,
     FWH_ARNATH_SAY_REALDEATH    = -1301073,
     FWH_ARNATH_SAY_ALIVE        = -1301074,
-// Crok Scourgebane
+    // Crok Scourgebane
     FWH_CROK_SAY_01             = -1301075,
     FWH_CROK_SAY_02             = -1301076,
     FWH_CROK_SAY_03             = -1301077,
@@ -212,7 +212,7 @@ enum Says
     FWH_CROK_SAY_TRAP           = -1301085,
     FWH_CROK_SAY_WIN            = -1301086,
     TELE_CROK_SAY_01            = -1301087,
-// Sister Svalna
+    // Sister Svalna
     FWH_SVALNA_SAY_01           = -1301088,
     FWH_SVALNA_SAY_SLAY_01      = -1301089,
     FWH_SVALNA_SAY_RESURRECT    = -1301090,
@@ -237,16 +237,22 @@ enum Adds
 
 enum PositionInfo
 {
-    POSITION_TELEPORTER = 0,
+    POSITION_TELEPORTER         = 0,
     POSITION_FROSTWING,
 };
 
 enum DisplayID          // Used by the "fallen" champions (RIP)
 {
-       CPTN_ARNATH_RIP_DID  = 30618,           // fallen Captain Arnath
-       CPTN_BRANDON_RIP_DID = 30619,           // fallen Captain Brandon
-       CPTN_GRONDEL_RIP_DID = 30620,           // fallen Captain Grondel
-       CPTN_RUPERT_RIP_DID  = 30621,           // fallen Captain Rupert
+    CPTN_ARNATH_RIP_DID         = 30618,    // fallen Captain Arnath
+    CPTN_BRANDON_RIP_DID        = 30619,    // fallen Captain Brandon
+    CPTN_GRONDEL_RIP_DID        = 30620,    // fallen Captain Grondel
+    CPTN_RUPERT_RIP_DID         = 30621,    // fallen Captain Rupert
+};
+
+enum Categories
+{
+    DEFAULT_CATEGORY,
+    COMBAT_CATEGORY,
 };
 
 static const float teleporterloc[2][3] = 
@@ -254,8 +260,6 @@ static const float teleporterloc[2][3] =
     {4234.19f,  2768.7f,    350.96f},   // Area Trigger
     {4199.25f,  2769.26f,   351.06f},   // Teleporter Coords
 };
-
-#define COMBAT_CATEGORY 1
 
 struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 {
@@ -290,27 +294,18 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
         if (!roll_chance_i(66))
             return;
 
-        if (roll_chance_i(50))
-                DoScriptText(FWH_SVALNA_SAY_SLAY_01, m_creature);
-            else
-                DoScriptText(FWH_SVALNA_SAY_SLAY_02, m_creature);
+        DoScriptText(urand(0,1) ? FWH_SVALNA_SAY_SLAY_01 : FWH_SVALNA_SAY_SLAY_02, m_creature);
     }
 
     void SummonedCreatureJustDied(Creature* pSummon)
     {
         if (pSummon->GetEntry() == NPC_IMPALING_SPEAR)
-        {
-            if (m_creature->HasAura(SPELL_AETHER_SHIELD))
-                m_creature->RemoveAurasDueToSpell(SPELL_AETHER_SHIELD);
-        }
+            m_creature->RemoveAurasDueToSpell(SPELL_AETHER_SHIELD);
     }
 
     void JustDied(Unit* pKiller)
     {
-        if (roll_chance_i(50))
-            DoScriptText(FWH_SVALNA_SAY_DEATH_01, m_creature);
-        else 
-            DoScriptText(FWH_SVALNA_SAY_DEATH_02, m_creature);
+        DoScriptText(urand(0,1) ? FWH_SVALNA_SAY_DEATH_01 : FWH_SVALNA_SAY_DEATH_02, m_creature);
         //m_BossEncounter = DONE;
     }
 
@@ -327,7 +322,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                     DoCast(m_creature, SPELL_BERSERK);
                     break;
                 case EVENT_SPEAR:
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER,1))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
                     {
                         m_creature->CastSpell(pTarget, SPELL_IMPALING_SPEAR_PLA, false);
                         m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget->GetGUID(), true);
@@ -345,6 +340,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                 default:
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
@@ -358,7 +354,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 
 struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public ScriptEventInterface
 {
-    ScriptedInstance* m_pInstance;
+    ScriptedInstance *m_pInstance;
     InstanceVar<uint32> m_BossEncounter;
     uint32 currPosition;
     uint32 currWaypoint;
@@ -367,39 +363,38 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
     bool HasDoneIntro   :1;
     bool m_bIsIntroTalk :1;
     bool m_bLowHealth   :1;
-    std::bitset<4> CaptainsSpawned; 
-    
+    std::bitset<4> CaptainsSpawned;
+
     npc_crok_scourgebaneAI(Creature* pCreature):
         npc_escortAI(pCreature),
         ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_BossEncounter(TYPE_SVALNA, m_pInstance),
+        currPosition(pCreature->GetPositionX() - teleporterloc[0][0] < 30.0f ? POSITION_TELEPORTER : POSITION_FROSTWING),
+        currWaypoint(0),
         m_uiTalkPhase(0),
         m_uiTalkTimer(0),
         HasDoneIntro(false),
         m_bIsIntroTalk(true),
-        m_bLowHealth(false),
-        currPosition((pCreature->GetPositionX() - teleporterloc[0][0]) < 30.0f ? POSITION_TELEPORTER : POSITION_FROSTWING)
+        m_bLowHealth(false)
     {
         pCreature->SetSpeedRate(MOVE_WALK, 1.6f, true);
     }
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (!pWho || pWho->GetTypeId() != TYPEID_PLAYER || ((Player*)pWho)->isGameMaster())
+        if (!pWho || pWho->GetTypeId() != TYPEID_PLAYER || !pWho->isTargetableForAttack())
             return;
 
-        if ((m_creature->GetPositionX() - teleporterloc[0][0]) < 20.0f && (m_creature->GetPositionY() - teleporterloc[0][1]) < 20.0f)
-            currPosition = POSITION_TELEPORTER;
-        else
-            currPosition = POSITION_FROSTWING;
+        currPosition = m_creature->GetPositionX() - teleporterloc[0][0] < 20.0f && m_creature->GetPositionY() - teleporterloc[0][1] < 20.0f ? POSITION_TELEPORTER : POSITION_FROSTWING;
 
-        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDist(pWho, currPosition == POSITION_TELEPORTER ? 50.0f : 25.0f) && !m_uiTalkPhase)
+        if (!HasDoneIntro && !m_uiTalkPhase && m_creature->IsWithinDist(pWho, currPosition == POSITION_TELEPORTER ? 50.0f : 25.0f))
         {
             m_uiTalkPhase = 1;
             if (currPosition == POSITION_TELEPORTER)
                 m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX() + 50.0f, m_creature->GetPositionY(), m_creature->GetPositionZ());
         }
+
         npc_escortAI::MoveInLineOfSight(pWho);
     }
 
@@ -424,7 +419,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
 
     void Reset()
     {
-     /*   if ( m_BossEncounter != IN_PROGRESS )
+        /*if (m_BossEncounter != IN_PROGRESS)
             EnterEvadeMode();*/
         Events.CancelEventsWithCategory(COMBAT_CATEGORY);
         m_bLowHealth = false;
@@ -433,9 +428,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
     void Aggro(Unit* pWho)
     {
         if (pWho->GetEntry() == NPC_SVALNA)
-        {
             pWho->AddThreat(m_creature, 30000.0f);
-        }
         Events.ScheduleEventInRange(EVENT_DEATH_STRIKE, DEATH_STRIKE_TIMER, DEATH_STRIKE_TIMER, 0, COMBAT_CATEGORY);
         Events.ScheduleEventInRange(EVENT_DEATH_COIL, DEATH_COIL_TIMER, DEATH_COIL_TIMER, 0, COMBAT_CATEGORY);
         Events.ScheduleEventInRange(EVENT_SCOURGE_STRIKE, SCOURGE_STRIKE_TIMER, SCOURGE_STRIKE_TIMER, 0, COMBAT_CATEGORY);
@@ -484,7 +477,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                         default:
                             break;
                     }
-                } 
+                }
                 else if (currPosition == POSITION_TELEPORTER)   // only for teleporter Event after the "Blue Boss"
                 {
                     if (CaptainsSpawned[0] && CaptainsSpawned[1] && CaptainsSpawned[2]) //Brandon, Rupert, Grondel
@@ -514,7 +507,6 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                         case 1:
                             if (Creature* Rupert = m_creature->SummonCreature(NPC_RUPERT, teleporterloc[1][0], teleporterloc[1][1], teleporterloc[1][2], 0, TEMPSUMMON_TIMED_DESPAWN, 20*IN_MILLISECONDS))
                             {
-                                
                                 Rupert->GetMotionMaster()->MovePoint(0, Rupert->GetPositionX()+50.0f, Rupert->GetPositionY() + 5.0f*(m_uiTalkPhase == 1? 1 : -1), Rupert->GetPositionZ());
                                 DoScriptText(TELE_RUPERT_SAY_01, Rupert);
                             }
@@ -541,10 +533,11 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                         default:
                             break;
                     }
-                    
                 }
-            } else m_uiTalkTimer -= uiDiff;
-        } 
+            }
+            else
+                m_uiTalkTimer -= uiDiff;
+        }
         else if (HasDoneIntro && m_bIsIntroTalk) // Svalna's pre-fight phase
         {
             if (m_uiTalkTimer < uiDiff)
@@ -567,7 +560,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                                 Svalna->CastSpell(Svalna, SPELL_REVIVE_CHAMPION, false);
                                 BroadcastEvent(EVENT_RESURRECT, 3*IN_MILLISECONDS, 100.0f);
                                 m_uiTalkTimer = 8*IN_MILLISECONDS;
-                            } else // otherwise we skip the resurrection 
+                            }
+                            else // otherwise we skip the resurrection 
                                 m_uiTalkPhase++;
                         }
                         m_uiTalkPhase++;
@@ -617,9 +611,12 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                     default:
                         break;
                 }
-             } else m_uiTalkTimer -= uiDiff;
+             }
+            else
+                m_uiTalkTimer -= uiDiff;
         }
     }
+
     void WaypointStart(uint32 uiWP)
     {
         switch (uiWP)
@@ -629,10 +626,9 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
             case 4:
                 if (!roll_chance_i(66))
                     return;
-                if (roll_chance_i(50))
-                    DoScriptText(FWH_CROK_SAY_ADVANCE_01, m_creature);
-                else
-                    DoScriptText(FWH_CROK_SAY_ADVANCE_02, m_creature);
+                DoScriptText(urand(0,1) ? FWH_CROK_SAY_ADVANCE_01 : FWH_CROK_SAY_ADVANCE_02, m_creature);
+                break;
+            default:
                 break;
         }
     }
@@ -684,17 +680,17 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                 }
                 m_BossEncounter = DONE;
                 break;
-        }    
+        }
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if ( m_uiTalkPhase )
+        if (m_uiTalkPhase)
             UpdateTalk(uiDiff); // this way intro-outro are always executed
 
         // Must update npc_escortAI
         npc_escortAI::UpdateAI(uiDiff);
-        
+
         Events.Update(uiDiff); // these ones will be queued and executed regardless of combat
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
@@ -746,7 +742,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                     DoCastSpellIfCan(m_creature, SPELL_ICEBOUND_ARMOR);
                     break;
                 case EVENT_DEATH_COIL:
-                    DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), SPELL_DEATH_COIL);
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        DoCastSpellIfCan(target, SPELL_DEATH_COIL);
                     break;
                 case EVENT_SCOURGE_STRIKE:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_SCOURGE_STRIKE);
@@ -756,7 +753,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         if (m_creature->getVictim())
         {
             DoMeleeAttackIfReady();
-        // HP check only in combat
+            // HP check only in combat
             if (m_creature->GetHealthPercent() < 25.0f && !m_bLowHealth)
             {
                 m_bLowHealth = true;
@@ -800,18 +797,18 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
 
 struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, public ScriptEventInterface
 {
-    bool fallen : 1;
     ScriptedInstance* m_pInstance;
     uint32 currWaypoint;
-    bool m_bLowHealth   :1;
+    bool m_bLowHealth :1;
+    bool fallen :1;
 
     npc_icecrown_argent_captainAI(Creature* pCreature):
         npc_escortAI(pCreature),
         ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-        fallen(false),
         currWaypoint(0),
-        m_bLowHealth(false)
+        m_bLowHealth(false),
+        fallen(false)
     {
         if (m_pInstance->GetData(DATA_TP_UNLOCKED) & (1<<TP_UPPER_SPIRE) && m_pInstance->GetData(TYPE_SVALNA) == DONE)
             pCreature->SetPhaseMask(16, true);
@@ -838,9 +835,9 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
         Reset();
     }
 
-    void WaypointReached(uint32 uiWP){}
+    void WaypointReached(uint32 uiWP) {}
 
-    void WaypointStart(uint32 uiWP){}
+    void WaypointStart(uint32 uiWP) {}
 
     void Aggro(Unit* pWho)
     {
@@ -905,7 +902,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
     void JustDied(Unit* pKiller)
     {
         if (fallen && pKiller->GetObjectGuid() != m_creature->GetObjectGuid())
-            switch(m_creature->GetEntry())
+            switch (m_creature->GetEntry())
             {
                 case NPC_BRANDON:
                     DoScriptText(FWH_BRANDON_SAY_REALDEATH, m_creature);
@@ -946,7 +943,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     break;
                 //random risen captain will say his "raise" lines
                 case EVENT_SAY_RESURRECT:
-                    switch(m_creature->GetEntry())
+                    switch (m_creature->GetEntry())
                     {
                         case NPC_BRANDON:
                             DoScriptText(FWH_BRANDON_SAY_RESURRECT, m_creature);
@@ -979,8 +976,6 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     //if unit died while in the event and didnt got ressed it'll stay "unattackable" for easy tracking
                     if (fallen && m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         m_creature->DealDamage(m_creature, m_creature->GetHealth()+1, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                    else
-                        break;
                     break;
                 // sent to a random live champion at the end of the fight (once Crok leads to Valithria)
                 case EVENT_SAY_ALIVE: //this can bug if captain died mid-encounter @ valithria (dead body will say stuff)
@@ -1014,7 +1009,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
-                    switch(m_creature->GetEntry())
+                    switch (m_creature->GetEntry())
                     {
                         case NPC_BRANDON:
                             m_creature->SetDisplayId(CPTN_BRANDON_RIP_DID);
@@ -1083,7 +1078,8 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_ROCKET_LAUNCH_UNDEAD : SPELL_ROCKET_LAUNCH_ALIVE);
                     break;
                 case EVENT_FEL_IRON_BOMB:
-                    DoCastSpellIfCan(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), fallen ? SPELL_FEL_IRON_BOMB_UNDEAD : SPELL_FEL_IRON_BOMB_ALIVE);
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        DoCastSpellIfCan(target, fallen ? SPELL_FEL_IRON_BOMB_UNDEAD : SPELL_FEL_IRON_BOMB_ALIVE);
                     break;
                 case EVENT_MACHINE_GUN:
                     DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_MACHINE_GUN_UNDEAD : SPELL_MACHINE_GUN_ALIVE);
@@ -1121,12 +1117,14 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
         pCreature->setFaction(7); // FACTION_NEUTRAL
     }
-    void Reset(){}
-    void UpdateAI(uint32 const uiDiff){}
 
+    void Reset() {}
+
+    void UpdateAI(uint32 const uiDiff) {}
 };
+
 // Trash spells timers:
-#define QUEST_FEAST_OF_SOULS 24547
+#define QUEST_FEAST_OF_SOULS    24547
 
     // Frostbinders
 #define FROZEN_ORB_TIMER        10*IN_MILLISECONDS,    15*IN_MILLISECONDS
@@ -1171,7 +1169,7 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
 
     void Aggro(Unit* pWho)
     {
-        switch(m_creature->GetEntry())
+        switch (m_creature->GetEntry())
         {
             case NPC_YMIRJAR_FROSTBINDER:
                 DoCast(m_creature, SPELL_ARCTIC_CHILL, false);
@@ -1216,7 +1214,7 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
                     DoCast(m_creature, SPELL_TWISTED_WINDS, false);
                     if (Unit* pSwapped = GetClosestCreatureWithEntry(m_creature, NPC_YMIRJAR_DEATHBRINGER, 30.0f))
                     {
-                        float x,y,z,o;
+                        float x, y, z, o;
                         pSwapped->GetPosition(x, y, z);
                         o = pSwapped->GetOrientation();
                         pSwapped->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
@@ -1239,6 +1237,7 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
                 default:
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
 
@@ -1339,6 +1338,7 @@ struct MANGOS_DLL_DECL npc_fwh_trashAI: public ScriptedAI
                 default:
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
     
@@ -1378,8 +1378,11 @@ bool AT_fwh_svalna_hall(Player* pPlayer, AreaTriggerEntry *pAt)
             {
                 if (Crok->isInCombat())
                     return false;
-                ((npc_crok_scourgebaneAI*)Crok->AI())->DoStart();
-                m_pInstance->SetData(TYPE_SVALNA, IN_PROGRESS); 
+                if (npc_crok_scourgebaneAI *crokAI = dynamic_cast<npc_crok_scourgebaneAI*>(Crok->AI()))
+                {
+                    crokAI->DoStart();
+                    m_pInstance->SetData(TYPE_SVALNA, IN_PROGRESS);
+                }
                 return false;
             }
         }
@@ -1393,7 +1396,8 @@ bool GossipHello_npc_impaling_spear(Player *pPlayer, Creature* pCreature)
         return false;
     if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        pPlayer->CastSpell(GET_CREATURE(TYPE_SVALNA),SPELL_IMPALING_SPEAR_CRU, true);
+        if (Creature *svalna = GET_CREATURE(TYPE_SVALNA))
+            pPlayer->CastSpell(svalna, SPELL_IMPALING_SPEAR_CRU, true);
         pCreature->DealDamage(pCreature, pCreature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false); // Svalna Summons this one (SummonCreatureJustDied will call it and remove the shield from Svalna // Either ppl kill the creature, or "use it")
         pCreature->ForcedDespawn(100);
         return true;
