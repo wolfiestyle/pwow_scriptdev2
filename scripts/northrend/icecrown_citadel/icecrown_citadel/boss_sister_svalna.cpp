@@ -1394,7 +1394,6 @@ bool GossipHello_npc_impaling_spear(Player *pPlayer, Creature* pCreature)
     if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
         pPlayer->CastSpell(GET_CREATURE(TYPE_SVALNA),SPELL_IMPALING_SPEAR_CRU, true);
-        pCreature->CastSpell(GET_CREATURE(TYPE_SVALNA), SPELL_CARESS_OF_LIGHT, false);
         pCreature->DealDamage(pCreature, pCreature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false); // Svalna Summons this one (SummonCreatureJustDied will call it and remove the shield from Svalna // Either ppl kill the creature, or "use it")
         pCreature->ForcedDespawn(100);
         return true;
