@@ -262,7 +262,7 @@ static const float teleporterloc[2][3] =
 };
 
 // for the spear: we either click it or we kill it, both ways, the "bubble" will burst from Svalna
-struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovementAI 
+struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
     Unit* pImpaled;
 
@@ -276,11 +276,12 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
 
     void Reset() {}
 
-    void DoImpale(Unit* target)
+    void ScriptMessage(WorldObject* target, uint32 event_id, uint32 /*data2*/)
     {
-        if (!target)
+        if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_SPEAR)
             return;
-        pImpaled = target;
+        pImpaled = static_cast<Unit*>(target);
+        // impale spell is casted from Svalna
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -375,7 +376,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                         m_creature->CastSpell(pTarget, SPELL_IMPALING_SPEAR_PLA, false);
                         m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget->GetGUID(), true);
                         if (Creature* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*MINUTE*IN_MILLISECONDS))
-                            ((npc_icecrown_impaling_spearAI*)Spear->AI())->DoImpale(pTarget);
+                            SendScriptMessageTo(Spear, pTarget, EVENT_SPEAR);
                         Events.ScheduleEvent(EVENT_SHIELD, 0);
                     }
                     break;

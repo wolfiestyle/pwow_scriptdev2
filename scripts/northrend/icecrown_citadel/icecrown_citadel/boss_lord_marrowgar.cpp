@@ -74,7 +74,7 @@ enum Events
 #define TIMER_BONE_SPIKE_GRAVEYARD  20*IN_MILLISECONDS
 #define TIMER_ENRAGE                10*MINUTE*IN_MILLISECONDS
 
-struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
+struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
     Unit *pTarget;
 
@@ -104,12 +104,12 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
             m_creature->ForcedDespawn();
     }
 
-    void DoImpale(Unit* target)
+    void ScriptMessage(WorldObject* target, uint32 event_id, uint32 /*data2*/)
     {
-        if (!target)
+        if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_BONE_SPIKE_GRAVEYARD)
             return;
-        pTarget = target;
-        DoCast(target, SPELL_IMPALED, true);
+        pTarget = static_cast<Unit*>(target);
+        DoCast(pTarget, SPELL_IMPALED, true);
     }
 
     void RemoveImpale()
@@ -194,8 +194,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         if (CompareSpell && pSpell->SpellDifficultyId == CompareSpell->SpellDifficultyId)
             if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) //do not attack tanks.
                 if (Creature *pSumm = SummonMgr.SummonCreatureAt(pTarget, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
-                    if (mob_bone_spikeAI *SpikeAI = dynamic_cast<mob_bone_spikeAI*>(pSumm->AI()))
-                        SpikeAI->DoImpale(pTarget);
+                    SendScriptMessageTo(pSumm, pTarget, EVENT_BONE_SPIKE_GRAVEYARD);
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)

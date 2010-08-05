@@ -115,6 +115,9 @@ enum Events
     EVENT_DEATHCHILL_CAST,
     EVENT_FROST_FEVER,
     EVENT_SHROUD_OF_THE_OCCULT,
+
+    //messages
+    EVENT_CHANGE_SUMMON,
 };
 
 enum Phases
@@ -228,10 +231,18 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
         }
     }
 
+    void ScriptMessage(WorldObject* sender, uint32 event_id, uint32 data)
+    {
+        if (sender && sender->GetTypeId() == TYPEID_UNIT && event_id == EVENT_CHANGE_SUMMON)
+        {
+            ChangeSummonTo(static_cast<Creature*>(sender), data);
+            return;
+        }
+        ScriptEventInterface::ScriptMessage(sender, event_id, data);
+    }
+
     void ChangeSummonTo(Creature *OriginalSummon, uint32 NextSummonId)
     {
-        if (!OriginalSummon)
-            return;
         if (Creature *pSummon = SummonMgr.SummonCreatureAt(OriginalSummon, NextSummonId, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
         {
             SummonMgr.UnsummonCreature(OriginalSummon);
@@ -467,26 +478,18 @@ struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI, public Scr
 
     void SpellHit(Unit* pCaster, SpellEntry const* pSpell)
     {
-        if (!m_creature->GetOwner())
+        if (!m_creature->GetOwnerGUID())
             return;
         switch (pSpell->Id)
         {
             case SPELL_DARK_TRANSFORMATION:
-            {
-                Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner());
-                boss_lady_deathwhisperAI *OwnerAI;
-                if (pOwner && (OwnerAI = dynamic_cast<boss_lady_deathwhisperAI*>(pOwner->AI())))
-                    OwnerAI->ChangeSummonTo(m_creature, NPC_DEFORMED_FANATIC);
+                if (Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner()))
+                    SendScriptMessageTo(pOwner, m_creature, EVENT_CHANGE_SUMMON, NPC_DEFORMED_FANATIC);
                 break;
-            }
             case SPELL_DARK_MARTYRDOM:
-            {
-                Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner());
-                boss_lady_deathwhisperAI *OwnerAI;
-                if (pOwner && (OwnerAI = dynamic_cast<boss_lady_deathwhisperAI*>(pOwner->AI())))
-                    OwnerAI->ChangeSummonTo(m_creature, NPC_REANIMATED_FANATIC);
+                if (Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner()))
+                    SendScriptMessageTo(pOwner, m_creature, EVENT_CHANGE_SUMMON, NPC_REANIMATED_FANATIC);
                 break;
-            }
         }
     }
 
@@ -551,26 +554,18 @@ struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public Sc
 
     void SpellHit(Unit* pCaster, SpellEntry const* pSpell)
     {
-        if (!m_creature->GetOwner())
+        if (!m_creature->GetOwnerGUID())
             return;
         switch (pSpell->Id)
         {
             case SPELL_DARK_EMPOWERMENT:
-            {
-                Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner());
-                boss_lady_deathwhisperAI *OwnerAI;
-                if (pOwner && (OwnerAI = dynamic_cast<boss_lady_deathwhisperAI*>(pOwner->AI())))
-                    OwnerAI->ChangeSummonTo(m_creature, NPC_EMPOWERED_ADHERANT);
+                if (Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner()))
+                    SendScriptMessageTo(pOwner, m_creature, EVENT_CHANGE_SUMMON, NPC_EMPOWERED_ADHERANT);
                 break;
-            }
             case SPELL_DARK_MARTYRDOM:
-            {
-                Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner());
-                boss_lady_deathwhisperAI *OwnerAI;
-                if (pOwner && (OwnerAI = dynamic_cast<boss_lady_deathwhisperAI*>(pOwner->AI())))
-                    OwnerAI->ChangeSummonTo(m_creature, NPC_REANIMATED_ADHERANT);
+                if (Creature *pOwner = dynamic_cast<Creature*>(m_creature->GetOwner()))
+                    SendScriptMessageTo(pOwner, m_creature, EVENT_CHANGE_SUMMON, NPC_REANIMATED_ADHERANT);
                 break;
-            }
         }
     }
 
