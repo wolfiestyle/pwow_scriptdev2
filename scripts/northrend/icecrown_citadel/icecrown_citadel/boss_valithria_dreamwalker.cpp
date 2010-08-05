@@ -175,7 +175,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     void Reset()
     {
         m_abSays.reset();
-        SummonMgr.UnsummonAll();
+        //SummonMgr.UnsummonAll(); // she only summons the combat trigger which despawns when he receives the broadcasted message "Win" or "wipe"
 
         m_creature->SetHealthPercent(50.0f);
         m_creature->CastSpell(m_creature, SPELL_CORRUPTION, false);
