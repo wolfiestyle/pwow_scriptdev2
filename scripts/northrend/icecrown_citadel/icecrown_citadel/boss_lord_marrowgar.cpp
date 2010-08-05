@@ -66,16 +66,6 @@ enum Events
     EVENT_ENRAGE,
 };
 
-static const float BoneStormStops[6][3] =
-{
-    {-383.339f, 2261.947f, 41.8f},
-    {-362.07f,  2212.38f,  42.24f},
-    {-381.321f, 2167.149f, 41.763f},
-    {-402.177f, 2211.329f, 41.992f},
-    {-385.128f, 2232.266f, 41.991f},
-    {-383.43f,  2189.075f, 41.978f},
-};
-
 #define TIMER_BONE_SLICE            1*IN_MILLISECONDS
 #define TIMER_COLDFLAME             4*IN_MILLISECONDS, 6*IN_MILLISECONDS
 #define TIMER_COLDFLAME_MOVE        10  // creature is updated rougly every 500ms, so this might not work as expected
@@ -290,8 +280,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 case EVENT_BONE_STORM:
                     DoScriptText(SAY_BONE_STORM, m_creature);
                     DoCast(m_creature, SPELL_BONE_STORM);
-                    m_creature->SetSpeedRate(MOVE_WALK, 4.0f, true);
-                    m_creature->SetSpeedRate(MOVE_RUN, 4.0f, true);
+                    m_creature->SetSpeedRate(MOVE_WALK, 5.0f, true);
+                    m_creature->SetSpeedRate(MOVE_RUN, 5.0f, true);
                     DoStartNoMovement(m_creature->getVictim());
                     m_bInBoneStorm = true;
                     for (uint32 i = 0; i < (m_bIsHeroic ? 4 : 3); i++)
@@ -300,10 +290,12 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                     break;
                 case EVENT_BONE_STORM_MOVE:
                 {
-                    //DoResetThreat();
-                    // there is 6 spots to where he always "moves"
-                    uint8 index = urand(0,5);
-                    m_creature->GetMotionMaster()->MovePoint(0, BoneStormStops[index][0], BoneStormStops[index][1], BoneStormStops[index][2]);
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                    {
+                        float x, y, z;
+                        pTarget->GetPosition(x, y, z);
+                        m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                    }
                     break;
                 }
                 case EVENT_BONE_STORM_STOP:
