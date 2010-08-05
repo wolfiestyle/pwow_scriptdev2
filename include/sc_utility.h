@@ -400,7 +400,7 @@ uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
 struct ScriptMessageInterface
 {
     virtual ~ScriptMessageInterface() {}
-    virtual void ScriptMessage(Creature* /*sender*/, uint32 /*data1*/, uint32 /*data2*/) = 0;
+    virtual void ScriptMessage(WorldObject* /*sender*/, uint32 /*data1*/, uint32 /*data2*/) = 0;
 };
 
 // grid notifier that does the script messaging (internal usage)
@@ -408,7 +408,7 @@ template <class Check>
 class ScriptMessageDeliverer
 {
 public:
-    ScriptMessageDeliverer(Creature* sender, Check& check, uint32 data1, uint32 data2, bool to_self):
+    ScriptMessageDeliverer(WorldObject* sender, Check& check, uint32 data1, uint32 data2, bool to_self):
         i_sender(sender), i_check(check), i_data1(data1), i_data2(data2), i_toSelf(to_self)
     {
     }
@@ -425,7 +425,7 @@ public:
     template <class SKIP> void Visit(GridRefManager<SKIP>&) {}
 
 private:
-    Creature *i_sender;
+    WorldObject *i_sender;
     Check &i_check;
     uint32 i_data1, i_data2;
     bool i_toSelf;
@@ -442,7 +442,7 @@ public:
 
     bool operator() (Unit* pUnit)
     {
-        return i_source->IsWithinDist(pUnit, i_range);
+        return i_source->IsWithinDist(pUnit, i_range, false);
     }
 
 private:
@@ -453,14 +453,14 @@ private:
 };
 
 // sends a script message to all creatures in range
-void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
+void BroadcastScriptMessage(WorldObject* pSender, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
 
 // sends a script message to all creatures with entry in range
-void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
+void BroadcastScriptMessageToEntry(WorldObject* pSender, uint32 entry, float fMaxRange, uint32 data1 = 0, uint32 data2 = 0, bool to_self = false);
 
 // sends a direct script message to target creature
 // returns 'true' if failed to send message
-bool SendScriptMessageTo(Creature* pTarget, Creature* pSender, uint32 data1 = 0, uint32 data2 = 0);
+bool SendScriptMessageTo(Creature* pTarget, WorldObject* pSender, uint32 data1 = 0, uint32 data2 = 0);
 
 // base class that implements event broadcasting using EventManager
 class ScriptEventInterface: public ScriptMessageInterface
@@ -469,7 +469,7 @@ public:
     EventManager Events;
 
     // callback function that schedules a remote event
-    void ScriptMessage(Creature* from, uint32 event_id, uint32 event_timer);
+    void ScriptMessage(WorldObject* from, uint32 event_id, uint32 event_timer);
 
     // sends an event to all creatures in range
     void BroadcastEvent(uint32 event_id, uint32 event_timer, float max_range, bool to_self = false);
@@ -484,9 +484,9 @@ public:
     bool SendEventTo(uint32 data_id, uint32 event_id, uint32 event_timer);
 
 protected:
-    Creature *m_sender;
+    WorldObject *m_sender;
 
-    explicit ScriptEventInterface(Creature *pSender);
+    explicit ScriptEventInterface(WorldObject *pSender);
 };
 
 #endif // SC_UTILITY_H

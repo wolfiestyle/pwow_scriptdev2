@@ -170,7 +170,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         }
     }
 
-    void ScriptMessage(Creature* pSender, uint32 data1, uint32 data2)
+    void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
         if (pSender && pSender->GetEntry() == NPC_LITTLE_OOZE)
         {
@@ -180,7 +180,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                 BigOoze->SetInCombatWithZone();
                 BigOoze->SetSpeedRate(MOVE_RUN, 0.5f);
             }
-            SummonMgr.UnsummonCreature(pSender);
+            if (pSender->GetTypeId() == TYPEID_UNIT)
+                SummonMgr.UnsummonCreature(static_cast<Creature*>(pSender));
             return;
         }
         ScriptEventInterface::ScriptMessage(pSender, data1, data2);

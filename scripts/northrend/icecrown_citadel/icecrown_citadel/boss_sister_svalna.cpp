@@ -465,7 +465,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         }
     }
 
-    void ScriptMessage(Creature *pSender, uint32 data1, uint32 data2)
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
         if (pSender)
             switch(pSender->GetEntry())

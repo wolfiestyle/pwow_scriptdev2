@@ -396,7 +396,7 @@ uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
 
 //--- Script Messaging ----------------------------------------------
 
-void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
+void BroadcastScriptMessage(WorldObject* pSender, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
 {
     AllCreaturesInRangeCheck check(pSender, fMaxRange);
     ScriptMessageDeliverer<AllCreaturesInRangeCheck> deliverer(pSender, check, data1, data2, to_self);
@@ -404,7 +404,7 @@ void BroadcastScriptMessage(Creature* pSender, float fMaxRange, uint32 data1, ui
     Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
 }
 
-void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
+void BroadcastScriptMessageToEntry(WorldObject* pSender, uint32 entry, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
 {
     AllCreaturesOfEntryInRange check(pSender, entry, fMaxRange);
     ScriptMessageDeliverer<AllCreaturesOfEntryInRange> deliverer(pSender, check, data1, data2, to_self);
@@ -412,7 +412,7 @@ void BroadcastScriptMessageToEntry(Creature* pSender, uint32 entry, float fMaxRa
     Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
 }
 
-bool SendScriptMessageTo(Creature* pTarget, Creature* pSender, uint32 data1, uint32 data2)
+bool SendScriptMessageTo(Creature* pTarget, WorldObject* pSender, uint32 data1, uint32 data2)
 {
     if (ScriptMessageInterface *smi = dynamic_cast<ScriptMessageInterface*>(pTarget->AI()))
     {
@@ -423,12 +423,12 @@ bool SendScriptMessageTo(Creature* pTarget, Creature* pSender, uint32 data1, uin
     return true;
 }
 
-ScriptEventInterface::ScriptEventInterface(Creature *pSender):
+ScriptEventInterface::ScriptEventInterface(WorldObject *pSender):
     m_sender(pSender)
 {
 }
 
-void ScriptEventInterface::ScriptMessage(Creature* from, uint32 event_id, uint32 event_timer)
+void ScriptEventInterface::ScriptMessage(WorldObject* from, uint32 event_id, uint32 event_timer)
 {
     Events.ScheduleEvent(event_id, event_timer, 0, 0, UINT_MAX);
 }

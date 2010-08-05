@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
             uiDamage = 0;
     }
 
-    void ScriptMessage(Creature *pSender, uint32 data1, uint32 data2)
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
         switch (data1)
         {
@@ -458,7 +458,7 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
             uiDamage = 0;
     }
 
-    void ScriptMessage(Creature *pSender, uint32 data1, uint32 data2)
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
         switch (data1)
         {
@@ -655,7 +655,7 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
             uiDamage = 0;
     }
 
-    void ScriptMessage(Creature *pSender, uint32 data1, uint32 data2)
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
         switch (data1)
         {
