@@ -28,13 +28,13 @@ EndScriptData */
 enum Spells
 {
     SPELL_BERSERK               = 64238,
-    SPELL_IMPALING_SPEAR_CRU    = 70193,
+    SPELL_IMPALING_SPEAR_CRU    = 70196,
     SPELL_AETHER_BURST          = 71468,
     SPELL_AETHER_SHIELD         = 71463,
     SPELL_DIVINE_SURGE          = 71465,
     SPELL_REVIVE_CHAMPION       = 70053,
     SPELL_IMPALING_SPEAR_PLA    = 71443,
-    SPELL_CARESS_OF_LIGHT       = 70078,
+    //SPELL_CARESS_OF_LIGHT       = 70078, // not documented as "used"
     // Arnath
     SPELL_DOMINATE_MIND         = 14515, // possibly bugged... Mind Control
     SPELL_FLASH_HEAL_ALIVE      = 71595, // making it cast on lowesthpfriendly can make server crash unexpectedly so left it as self heal 
@@ -261,6 +261,54 @@ static const float teleporterloc[2][3] =
     {4199.25f,  2769.26f,   351.06f},   // Teleporter Coords
 };
 
+// for the spear: we either click it or we kill it, both ways, the "bubble" will burst from Svalna
+struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovementAI 
+{
+    Unit* pImpaled;
+
+    npc_icecrown_impaling_spearAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature)
+    {
+        pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+        pCreature->setFaction(7); // FACTION_NEUTRAL
+    }
+
+    void Reset() {}
+
+    void DoImpale(Unit* target)
+    {
+        if (!target)
+            return;
+        pImpaled = target;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!pImpaled)
+            return;
+
+        if (pImpaled->isAlive())
+            m_creature->SetTargetGUID(pImpaled->GetGUID());
+        else
+            m_creature->ForcedDespawn();
+    }
+
+    void JustDied(Unit *pKiller)
+    {
+        RemoveImpale();
+    }
+
+    void RemoveImpale()
+    {
+        if (pImpaled)
+        {
+            pImpaled->RemoveAurasDueToSpell(SPELL_IMPALING_SPEAR_PLA);
+            pImpaled = NULL;
+        }
+    }
+};
+
 struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 {
     boss_sister_svalnaAI(Creature* pCreature):
@@ -326,8 +374,8 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                     {
                         m_creature->CastSpell(pTarget, SPELL_IMPALING_SPEAR_PLA, false);
                         m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget->GetGUID(), true);
-                        if (Unit* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*MINUTE*IN_MILLISECONDS))
-                            Spear->AddThreat(pTarget, 10000.0f);
+                        if (Creature* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*MINUTE*IN_MILLISECONDS))
+                            ((npc_icecrown_impaling_spearAI*)Spear->AI())->DoImpale(pTarget);
                         Events.ScheduleEvent(EVENT_SHIELD, 0);
                     }
                     break;
@@ -415,6 +463,29 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
             m_creature->Respawn();
             m_BossEncounter = NOT_STARTED;
         }
+    }
+
+    void ScriptMessage(Creature *pSender, uint32 data1, uint32 data2)
+    {
+        if (pSender)
+            switch(pSender->GetEntry())
+            {
+                case NPC_BRANDON:
+                    CaptainsSpawned[0] = true;
+                    break;
+                case NPC_RUPERT:
+                    CaptainsSpawned[1] = true;
+                    break;
+                case NPC_GRONDEL:
+                    CaptainsSpawned[2] = true;
+                    break;
+                case NPC_ARNATH:
+                    CaptainsSpawned[3] = true;
+                    break;
+            }
+        if (CaptainsSpawned[0] && CaptainsSpawned[1] && CaptainsSpawned[2] && CaptainsSpawned[3]) //Brandon, Rupert, Grondel,Arnath
+            Events.CancelEvent(EVENT_TIMED_DEATH); // since all died... we dont have any other guy to kill
+        ScriptEventInterface::ScriptMessage(pSender, data1, data2);
     }
 
     void Reset()
@@ -919,6 +990,46 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
             }
     }
 
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage) // if a mob kills us, we feign death and awayf for the last event
+    {
+        if (uiDamage > m_creature->GetHealth())
+        {
+            uiDamage = 0;
+            SetEscortPaused(true);
+            m_creature->StopMoving();
+            m_creature->ClearInCombat();
+            m_creature->SetHealth(0);
+            m_creature->RemoveAllAuras();
+            m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+            m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
+            BroadcastScriptMessageToEntry(m_creature, NPC_CROK_SCOURGEBANE, 150.0f);
+            switch (m_creature->GetEntry())
+            {
+                case NPC_BRANDON:
+                    m_creature->SetDisplayId(CPTN_BRANDON_RIP_DID);
+                    DoScriptText(FWH_BRANDON_SAY_DEATH, m_creature);
+                    fallen = true;
+                    break;
+                case NPC_GRONDEL:
+                    m_creature->SetDisplayId(CPTN_GRONDEL_RIP_DID);
+                    DoScriptText(FWH_GRONDEL_SAY_DEATH, m_creature);
+                    fallen = true;
+                    break;
+                case NPC_RUPERT:
+                    m_creature->SetDisplayId(CPTN_RUPERT_RIP_DID);
+                    DoScriptText(FWH_RUPERT_SAY_DEATH, m_creature);
+                    fallen = true;
+                    break;
+                case NPC_ARNATH:
+                    m_creature->SetDisplayId(CPTN_ARNATH_RIP_DID);
+                    DoScriptText(FWH_ARNATH_SAY_DEATH, m_creature);
+                    fallen = true;
+                    break;
+            }
+        }
+    }
+
     void UpdateAI(uint32 const uiDiff)
     {
         // Must update npc_escortAI
@@ -1105,22 +1216,6 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
             }
         }
     }
-};
-
-// for the spear: we either click it or we kill it, both ways, the "bubble" will burst from Svalna
-struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovementAI 
-{
-    npc_icecrown_impaling_spearAI(Creature* pCreature):
-        Scripted_NoMovementAI(pCreature)
-    {
-        pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
-        pCreature->setFaction(7); // FACTION_NEUTRAL
-    }
-
-    void Reset() {}
-
-    void UpdateAI(uint32 const uiDiff) {}
 };
 
 // Trash spells timers:
