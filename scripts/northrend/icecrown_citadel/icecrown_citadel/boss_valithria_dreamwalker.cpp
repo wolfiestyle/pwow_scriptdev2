@@ -94,6 +94,7 @@ enum Events
     EVENT_BEGIN_FIGHT,
     EVENT_INIT_SCRIPT,
     EVENT_BERSERK,
+    EVENT_WIN,
     EVENT_DESPAWN,
     EVENT_SUMMON_RISEN,
     EVENT_SUMMON_BLAZING,
@@ -153,6 +154,7 @@ static const float locations[4][2] =
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
 #define PORTAL_TIMER            46.5*IN_MILLISECONDS
 #define BERSERK_TIMER           7*MINUTE*IN_MILLISECONDS
+#define SUMMON_PORTAL_RADIUS    30.0f
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 {
@@ -284,7 +286,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
-            SummonMgr.UnsummonAllWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER);
+            BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_WIN, 5*IN_MILLISECONDS, 100.0f);
             m_abSays[4] = true;
             Events.Reset();
             Events.ScheduleEvent(EVENT_DESPAWN, 5*IN_MILLISECONDS);
@@ -332,7 +334,15 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                         DoScriptText(SAY_VALITHRIA_PORTALS, m_creature);
 
                     for (uint32 i = m_bIs10Man ? 3 : 6; i; i--)
-                        DoCast(m_creature, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
+                    {
+                        uint32 maxangle = m_bIs10Man ? 90 : 360; //M_PI_F/2 : 2*M_PI_F; // just a cone in front / all around
+                        uint32 angle = urand(0, maxangle);
+                        float x, y, z;
+                        x = SUMMON_PORTAL_RADIUS * cos((angle * M_PI_F) / 180 - M_PI_F / 4.0f) + m_creature->GetPositionX();
+                        y = SUMMON_PORTAL_RADIUS * sin((angle * M_PI_F) / 180 - M_PI_F / 4.0f) + m_creature->GetPositionY();
+                        z = m_creature->GetPositionZ() + 1.0f;
+                        m_creature->CastSpell(x, y, z, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
+                    }
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, PORTAL_TIMER);
                     break;
                 case EVENT_BERSERK:
@@ -460,6 +470,9 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                 case EVENT_BERSERK:
                     Reset();
                     break;
+                case EVENT_WIN:
+                    SummonMgr.UnsummonAll();
+                    m_creature->ForcedDespawn(100);
                 default:
                     break;
             }
