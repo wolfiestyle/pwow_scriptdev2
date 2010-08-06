@@ -271,7 +271,7 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
     {
         pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
-        pCreature->setFaction(7); // FACTION_NEUTRAL
+        pCreature->setFaction(FACTION_NEUTRAL);
     }
 
     void Reset() {}
@@ -1044,7 +1044,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                 case EVENT_RESURRECT:
                     if (fallen) // we were feigning death till this point
                     {
-                        m_creature->setFaction(14);
+                        m_creature->setFaction(FACTION_HOSTILE);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED );
                         m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                         m_creature->SetStandState(UNIT_STAND_STATE_STAND);

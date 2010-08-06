@@ -152,12 +152,6 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
             DoScriptText(urand(0, 1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
     }
 
-    void GetPointOnCircle(float rad, float ang, float &x, float &y)
-    {
-        x = rad * cos(ang);
-        y = rad * sin(ang);
-    }
-
     void JustDied(Unit* pKiller)
     {
         SummonMgr.UnsummonAll();
@@ -215,13 +209,13 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                     for (int i = 0; i < 2; i++)
                     {
                         Angle += M_PI/6;
-                        GetPointOnCircle(OOZE_FLOOD_CASTER_DISTANCE, Angle, x, y);
-                        Creature *Caster = SummonMgr.SummonCreature(NPC_PUDDLE_STALKER, CenterPosition[0] + x, CenterPosition[1] + y, OOZE_FLOOD_CAST_HEIGHT);
+                        GetPointOnCircle(x, y, OOZE_FLOOD_CASTER_DISTANCE, Angle, CenterPosition[0], CenterPosition[1]);
+                        Creature *Caster = SummonMgr.SummonCreature(NPC_PUDDLE_STALKER, x, y, OOZE_FLOOD_CAST_HEIGHT);
                         if (Caster)
                         {
                             Caster->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly
-                            GetPointOnCircle(OOZE_FLOOD_RECIVE_DISTANCE, Angle, x, y);
-                            Creature *Target = SummonMgr.SummonCreature(NPC_PUDDLE_STALKER, CenterPosition[0] + x, CenterPosition[1] + y, FLOOR_HEIGHT);
+                            GetPointOnCircle(x, y, OOZE_FLOOD_RECIVE_DISTANCE, Angle, CenterPosition[0], CenterPosition[1]);
+                            Creature *Target = SummonMgr.SummonCreature(NPC_PUDDLE_STALKER, x, y, FLOOR_HEIGHT);
                             if (Target)
                                 Caster->CastSpell(Target, SPELL_OOZE_FLOOD, false);
                         }
@@ -289,7 +283,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI : public ScriptedAI
     {
         if (pSumm && pSumm->GetEntry() == NPC_STICKY_OOZE)
         {
-            pSumm->setFaction(14);  // hostile
+            pSumm->setFaction(FACTION_HOSTILE);
             pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             pSumm->CastSpell(pSumm, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
             pSumm->ForcedDespawn(30*IN_MILLISECONDS);

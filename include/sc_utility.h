@@ -361,8 +361,13 @@ public:
     void AddSummonToList(ObjectGuid const&);
     void RemoveSummonFromList(ObjectGuid const&);
 
+    // summon creature at given coordinates
     Creature* SummonCreature(uint32 Id, float x, float y, float z, float ang = 0.0f, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0);
     void SummonCreatures(uint32 Id, float x, float y, float z, uint32 number, float ang = 0.0f, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0);
+    // summon creature at specified WorldLocation
+    Creature* SummonCreatureAt(WorldLocation const& loc, uint32 Id, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
+    void SummonCreaturesAt(WorldLocation const& loc, uint32 Id, uint32 number, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
+    // summon creature at position of specified WorldObject
     Creature* SummonCreatureAt(WorldObject* target, uint32 Id, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
     void SummonCreaturesAt(WorldObject* target, uint32 Id, uint32 number, TempSummonType type = TEMPSUMMON_MANUAL_DESPAWN, uint32 SummonTimer = 0, float dx = 0.0f, float dy = 0.0f, float dz = 0.0f, float dang = 0.0f);
 
@@ -387,12 +392,6 @@ private:
     SummonManager(SummonManager const&);
     SummonManager& operator= (SummonManager const&);
 };
-
-// get random point inside area delimited by circle
-void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, float cy = 0.0f);
-
-// get correct spell_id for the given difficulty
-uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
 
 // --- Script Messaging System ---
 
@@ -488,5 +487,16 @@ protected:
 
     explicit ScriptEventInterface(WorldObject *pSender);
 };
+
+// --- Misc utility functions ---
+
+// get point position from polar coordinates
+void GetPointOnCircle(float &x, float &y, float rad, float ang, float cx = 0.0f, float cy = 0.0f);
+
+// get random point inside area delimited by circle
+void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, float cy = 0.0f);
+
+// get correct spell_id for the given difficulty
+uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
 
 #endif // SC_UTILITY_H

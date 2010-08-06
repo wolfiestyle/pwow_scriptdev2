@@ -131,12 +131,6 @@ enum Says
 
 };
 
-enum Factions
-{
-    FACTION_FRIENDLY            = 35,
-    FACTION_HOSTILE             = 14,
-};
-
 // Following timers are gotten from video-research
 static const uint32 BlazingTimers[] = {50, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10,  5,  5,  5,  5, 5};
 static const uint32 AbomTimers[]    = {20, 60, 55, 50, 50, 50, 45, 45, 45, 40, 40, 40, 35, 35, 35, 30, 30, 30, 25, 25, 25};
@@ -696,11 +690,11 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
                     break;
                 case EVENT_MANA_VOID:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                        SummonMgr.SummonCreature(NPC_MANA_VOID, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
+                        SummonMgr.SummonCreatureAt(pTarget, NPC_MANA_VOID);
                     break;
                 case EVENT_COLUMN_OF_FROST:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                        SummonMgr.SummonCreature(NPC_COLUMN_OF_FROST,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
+                        SummonMgr.SummonCreatureAt(pTarget, NPC_COLUMN_OF_FROST);
                     break;
                 case EVENT_GUT_SPRAY:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_GUT_SPRAY);

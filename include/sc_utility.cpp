@@ -281,6 +281,17 @@ void SummonManager::SummonCreatures(uint32 Id, float x, float y, float z, uint32
         SummonCreature(Id, x, y, z, ang, type, SummonTimer);
 }
 
+Creature* SummonManager::SummonCreatureAt(WorldLocation const& loc, uint32 Id, TempSummonType type, uint32 SummonTimer, float dx, float dy, float dz, float dang)
+{
+    return SummonCreature(Id, loc.coord_x+dx, loc.coord_y+dy, loc.coord_z+dz, loc.orientation+dang, type, SummonTimer);
+}
+
+void SummonManager::SummonCreaturesAt(WorldLocation const& loc, uint32 Id, uint32 number, TempSummonType type, uint32 SummonTimer, float dx, float dy, float dz, float dang)
+{
+    for (; number; --number)
+        SummonCreatureAt(loc, Id, type, SummonTimer, dx, dy, dz, dang);
+}
+
 Creature* SummonManager::SummonCreatureAt(WorldObject* target, uint32 Id, TempSummonType type, uint32 SummonTimer, float dx, float dy, float dz, float dang)
 {
     return SummonCreature(Id, target->GetPositionX()+dx, target->GetPositionY()+dy, target->GetPositionZ()+dz, target->GetOrientation()+dang, type, SummonTimer);
@@ -373,27 +384,6 @@ void SummonManager::UnsummonAll()
     m_Summons.clear();
 }
 
-//----------------------------------------------------------------
-
-void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
-{
-    float ang = 2*M_PI * rand_norm();
-    float rad = max_rad * sqrt(rand_norm());
-    x = cx + rad * cos(ang);
-    y = cy + rad * sin(ang);
-}
-
-uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
-{
-    SpellEntry const* sp_entry = GetSpellStore()->LookupEntry(spell_id);
-    if (!sp_entry)
-        return spell_id;
-    SpellDifficultyEntry const* diff_entry = GetSpellDifficultyStore()->LookupEntry(sp_entry->SpellDifficultyId);
-    if (!diff_entry)
-        return spell_id;
-    return diff_entry->spellId[diff];
-}
-
 //--- Script Messaging ----------------------------------------------
 
 void BroadcastScriptMessage(WorldObject* pSender, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
@@ -460,4 +450,28 @@ bool ScriptEventInterface::SendEventTo(uint32 data_id, uint32 event_id, uint32 e
     if (!target)
         return true;
     return SendScriptMessageTo(target, m_sender, event_id, event_timer);
+}
+
+//----------------------------------------------------------------
+
+void GetPointOnCircle(float& x, float& y, float rad, float ang, float cx, float cy)
+{
+    x = cx + rad * cos(ang);
+    y = cy + rad * sin(ang);
+}
+
+void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx, float cy)
+{
+    GetPointOnCircle(x, y, max_rad * sqrt(rand_norm()), 2*M_PI * rand_norm(), cx, cy);
+}
+
+uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
+{
+    SpellEntry const* sp_entry = GetSpellStore()->LookupEntry(spell_id);
+    if (!sp_entry)
+        return spell_id;
+    SpellDifficultyEntry const* diff_entry = GetSpellDifficultyStore()->LookupEntry(sp_entry->SpellDifficultyId);
+    if (!diff_entry)
+        return spell_id;
+    return diff_entry->spellId[diff];
 }

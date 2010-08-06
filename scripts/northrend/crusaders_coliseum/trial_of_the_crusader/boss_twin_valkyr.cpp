@@ -273,8 +273,8 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         for (int i=1; i<8; i+=2)
         {
             float x, y;
-            GetPointOnCircle(38, i*M_PI/4, x, y);
-            SummonMgr.SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT+2, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+            GetPointOnCircle(x, y, 38.0f, i*M_PI/4, CENTER_X, CENTER_Y);
+            SummonMgr.SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, x, y, FLOOR_HEIGHT+2, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
             IsDark = !IsDark;
         }
 
@@ -306,12 +306,6 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         DoScriptText(urand(0,1) ? SAY_TWIN_VALKYR_KILLED_PLAYER1 : SAY_TWIN_VALKYR_KILLED_PLAYER2, m_creature);
     }
 
-    void GetPointOnCircle(float rad, float ang, float &x, float &y)
-    {
-        x = rad * cos(ang);
-        y = rad * sin(ang);
-    }
-
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
@@ -341,8 +335,8 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
                     for (int i = 0; i <= NumOrbs; i++)
                     {
                         float x, y;
-                        GetPointOnCircle(48.5, rand_norm()*2*M_PI, x, y);
-                        SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, CENTER_X+x, CENTER_Y+y, FLOOR_HEIGHT+1.0f, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
+                        GetPointOnCircle(x, y, 48.5f, 2*M_PI*rand_norm(), CENTER_X, CENTER_Y);
+                        SummonMgr.SummonCreature(urand(0,1) ? NPC_CONCENTRATED_DARKNESS : NPC_CONCENTRATED_LIGHT, x, y, FLOOR_HEIGHT+1.0f, 0, TEMPSUMMON_CORPSE_DESPAWN, 1000);
                     }
                     break;
                 }

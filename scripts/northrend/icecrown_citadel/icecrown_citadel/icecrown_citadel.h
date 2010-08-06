@@ -123,6 +123,10 @@ enum
     GO_TP_UPPER_SPIRE       = 202235,
     GO_TP_SINDRAGOSA_LAIR   = 202246,
     GO_TP_FROZEN_THRONE     = 202223,
+
+    FACTION_NEUTRAL         = 7,
+    FACTION_HOSTILE         = 14,
+    FACTION_FRIENDLY        = 35,
 };
 
 enum TeleportLocations

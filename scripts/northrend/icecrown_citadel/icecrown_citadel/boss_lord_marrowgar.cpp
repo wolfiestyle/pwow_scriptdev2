@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_lord_marrowgar
-SD%Complete: 80%
+SD%Complete: 90%
 SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
@@ -127,7 +127,9 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
     SummonManager SummonMgr;
     bool m_bSaidBeginningStuff :1;
     bool m_bInBoneStorm :1;
-    std::list<std::pair<WorldLocation/*start point*/, uint32/*dist*/> > ColdflameAttribs;
+
+    typedef std::list<std::pair<WorldLocation /*start point, direction*/, uint32 /*dist*/> > ColdFlameList;
+    ColdFlameList ColdflameAttribs;
 
     boss_lord_marrowgarAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
@@ -202,12 +204,6 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
     }
 
-    void GetPointOnCircle(float rad, float ang, float &x, float &y) const
-    {
-        x = rad * cos(ang);
-        y = rad * sin(ang);
-    }
-
     void UpdateAI(uint32 const uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
@@ -245,14 +241,14 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_COLDFLAME_MOVE:
                 {
-                    for (std::list<std::pair<WorldLocation, uint32> >::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
+                    for (ColdFlameList::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
                     {
                         if (i->second <= 25)
                         {
                             float x, y;
                             i->second += 3;
-                            GetPointOnCircle(i->second, i->first.orientation, x, y);
-                            Creature *flame = SummonMgr.SummonCreature(NPC_COLDFLAME, i->first.coord_x+x, i->first.coord_y+y, i->first.coord_z, i->first.orientation, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000);
+                            GetPointOnCircle(x, y, i->second, i->first.orientation);
+                            Creature *flame = SummonMgr.SummonCreatureAt(i->first, NPC_COLDFLAME, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000, x, y);
                             if (flame)
                                 flame->CastSpell(m_creature, SPELL_COLDFLAME_DAMAGE_AURA, false);
                             Events.ScheduleEvent(EVENT_COLDFLAME_MOVE, TIMER_COLDFLAME_MOVE);
