@@ -160,6 +160,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Reset()
     {
+        if (m_BossEncounter == DONE)
+            return;
         IsSoftEnraged = false;
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         m_creature->SetPower(POWER_ENERGY, 0);
@@ -264,6 +266,9 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         m_creature->setDeathState(JUST_ALIVED);
         m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
         m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+        m_creature->RemoveAllAttackers();
+        m_creature->RemoveAllAuras();
+        m_creature->getThreatManager().clearReferences();
     }
 
     void SpellHitTarget(Unit *pVictim, const SpellEntry *pSpell)
