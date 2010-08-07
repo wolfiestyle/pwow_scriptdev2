@@ -76,17 +76,15 @@ enum Events
 
 struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
-    Unit *pTarget;
+    uint64 m_TargetGuid;
 
     mob_bone_spikeAI(Creature *pCreature):
         Scripted_NoMovementAI(pCreature),
-        pTarget(NULL)
+        m_TargetGuid(0)
     {
     }
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
     void JustDied(Unit *pKiller)
     {
@@ -95,11 +93,12 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!pTarget)
+        if (!m_TargetGuid)
             return;
+        Unit *pTarget = Unit::GetUnit(*m_creature, m_TargetGuid);
 
-        if (pTarget->isAlive())
-            m_creature->SetTargetGUID(pTarget->GetGUID());
+        if (pTarget && pTarget->isAlive())
+            m_creature->SetTargetGUID(m_TargetGuid);
         else
             m_creature->ForcedDespawn();
     }
@@ -108,17 +107,15 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
         if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_BONE_SPIKE_GRAVEYARD)
             return;
-        pTarget = static_cast<Unit*>(target);
-        DoCast(pTarget, SPELL_IMPALED, true);
+        m_TargetGuid = target->GetGUID();
+        DoCast(static_cast<Unit*>(target), SPELL_IMPALED, true);
     }
 
     void RemoveImpale()
     {
-        if (pTarget)
-        {
+        if (Unit *pTarget = Unit::GetUnit(*m_creature, m_TargetGuid))
             pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
-            pTarget = NULL;
-        }
+        m_TargetGuid = 0;
     }
 };
 
