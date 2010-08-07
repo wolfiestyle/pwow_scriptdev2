@@ -356,6 +356,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
     {
         DoScriptText(urand(0,1) ? FWH_SVALNA_SAY_DEATH_01 : FWH_SVALNA_SAY_DEATH_02, m_creature);
         m_BossEncounter = DONE;
+        BroadcastEvent(EVENT_WIN, 0, 150.f);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -449,7 +450,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
 
     void DoStart()
     {
-        Events.ScheduleEventInRange(EVENT_TIMED_DEATH, KILL_CAPTAIN_TIMER, KILL_CAPTAIN_TIMER);
+        if (!CaptainsSpawned[0] || !CaptainsSpawned[1] || !CaptainsSpawned[2] || !CaptainsSpawned[3]) //Brandon, Rupert, Grondel,Arnath
+            Events.ScheduleEventInRange(EVENT_TIMED_DEATH, KILL_CAPTAIN_TIMER, KILL_CAPTAIN_TIMER); // if there is at least 1 captain alive, we schedule the timed deaths
         BroadcastEvent(EVENT_START, 0, 30.0f);
         npc_escortAI::Start();
     }
@@ -464,29 +466,6 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
             m_creature->Respawn();
             m_BossEncounter = NOT_STARTED;
         }
-    }
-
-    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
-    {
-        if (pSender)
-            switch(pSender->GetEntry())
-            {
-                case NPC_BRANDON:
-                    CaptainsSpawned[0] = true;
-                    break;
-                case NPC_RUPERT:
-                    CaptainsSpawned[1] = true;
-                    break;
-                case NPC_GRONDEL:
-                    CaptainsSpawned[2] = true;
-                    break;
-                case NPC_ARNATH:
-                    CaptainsSpawned[3] = true;
-                    break;
-            }
-        if (CaptainsSpawned[0] && CaptainsSpawned[1] && CaptainsSpawned[2] && CaptainsSpawned[3]) //Brandon, Rupert, Grondel,Arnath
-            Events.CancelEvent(EVENT_TIMED_DEATH); // since all died... we dont have any other guy to kill
-        ScriptEventInterface::ScriptMessage(pSender, data1, data2);
     }
 
     void Reset()
@@ -690,6 +669,12 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         }
     }
 
+    void CapCheck()
+    {
+        if (CaptainsSpawned[0] && CaptainsSpawned[1] && CaptainsSpawned[2] && CaptainsSpawned[3]) //Brandon, Rupert, Grondel,Arnath
+            Events.CancelEvent(EVENT_TIMED_DEATH);
+    }
+
     void WaypointStart(uint32 uiWP)
     {
         switch (uiWP)
@@ -767,6 +752,22 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
+                case NPC_BRANDON:
+                    CaptainsSpawned[0] = true;
+                    CapCheck();
+                    break;
+                case NPC_RUPERT:
+                    CaptainsSpawned[1] = true;
+                    CapCheck();
+                    break;
+                case NPC_GRONDEL:
+                    CaptainsSpawned[2] = true;
+                    CapCheck();
+                    break;
+                case NPC_ARNATH:
+                    CaptainsSpawned[3] = true;
+                    CapCheck();
+                    break;
                 case EVENT_TIMED_DEATH:
                     int index;
                     do 
@@ -808,7 +809,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                     BroadcastEvent(EVENT_WIN, 0, 75.0f);
                     break;
                 case EVENT_DEATH_STRIKE:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_DEATH_STRIKE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_DEATH_STRIKE);
                     break;
                 case EVENT_ICEBOUND_ARMOR:
                     DoCastSpellIfCan(m_creature, SPELL_ICEBOUND_ARMOR);
@@ -818,7 +820,8 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                         DoCastSpellIfCan(target, SPELL_DEATH_COIL);
                     break;
                 case EVENT_SCOURGE_STRIKE:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SCOURGE_STRIKE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_SCOURGE_STRIKE);
                     break;
             }
         // Combat Check
@@ -835,7 +838,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
                 else
                     DoScriptText(FWH_CROK_SAY_LOW_HEALTH, m_creature);
             }
-            if (m_creature->GetHealthPercent() > 25.0f && m_bLowHealth && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
+            if (m_creature->GetHealthPercent() > 25.0f && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
             {
                 m_bLowHealth = false;
                 Events.CancelEvent(EVENT_ICEBOUND_ARMOR);
@@ -903,6 +906,8 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         if (m_creature->HasFlag(UNIT_DYNAMIC_FLAGS,UNIT_DYNFLAG_DEAD))
             m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED))
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED);
         m_creature->SetStandState(UNIT_STAND_STATE_STAND);
         Reset();
     }
@@ -973,7 +978,56 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
 
     void JustDied(Unit* pKiller)
     {
-        if (fallen && pKiller->GetObjectGuid() != m_creature->GetObjectGuid())
+        if (!fallen) // if we die (any reason)
+        {
+            fallen = true;
+            // if event is complete, we allow them to die and say their stuff (skip flag setting)
+            if (m_pInstance->GetData(TYPE_SVALNA) != DONE)
+            {
+                SetEscortPaused(true);
+                Events.CancelEventsWithCategory(COMBAT_CATEGORY); // Dead ppl shouldn't attack
+                m_creature->getThreatManager().clearReferences();
+                m_creature->setDeathState(JUST_ALIVED);
+                m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
+            }
+            switch (m_creature->GetEntry())
+            {
+                case NPC_BRANDON:
+                    m_creature->SetDisplayId(CPTN_BRANDON_RIP_DID);
+                    DoScriptText(FWH_BRANDON_SAY_DEATH, m_creature);
+                    BroadcastEventToEntry(NPC_CROK_SCOURGEBANE, NPC_BRANDON, 0, 100.0f);
+                    break;
+                case NPC_GRONDEL:
+                    m_creature->SetDisplayId(CPTN_GRONDEL_RIP_DID);
+                    DoScriptText(FWH_GRONDEL_SAY_DEATH, m_creature);
+                    BroadcastEventToEntry(NPC_CROK_SCOURGEBANE, NPC_GRONDEL, 0, 100.0f);
+                    break;
+                case NPC_RUPERT:
+                    m_creature->SetDisplayId(CPTN_RUPERT_RIP_DID);
+                    DoScriptText(FWH_RUPERT_SAY_DEATH, m_creature);
+                    BroadcastEventToEntry(NPC_CROK_SCOURGEBANE, NPC_RUPERT, 0, 100.0f);
+                    break;
+                case NPC_ARNATH:
+                    m_creature->SetDisplayId(CPTN_ARNATH_RIP_DID);
+                    DoScriptText(FWH_ARNATH_SAY_DEATH, m_creature);
+                    BroadcastEventToEntry(NPC_CROK_SCOURGEBANE, NPC_ARNATH, 0, 100.0f);
+                    break;
+            }
+        }
+        // fallen captain dies b4 svalna does we feign death in case of raid wipe 
+        else if (fallen && pKiller->GetObjectGuid() != m_creature->GetObjectGuid())
+        {
+            if (m_pInstance->GetData(TYPE_SVALNA) != DONE)
+            {
+                Events.CancelEventsWithCategory(COMBAT_CATEGORY); // Dead ppl shouldn't attack
+                m_creature->getThreatManager().clearReferences();
+                m_creature->setDeathState(JUST_ALIVED);
+                m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_creature->SetStandState(UNIT_STAND_STATE_DEAD); // even if they "really die" we just feign their death
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
+            }
             switch (m_creature->GetEntry())
             {
                 case NPC_BRANDON:
@@ -989,46 +1043,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     DoScriptText(FWH_ARNATH_SAY_REALDEATH, m_creature);
                     break;
             }
-    }
-
-    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage) // if a mob kills us, we feign death and awayf for the last event
-    {
-        if (uiDamage > m_creature->GetHealth())
-        {
-            uiDamage = 0;
-            SetEscortPaused(true);
-            m_creature->StopMoving();
-            m_creature->ClearInCombat();
-            m_creature->SetHealth(0);
-            m_creature->RemoveAllAuras();
-            m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-            m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
-            BroadcastScriptMessageToEntry(m_creature, NPC_CROK_SCOURGEBANE, 150.0f);
-            switch (m_creature->GetEntry())
-            {
-                case NPC_BRANDON:
-                    m_creature->SetDisplayId(CPTN_BRANDON_RIP_DID);
-                    DoScriptText(FWH_BRANDON_SAY_DEATH, m_creature);
-                    fallen = true;
-                    break;
-                case NPC_GRONDEL:
-                    m_creature->SetDisplayId(CPTN_GRONDEL_RIP_DID);
-                    DoScriptText(FWH_GRONDEL_SAY_DEATH, m_creature);
-                    fallen = true;
-                    break;
-                case NPC_RUPERT:
-                    m_creature->SetDisplayId(CPTN_RUPERT_RIP_DID);
-                    DoScriptText(FWH_RUPERT_SAY_DEATH, m_creature);
-                    fallen = true;
-                    break;
-                case NPC_ARNATH:
-                    m_creature->SetDisplayId(CPTN_ARNATH_RIP_DID);
-                    DoScriptText(FWH_ARNATH_SAY_DEATH, m_creature);
-                    fallen = true;
-                    break;
-            }
-        }
+        } 
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -1045,6 +1060,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     if (fallen) // we were feigning death till this point
                     {
                         m_creature->setFaction(FACTION_HOSTILE);
+                        m_creature->setDeathState(ALIVE);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED );
                         m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                         m_creature->SetStandState(UNIT_STAND_STATE_STAND);
@@ -1076,7 +1092,8 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     break;
                 // all champions receive this on start (so they start moving)
                 case EVENT_START:
-                    npc_escortAI::Start();
+                    if (!fallen) // Prevent dead bodies to move around... (in case trash mobs killed them)
+                        npc_escortAI::Start();
                     break;
                 // all champions will receive this one on wipe
                 case EVENT_RESET:
@@ -1085,8 +1102,8 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     break;
                 // sent on Svalna's Death to all the champions in order to kill (argent guys who died in svalna's fight and not mid-escort)
                 case EVENT_WIN:
-                    //if unit died while in the event and didnt got ressed it'll stay "unattackable" for easy tracking
-                    if (fallen && m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+                    //if unit died while in the event it'll stay "unattackable" for easy tracking (in case of wipe and such)
+                    if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         m_creature->DealDamage(m_creature, m_creature->GetHealth()+1, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     break;
                 // sent to a random live champion at the end of the fight (once Crok leads to Valithria)
@@ -1113,88 +1130,98 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     break;
                 // sent to a random live champion during the escort (this guy "feigns death")
                 case EVENT_TIMED_DEATH: // make it feign death for now
+                    fallen = true;
+                    Events.CancelEventsWithCategory(COMBAT_CATEGORY); // Dead ppl shouldnt attack
                     SetEscortPaused(true);
-                    m_creature->StopMoving();
                     m_creature->ClearInCombat();
                     m_creature->SetHealth(0);
                     m_creature->RemoveAllAuras();
+                    m_creature->getThreatManager().clearReferences();
                     m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
+
                     switch (m_creature->GetEntry())
                     {
                         case NPC_BRANDON:
                             m_creature->SetDisplayId(CPTN_BRANDON_RIP_DID);
                             DoScriptText(FWH_BRANDON_SAY_DEATH, m_creature);
-                            fallen = true;
                             break;
                         case NPC_GRONDEL:
                             m_creature->SetDisplayId(CPTN_GRONDEL_RIP_DID);
                             DoScriptText(FWH_GRONDEL_SAY_DEATH, m_creature);
-                            fallen = true;
                             break;
                         case NPC_RUPERT:
                             m_creature->SetDisplayId(CPTN_RUPERT_RIP_DID);
                             DoScriptText(FWH_RUPERT_SAY_DEATH, m_creature);
-                            fallen = true;
                             break;
                         case NPC_ARNATH:
                             m_creature->SetDisplayId(CPTN_ARNATH_RIP_DID);
                             DoScriptText(FWH_ARNATH_SAY_DEATH, m_creature);
-                            fallen = true;
                             break;
                     }
                     break;
                 // Individual AI spell events
                 // Arnath
                 case EVENT_DOMINATE_MIND: //possibly bugged... Mind Control
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_DOMINATE_MIND);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_DOMINATE_MIND);
                     break;
                 case EVENT_FLASH_HEAL:
                     DoCastSpellIfCan(m_creature, fallen ? SPELL_FLASH_HEAL_UNDEAD : SPELL_FLASH_HEAL_ALIVE);
                     break;
                 case EVENT_SMITE:
-                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_SMITE_UNDEAD : SPELL_SMITE_ALIVE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_SMITE_UNDEAD : SPELL_SMITE_ALIVE);
                     break;
                 case EVENT_PWS:
                     DoCastSpellIfCan(m_creature, fallen ? SPELL_PWS_UNDEAD : SPELL_PWS_ALIVE);
                     break;
                 // Brandon
                 case EVENT_CRUSADERS_STRIKE:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CRUSADERS_STRIKE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CRUSADERS_STRIKE);
                     break;
                 case EVENT_DIVINE_SHIELD:
                     DoCastSpellIfCan(m_creature, SPELL_DIVINE_SHIELD);
                     break;
                 case EVENT_JUDGEMENT_OF_COMMAND:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
                     break;
                 case EVENT_HAMMER_OF_BETRAYAL:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_HAMMER_OF_BETRAYAL);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_HAMMER_OF_BETRAYAL);
                     break;
                 // Grondel
                 case EVENT_CHARGE:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CHARGE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CHARGE);
                     break;
                 case EVENT_MORTAL_STRIKE:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
                     break;
                 case EVENT_SUNDER_ARMOR:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
                     break;
                 case EVENT_CONFLAGRATION:
-                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), SPELL_CONFLAGRATION);
                     break;
                 // Rupert
                 case EVENT_ROCKET_LAUNCH:
-                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_ROCKET_LAUNCH_UNDEAD : SPELL_ROCKET_LAUNCH_ALIVE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_ROCKET_LAUNCH_UNDEAD : SPELL_ROCKET_LAUNCH_ALIVE);
                     break;
                 case EVENT_FEL_IRON_BOMB:
                     if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         DoCastSpellIfCan(target, fallen ? SPELL_FEL_IRON_BOMB_UNDEAD : SPELL_FEL_IRON_BOMB_ALIVE);
                     break;
                 case EVENT_MACHINE_GUN:
-                    DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_MACHINE_GUN_UNDEAD : SPELL_MACHINE_GUN_ALIVE);
+                    if (m_creature->getVictim())
+                        DoCastSpellIfCan(m_creature->getVictim(), fallen ? SPELL_MACHINE_GUN_UNDEAD : SPELL_MACHINE_GUN_ALIVE);
                     break;
                 default:
                     break;
