@@ -177,6 +177,7 @@ static Location const m_aVesp[]=
 };
 
 #define FACTION_HOSTILE 14
+
 #define MAX_WAYPOINT    6
 //points around raid "isle", counter clockwise. should probably be adjusted to be more alike
 static Location const m_aDragonCommon[MAX_WAYPOINT]=
@@ -224,20 +225,22 @@ static Location const TwilightEggsSarth[] =
 ## Boss Sartharion
 ######*/
 
-struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEventInterface
+struct MANGOS_DLL_DECL boss_sartharionAI: public ScriptedAI, public ScriptEventInterface
 {
-    boss_sartharionAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature)
-    {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
     ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode :1;
     bool m_bIsBerserk :1;
     bool m_bIsSoftEnraged :1;
     bool m_bIsHardEnraged :1;
+
+    boss_sartharionAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty())
+    {
+        Reset();
+    }
 
     void Reset()
     {
@@ -246,8 +249,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
         m_bIsHardEnraged = false;
         Events.Reset();
 
-        if (m_creature->HasAura(SPELL_TWILIGHT_REVENGE))
-            m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_REVENGE);
+        m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_REVENGE);
 
         if (m_pInstance)
             m_pInstance->SetData(DATA_DRAKES, 0);
@@ -271,12 +273,12 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
             FetchDragons();
         }
 
-        Events.ScheduleEvent(EVENT_HARD_ENRAGE, MINUTE*15*IN_MILLISECONDS);
-        Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
-        Events.ScheduleEvent(EVENT_FLAME_BREATH, 20000);
-        Events.ScheduleEvent(EVENT_TAIL_SWEEP, 20000);
-        Events.ScheduleEvent(EVENT_CLEAVE, 7000);
-        Events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
+        Events.ScheduleEvent(EVENT_HARD_ENRAGE,         15*MINUTE*IN_MILLISECONDS,              5*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_FLAME_TSUNAMI,       30*IN_MILLISECONDS,                     30*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_FLAME_BREATH, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 25*IN_MILLISECONDS, 35*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_TAIL_SWEEP,   20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 15*IN_MILLISECONDS, 20*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_CLEAVE,       7*IN_MILLISECONDS, 7*IN_MILLISECONDS,   7*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_LAVA_STRIKE,  5*IN_MILLISECONDS, 5*IN_MILLISECONDS,   5*IN_MILLISECONDS, 20*IN_MILLISECONDS);
     }
 
     void JustDied(Unit* pKiller)
@@ -289,7 +291,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
 
     void KilledUnit(Unit* pVictim)
     {
-        switch(urand(0, 2))
+        switch (urand(0, 2))
         {
             case 0: DoScriptText(SAY_SARTHARION_SLAY_1, m_creature); break;
             case 1: DoScriptText(SAY_SARTHARION_SLAY_2, m_creature); break;
@@ -297,9 +299,9 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
         }
     }
 
-    //some loot handling should be applied in order to reward players based on achieve rather than luck
     void AddDrakeLootMode()
     {
+        //TODO: some loot handling should be applied in order to reward players based on achieve rather than luck
     }
 
     void FetchDragons()
@@ -318,9 +320,8 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
             drakeCount++;
             pTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0].x, m_aTene[0].y, m_aTene[0].z);
 
-            Events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
-            if (!pTene->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                pTene->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            Events.ScheduleEvent(EVENT_CALL_TENEBRON, 30*IN_MILLISECONDS);
+            pTene->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if (pShad && pShad->isAlive() && !pShad->getVictim())
@@ -328,9 +329,8 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
             drakeCount++;
             pShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0].x, m_aShad[0].y, m_aShad[0].z);
 
-            Events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
-            if (!pShad->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                pShad->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            Events.ScheduleEvent(EVENT_CALL_SHADRON, 75*IN_MILLISECONDS);
+            pShad->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if (pVesp && pVesp->isAlive() && !pVesp->getVictim())
@@ -338,9 +338,8 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
             drakeCount++;
             pVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0].x, m_aVesp[0].y, m_aVesp[0].z);
 
-            Events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
-            if (!pVesp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                pVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            Events.ScheduleEvent(EVENT_CALL_VESPERON, 2*MINUTE*IN_MILLISECONDS);
+            pVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if (m_pInstance)
@@ -371,17 +370,13 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
 
             if (pTemp && pTemp->isAlive() && !pTemp->getVictim())
             {
-                if (pTemp->HasSplineFlag(SPLINEFLAG_WALKMODE))
-                    pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
-
-                if (pTemp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                    pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
+                pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 int32 iTextId = 0;
-                //TODO: Add support for loot handling
                 AddDrakeLootMode();
 
-                switch(pTemp->GetEntry())
+                switch (pTemp->GetEntry())
                 {
                     case NPC_TENEBRON:
                         iTextId = SAY_SARTHARION_CALL_TENEBRON;
@@ -410,14 +405,27 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
         {
             Map::PlayerList const &PlayerList = pMap->GetPlayers();
 
-            if (!PlayerList.isEmpty())
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                {
-                    if (i->getSource()->isAlive())
-                        DoScriptText(WHISPER_LAVA_CHURN, m_creature,i->getSource());
-                }
+                if (i->getSource()->isAlive())
+                    DoScriptText(WHISPER_LAVA_CHURN, m_creature,i->getSource());
             }
+        }
+
+        switch (urand(0,1))
+        {
+            case 0:
+                if (Creature *Right1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight1Spawn.x, FlameRight1Spawn.y, FlameRight1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
+                    Right1->GetMotionMaster()->MovePoint(0, FlameRight1Direction.x, FlameRight1Direction.y, FlameRight1Direction.z);
+                if (Creature *Right2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight2Spawn.x, FlameRight2Spawn.y, FlameRight2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
+                    Right2->GetMotionMaster()->MovePoint(0, FlameRight2Direction.x, FlameRight2Direction.y, FlameRight2Direction.z);
+                break;
+            case 1:
+                if (Creature *Left1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft1Spawn.x, FlameLeft1Spawn.y, FlameLeft1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
+                    Left1->GetMotionMaster()->MovePoint(0, FlameLeft1Direction.x, FlameLeft1Direction.y, FlameLeft1Direction.z);
+                if (Creature *Left2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft2Spawn.x, FlameLeft2Spawn.y, FlameLeft2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
+                    Left2->GetMotionMaster()->MovePoint(0, FlameLeft2Direction.x, FlameLeft2Direction.y, FlameLeft2Direction.z);
+                break;
         }
     }
 
@@ -432,7 +440,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
         Creature *pVesp = GET_CREATURE(DATA_VESPERON);
 
         //spell will target dragons, if they are still alive at 35% (soft enrage)
-        if (m_creature->GetHealthPercent() < 35.0f && !m_bIsSoftEnraged
+        if (!m_bIsSoftEnraged && m_creature->GetHealthPercent() < 35.0f
             && ((pTene && pTene->isAlive()) || (pShad && pShad->isAlive()) || (pVesp && pVesp->isAlive())))
         {
             DoScriptText(SAY_SARTHARION_BERSERK, m_creature);
@@ -447,7 +455,6 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
         }
 
         Events.Update(uiDiff);
-
         while (uint32 eventId = Events.ExecuteEvent())
         {
             switch (eventId)
@@ -455,57 +462,32 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI, public ScriptEvent
                 case EVENT_HARD_ENRAGE:
                     DoCastSpellIfCan(m_creature, SPELL_PYROBUFFET, CAST_TRIGGERED);
                     m_bIsHardEnraged = true;
-                    Events.ScheduleEvent(EVENT_HARD_ENRAGE, 5000);
                     break;
                 case EVENT_FLAME_TSUNAMI:
                     SendFlameTsunami();
-                    switch(urand(0,1))
-                    {
-                        case 0:
-                        {
-                            if (Creature *Right1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight1Spawn.x, FlameRight1Spawn.y, FlameRight1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
-                                Right1->GetMotionMaster()->MovePoint(0, FlameRight1Direction.x, FlameRight1Direction.y, FlameRight1Direction.z);
-                            if (Creature *Right2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight2Spawn.x, FlameRight2Spawn.y, FlameRight2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
-                                Right2->GetMotionMaster()->MovePoint(0, FlameRight2Direction.x, FlameRight2Direction.y, FlameRight2Direction.z);
-                            break;
-                        }
-                        case 1:
-                        {
-                            if (Creature *Left1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft1Spawn.x, FlameLeft1Spawn.y, FlameLeft1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
-                                Left1->GetMotionMaster()->MovePoint(0, FlameLeft1Direction.x, FlameLeft1Direction.y, FlameLeft1Direction.z);
-                            if (Creature *Left2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft2Spawn.x, FlameLeft2Spawn.y, FlameLeft2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
-                                Left2->GetMotionMaster()->MovePoint(0, FlameLeft2Direction.x, FlameLeft2Direction.y, FlameLeft2Direction.z);
-                            break;
-                        }
-                    }
-                    Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
                     break;
                 case EVENT_FLAME_BREATH:
                     DoScriptText(SAY_SARTHARION_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_FLAME_BREATH));
-                    Events.ScheduleEvent(EVENT_FLAME_BREATH, urand(25000, 35000));
                     break;
                 case EVENT_TAIL_SWEEP:
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_TAIL_LASH));
-                    Events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(15000, 20000));
                     break;
                 case EVENT_CLEAVE:
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
-                    Events.ScheduleEvent(EVENT_CLEAVE, urand(7000, 10000));
                     break;
                 case EVENT_LAVA_STRIKE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
                         DoCastSpellIfCan(pTarget, SPELL_LAVA_STRIKE);
 
-                        switch(urand(0, 15))
+                        switch (urand(0, 15))
                         {
                             case 0: DoScriptText(SAY_SARTHARION_SPECIAL_1, m_creature); break;
                             case 1: DoScriptText(SAY_SARTHARION_SPECIAL_2, m_creature); break;
                             case 2: DoScriptText(SAY_SARTHARION_SPECIAL_3, m_creature); break;
                         }
                     }
-                    Events.ScheduleEvent(EVENT_LAVA_STRIKE, urand(5000, 20000));
                     break;
                 case EVENT_CALL_TENEBRON:
                     CallDragon(DATA_TENEBRON);
@@ -569,7 +551,7 @@ enum VespText
 };
 
 //to control each dragons common abilities
-struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInterface
+struct MANGOS_DLL_DECL dummy_dragonAI: public ScriptedAI, public ScriptEventInterface
 {
     SummonManager SummonMgr;
     ScriptedInstance *m_pInstance;
@@ -580,25 +562,28 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
     int32 m_iPortalRespawnTime;
     bool m_bCanMoveFree;
 
-    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature), SummonMgr(pCreature)
+    dummy_dragonAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        SummonMgr(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty())
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     void Reset()
     {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-        if (GameObject *TwilightPortal = GetClosestGameObjectWithEntry(m_creature, GO_TWILIGHT_PORTAL, 100.0f))
-            TwilightPortal->SetGoState(GO_STATE_READY);
-
         m_uiWaypointId = 0;
         m_uiMoveNextTimer = 500;
         m_iPortalRespawnTime = 30000;
         m_bCanMoveFree = false;
+
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+        if (GameObject *TwilightPortal = GetClosestGameObjectWithEntry(m_creature, GO_TWILIGHT_PORTAL, 100.0f))
+            TwilightPortal->SetGoState(GO_STATE_READY);
+
         BroadcastEvent(EVENT_WIPE, 0, 100.0f); // in case we wipe, we remove the controllers
     }
 
@@ -652,11 +637,8 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
         {
             Map::PlayerList const &PlayerList = pMap->GetPlayers();
 
-            if (!PlayerList.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    DoScriptText(iTextId, m_creature, i->getSource());
-            }
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                DoScriptText(iTextId, m_creature, i->getSource());
         }
     }
 
@@ -669,18 +651,19 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
 
         //using a grid search here seem to be more efficient than caching all four guids
         //in instance script and calculate range to each.
-        GameObject* pPortal = GetClosestGameObjectWithEntry(m_creature,GO_TWILIGHT_PORTAL,50.0f);
+        GameObject* pPortal = GetClosestGameObjectWithEntry(m_creature, GO_TWILIGHT_PORTAL, 50.0f);
         DoRaidWhisper(WHISPER_OPEN_PORTAL);
+
         switch (m_creature->GetEntry())
         {
             case NPC_TENEBRON:
-                SummonMgr.SummonCreature(NPC_TENEBRON_EGG_CONTROLLER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30*IN_MILLISECONDS);
+                SummonMgr.SummonCreature(NPC_TENEBRON_EGG_CONTROLLER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3.0f, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30*IN_MILLISECONDS);
                 break;
             case NPC_SHADRON:
-                SummonMgr.SummonCreature(NPC_PORTAL_OF_SHADRON, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*MINUTE*IN_MILLISECONDS);
+                SummonMgr.SummonCreature(NPC_PORTAL_OF_SHADRON, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3.0f, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*MINUTE*IN_MILLISECONDS);
                 break;
             case NPC_VESPERON:
-                SummonMgr.SummonCreature(NPC_VESPERON_CONTROLLER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*MINUTE*IN_MILLISECONDS);
+                SummonMgr.SummonCreature(NPC_VESPERON_CONTROLLER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3.0f, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*MINUTE*IN_MILLISECONDS);
                 break;
         }
 
@@ -707,7 +690,7 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
 
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                if (i->getSource()->isAlive() && i->getSource()->HasAura(uiSpellId))
+                if (i->getSource()->isAlive())
                     i->getSource()->RemoveAurasDueToSpell(uiSpellId);
             }
         }
@@ -718,7 +701,7 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
         int32 iTextId = 0;
         uint32 uiSpellId = 0;
 
-        switch(m_creature->GetEntry())
+        switch (m_creature->GetEntry())
         {
             case NPC_TENEBRON:
                 iTextId = SAY_TENEBRON_DEATH;
@@ -774,15 +757,18 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI, public ScriptEventInt
 ## Mob Tenebron
 ######*/
 
-struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
+struct MANGOS_DLL_DECL mob_tenebronAI: public dummy_dragonAI
 {
-    mob_tenebronAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
+    mob_tenebronAI(Creature* pCreature):
+        dummy_dragonAI(pCreature)
+    {
+        Reset();
+    }
 
     void Reset()
     {
         Events.Reset();
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void Aggro(Unit* pWho)
@@ -791,9 +777,9 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             DoScriptText(SAY_TENEBRON_AGGRO, m_creature);
         else
             DoScriptText(SAY_TENEBRON_RESPOND, m_creature);
-        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
-        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 30000);
-        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
+        Events.ScheduleEventInRange(EVENT_SHADOW_FISSURE, 5*IN_MILLISECONDS, 5*IN_MILLISECONDS,  15*IN_MILLISECONDS, 20*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_DRAKE_SPECIAL, 30*IN_MILLISECONDS, 30*IN_MILLISECONDS, 30*IN_MILLISECONDS, 45*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_SHADOW_BREATH, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 25*IN_MILLISECONDS);
         m_creature->SetInCombatWithZone();
         DoCastSpellIfCan(m_creature, SPELL_POWER_OF_TENEBRON);
     }
@@ -811,24 +797,21 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
             dummy_dragonAI::UpdateAI(uiDiff);
             return;
         }
-        Events.Update(uiDiff);
 
+        Events.Update(uiDiff);
         while (uint32 eventId = Events.ExecuteEvent())
             switch (eventId)
             {
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(30000, 45000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_TENEBRON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
 
@@ -841,28 +824,27 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
 ## Mob Shadron
 ######*/
 
-struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
+struct MANGOS_DLL_DECL mob_shadronAI: public dummy_dragonAI
 {
-    mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
+    mob_shadronAI(Creature* pCreature):
+        dummy_dragonAI(pCreature)
+    {
+        Reset();
+    }
 
     void Reset()
     {
         Events.Reset();
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-        if (m_creature->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
-            m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
-
-        if (m_creature->HasAura(SPELL_GIFT_OF_TWILIGHT_SHA))
-            m_creature->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGHT_SHA);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
+        m_creature->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGHT_SHA);
     }
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
-        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
-        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
+        Events.ScheduleEventInRange(EVENT_SHADOW_FISSURE, 5*IN_MILLISECONDS, 5*IN_MILLISECONDS,  15*IN_MILLISECONDS, 20*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_DRAKE_SPECIAL, 60*IN_MILLISECONDS, 60*IN_MILLISECONDS, 60*IN_MILLISECONDS, 65*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_SHADOW_BREATH, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 25*IN_MILLISECONDS);
         if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
             DoScriptText(SAY_SHADRON_AGGRO, m_creature);
         else
@@ -893,16 +875,13 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
                 case EVENT_SHADOW_FISSURE:
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 65000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_SHADRON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
                 }
 
@@ -915,22 +894,25 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
 ## Mob Vesperon
 ######*/
 
-struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
+struct MANGOS_DLL_DECL mob_vesperonAI: public dummy_dragonAI
 {
-    mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature) { Reset(); }
+    mob_vesperonAI(Creature* pCreature):
+        dummy_dragonAI(pCreature)
+    {
+        Reset();
+    }
 
     void Reset()
     {
         Events.Reset();
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEvent(EVENT_SHADOW_BREATH, 20000);
-        Events.ScheduleEvent(EVENT_SHADOW_FISSURE, 5000);
-        Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, 60000);
+        Events.ScheduleEventInRange(EVENT_SHADOW_FISSURE, 5*IN_MILLISECONDS, 5*IN_MILLISECONDS,  15*IN_MILLISECONDS, 20*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_DRAKE_SPECIAL, 60*IN_MILLISECONDS, 60*IN_MILLISECONDS, 60*IN_MILLISECONDS, 70*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_SHADOW_BREATH, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 25*IN_MILLISECONDS);
 
         if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
             DoScriptText(SAY_VESPERON_AGGRO, m_creature);
@@ -964,46 +946,47 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
                 {
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         DoCastSpellIfCan(pTarget, DIFFICULTY(SPELL_SHADOW_FISSURE));
-                    Events.ScheduleEvent(EVENT_SHADOW_FISSURE, urand(15000, 20000));
                     break;
                 }
                 case EVENT_DRAKE_SPECIAL:
                     OpenPortal();
-                    Events.ScheduleEvent(EVENT_DRAKE_SPECIAL, urand(60000, 70000));
                     break;
                 case EVENT_SHADOW_BREATH:
                     DoScriptText(SAY_VESPERON_BREATH, m_creature);
                     DoCastSpellIfCan(m_creature->getVictim(), DIFFICULTY(SPELL_SHADOW_BREATH));
-                    Events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(20000, 25000));
                     break;
             }
 
         DoMeleeAttackIfReady();
     }
 };
+
 /*######
 ## Mob Portal of Shadron 
 ######*/
 
-struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public ScriptEventInterface
+struct MANGOS_DLL_DECL mob_portal_of_shadronAI: public ScriptedAI, public ScriptEventInterface
 {
     SummonManager SummonMgr;
-    mob_portal_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature), SummonMgr(pCreature)
+    ScriptedInstance *m_pInstance;
+
+    mob_portal_of_shadronAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        SummonMgr(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
-    ScriptedInstance *m_pInstance;
-
     void Reset()
     {
-        SummonMgr.UnsummonAll();
-        Events.Reset();
         m_creature->SetDisplayId(11686);
-        Events.ScheduleEvent(EVENT_SUMMON, 1000);
-        Events.ScheduleEvent(EVENT_DEBUFF, 1000);
-        //Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58000); //this is not required, on wipe it will be removed automatically (controller despawn)
+        Events.Reset();
+        SummonMgr.UnsummonAll();
+        Events.ScheduleEvent(EVENT_SUMMON, 1*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_DEBUFF, 1*IN_MILLISECONDS);
+        //Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 58*IN_MILLISECONDS); //this is not required, on wipe it will be removed automatically (controller despawn)
     }
 
     void SummonedCreatureJustDied(Creature *pSummon)
@@ -1011,7 +994,7 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public Scrip
         if (pSummon)
         {
             SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
-            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2*IN_MILLISECONDS);
         }
     }
 
@@ -1026,14 +1009,14 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public Scrip
                 {
                     m_creature->MonsterTextEmote(WHISPER_SHADRON_DICIPLE, 0, true);
                     if (m_pInstance && m_pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
-                        m_creature->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron.x, AcolyteofShadron.y , AcolyteofShadron.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
+                        SummonMgr.SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron.x, AcolyteofShadron.y , AcolyteofShadron.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
                     else
-                        m_creature->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron2.x, AcolyteofShadron2.y , AcolyteofShadron2.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
+                        SummonMgr.SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron2.x, AcolyteofShadron2.y , AcolyteofShadron2.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
                     break;
                 }
                 case EVENT_DEBUFF:
                 {
-                    m_creature->CastSpell(NULL, m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS ? SPELL_GIFT_OF_TWILIGHT_SAR : SPELL_GIFT_OF_TWILIGHT_SHA, true);
+                    m_creature->CastSpell(m_creature, m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS ? SPELL_GIFT_OF_TWILIGHT_SAR : SPELL_GIFT_OF_TWILIGHT_SHA, true);
                     break;
                 }
                 case EVENT_WIPE:
@@ -1045,9 +1028,6 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public Scrip
                     if (map->IsDungeon())
                     {
                         Map::PlayerList const &PlayerList = map->GetPlayers();
-
-                        if (PlayerList.isEmpty())
-                            return;
 
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
@@ -1072,15 +1052,16 @@ struct MANGOS_DLL_DECL mob_portal_of_shadronAI : public ScriptedAI, public Scrip
 ## Mob Acolyte of Shadron
 ######*/
 
-struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI: public ScriptedAI
 {
-    mob_acolyte_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature)
+    ScriptedInstance *m_pInstance;
+
+    mob_acolyte_of_shadronAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
-
-    ScriptedInstance* m_pInstance;
 
     void Reset()
     {
@@ -1100,14 +1081,17 @@ struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
 ## Mob Vesperon Controller
 ######*/
 
-struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public ScriptEventInterface
+struct MANGOS_DLL_DECL mob_vesperon_controllerAI: public ScriptedAI, public ScriptEventInterface
 {
     SummonManager SummonMgr;
     ScriptedInstance* m_pInstance;
 
-    mob_vesperon_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature), SummonMgr(pCreature)
+    mob_vesperon_controllerAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        SummonMgr(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
@@ -1115,9 +1099,9 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
     {
         Events.Reset();
         m_creature->SetDisplayId(11686);
-        Events.ScheduleEvent(EVENT_SUMMON, 1000);
-        Events.ScheduleEvent(EVENT_DEBUFF, 1000);
-        Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 59000);
+        Events.ScheduleEvent(EVENT_SUMMON, 1*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_DEBUFF, 1*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 59*IN_MILLISECONDS);
     }
 
     void SummonedCreatureJustDied(Creature *pSummon)
@@ -1125,7 +1109,7 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
         if (pSummon)
         {
             SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
-            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2*IN_MILLISECONDS);
         }
     }
 
@@ -1147,8 +1131,7 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
                 }
                 case EVENT_DEBUFF:
                 {
-                    Creature* pVesp = GET_CREATURE(DATA_VESPERON);
-                    if (pVesp)
+                    if (Creature* pVesp = GET_CREATURE(DATA_VESPERON))
                          pVesp->CastSpell(pVesp, SPELL_TWILIGHT_TORMENT_VESP, true);
                     break;
                 }
@@ -1158,9 +1141,6 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
                 case EVENT_CLEAR_DEBUFF:
                 {
                     Map::PlayerList const &PlayerList = m_creature->GetMap()->GetPlayers();
-
-                    if (PlayerList.isEmpty())
-                        break;
 
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
@@ -1172,10 +1152,11 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
                             pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
                             pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
                         }
-                        if (pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
+
+                        if (pDebuffTarget->isAlive())
                             pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
 
-                        if (pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_TWILIGHT_TORMENT_VESP_ACO))
+                        if (pDebuffTarget->isAlive())
                             pDebuffTarget->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP_ACO);
                     }
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -1189,9 +1170,10 @@ struct MANGOS_DLL_DECL mob_vesperon_controllerAI : public ScriptedAI, public Scr
 ## Mob Acolyte of Vesperon
 ######*/
 
-struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI: public ScriptedAI
 {
-    mob_acolyte_of_vesperonAI(Creature* pCreature) : ScriptedAI(pCreature)
+    mob_acolyte_of_vesperonAI(Creature* pCreature):
+        ScriptedAI(pCreature)
     {
         Reset();
     }
@@ -1211,6 +1193,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1219,25 +1202,29 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
 ## Mob Tenebron Egg Controller
 ######*/
 
-struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI, public ScriptEventInterface
+struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance* m_pInstance;
-    bool done, summoned;
     SummonManager SummonMgr;
+    bool m_bDone :1;
+    bool m_bSummoned :1;
 
-    mob_tenebron_egg_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), ScriptEventInterface(pCreature), SummonMgr(pCreature)
+    mob_tenebron_egg_controllerAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        SummonMgr(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
     void Reset()
     {
-        SummonMgr.UnsummonAll();
+        m_bDone = false;
+        m_bSummoned = false;
         Events.Reset();
+        SummonMgr.UnsummonAll();
         m_creature->SetDisplayId(11686);
-        done = false;
-        summoned = false;
         Events.ScheduleEvent(EVENT_SUMMON, 100);
         Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 20100);
     }
@@ -1250,10 +1237,10 @@ struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI, public
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!SummonMgr.GetSummonCount() && summoned && !done)
+        if (!SummonMgr.GetSummonCount() && m_bSummoned && !m_bDone)
         {
-            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2000);
-            done = true;
+            Events.ScheduleEvent(EVENT_CLEAR_DEBUFF, 2*IN_MILLISECONDS);
+            m_bDone = true;
         }
 
         Events.Update(uiDiff);
@@ -1273,7 +1260,7 @@ struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI, public
                         for (int i = 0 ; i < 6; i++)
                             SummonMgr.SummonCreature(NPC_TWILIGHT_EGG, TwilightEggsSarth[0].x+(rand()%5-2.5f), TwilightEggsSarth[0].y+(rand()%5-2.5f), TwilightEggsSarth[0].z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
                     }
-                    summoned = true;
+                    m_bSummoned = true;
                     if (Creature *pTene = GET_CREATURE(DATA_TENEBRON))
                         pTene->MonsterTextEmote(WHISPER_HATCH_EGGS, 0, true);
                     break;
@@ -1305,16 +1292,17 @@ struct MANGOS_DLL_DECL mob_tenebron_egg_controllerAI : public ScriptedAI, public
 ## Mob Twilight Eggs
 ######*/
 
-struct MANGOS_DLL_DECL mob_twilight_eggsAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_twilight_eggsAI: public ScriptedAI
 {
-    mob_twilight_eggsAI(Creature* pCreature) : ScriptedAI(pCreature) 
-    {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        Reset();
-    }
-
     ScriptedInstance *m_pInstance;
     uint32 m_uiHatchEggTimer;
+
+    mob_twilight_eggsAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+    {
+        Reset();
+    }
 
     void Reset()
     {
@@ -1341,6 +1329,7 @@ struct MANGOS_DLL_DECL mob_twilight_eggsAI : public ScriptedAI
     }
 
     void AttackStart(Unit* pWho) { }
+
     void MoveInLineOfSight(Unit* pWho) { }
 };
 
@@ -1348,17 +1337,19 @@ struct MANGOS_DLL_DECL mob_twilight_eggsAI : public ScriptedAI
 ## Flame Tsunami
 ######*/
 
-struct mob_flame_tsunamiAI : public ScriptedAI
+struct mob_flame_tsunamiAI: public ScriptedAI
 {
-    mob_flame_tsunamiAI(Creature* pCreature) : ScriptedAI(pCreature)
+    uint32 damageAuraTimer;
+
+    mob_flame_tsunamiAI(Creature* pCreature):
+        ScriptedAI(pCreature)
     {
         Reset();
     }
 
-    uint32 damageAuraTimer;
-
     void Reset()
     {
+        damageAuraTimer = 1000;
         m_creature->SetLevel(83);
         m_creature->setFaction(14);
         m_creature->SetDisplayId(11686);
@@ -1366,7 +1357,6 @@ struct mob_flame_tsunamiAI : public ScriptedAI
         m_creature->SetSpeedRate(MOVE_WALK, 3.0f, true);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        damageAuraTimer = 1000;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -1405,17 +1395,18 @@ struct mob_flame_tsunamiAI : public ScriptedAI
 ## Twilight Fissure
 ######*/
 
-struct mob_twilight_fissureAI : public Scripted_NoMovementAI
+struct mob_twilight_fissureAI: public Scripted_NoMovementAI
 {
-    mob_twilight_fissureAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
-    {
-        pCreature->setFaction(FACTION_HOSTILE);
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
     bool m_bIsRegularMode;
     uint32 VoidBlast_Timer;
+
+    mob_twilight_fissureAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty())
+    {
+        pCreature->setFaction(FACTION_HOSTILE);
+        Reset();
+    }
 
     void Reset()
     {
@@ -1440,11 +1431,15 @@ struct mob_twilight_fissureAI : public Scripted_NoMovementAI
 ## Mob Twilight Whelps
 ######*/
 
-struct MANGOS_DLL_DECL mob_twilight_whelpAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_twilight_whelpAI: public ScriptedAI
 {
-    mob_twilight_whelpAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
-
     uint32 m_uiFadeArmorTimer;
+
+    mob_twilight_whelpAI(Creature* pCreature):
+        ScriptedAI(pCreature)
+    {
+        Reset();
+    }
 
     void Reset()
     {
@@ -1460,6 +1455,8 @@ struct MANGOS_DLL_DECL mob_twilight_whelpAI : public ScriptedAI
         {
             if (m_creature->isTemporarySummon())
                 static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            else
+                m_creature->ForcedDespawn();
             return;
         }
 
