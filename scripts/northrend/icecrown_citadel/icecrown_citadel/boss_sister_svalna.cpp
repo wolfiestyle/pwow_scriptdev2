@@ -1281,8 +1281,6 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
         Scripted_NoMovementAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        if (m_pInstance->GetData(TYPE_SVALNA) == DONE) // we make it invisible if event is done and creature wants to respawn
-            pCreature->SetPhaseMask(16, true);
     }
 
     void Reset()
@@ -1311,6 +1309,9 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (m_pInstance->GetData(TYPE_SVALNA) == DONE && m_creature->GetPhaseMask() != 16) // we make it invisible if event is done and creature wants to respawn
+            m_creature->SetPhaseMask(16, true);
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;        
         
@@ -1393,8 +1394,6 @@ struct MANGOS_DLL_DECL npc_fwh_trashAI: public ScriptedAI
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
 
     {
-        if (m_pInstance->GetData(TYPE_SVALNA) == DONE) // we make it invisible if event is done
-            pCreature->SetPhaseMask(16, true);
     }
 
     void Reset()
@@ -1425,6 +1424,9 @@ struct MANGOS_DLL_DECL npc_fwh_trashAI: public ScriptedAI
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (m_pInstance->GetData(TYPE_SVALNA) == DONE && m_creature->GetPhaseMask() != 16) // we make it invisible if event is done and creature wants to respawn
+            m_creature->SetPhaseMask(16, true);
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
