@@ -9,31 +9,31 @@
 //Quest:The Gift That Keeps On Giving
 struct MANGOS_DLL_DECL npc_scarlet_minerAI : public ScriptedAI
 {
-    npc_scarlet_minerAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scarlet_minerAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
-    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
+    void SpellHit(Unit* pCaster, const SpellEntry *pSpell)
     {
         if (pCaster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && pSpell->Id == 52481)
         {
-            if(((Player*)pCaster)->GetQuestStatus(12698) == QUEST_STATUS_INCOMPLETE)
+            if (((Player*)pCaster)->GetQuestStatus(12698) == QUEST_STATUS_INCOMPLETE)
             {
                 //We summon the ghoul for 60 seconds
-                Unit* pGhoul = m_creature->SummonCreature(28845,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,60000);
+                Unit* pGhoul = m_creature->SummonCreature(28845, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
 
                 //We kill the mob since he is now a ghoul
                 m_creature->SetHealth(0);
                 m_creature->setDeathState(DEAD);
 
                 //We increase the quest counter
-                ((Player*)pCaster)->KilledMonsterCredit(28845,pGhoul->GetGUID());
+                ((Player*)pCaster)->KilledMonsterCredit(28845, pGhoul->GetGUID());
             }
         }
     }
 };
 
-CreatureAI* GetAI_npc_scarlet_miner(Creature* pCreature)
+CreatureAI* GetAI_npc_scarlet_miner(Creature *pCreature)
 {
     return new npc_scarlet_minerAI(pCreature);
 }
@@ -41,22 +41,23 @@ CreatureAI* GetAI_npc_scarlet_miner(Creature* pCreature)
 //Quest:Massacre At Light's Point
 struct MANGOS_DLL_DECL npc_scarlet_defenderAI : public ScriptedAI
 {
-    npc_scarlet_defenderAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scarlet_defenderAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if (killer->GetTypeId() == TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
 
-            if(pKiller->GetReqKillOrCastCurrentCount(12701,28849) < 100)
+            if(pKiller->GetReqKillOrCastCurrentCount(12701, 28849) < 100)
                 pKiller->KilledMonsterCredit(28849,m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_scarlet_defender(Creature* pCreature)
+CreatureAI* GetAI_npc_scarlet_defender(Creature *pCreature)
 {
     return new npc_scarlet_defenderAI(pCreature);
 }
@@ -64,22 +65,22 @@ CreatureAI* GetAI_npc_scarlet_defender(Creature* pCreature)
 //Quest:Nowhere To Run And Nowhere To Hide
 struct MANGOS_DLL_DECL npc_mayor_quimbyAI : public ScriptedAI
 {
-    npc_mayor_quimbyAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_mayor_quimbyAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId() == TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(12719,28945) < 1)
-                pKiller->KilledMonsterCredit(28945,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(12719, 28945) < 1)
+                pKiller->KilledMonsterCredit(28945, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_mayor_quimby(Creature* pCreature)
+CreatureAI* GetAI_npc_mayor_quimby(Creature *pCreature)
 {
     return new npc_mayor_quimbyAI(pCreature);
 }
@@ -87,44 +88,44 @@ CreatureAI* GetAI_npc_mayor_quimby(Creature* pCreature)
 //Quest:Lambs To The Slaughter
 struct MANGOS_DLL_DECL npc_scarlet_crusade_soldierAI : public ScriptedAI
 {
-    npc_scarlet_crusade_soldierAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scarlet_crusade_soldierAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId()==TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(12722,28984) < 10)
-                pKiller->KilledMonsterCredit(28984,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(12722, 28984) < 10)
+                pKiller->KilledMonsterCredit(28984, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_scarlet_crusade_soldier(Creature* pCreature)
+CreatureAI* GetAI_npc_scarlet_crusade_soldier(Creature *pCreature)
 {
     return new npc_scarlet_crusade_soldierAI(pCreature);
 }
 
 struct MANGOS_DLL_DECL npc_citizen_of_new_avalonAI : public ScriptedAI
 {
-    npc_citizen_of_new_avalonAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_citizen_of_new_avalonAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId()==TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(12722,28986) < 15)
-                pKiller->KilledMonsterCredit(28986,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(12722, 28986) < 15)
+                pKiller->KilledMonsterCredit(28986, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_citizen_of_new_avalon(Creature* pCreature)
+CreatureAI* GetAI_npc_citizen_of_new_avalon(Creature *pCreature)
 {
     return new npc_citizen_of_new_avalonAI(pCreature);
 }
@@ -197,7 +198,7 @@ enum
 //Quest:A Special Surprise - Blood Elf
 struct MANGOS_DLL_DECL npc_lady_eonysAI : public ScriptedAI
 {
-    npc_lady_eonysAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_lady_eonysAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -207,7 +208,7 @@ struct MANGOS_DLL_DECL npc_lady_eonysAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -269,7 +270,7 @@ struct MANGOS_DLL_DECL npc_lady_eonysAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_lady_eonys(Creature* pCreature)
+CreatureAI* GetAI_npc_lady_eonys(Creature *pCreature)
 {
     return new npc_lady_eonysAI(pCreature);
 }
@@ -277,7 +278,7 @@ CreatureAI* GetAI_npc_lady_eonys(Creature* pCreature)
 //Quest:A Special Surprise - Draenei
 struct MANGOS_DLL_DECL npc_valok_the_righteousAI : public ScriptedAI
 {
-    npc_valok_the_righteousAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_valok_the_righteousAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -287,7 +288,7 @@ struct MANGOS_DLL_DECL npc_valok_the_righteousAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -349,7 +350,7 @@ struct MANGOS_DLL_DECL npc_valok_the_righteousAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_valok_the_righteous(Creature* pCreature)
+CreatureAI* GetAI_npc_valok_the_righteous(Creature *pCreature)
 {
     return new npc_valok_the_righteousAI(pCreature);
 }
@@ -357,7 +358,7 @@ CreatureAI* GetAI_npc_valok_the_righteous(Creature* pCreature)
 //Quest:A Special Surprise - Dwarf
 struct MANGOS_DLL_DECL npc_donovan_pulfrostAI : public ScriptedAI
 {
-    npc_donovan_pulfrostAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_donovan_pulfrostAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
     }
@@ -425,7 +426,7 @@ struct MANGOS_DLL_DECL npc_donovan_pulfrostAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_donovan_pulfrost(Creature* pCreature)
+CreatureAI* GetAI_npc_donovan_pulfrost(Creature *pCreature)
 {
     return new npc_donovan_pulfrostAI(pCreature);
 }
@@ -433,7 +434,7 @@ CreatureAI* GetAI_npc_donovan_pulfrost(Creature* pCreature)
 //Quest:A Special Surprise - Undead
 struct MANGOS_DLL_DECL npc_antoine_brackAI : public ScriptedAI
 {
-    npc_antoine_brackAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_antoine_brackAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -443,7 +444,7 @@ struct MANGOS_DLL_DECL npc_antoine_brackAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -506,7 +507,7 @@ struct MANGOS_DLL_DECL npc_antoine_brackAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_antoine_brack(Creature* pCreature)
+CreatureAI* GetAI_npc_antoine_brack(Creature *pCreature)
 {
     return new npc_antoine_brackAI(pCreature);
 }
@@ -514,7 +515,7 @@ CreatureAI* GetAI_npc_antoine_brack(Creature* pCreature)
 //Quest:A Special Surprise - Gnome
 struct MANGOS_DLL_DECL npc_goby_blastenheimerAI : public ScriptedAI
 {
-    npc_goby_blastenheimerAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_goby_blastenheimerAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -524,7 +525,7 @@ struct MANGOS_DLL_DECL npc_goby_blastenheimerAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -587,7 +588,7 @@ struct MANGOS_DLL_DECL npc_goby_blastenheimerAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_goby_blastenheimer(Creature* pCreature)
+CreatureAI* GetAI_npc_goby_blastenheimer(Creature *pCreature)
 {
     return new npc_goby_blastenheimerAI(pCreature);
 }
@@ -595,7 +596,7 @@ CreatureAI* GetAI_npc_goby_blastenheimer(Creature* pCreature)
 //Quest:A Special Surprise - Human
 struct MANGOS_DLL_DECL npc_ellen_stanbridgeAI : public ScriptedAI
 {
-    npc_ellen_stanbridgeAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_ellen_stanbridgeAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -605,7 +606,7 @@ struct MANGOS_DLL_DECL npc_ellen_stanbridgeAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -668,7 +669,7 @@ struct MANGOS_DLL_DECL npc_ellen_stanbridgeAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_ellen_stanbridge(Creature* pCreature)
+CreatureAI* GetAI_npc_ellen_stanbridge(Creature *pCreature)
 {
     return new npc_ellen_stanbridgeAI(pCreature);
 }
@@ -676,7 +677,7 @@ CreatureAI* GetAI_npc_ellen_stanbridge(Creature* pCreature)
 //Quest:A Special Surprise - Night Elf
 struct MANGOS_DLL_DECL npc_yazmina_oakenthornAI : public ScriptedAI
 {
-    npc_yazmina_oakenthornAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_yazmina_oakenthornAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -686,7 +687,7 @@ struct MANGOS_DLL_DECL npc_yazmina_oakenthornAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -749,7 +750,7 @@ struct MANGOS_DLL_DECL npc_yazmina_oakenthornAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_yazmina_oakenthorn(Creature* pCreature)
+CreatureAI* GetAI_npc_yazmina_oakenthorn(Creature *pCreature)
 {
     return new npc_yazmina_oakenthornAI(pCreature);
 }
@@ -757,7 +758,7 @@ CreatureAI* GetAI_npc_yazmina_oakenthorn(Creature* pCreature)
 //Quest:A Special Surprise - Orc
 struct MANGOS_DLL_DECL npc_kug_ironjawAI : public ScriptedAI
 {
-    npc_kug_ironjawAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_kug_ironjawAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -767,7 +768,7 @@ struct MANGOS_DLL_DECL npc_kug_ironjawAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -830,7 +831,7 @@ struct MANGOS_DLL_DECL npc_kug_ironjawAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_kug_ironjaw(Creature* pCreature)
+CreatureAI* GetAI_npc_kug_ironjaw(Creature *pCreature)
 {
     return new npc_kug_ironjawAI(pCreature);
 }
@@ -838,7 +839,7 @@ CreatureAI* GetAI_npc_kug_ironjaw(Creature* pCreature)
 //Quest:A Special Surprise - Tauren
 struct MANGOS_DLL_DECL npc_malar_bravehornAI : public ScriptedAI
 {
-    npc_malar_bravehornAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_malar_bravehornAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
         KnightCommanderPlaguefist = GetClosestCreatureWithEntry(m_creature, 29053, 300.0f);
@@ -848,7 +849,7 @@ struct MANGOS_DLL_DECL npc_malar_bravehornAI : public ScriptedAI
     uint32 Talk_Counter;
     uint64 PlayerGUID;
 
-    Creature* KnightCommanderPlaguefist;
+    Creature *KnightCommanderPlaguefist;
 
     void Reset()
     {
@@ -911,7 +912,7 @@ struct MANGOS_DLL_DECL npc_malar_bravehornAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_malar_bravehorn(Creature* pCreature)
+CreatureAI* GetAI_npc_malar_bravehorn(Creature *pCreature)
 {
     return new npc_malar_bravehornAI(pCreature);
 }
@@ -919,7 +920,7 @@ CreatureAI* GetAI_npc_malar_bravehorn(Creature* pCreature)
 //Quest:A Special Surprise - Troll 
 struct MANGOS_DLL_DECL npc_iggy_darktuskAI : public ScriptedAI
 {
-    npc_iggy_darktuskAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_iggy_darktuskAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         Reset();
     }
@@ -987,7 +988,7 @@ struct MANGOS_DLL_DECL npc_iggy_darktuskAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_iggy_darktusk(Creature* pCreature)
+CreatureAI* GetAI_npc_iggy_darktusk(Creature *pCreature)
 {
     return new npc_iggy_darktuskAI(pCreature);
 }
@@ -996,44 +997,44 @@ CreatureAI* GetAI_npc_iggy_darktusk(Creature* pCreature)
 //Quest:An End To All Things...
 struct MANGOS_DLL_DECL npc_scarlet_soldierAI : public ScriptedAI
 {
-    npc_scarlet_soldierAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scarlet_soldierAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId() == TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(12779,29150) < 150)
-                pKiller->KilledMonsterCredit(29150,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(12779, 29150) < 150)
+                pKiller->KilledMonsterCredit(29150, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_scarlet_soldier(Creature* pCreature)
+CreatureAI* GetAI_npc_scarlet_soldier(Creature *pCreature)
 {
     return new npc_scarlet_soldierAI(pCreature);
 }
 
 struct MANGOS_DLL_DECL npc_scarlet_ballistaAI : public ScriptedAI
 {
-    npc_scarlet_ballistaAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scarlet_ballistaAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId()==TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(12779,29104) < 10)
-                pKiller->KilledMonsterCredit(29104,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(12779, 29104) < 10)
+                pKiller->KilledMonsterCredit(29104, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_scarlet_ballista(Creature* pCreature)
+CreatureAI* GetAI_npc_scarlet_ballista(Creature *pCreature)
 {
     return new npc_scarlet_ballistaAI(pCreature);
 }
@@ -1065,7 +1066,7 @@ enum
 
 struct MANGOS_DLL_DECL npc_persuade_scarletAI : public ScriptedAI
 {
-    npc_persuade_scarletAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_persuade_scarletAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     uint32 uiSpeech_timer;
     uint32 uiSpeech_counter;
@@ -1084,7 +1085,7 @@ struct MANGOS_DLL_DECL npc_persuade_scarletAI : public ScriptedAI
     {
         if (caster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && spell->Id == SPELL_PERSUASIVE_STRIKE && uiSpeech_counter == 0)
         {
-            if(((Player*)caster)->GetQuestStatus(12720) == QUEST_STATUS_INCOMPLETE)
+            if (((Player*)caster)->GetQuestStatus(12720) == QUEST_STATUS_INCOMPLETE)
             {
                 if (rand()%100 > 75) // chance
                 {
@@ -1153,7 +1154,7 @@ struct MANGOS_DLL_DECL npc_persuade_scarletAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_persuade_scarlet(Creature* pCreature)
+CreatureAI* GetAI_npc_persuade_scarlet(Creature *pCreature)
 {
     return new npc_persuade_scarletAI(pCreature);
 }
@@ -1161,7 +1162,7 @@ CreatureAI* GetAI_npc_persuade_scarlet(Creature* pCreature)
 //Quest:The Battle For The Ebon Hold
 struct MANGOS_DLL_DECL npc_patchwerkAI : public ScriptedAI
 {
-    npc_patchwerkAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_patchwerkAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
@@ -1170,51 +1171,51 @@ struct MANGOS_DLL_DECL npc_patchwerkAI : public ScriptedAI
         ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
         {
-            Unit* TheKiller = Unit::GetUnit((*m_creature),(*i)->getUnitGuid());
+            Unit* TheKiller = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
             if(TheKiller->GetTypeId()==TYPEID_PLAYER)
             {
                 Player* pKiller = (Player*)TheKiller;
 
-                if(pKiller->GetReqKillOrCastCurrentCount(13166,31099) < 1)
-                    pKiller->KilledMonsterCredit(31099,m_creature->GetGUID());
+                if(pKiller->GetReqKillOrCastCurrentCount(13166, 31099) < 1)
+                    pKiller->KilledMonsterCredit(31099, m_creature->GetGUID());
             }
         }
     }
 };
 
-CreatureAI* GetAI_npc_patchwerk(Creature* pCreature)
+CreatureAI* GetAI_npc_patchwerk(Creature *pCreature)
 {
     return new npc_patchwerkAI(pCreature);
 }
 
 struct MANGOS_DLL_DECL npc_scourgeAI : public ScriptedAI
 {
-    npc_scourgeAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    npc_scourgeAI(Creature *pCreature) : ScriptedAI(pCreature) {Reset();}
 
     void Reset(){}
 
     void JustDied(Unit *killer)
     {
-        if(killer->GetTypeId()==TYPEID_PLAYER){
+        if(killer->GetTypeId()==TYPEID_PLAYER)
+        {
             Player* pKiller = (Player*)killer;
-
-            if(pKiller->GetReqKillOrCastCurrentCount(13166,31100) < 10)
-                pKiller->KilledMonsterCredit(31100,m_creature->GetGUID());
+            if(pKiller->GetReqKillOrCastCurrentCount(13166, 31100) < 10)
+                pKiller->KilledMonsterCredit(31100, m_creature->GetGUID());
         }
     }
 };
 
-CreatureAI* GetAI_npc_scourge(Creature* pCreature)
+CreatureAI* GetAI_npc_scourge(Creature *pCreature)
 {
     return new npc_scourgeAI(pCreature);
 }
 
 //Quest:Noth's Special Brew
-bool GOHello_go_plague_cauldron(Player* pPlayer, GameObject* _GO)
+bool GOHello_go_plague_cauldron(Player *pPlayer, GameObject *_GO)
 {
     if(pPlayer->GetQuestStatus(12717) == QUEST_STATUS_INCOMPLETE)
     {
-        if (pPlayer->HasItemCount(39329,1))
+        if (pPlayer->HasItemCount(39329, 1))
             pPlayer->AreaExploredOrEventHappens(12717);
     }
 
@@ -1244,7 +1245,8 @@ struct MANGOS_DLL_DECL mob_scarlet_courierAI : public ScriptedAI
     uint32 uiStage_timer;
     uint64 pPlayer;
 
-    void Reset() {
+    void Reset() 
+    {
         uiStage = 0;
         uiStage_timer = 3000;
         pPlayer = 0;
@@ -1278,7 +1280,7 @@ struct MANGOS_DLL_DECL mob_scarlet_courierAI : public ScriptedAI
                     m_creature->GetMotionMaster()->MoveIdle();
                     m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
 
-                    if (GameObject* treeGO = GetClosestGameObjectWithEntry(m_creature, GO_INCONSPICUOUS_TREE, 40.0f))
+                    if (GameObject *treeGO = GetClosestGameObjectWithEntry(m_creature, GO_INCONSPICUOUS_TREE, 40.0f))
                     {
                         DoScriptText(SAY_TREE1, m_creature);
                         m_creature->GetMotionMaster()->MovePoint(1, treeGO->GetPositionX(), treeGO->GetPositionY(), treeGO->GetPositionZ());
@@ -1302,7 +1304,7 @@ struct MANGOS_DLL_DECL mob_scarlet_courierAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_scarlet_courier(Creature* pCreature)
+CreatureAI* GetAI_mob_scarlet_courier(Creature *pCreature)
 {
     return new mob_scarlet_courierAI (pCreature);
 }
@@ -1316,7 +1318,8 @@ struct MANGOS_DLL_DECL mob_scarlet_courier_controllerAI : public ScriptedAI
 
     bool bAmbush_overlook;
 
-    void Reset() {
+    void Reset() 
+    {
         bAmbush_overlook = false;
     }
 
@@ -1325,18 +1328,18 @@ struct MANGOS_DLL_DECL mob_scarlet_courier_controllerAI : public ScriptedAI
         GameObject* treeGO = GetClosestGameObjectWithEntry(m_creature, GO_INCONSPICUOUS_TREE, 40.0f);
         if(treeGO && bAmbush_overlook == false)
         {
-            Creature* pCourier = m_creature->SummonCreature(NPC_SCARLET_COURIER, 1461.65, -6010.34, 116.369, 0, TEMPSUMMON_TIMED_DESPAWN, 180000);
+            Creature *pCourier = m_creature->SummonCreature(NPC_SCARLET_COURIER, 1461.65f, -6010.34f, 116.369f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
             pCourier->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
             pCourier->Mount(14338); // not sure about this id
             pCourier->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
             bAmbush_overlook = true;
         }
-        if(!treeGO && bAmbush_overlook == true)
+        if(!treeGO && bAmbush_overlook)
             bAmbush_overlook = false;
     }
 };
 
-CreatureAI* GetAI_mob_scarlet_courier_controller(Creature* pCreature)
+CreatureAI* GetAI_mob_scarlet_courier_controller(Creature *pCreature)
 {
     return new mob_scarlet_courier_controllerAI (pCreature);
 }
@@ -1418,7 +1421,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
         }
     }
 
-    void JustSummoned(Creature* summoned)
+    void JustSummoned(Creature *summoned)
     {
         if (Unit* pPlayer = Unit::GetUnit(*m_creature, PlayerGUID))
         {
@@ -1456,14 +1459,14 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
                 else if (uiWave == 3)
                 {
                     DoScriptText(SAY_BREAKOUT6, m_creature);
-                    if (Creature* pNPC = m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329, -6045.818, 127.583, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                    if (Creature *pNPC = m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329, -6045.818, 127.583, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                         uiValrothGUID = pNPC->GetGUID();
                     uiWave++;
                     uiWave_timer = 1000;
                 }
                 else if (uiWave == 4)
                 {
-                    Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiValrothGUID));
+                    Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiValrothGUID));
                     if (!pTemp)
                     {
                         DoScriptText(SAY_BREAKOUT8, m_creature);
@@ -1500,7 +1503,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_koltira_deathweaver(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
+bool QuestAccept_npc_koltira_deathweaver(Player* pPlayer, Creature *pCreature, Quest const* pQuest)
 {
     if (pQuest->GetQuestId() == 12727)
     {
@@ -1510,7 +1513,7 @@ bool QuestAccept_npc_koltira_deathweaver(Player* pPlayer, Creature* pCreature, Q
     return true;
 }
 
-CreatureAI* GetAI_npc_koltira_deathweaver(Creature* pCreature)
+CreatureAI* GetAI_npc_koltira_deathweaver(Creature *pCreature)
 {
     npc_koltira_deathweaverAI* tempAI = new npc_koltira_deathweaverAI(pCreature);
 
@@ -1603,7 +1606,7 @@ struct MANGOS_DLL_DECL mob_high_inquisitor_valrothAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_high_inquisitor_valroth(Creature* pCreature)
+CreatureAI* GetAI_mob_high_inquisitor_valroth(Creature *pCreature)
 {
     return new mob_high_inquisitor_valrothAI (pCreature);
 }
@@ -1817,36 +1820,36 @@ struct Locations
 
 static Locations LightofDawnLoc[]=
 {
-    {2281.335, -5300.409, 85.170, 0},     // 0 Tirion Fordring loc
-    {2283.896, -5287.914, 83.066, 1.55},  // 1 Tirion Fordring loc2
-    {2281.461, -5263.014, 81.164, 0},     // 2 Tirion charges
-    {2262.277, -5293.477, 82.167, 0},     // 3 Tirion run
-    {2270.286, -5287.73, 82.262, 0},      // 4 Tirion relocate
-    {2269.511, -5288.289, 82.225, 0},     // 5 Tirion forward
-    {2262.277, -5293.477, 82.167, 0},     // 6 Tirion runs to Darion
-    {2270.286, -5287.73, 82.262, 0},
-    {2269.511, -5288.289, 82.225, 0},
-    {2273.205, -5288.848, 82.617, 0},     // 9 Korfax loc1
-    {2274.739, -5287.926, 82.684, 0},     // 10 Korfax loc2
-    {2253.673, -5318.004, 81.724, 0},     // 11 Korfax kicked
-    {2287.028, -5309.644, 87.253, 0},     // 12 Maxwell loc1
-    {2286.978, -5308.025, 86.83, 0},      // 13 Maxwell loc2
-    {2248.877, -5307.586, 82.166, 0},     // 14 maxwell kicked
-    {2278.58, -5316.933, 88.319, 0},      // 15 Eligor loc1
-    {2278.535, -5315.479, 88.08, 0},      // 16 Eligor loc2
-    {2259.416, -5304.505, 82.149, 0},     // 17 eligor kicked
-    {2289.259, -5280.355, 82.112, 0},     // 18 Koltira loc1
-    {2289.02, -5281.985, 82.207, 0},      // 19 Koltira loc2
-    {2273.289, -5273.675, 81.701, 0},     // 20 Thassarian loc1
-    {2273.332, -5275.544, 81.849, 0},     // 21 Thassarian loc2
-    {2281.198, -5257.397, 80.224, 4.66},  // 22 Alexandros loc1
-    {2281.156, -5259.934, 80.647, 0},     // 23 Alexandros loc2
-    {2281.294, -5281.895, 82.445, 1.35},  // 24 Darion loc1
-    {2281.093, -5263.013, 81.125, 0},     // 25 Darion loc1
-    {2281.313, -5250.282, 79.322, 4.69},  // 26 Lich King spawns
-    {2281.523, -5261.058, 80.877, 0},     // 27 Lich king move forwards
-    {2272.709, -5255.552, 78.226, 0},     // 28 Lich king kicked
-    {2273.972, -5257.676, 78.862, 0}      // 29 Lich king moves forward
+    {2281.335f, -5300.409f, 85.170f, 0.0f},     // 0 Tirion Fordring loc
+    {2283.896f, -5287.914f, 83.066f, 1.55f},  // 1 Tirion Fordring loc2
+    {2281.461f, -5263.014f, 81.164f, 0.0f},     // 2 Tirion charges
+    {2262.277f, -5293.477f, 82.167f, 0.0f},     // 3 Tirion run
+    {2270.286f, -5287.73f,  82.262f, 0.0f},      // 4 Tirion relocate
+    {2269.511f, -5288.289f, 82.225f, 0.0f},     // 5 Tirion forward
+    {2262.277f, -5293.477f, 82.167f, 0.0f},     // 6 Tirion runs to Darion
+    {2270.286f, -5287.73f,  82.262f, 0.0f},
+    {2269.511f, -5288.289f, 82.225f, 0.0f},
+    {2273.205f, -5288.848f, 82.617f, 0.0f},     // 9 Korfax loc1
+    {2274.739f, -5287.926f, 82.684f, 0.0f},     // 10 Korfax loc2
+    {2253.673f, -5318.004f, 81.724f, 0.0f},     // 11 Korfax kicked
+    {2287.028f, -5309.644f, 87.253f, 0.0f},     // 12 Maxwell loc1
+    {2286.978f, -5308.025f, 86.83f,  0.0f},      // 13 Maxwell loc2
+    {2248.877f, -5307.586f, 82.166f, 0.0f},     // 14 maxwell kicked
+    {2278.58f,  -5316.933f, 88.319f, 0.0f},      // 15 Eligor loc1
+    {2278.535f, -5315.479f, 88.08f,  0.0f},      // 16 Eligor loc2
+    {2259.416f, -5304.505f, 82.149f, 0.0f},     // 17 eligor kicked
+    {2289.259f, -5280.355f, 82.112f, 0.0f},     // 18 Koltira loc1
+    {2289.02f,  -5281.985f, 82.207f, 0.0f},      // 19 Koltira loc2
+    {2273.289f, -5273.675f, 81.701f, 0.0f},     // 20 Thassarian loc1
+    {2273.332f, -5275.544f, 81.849f, 0.0f},     // 21 Thassarian loc2
+    {2281.198f, -5257.397f, 80.224f, 4.66f},  // 22 Alexandros loc1
+    {2281.156f, -5259.934f, 80.647f, 0.0f},     // 23 Alexandros loc2
+    {2281.294f, -5281.895f, 82.445f, 1.35f},  // 24 Darion loc1
+    {2281.093f, -5263.013f, 81.125f, 0.0f},     // 25 Darion loc1
+    {2281.313f, -5250.282f, 79.322f, 4.69f},  // 26 Lich King spawns
+    {2281.523f, -5261.058f, 80.877f, 0.0f},     // 27 Lich king move forwards
+    {2272.709f, -5255.552f, 78.226f, 0.0f},     // 28 Lich king kicked
+    {2273.972f, -5257.676f, 78.862f, 0.0f}      // 29 Lich king moves forward
 };
 
 struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
@@ -1929,15 +1932,15 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
             //UpdateWorldState(m_creature->GetMap(), WORLD_STATE_COUNTDOWN, 0);
             //UpdateWorldState(m_creature->GetMap(), WORLD_STATE_EVENT_BEGIN, 0);
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiRayneGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiRayneGUID)))
                 pTemp->setDeathState(JUST_DIED);
 
             uiTirionGUID = NULL;
@@ -1948,24 +1951,24 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
             for(uint8 i = 0; i < ENCOUNTER_DEFENDER_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDefenderGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDefenderGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiDefenderGUID[i] = 0;
             }
             for(uint8 i = 0; i < ENCOUNTER_EARTHSHATTER_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEarthshatterGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEarthshatterGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiEarthshatterGUID[i] = 0;
             }
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                 pTemp->setDeathState(JUST_DIED);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                 pTemp->setDeathState(JUST_DIED);
 
             uiKoltiraGUID = NULL;
@@ -1974,32 +1977,32 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
             uiLichKingGUID = NULL;
             for(uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAbominationGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAbominationGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiAbominationGUID[i] = 0;
             }
             for(uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiBehemothGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiBehemothGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiBehemothGUID[i] = 0;
             }
             for(uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiGhoulGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiGhoulGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiGhoulGUID[i] = 0;
             }
             for(uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
             {
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiWarriorGUID[i])))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiWarriorGUID[i])))
                     pTemp->setDeathState(JUST_DIED);
                 uiWarriorGUID[i] = 0;
             }
         }
     }
 
-    void AttackStart(Unit* who)
+    void AttackStart(Unit *who)
     {
         if (!who)
             return;
@@ -2016,7 +2019,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
         }
     }
 
-    void MoveInLineOfSight(Unit* who)
+    void MoveInLineOfSight(Unit *who)
     {
         if (!who)
             return;
@@ -2049,9 +2052,9 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 }
 
                 SpawnNPC();
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                     DoScriptText(SAY_LIGHT_OF_DAWN07, pTemp);
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                     DoScriptText(SAY_LIGHT_OF_DAWN08, pTemp);
 
                 for(uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
@@ -2069,9 +2072,9 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 m_creature->Unmount();
                 m_creature->CastSpell(m_creature, SPELL_THE_MIGHT_OF_MOGRAINE, true); // need to fix, on player only
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                     pTemp->Unmount();
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                     pTemp->Unmount();
 
                 bIsBattle = true;
@@ -2082,37 +2085,37 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 break;
             case 3:
             {
-                Creature* pTirion = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID));
+                Creature *pTirion = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID));
 
                 DoScriptText(EMOTE_LIGHT_OF_DAWN05, m_creature);
                 if (m_creature->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                     m_creature->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                 {
                     if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                         pTemp->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[19].x, LightofDawnLoc[19].y, LightofDawnLoc[19].z);
                 }
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                 {
                     if (pTemp->HasAura(SPELL_THE_LIGHT_OF_DAWN))
                         pTemp->RemoveAurasDueToSpell(SPELL_THE_LIGHT_OF_DAWN);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[21].x, LightofDawnLoc[21].y, LightofDawnLoc[21].z);
                 }
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                 {
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[10].x, LightofDawnLoc[10].y, LightofDawnLoc[10].z);
                 }
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                 {
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[13].x, LightofDawnLoc[13].y, LightofDawnLoc[13].z);
                 }
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                 {
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[16].x, LightofDawnLoc[16].y, LightofDawnLoc[16].z);
@@ -2123,9 +2126,9 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 DoScriptText(SAY_LIGHT_OF_DAWN27, m_creature);
                 ((Unit*)m_creature)->SetStandState(UNIT_STAND_STATE_KNEEL);
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                     pTemp->SetStandState(UNIT_STAND_STATE_KNEEL);
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                     pTemp->SetStandState(UNIT_STAND_STATE_KNEEL);
                 SetHoldState(true);
                 break;
@@ -2144,7 +2147,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 break;
             case 8:
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, uint32(EQUIP_UNEQUIP));
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                     m_creature->CastSpell(pTemp, SPELL_ASHBRINGER, true);
                 DoScriptText(EMOTE_LIGHT_OF_DAWN14, m_creature);
                 SetHoldState(true);
@@ -2177,11 +2180,11 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
                     case 2:
                         DoScriptText(SAY_LIGHT_OF_DAWN04, m_creature);
-                        if (Creature* pKoltira = GetClosestCreatureWithEntry(m_creature, NPC_KOLTIRA_DEATHWEAVER, 50.0f))
+                        if (Creature *pKoltira = GetClosestCreatureWithEntry(m_creature, NPC_KOLTIRA_DEATHWEAVER, 50.0f))
                             uiKoltiraGUID = pKoltira->GetGUID();
-                        if (Creature* pOrbaz = GetClosestCreatureWithEntry(m_creature, NPC_ORBAZ_BLOODBANE, 50.0f))
+                        if (Creature *pOrbaz = GetClosestCreatureWithEntry(m_creature, NPC_ORBAZ_BLOODBANE, 50.0f))
                             uiOrbazGUID = pOrbaz->GetGUID();
-                        if (Creature* pThassarian = GetClosestCreatureWithEntry(m_creature, NPC_THASSARIAN, 50.0f))
+                        if (Creature *pThassarian = GetClosestCreatureWithEntry(m_creature, NPC_THASSARIAN, 50.0f))
                             uiThassarianGUID = pThassarian->GetGUID();
                         JumpToNextStep(10000);
                         break;
@@ -2197,7 +2200,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         uiPhase_timer = 500;
                         if (uiSummon_counter < ENCOUNTER_GHOUL_NUMBER)
                         {
-                            if (Creature* pTemp = m_creature->SummonCreature(NPC_ACHERUS_GHOUL, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                            if (Creature *pTemp = m_creature->SummonCreature(NPC_ACHERUS_GHOUL, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                             {
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                                 pTemp->setFaction(2084);
@@ -2217,7 +2220,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         uiPhase_timer = 500;
                         if (uiSummon_counter < ENCOUNTER_ABOMINATION_NUMBER)
                         {
-                            if (Creature* pTemp = m_creature->SummonCreature(NPC_RAMPAGING_ABOMINATION, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                            if (Creature *pTemp = m_creature->SummonCreature(NPC_RAMPAGING_ABOMINATION, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                             {
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                                 pTemp->setFaction(2084);
@@ -2237,7 +2240,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         uiPhase_timer = 500;
                         if (uiSummon_counter < ENCOUNTER_WARRIOR_NUMBER)
                         {
-                            if (Creature* pTemp = m_creature->SummonCreature(NPC_WARRIOR_OF_THE_FROZEN_WASTES, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                            if (Creature *pTemp = m_creature->SummonCreature(NPC_WARRIOR_OF_THE_FROZEN_WASTES, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                             {
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                                 pTemp->setFaction(2084);
@@ -2257,7 +2260,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         uiPhase_timer = 500;
                         if (uiSummon_counter < ENCOUNTER_BEHEMOTH_NUMBER)
                         {
-                            if (Creature* pTemp = m_creature->SummonCreature(NPC_FLESH_BEHEMOTH, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                            if (Creature *pTemp = m_creature->SummonCreature(NPC_FLESH_BEHEMOTH, (m_creature->GetPositionX()-20)+rand()%40, (m_creature->GetPositionY()-20)+rand()%40, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                             {
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                                 pTemp->setFaction(2084);
@@ -2279,51 +2282,51 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
                     case 9: // charge begins
                         SetHoldState(false);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                         {
                             pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
-                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
                         {
                             pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
-                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                         {
                             pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
-                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                            pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
                         }
-                        for(uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAbominationGUID[i])))
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
-                        for(uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiBehemothGUID[i])))
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
-                        for(uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiGhoulGUID[i])))
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
-                        for(uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiWarriorGUID[i])))
-                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                        for (uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAbominationGUID[i])))
+                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                        for (uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiBehemothGUID[i])))
+                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                        for (uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiGhoulGUID[i])))
+                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
+                        for (uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiWarriorGUID[i])))
+                                pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x + rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z);
                         JumpToNextStep(5000);
                         break;
 
                     // ******* After battle *****************************************************************
                     case 11: // Tirion starts to speak
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN28, pTemp);
                         JumpToNextStep(21000);
                         break;
 
                     case 12:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN29, pTemp);
                         JumpToNextStep(13000);
                         break;
 
                     case 13:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN30, pTemp);
                         JumpToNextStep(13000);
                         break;
@@ -2335,7 +2338,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 15: // summon gate
-                        if (Creature* pTemp = m_creature->SummonCreature(NPC_HIGHLORD_ALEXANDROS_MOGRAINE, LightofDawnLoc[22].x, LightofDawnLoc[22].y, LightofDawnLoc[22].z, LightofDawnLoc[22].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                        if (Creature *pTemp = m_creature->SummonCreature(NPC_HIGHLORD_ALEXANDROS_MOGRAINE, LightofDawnLoc[22].x, LightofDawnLoc[22].y, LightofDawnLoc[22].z, LightofDawnLoc[22].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                         {
                             pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             pTemp->CastSpell(pTemp, SPELL_ALEXANDROS_MOGRAINE_SPAWN, true);
@@ -2346,7 +2349,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 16: // Alexandros out
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                         {
                             pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[23].x, LightofDawnLoc[23].y, LightofDawnLoc[23].z);
@@ -2363,7 +2366,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 18: // Darion's spirit out
-                        if (Creature* pTemp = m_creature->SummonCreature(NPC_DARION_MOGRAINE, LightofDawnLoc[24].x, LightofDawnLoc[24].y, LightofDawnLoc[24].z, LightofDawnLoc[24].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                        if (Creature *pTemp = m_creature->SummonCreature(NPC_DARION_MOGRAINE, LightofDawnLoc[24].x, LightofDawnLoc[24].y, LightofDawnLoc[24].z, LightofDawnLoc[24].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                         {
                             DoScriptText(SAY_LIGHT_OF_DAWN35, pTemp);
                             pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
@@ -2373,7 +2376,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 19: // runs to father
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                         {
                             DoScriptText(EMOTE_LIGHT_OF_DAWN07, pTemp);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[25].x, LightofDawnLoc[25].y, LightofDawnLoc[25].z);
@@ -2382,81 +2385,81 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 20:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN36, pTemp);
                         JumpToNextStep(4000);
                         break;
 
                     case 21:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                             DoScriptText(EMOTE_LIGHT_OF_DAWN08, pTemp);
                         JumpToNextStep(4000);
                         break;
 
                     case 22:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN37, pTemp);
                         JumpToNextStep(8000);
                         break;
 
                     case 23:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN38, pTemp);
                         JumpToNextStep(8000);
                         break;
 
                     case 24:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN39, pTemp);
 
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID))) // Tirion moves forward here
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID))) // Tirion moves forward here
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[1].x, LightofDawnLoc[1].y, LightofDawnLoc[1].z);
 
                         JumpToNextStep(15000);
                         break;
 
                     case 25:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN40, pTemp);
                         JumpToNextStep(11000);
                         break;
 
                     case 26:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN41, pTemp);
                         JumpToNextStep(5000);
                         break;
 
                     case 27:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDarionGUID)))
                             pTemp->setDeathState(JUST_DIED);
                         JumpToNextStep(24000);
                         break;
 
                     case 28:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN42, pTemp);
                         JumpToNextStep(6000);
                         break;
 
                     case 29: // lich king spawns
-                        if (Creature* pTemp = m_creature->SummonCreature(NPC_THE_LICH_KING, LightofDawnLoc[26].x, LightofDawnLoc[26].y, LightofDawnLoc[26].z, LightofDawnLoc[26].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
+                        if (Creature *pTemp = m_creature->SummonCreature(NPC_THE_LICH_KING, LightofDawnLoc[26].x, LightofDawnLoc[26].y, LightofDawnLoc[26].z, LightofDawnLoc[26].o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000))
                         {
                             DoScriptText(SAY_LIGHT_OF_DAWN43, pTemp);
                             uiLichKingGUID = pTemp->GetGUID();
-                            if (Creature* pAlex = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
+                            if (Creature *pAlex = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID)))
                                 pTemp->CastSpell(pAlex, SPELL_SOUL_FEAST_ALEX, false);
                         }
                         JumpToNextStep(2000);
                         break;
 
                     case 30:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID))) // remove him
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAlexandrosGUID))) // remove him
                         {
                             DoScriptText(EMOTE_LIGHT_OF_DAWN09, pTemp);
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                         {
                             pTemp->InterruptNonMeleeSpells(false);
                             DoScriptText(SAY_LIGHT_OF_DAWN45, pTemp);
@@ -2472,13 +2475,13 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 32:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[27].x, LightofDawnLoc[27].y, LightofDawnLoc[27].z);
                         JumpToNextStep(6000);
                         break;
 
                     case 33: // Darion supports to jump to lich king here
-// disable              if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+// disable              if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
 //  because mangos          DoCast(m_creature, SPELL_MOGRAINE_CHARGE); // jumping charge
 //   doesn't make it looks well, so workarounds, Darion charges, looks better
                         m_creature->SetSpeedRate(MOVE_RUN, 3.0f);
@@ -2488,7 +2491,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 35: // Lich king counterattacks
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                         {
                             pTemp->HandleEmoteCommand(EMOTE_ONESHOT_KICK);
                             DoScriptText(SAY_LIGHT_OF_DAWN46, pTemp);
@@ -2505,29 +2508,29 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 38:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN47, pTemp);
                         JumpToNextStep(8000);
                         break;
 
                     case 39:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN48, pTemp);
                         JumpToNextStep(15000);
                         break;
 
                     case 40:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN49, pTemp);
                         JumpToNextStep(17000);
                         break;
 
                     case 41: // Lich king - Apocalypse
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                         {
                             DoScriptText(EMOTE_LIGHT_OF_DAWN11, pTemp);
                             DoScriptText(SAY_LIGHT_OF_DAWN51, pTemp);
-                            if (Creature* pTirion = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                            if (Creature *pTirion = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             {
                                 ((Unit*)pTirion)->SetStandState(UNIT_STAND_STATE_KNEEL);
                                 //pTemp->CastSpell(pTirion, SPELL_APOCALYPSE, false); // not working
@@ -2541,7 +2544,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     case 42: // Maxwell yells for attack
                         {
                             float fLichPositionX, fLichPositionY, fLichPositionZ;
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             {
                                 fLichPositionX = pTemp->GetPositionX();
                                 fLichPositionY = pTemp->GetPositionY();
@@ -2550,7 +2553,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
                             if (fLichPositionX && fLichPositionY)
                             {
-                                Creature* pTemp;
+                                Creature *pTemp;
                                 if (pTemp = m_creature->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
                                 {
                                     pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
@@ -2571,7 +2574,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                                     uiEarthshatterGUID[0] = pTemp->GetGUID();
                                 }
                             }
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                             {
                                 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
@@ -2579,7 +2582,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                                 pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
                                 DoScriptText(SAY_LIGHT_OF_DAWN50, pTemp);
                             }
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                             {
                                 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
@@ -2587,7 +2590,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                                 pTemp->HandleEmoteCommand(EMOTE_STATE_ATTACK_UNARMED);
                                 pTemp->GetMotionMaster()->MovePoint(0, fLichPositionX, fLichPositionY, fLichPositionZ);
                             }
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                             {
                                 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
                                 pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
@@ -2599,37 +2602,37 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 43: // They all got kicked
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(EMOTE_LIGHT_OF_DAWN13, pTemp);
 
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                         {
                             pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
                             pTemp->SetSpeedRate(MOVE_RUN, 6.0f);
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_DEAD);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[14].x, LightofDawnLoc[14].y, LightofDawnLoc[14].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                         {
                             pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
                             pTemp->SetSpeedRate(MOVE_RUN, 6.0f);
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_DEAD);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[11].x, LightofDawnLoc[11].y, LightofDawnLoc[11].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                         {
                             pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
                             pTemp->SetSpeedRate(MOVE_RUN, 6.0f);
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_DEAD);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[17].x, LightofDawnLoc[17].y, LightofDawnLoc[17].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDefenderGUID[0])))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDefenderGUID[0])))
                         {
                             pTemp->SetSpeedRate(MOVE_RUN, 6.0f);
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_DEAD);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEarthshatterGUID[0])))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEarthshatterGUID[0])))
                         {
                             pTemp->SetSpeedRate(MOVE_RUN, 6.0f);
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_DEAD);
@@ -2639,11 +2642,11 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 44: // make them stand up
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_STAND);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_STAND);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_STAND);
                         JumpToNextStep(1000);
                         break;
@@ -2665,7 +2668,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     case 47: // Ashbringer rebirth
                         ((Unit*)m_creature)->SetStandState(UNIT_STAND_STATE_KNEEL);
                         DoScriptText(EMOTE_LIGHT_OF_DAWN15, m_creature);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_STAND);
                             pTemp->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, uint32(EQUIP_HIGHLORD_TIRION_FORDRING));
@@ -2677,38 +2680,38 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     case 48: // Show the cleansing effect (dawn of light)
                         if (GameObject* pGo = m_creature->GetMap()->GetGameObject(uiDawnofLightGUID))
                             pGo->SetPhaseMask(128, true);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
                             if (pTemp->HasAura(SPELL_REBIRTH_OF_THE_ASHBRINGER))
                                 pTemp->RemoveAurasDueToSpell(SPELL_REBIRTH_OF_THE_ASHBRINGER);
                             pTemp->CastSpell(pTemp, 41542, false); // workarounds, light expoded, makes it cool
                             pTemp->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                         }
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             pTemp->InterruptNonMeleeSpells(false);
                         JumpToNextStep(2500);
                         break;
 
                     case 49:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN54, pTemp);
                         JumpToNextStep(4000);
                         break;
 
                     case 50:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN55, pTemp);
                         JumpToNextStep(5000);
                         break;
 
                     case 51:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN56, pTemp);
                         JumpToNextStep(1000);
                         break;
 
                     case 52: // Tiron charges
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
                             DoScriptText(EMOTE_LIGHT_OF_DAWN16, pTemp);
                             pTemp->CastSpell(pTemp, SPELL_TIRION_CHARGE, false); // jumping charge
@@ -2716,20 +2719,20 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                             pTemp->SetSpeedRate(MOVE_RUN, 3.0f); // workarounds, make Tirion still running
                             pTemp->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[2].x, LightofDawnLoc[2].y, LightofDawnLoc[2].z);
-                            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                            if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                                 pTemp->GetMap()->CreatureRelocation(pTemp, LightofDawnLoc[28].x, LightofDawnLoc[28].y, LightofDawnLoc[28].z, 0.0f); // workarounds, he should kick back by Tirion, but here we relocate him
                         }
                         JumpToNextStep(1500);
                         break;
 
                     case 53:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN57, pTemp);
                         JumpToNextStep(1000);
                         break;
 
                     case 54:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                         {
                             pTemp->SetSpeedRate(MOVE_RUN, 1.0f);
                             m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
@@ -2739,33 +2742,33 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 55:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_KNEEL);
                         JumpToNextStep(2000);
                         break;
 
                     case 56:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             ((Unit*)pTemp)->SetStandState(UNIT_STAND_STATE_STAND);
                         JumpToNextStep(1500);
                         break;
 
                     case 57:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN58, pTemp);
                         JumpToNextStep(10000);
                         break;
 
                     case 58:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN59, pTemp);
                         JumpToNextStep(10000);
                         break;
 
                     case 59:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
                             pTemp->CastSpell(pTemp, SPELL_TELEPORT_VISUAL, false);
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID))) // Tirion runs to Darion
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID))) // Tirion runs to Darion
                         {
                             pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
                             pTemp->SetSpeedRate(MOVE_RUN, 1.0f);
@@ -2775,7 +2778,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 60:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID))) // Lich king disappears here
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID))) // Lich king disappears here
                         {
                             DoScriptText(EMOTE_LIGHT_OF_DAWN17, pTemp);
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -2784,13 +2787,13 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 61:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN60, pTemp);
                         JumpToNextStep(3000);
                         break;
 
                     case 62:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
                             pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[7].x, LightofDawnLoc[7].y, LightofDawnLoc[7].z);
@@ -2799,7 +2802,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 63:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                         {
                             pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[8].x, LightofDawnLoc[8].y, LightofDawnLoc[8].z);
                             DoScriptText(SAY_LIGHT_OF_DAWN61, pTemp);
@@ -2808,37 +2811,37 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 64:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN62, pTemp);
                         JumpToNextStep(7000);
                         break;
 
                     case 65:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN63, pTemp);
                         JumpToNextStep(10000);
                         break;
 
                     case 66:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN64, pTemp);
                         JumpToNextStep(11000);
                         break;
 
                     case 67:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN65, pTemp);
                         JumpToNextStep(10000);
                         break;
 
                     case 68:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN66, pTemp);
                         JumpToNextStep(8000);
                         break;
 
                     case 69:
-                        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                             DoScriptText(SAY_LIGHT_OF_DAWN67, pTemp);
                         JumpToNextStep(10000);
                         break;
@@ -2963,7 +2966,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
             if (uiFight_duration < diff + 5000)
             {
                 if (!uiTirionGUID)
-                    if (Creature* pTemp = m_creature->SummonCreature(NPC_HIGHLORD_TIRION_FORDRING, LightofDawnLoc[0].x, LightofDawnLoc[0].y, LightofDawnLoc[0].z, 1.528, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000))
+                    if (Creature *pTemp = m_creature->SummonCreature(NPC_HIGHLORD_TIRION_FORDRING, LightofDawnLoc[0].x, LightofDawnLoc[0].y, LightofDawnLoc[0].z, 1.528f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000))
                     {
                         pTemp->setFaction(m_creature->getFaction());
                         pTemp->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, uint32(EQUIP_UNEQUIP));
@@ -2997,7 +3000,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 for(uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
                     DespawnNPC(uiWarriorGUID[i]);
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKorfaxGUID)))
                 {
                     pTemp->RemoveAllAuras();
                     pTemp->DeleteThreatList();
@@ -3008,7 +3011,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[9].x, LightofDawnLoc[9].y, LightofDawnLoc[9].z);
                 }
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiMaxwellGUID)))
                 {
                     pTemp->RemoveAllAuras();
                     pTemp->DeleteThreatList();
@@ -3019,7 +3022,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     pTemp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[12].x, LightofDawnLoc[12].y, LightofDawnLoc[12].z);
                 }
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEligorGUID)))
                 {
                     pTemp->RemoveAllAuras();
                     pTemp->DeleteThreatList();
@@ -3031,7 +3034,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 }
                 DespawnNPC(uiRayneGUID);
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
                 {
                     pTemp->RemoveAllAuras();
                     pTemp->DeleteThreatList();
@@ -3043,10 +3046,10 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     pTemp->CastSpell(pTemp, SPELL_THE_LIGHT_OF_DAWN, false);
                 }
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiOrbazGUID)))
                     DoScriptText(EMOTE_LIGHT_OF_DAWN04, pTemp);
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
                 {
                     pTemp->RemoveAllAuras();
                     pTemp->DeleteThreatList();
@@ -3058,7 +3061,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                     pTemp->CastSpell(pTemp, SPELL_THE_LIGHT_OF_DAWN, false);
                 }
 
-                if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
+                if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiTirionGUID)))
                     DoScriptText(SAY_LIGHT_OF_DAWN26, pTemp);
 
                 SetHoldState(false);
@@ -3077,7 +3080,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
     void NPCChangeTarget(uint64 ui_GUID)
     {
-        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), ui_GUID)))
+        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), ui_GUID)))
             if (pTemp->isAlive())
                 if (Unit* pTarger = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     if (pTarger->isAlive())
@@ -3091,10 +3094,10 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
     void SpawnNPC()
     {
-        Creature* pTemp = NULL;
+        Creature *pTemp = NULL;
 
         // Death
-        for(uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiGhoulGUID[i]))))
             {
@@ -3103,7 +3106,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 uiGhoulGUID[i] = pTemp->GetGUID();
             }
         }
-        for(uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiAbominationGUID[i]))))
             {
@@ -3112,7 +3115,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 uiAbominationGUID[i] = pTemp->GetGUID();
             }
         }
-        for(uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiWarriorGUID[i]))))
             {
@@ -3121,7 +3124,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 uiWarriorGUID[i] = pTemp->GetGUID();
             }
         }
-        for(uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiBehemothGUID[i]))))
             {
@@ -3132,7 +3135,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
         }
 
         // Dawn
-        for(uint8 i = 0; i < ENCOUNTER_DEFENDER_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_DEFENDER_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiDefenderGUID[i]))))
             {
@@ -3142,7 +3145,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 uiDefenderGUID[i] = pTemp->GetGUID();
             }
         }
-        for(uint8 i = 0; i < ENCOUNTER_EARTHSHATTER_NUMBER; ++i)
+        for (uint8 i = 0; i < ENCOUNTER_EARTHSHATTER_NUMBER; ++i)
         {
             if (!(pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiEarthshatterGUID[i]))))
             {
@@ -3184,7 +3187,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
     void DespawnNPC(uint64 pGUID)
     {
-        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), pGUID)))
+        if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), pGUID)))
             if (pTemp->isAlive())
             {
                 pTemp->SetVisibility(VISIBILITY_OFF);
@@ -3193,7 +3196,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
     }
 };
 
-bool GossipHello_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreature)
+bool GossipHello_npc_highlord_darion_mograine(Player *pPlayer, Creature *pCreature)
 {
     if (pCreature->isQuestGiver())
         pPlayer->PrepareQuestMenu( pCreature->GetGUID() );
@@ -3206,7 +3209,7 @@ bool GossipHello_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreatu
     return true;
 }
 
-bool GossipSelect_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_highlord_darion_mograine(Player *pPlayer, Creature *pCreature, uint32 uiSender, uint32 uiAction)
 {
     switch (uiAction)
     {
@@ -3219,7 +3222,7 @@ bool GossipSelect_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreat
     return true;
 }
 
-CreatureAI* GetAI_npc_highlord_darion_mograine(Creature* pCreature)
+CreatureAI* GetAI_npc_highlord_darion_mograine(Creature *pCreature)
 {
     npc_highlord_darion_mograineAI* tempAI = new npc_highlord_darion_mograineAI(pCreature);
 
@@ -3233,14 +3236,14 @@ CreatureAI* GetAI_npc_highlord_darion_mograine(Creature* pCreature)
 ######*/
 struct MANGOS_DLL_DECL npc_the_lich_king_tirion_dawnAI : public ScriptedAI
 {
-    npc_the_lich_king_tirion_dawnAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+    npc_the_lich_king_tirion_dawnAI(Creature *pCreature) : ScriptedAI(pCreature) { Reset(); }
     void Reset() {}
-    void AttackStart(Unit *who) { return; } // very sample, just don't make them aggreesive
+    void AttackStart(Unit *who) { return; } // very simple, just don't make them aggreesive
     void UpdateAI(const uint32 diff) { return; }
-    void JustDied(Unit* killer) {}
+    void JustDied(Unit *killer) {}
 };
 
-CreatureAI* GetAI_npc_the_lich_king_tirion_dawn(Creature* pCreature)
+CreatureAI *GetAI_npc_the_lich_king_tirion_dawn(Creature *pCreature)
 {
     return new npc_the_lich_king_tirion_dawnAI (pCreature);
 }
