@@ -59,6 +59,8 @@ enum Npcs
 
     // adds
     NPC_BLOOD_BEAST                 = 38508,
+
+    NPC_INTRO_OUTRO_CONTROLLER      = 37948,    // name is 'deathwhisper controller'. Not used in Lady Deathwhisper's script, so it's reused here.
 };
 
 enum Says
@@ -125,6 +127,14 @@ enum Events
     EVENT_BUFF_ADDS,
 };
 
+enum Messages
+{
+    MESSAGE_START_INTRO = 1,
+    MESSAGE_START_OUTRO,
+    MESSAGE_END_OUTRO,
+    MESSAGE_END_INTRO,
+};
+
 static const float IntroSummonPosition[2] = {-563.5f, 2211.6f};
 
 #define FLOOR_HEIGHT            539.3f
@@ -141,18 +151,16 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
     SummonManager SummonMgr;
     bool IsSoftEnraged :1;
     bool HasDoneIntro :1;
+    bool IsDoingIntro :1;
     bool IsHorde :1;
-    uint32 TalkTimer;
-    uint32 TalkPhase;
 
     boss_deathbringer_saurfangAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
         IsSoftEnraged(false),
         HasDoneIntro(false),
-        IsHorde(true),
-        TalkTimer(0),
-        TalkPhase(0)
+        IsDoingIntro(false),
+        IsHorde(true)
     {
         m_creature->setPowerType(POWER_ENERGY);
         m_creature->SetMaxPower(POWER_ENERGY, 100);
@@ -185,53 +193,23 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
     {
         if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !HasDoneIntro)
         {
+            if (Creature *Controller = SummonMgr.SummonCreatureAt(m_creature, NPC_INTRO_OUTRO_CONTROLLER))
+            {
+                Controller->SetOwnerGUID(m_creature->GetGUID());
+                Controller->SetVisibility(VISIBILITY_OFF);
+            }
+            BroadcastScriptMessageToEntry(m_creature, NPC_INTRO_OUTRO_CONTROLLER, 5.0f, MESSAGE_START_INTRO);
             HasDoneIntro = true;
-            IsHorde = IS_HORDE;
-            TalkPhase = 1;
-            uint32 LeaderId;
-            uint32 FollowerId;
-            if (IsHorde)
-            {
-                LeaderId = NPC_HIGH_OVERLORD_SAURFANG;
-                FollowerId = NPC_KORKRON_REAVER;
-                TalkTimer = 6*IN_MILLISECONDS;
-            }
-            else
-            {
-                LeaderId = NPC_MURADIN_BRONZEBEARD;
-                FollowerId = NPC_SKYBREAKER_MARINE;
-                TalkTimer = 18*IN_MILLISECONDS;
-            }
-            Creature *Leader = SummonMgr.SummonCreature(LeaderId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT);
-            if (Leader)
-            {
-                Leader->StopAttackFaction(m_creature->getFaction());
-                Leader->MonsterMove(-544.1f, 2211.2f, 539.2f, 2000);
-                if (IsHorde)
-                    DoScriptText(SAY_SAURFANG_HORDE_INTRO1, Leader);
-                else
-                    DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO1, m_creature);
-                Leader->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
-            SummonMgr.SummonCreatures(FollowerId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT, 4);
-            std::vector<Creature*> Followers;
-            Followers.reserve(4);
-            SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
-            for (size_t i = 0; i < Followers.size(); i++)
-            {
-                Followers[i]->StopAttackFaction(m_creature->getFaction());
-                Followers[i]->MonsterMove(-537.0f, 2202 + 5*i, FLOOR_HEIGHT, 2000);
-                Followers[i]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
+            IsDoingIntro = true;
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
-        else if (!TalkPhase)
+        else if (!IsDoingIntro)
             ScriptedAI::MoveInLineOfSight(pWho);
     }
 
     void Aggro(Unit* pWho)
     {
-        if (TalkPhase)
+        if (IsDoingIntro)
             return;
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(SUMMON_ADDS);
@@ -247,7 +225,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void KilledUnit(Unit* pWho)
     {
-        DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
+        DoScriptText(urand(0, 1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
         if (pWho && pWho->HasAura(SPELL_MARK_FALLEN_CHAMPION))
             DoCast(m_creature, SPELL_MARK_FALLEN_CHAMPION_HEAL, true);
     }
@@ -258,17 +236,10 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         DoScriptText(SAY_DEATH, m_creature);
         RemoveAuras();
-        TalkPhase = 9;
         m_BossEncounter = DONE;
         DoCast(m_creature, SPELL_ACHIEVEMENT, true);
-        // TODO: this seems to be hack to make outro work, should be moved to an external controller creature
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE);
-        m_creature->setDeathState(JUST_ALIVED);
-        m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-        m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
-        m_creature->RemoveAllAttackers();
-        m_creature->RemoveAllAuras();
-        m_creature->getThreatManager().clearReferences();
+        // start outro
+        BroadcastScriptMessageToEntry(m_creature, NPC_INTRO_OUTRO_CONTROLLER, 200.0f, MESSAGE_START_OUTRO);
     }
 
     void SpellHitTarget(Unit *pVictim, const SpellEntry *pSpell)
@@ -291,13 +262,188 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         SummonMgr.RemoveSummonFromList(pSummon->GetObjectGuid());
     }
 
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
+    {
+        Creature *pCreatureSender = dynamic_cast<Creature*>(pSender);
+        if (pCreatureSender && pCreatureSender->GetEntry() == NPC_INTRO_OUTRO_CONTROLLER)
+        {
+            switch (data1)
+            {
+                case MESSAGE_END_INTRO:
+                    IsDoingIntro = false;
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    break;
+                case MESSAGE_END_OUTRO:
+                    SummonMgr.UnsummonCreature(pCreatureSender);
+                    break;
+            }
+            return;
+        }
+        ScriptEventInterface::ScriptMessage(pSender, data1, data2);
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (IsDoingIntro || !m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
+            return;
+
+        if (m_creature->GetPower(POWER_ENERGY) == 100)
+        {
+            Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2);
+            if (!pTarget)
+                pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
+            if (pTarget)
+                DoCast(pTarget, SPELL_MARK_FALLEN_CHAMPION);
+            DoScriptText(SAY_MARK_OF_THE_FALLEN_CHAMPION, m_creature);
+            m_creature->SetPower(POWER_ENERGY, 0);
+        }
+
+        if (!IsSoftEnraged && m_creature->GetHealthPercent() < 30.0f)
+        {
+            DoCast(m_creature, SPELL_FRENZY);
+            IsSoftEnraged = true;
+        }
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_BERSERK:
+                    DoScriptText(SAY_BERSERK, m_creature);
+                    m_creature->InterruptNonMeleeSpells(false);
+                    DoCast(m_creature, SPELL_BERSERK);
+                    break;
+                case EVENT_SUMMON_ADDS:
+                {
+                    DoScriptText(SAY_SUMMON_ADDS, m_creature);
+                    static const float Positions[5][2] = {{0.0f, -10.0f}, {0.0f, 10.0f}, {10.0f, 0.0f}, {-5.0f, 5.0f}, {-5.0f, -5.0f}};
+                    for (int i = 0; i < 2; i++)
+                        SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
+
+                    if (!m_bIs10Man) //pentagon pattern in 25 man
+                        for (int i = 2; i < 5; i++)
+                            SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
+
+                    if (m_bIsHeroic)
+                        Events.ScheduleEvent(EVENT_BUFF_ADDS, TIMER_BUFF_ADDS);
+                    break;
+                }
+                case EVENT_BOILING_BLOOD:
+                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                        DoCast(target, SPELL_BOILING_BLOOD);
+                    break;
+                case EVENT_RUNE_OF_BLOOD:
+                    DoCast(m_creature->getVictim(), SPELL_RUNE_OF_BLOOD);
+                    break;
+                case EVENT_BLOOD_NOVA:
+                {
+                    Unit *pTarget = GetPlayerAtMinimumRange(10.0f);
+                    if (!pTarget)
+                        pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
+                    if (pTarget)
+                        DoCast(pTarget, SPELL_BLOOD_NOVA); //targets ranged targets. Problem: the visual for this spell does not trigger the actual spell.
+                    break;
+                }
+                case EVENT_BUFF_ADDS:
+                {
+                    std::list<Creature*> Adds;
+                    SummonMgr.GetAllSummonsWithId(Adds, NPC_BLOOD_BEAST);
+                    for (std::list<Creature*>::const_iterator i = Adds.begin(); i!= Adds.end(); ++i)
+                        (*i)->CastSpell(*i, SPELL_SCENT_OF_BLOOD, false);
+                    break;
+                }
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI, public ScriptMessageInterface
+{
+    ScriptedInstance *m_pInstance;
+    SummonManager SummonMgr;
+    uint32 TalkTimer;
+    uint32 TalkPhase;
+    bool IsHorde;
+
+    mob_saurfang_intro_outro_controllerAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        SummonMgr(pCreature),
+        TalkTimer(0),
+        TalkPhase(0),
+        IsHorde(false)
+    {
+    }
+
+    void Reset() {}
+
     void DoIntroCharge(Creature *Leader, uint32 FollowerId)   
     {
         Leader->MonsterMove(m_creature->GetPositionX()-10, Leader->GetPositionY(), FLOOR_HEIGHT+5, 1000);
         std::list<Creature*> Followers;
         SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
-        for(std::list<Creature*>::const_iterator i = Followers.begin(); i != Followers.end(); ++i)
+        for (std::list<Creature*>::const_iterator i = Followers.begin(); i != Followers.end(); ++i)
             (*i)->MonsterMove(m_creature->GetPositionX()-10, (*i)->GetPositionY(), FLOOR_HEIGHT+5, 1000);
+    }
+
+    
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
+    {
+        Unit *BossSaurfang = m_creature->GetOwner();
+        if (BossSaurfang && pSender == BossSaurfang)
+            switch (data1)
+            {
+                case MESSAGE_START_INTRO:
+                {
+                    IsHorde = IS_HORDE;
+                    TalkPhase = 1;
+                    uint32 LeaderId;
+                    uint32 FollowerId;
+                    if (IsHorde)
+                    {
+                        LeaderId = NPC_HIGH_OVERLORD_SAURFANG;
+                        FollowerId = NPC_KORKRON_REAVER;
+                        TalkTimer = 6*IN_MILLISECONDS;
+                    }
+                    else
+                    {
+                        LeaderId = NPC_MURADIN_BRONZEBEARD;
+                        FollowerId = NPC_SKYBREAKER_MARINE;
+                        TalkTimer = 18*IN_MILLISECONDS;
+                    }
+                    Creature *Leader = SummonMgr.SummonCreature(LeaderId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT);
+                    Unit *SaurfangBoss = m_creature->GetOwner();
+                    if (Leader && SaurfangBoss)
+                    {
+                        Leader->StopAttackFaction(BossSaurfang->getFaction());
+                        Leader->MonsterMove(-544.1f, 2211.2f, 539.2f, 2000);
+                        if (IsHorde)
+                            DoScriptText(SAY_SAURFANG_HORDE_INTRO1, Leader);
+                        else
+                            DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO1, BossSaurfang);
+                        Leader->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                    SummonMgr.SummonCreatures(FollowerId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT, 4);
+                    std::vector<Creature*> Followers;
+                    Followers.reserve(4);
+                    SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
+                    for (size_t i = 0; i < Followers.size(); i++)
+                    {
+                        Followers[i]->StopAttackFaction(BossSaurfang->getFaction());
+                        Followers[i]->MonsterMove(-537.0f, 2202 + 5*i, FLOOR_HEIGHT, 2000);
+                        Followers[i]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                    break;
+                }
+                case MESSAGE_START_OUTRO:
+                    TalkPhase = 9;
+                    break;
+                default:
+                    break;
+            }
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -307,6 +453,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
             if (TalkTimer < uiDiff)
             {
                 Creature *HighSaurfang = SummonMgr.GetFirstFoundSummonWithId(NPC_HIGH_OVERLORD_SAURFANG);
+                Unit *BossSaurfang = m_creature->GetOwner();
                 TalkPhase++;
                 if (IsHorde)
                 {
@@ -314,7 +461,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                     {
                         // Intro
                         case 2:
-                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO2, m_creature);
+                            if (BossSaurfang)
+                                DoScriptText(SAY_DEATHFANG_HORDE_INTRO2, BossSaurfang);
                             TalkTimer = 14*IN_MILLISECONDS;
                             break;
                         case 3:
@@ -323,7 +471,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
                         case 4:
-                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO4, m_creature);
+                            if (BossSaurfang)
+                                DoScriptText(SAY_DEATHFANG_HORDE_INTRO4, BossSaurfang);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
                         case 5:
@@ -362,9 +511,13 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                                     (*i)->StopMoving();
                                 }
                             }
-                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                            DoScriptText(SAY_DEATHFANG_HORDE_INTRO9, m_creature);
+                            if (BossSaurfang)
+                            {
+                                BossSaurfang->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                                DoScriptText(SAY_DEATHFANG_HORDE_INTRO9, BossSaurfang);
+                            }
                             TalkPhase = 0;
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             break;
                         // Outro
                         case 10:
@@ -386,7 +539,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                         case 11:
                             if (HighSaurfang)
                             {
-                                HighSaurfang->MonsterMoveWithSpeed(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+                                if (BossSaurfang)
+                                    HighSaurfang->MonsterMoveWithSpeed(BossSaurfang->GetPositionX(), BossSaurfang->GetPositionY(), BossSaurfang->GetPositionZ());
                                 DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
                             }
                             TalkTimer = 6*IN_MILLISECONDS;
@@ -404,8 +558,10 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                         case 14:
                             SummonMgr.UnsummonAll();
                             TalkPhase = 0;
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 200.0f, MESSAGE_END_OUTRO);
                             break;
                         default:
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             TalkPhase = 0;
                             break;
                     }
@@ -417,7 +573,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                     {
                         // Intro
                         case 2:
-                            DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO2, m_creature);
+                            if (BossSaurfang)
+                                DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO2, BossSaurfang);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
                         case 3:
@@ -449,9 +606,13 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                             TalkTimer = 1*IN_MILLISECONDS;
                             break;
                         case 6:
-                            DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO5, m_creature);
-                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            if (BossSaurfang)
+                            {
+                                DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO5, BossSaurfang);
+                                BossSaurfang->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            }
                             TalkPhase = 0;
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             break;
                         // Outro
                         case 10:
@@ -527,12 +688,12 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                             TalkTimer = 2*IN_MILLISECONDS;
                             break;
                         case 19:
-                            if (HighSaurfang)
-                                HighSaurfang->MonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 8*IN_MILLISECONDS);
+                            if (HighSaurfang && BossSaurfang)
+                                HighSaurfang->MonsterMove(BossSaurfang->GetPositionX(), BossSaurfang->GetPositionY(), BossSaurfang->GetPositionZ(), 8*IN_MILLISECONDS);
                             TalkTimer = 8*IN_MILLISECONDS;
                             break;
                         case 20:
-                            if (HighSaurfang) // needs to pick up m_creature, not sure how to do so.
+                            if (HighSaurfang) // needs to pick up deathbringer saurfang, not sure how to do so.
                                 DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO10, HighSaurfang);
                             TalkTimer = 5*IN_MILLISECONDS;
                             break;
@@ -598,8 +759,10 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                         case 29:
                             SummonMgr.UnsummonAll();
                             TalkPhase = 0;
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 200.0f, MESSAGE_END_OUTRO);
                             break;
                         default:
+                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             TalkPhase = 0;
                             break;
                     }
@@ -608,86 +771,12 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
             else
                 TalkTimer -= uiDiff;
         }
-
-        if (TalkPhase || !m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
-            return;
-
-        if (m_creature->GetPower(POWER_ENERGY) == 100)
-        {
-            Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2);
-            if (!pTarget)
-                pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
-            if (pTarget)
-                DoCast(pTarget, SPELL_MARK_FALLEN_CHAMPION);
-            DoScriptText(SAY_MARK_OF_THE_FALLEN_CHAMPION, m_creature);
-            m_creature->SetPower(POWER_ENERGY, 0);
-        }
-
-        if (!IsSoftEnraged && m_creature->GetHealthPercent() < 30.0f)
-        {
-            DoCast(m_creature, SPELL_FRENZY);
-            IsSoftEnraged = true;
-        }
-
-        Events.Update(uiDiff);
-        while (uint32 uiEventId = Events.ExecuteEvent())
-            switch (uiEventId)
-            {
-                case EVENT_BERSERK:
-                    DoScriptText(SAY_BERSERK, m_creature);
-                    m_creature->InterruptNonMeleeSpells(false);
-                    DoCast(m_creature, SPELL_BERSERK);
-                    break;
-                case EVENT_SUMMON_ADDS:
-                {
-                    DoScriptText(SAY_SUMMON_ADDS, m_creature);
-                    static const float Positions[5][2] = {{0.0f, -10.0f}, {0.0f, 10.0f}, {10.0f, 0.0f}, {-5.0f, 5.0f}, {-5.0f, -5.0f}};
-                    for (int i = 0; i < 2; i++)
-                        SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
-
-                    if (!m_bIs10Man) //pentagon pattern in 25 man
-                        for(int i = 2; i < 5; i++)
-                            SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
-
-                    if (m_bIsHeroic)
-                        Events.ScheduleEvent(EVENT_BUFF_ADDS, TIMER_BUFF_ADDS);
-                    break;
-                }
-                case EVENT_BOILING_BLOOD:
-                    if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                        DoCast(target, SPELL_BOILING_BLOOD);
-                    break;
-                case EVENT_RUNE_OF_BLOOD:
-                    DoCast(m_creature->getVictim(), SPELL_RUNE_OF_BLOOD);
-                    break;
-                case EVENT_BLOOD_NOVA:
-                {
-                    Unit *pTarget = GetPlayerAtMinimumRange(10.0f);
-                    if (!pTarget)
-                        pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
-                    if (pTarget)
-                        DoCast(pTarget, SPELL_BLOOD_NOVA); //targets ranged targets. Problem: the visual for this spell does not trigger the actual spell.
-                    break;
-                }
-                case EVENT_BUFF_ADDS:
-                {
-                    std::list<Creature*> Adds;
-                    SummonMgr.GetAllSummonsWithId(Adds, NPC_BLOOD_BEAST);
-                    for (std::list<Creature*>::const_iterator i = Adds.begin(); i!= Adds.end(); ++i)
-                        (*i)->CastSpell(*i, SPELL_SCENT_OF_BLOOD, false);
-                    break;
-                }
-                default:
-                    break;
-            }
-
-        DoMeleeAttackIfReady();
     }
 };
-
 void AddSC_boss_deathbringer_saurfang()
 {
     Script *newscript;
 
     REGISTER_SCRIPT(boss_deathbringer_saurfang);
+    REGISTER_SCRIPT(mob_saurfang_intro_outro_controller);
 }
