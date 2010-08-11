@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: boss_deathbringer_saurfang
 SD%Complete: 75%
-SDComment: Attacks players after "dead", causes some random teleport (add spell?)
+SDComment: causes some random teleport (add spell)
 SDCategory: Icecrown Citadel
 EndScriptData */
 
@@ -197,8 +197,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
             {
                 Controller->SetOwnerGUID(m_creature->GetGUID());
                 Controller->SetVisibility(VISIBILITY_OFF);
+                SendScriptMessageTo(Controller, m_creature, MESSAGE_START_INTRO);
             }
-            BroadcastScriptMessageToEntry(m_creature, NPC_INTRO_OUTRO_CONTROLLER, 5.0f, MESSAGE_START_INTRO);
             HasDoneIntro = true;
             IsDoingIntro = true;
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -415,8 +415,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                         TalkTimer = 18*IN_MILLISECONDS;
                     }
                     Creature *Leader = SummonMgr.SummonCreature(LeaderId, IntroSummonPosition[0], IntroSummonPosition[1], FLOOR_HEIGHT);
-                    Unit *SaurfangBoss = m_creature->GetOwner();
-                    if (Leader && SaurfangBoss)
+                    if (Leader)
                     {
                         Leader->StopAttackFaction(BossSaurfang->getFaction());
                         Leader->MonsterMove(-544.1f, 2211.2f, 539.2f, 2000);
@@ -453,7 +452,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
             if (TalkTimer < uiDiff)
             {
                 Creature *HighSaurfang = SummonMgr.GetFirstFoundSummonWithId(NPC_HIGH_OVERLORD_SAURFANG);
-                Unit *BossSaurfang = m_creature->GetOwner();
+                Creature *BossSaurfang = dynamic_cast<Creature*>(m_creature->GetOwner());
                 TalkPhase++;
                 if (IsHorde)
                 {
@@ -515,9 +514,9 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             {
                                 BossSaurfang->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                 DoScriptText(SAY_DEATHFANG_HORDE_INTRO9, BossSaurfang);
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_INTRO);
                             }
                             TalkPhase = 0;
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             break;
                         // Outro
                         case 10:
@@ -557,11 +556,13 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             break;
                         case 14:
                             SummonMgr.UnsummonAll();
+                            if (BossSaurfang)
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_OUTRO);
                             TalkPhase = 0;
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 200.0f, MESSAGE_END_OUTRO);
                             break;
                         default:
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
+                            if (BossSaurfang)
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_INTRO);
                             TalkPhase = 0;
                             break;
                     }
@@ -610,9 +611,9 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             {
                                 DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO5, BossSaurfang);
                                 BossSaurfang->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_INTRO);
                             }
                             TalkPhase = 0;
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
                             break;
                         // Outro
                         case 10:
@@ -758,11 +759,13 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             break;
                         case 29:
                             SummonMgr.UnsummonAll();
+                            if (BossSaurfang)
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_OUTRO);
                             TalkPhase = 0;
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 200.0f, MESSAGE_END_OUTRO);
                             break;
                         default:
-                            BroadcastScriptMessageToEntry(m_creature, NPC_SAURFANG, 5.0f, MESSAGE_END_INTRO);
+                            if (BossSaurfang)
+                                SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_INTRO);
                             TalkPhase = 0;
                             break;
                     }
@@ -773,6 +776,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
         }
     }
 };
+
 void AddSC_boss_deathbringer_saurfang()
 {
     Script *newscript;
