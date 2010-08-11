@@ -156,7 +156,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!m_bSaidBeginningStuff && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+        if (!m_bSaidBeginningStuff && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
         {
             m_bSaidBeginningStuff = true;
             DoScriptText(SAY_INTRO, m_creature);

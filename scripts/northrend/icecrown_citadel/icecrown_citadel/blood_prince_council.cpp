@@ -179,7 +179,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !HasDoneIntro && !IntroTimer)
+        if (!HasDoneIntro && !IntroTimer && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
             if (Creature *Lanathel = GET_CREATURE(TYPE_LANATHEL))    
             {
                 DoScriptText(SAY_LANATHEL_INTRO1, Lanathel);

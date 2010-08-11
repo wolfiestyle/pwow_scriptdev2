@@ -531,7 +531,7 @@ struct MANGOS_DLL_DECL mob_valithria_cloudAI: public ScriptedAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (m_bIsUsed || !pWho || pWho->GetTypeId() != TYPEID_PLAYER || !m_creature->IsWithinDistInMap(pWho, 2.0f))
+        if (m_bIsUsed || !pWho || pWho->GetTypeId() != TYPEID_PLAYER || !pWho->isTargetableForAttack() || !m_creature->IsWithinDistInMap(pWho, 2.0f))
             return;
 
         switch (m_creature->GetEntry())

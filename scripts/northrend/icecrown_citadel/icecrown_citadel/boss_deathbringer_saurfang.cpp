@@ -191,7 +191,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !HasDoneIntro)
+        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
         {
             if (Creature *Controller = SummonMgr.SummonCreatureAt(m_creature, NPC_INTRO_OUTRO_CONTROLLER))
             {

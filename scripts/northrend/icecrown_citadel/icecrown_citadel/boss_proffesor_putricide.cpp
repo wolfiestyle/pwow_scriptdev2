@@ -159,7 +159,7 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && pWho && pWho->GetPositionZ() > FLOOR_HEIGHT - 1)   // prevent intro on Rotface/Festergut encounter
+        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->GetPositionZ() > FLOOR_HEIGHT - 1 && pWho->isTargetableForAttack())   // prevent intro on Rotface/Festergut encounter
         {
             HasDoneIntro = true;
             DoScriptText(SAY_AIRLOCK, m_creature);

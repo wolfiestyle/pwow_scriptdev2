@@ -183,7 +183,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && !IntroPhase)
+        if (!HasDoneIntro && !IntroPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
         {
             IntroPhase = 1;
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
