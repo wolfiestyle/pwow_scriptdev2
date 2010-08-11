@@ -2,34 +2,38 @@
 
 #define OUT_OF_COMBAT_TIME 5000
 
-struct MANGOS_DLL_DECL npc_training_dummyAI : public Scripted_NoMovementAI
+struct MANGOS_DLL_DECL npc_training_dummyAI: public Scripted_NoMovementAI
 {
-    uint32 combat_timer;
+    uint32 m_CombatTimer;
 
-    npc_training_dummyAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    npc_training_dummyAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature),
+        m_CombatTimer(0)
     {
-        Reset();
     }
 
     void Reset()
     {
-        combat_timer = 0;
+        m_CombatTimer = 0;
     }
 
-    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
-        combat_timer = 0;
+        m_CombatTimer = 0;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->isAlive() || !m_creature->isInCombat() || m_creature->IsInEvadeMode())
             return;
 
-        m_creature->ModifyHealth(m_creature->GetMaxHealth());
+        m_creature->SetTargetGUID(0);
 
-        combat_timer += diff;
-        if (combat_timer > OUT_OF_COMBAT_TIME)
+        if (m_creature->GetHealthPercent() < 100.0f)
+            m_creature->SetHealthPercent(100.0f);
+
+        m_CombatTimer += diff;
+        if (m_CombatTimer > OUT_OF_COMBAT_TIME)
             EnterEvadeMode();
     }
 };
