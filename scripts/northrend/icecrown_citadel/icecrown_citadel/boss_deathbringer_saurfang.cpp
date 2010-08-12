@@ -138,6 +138,7 @@ enum Messages
 static const float IntroSummonPosition[2] = {-563.5f, 2211.6f};
 
 #define FLOOR_HEIGHT            539.3f
+#define PLATFORM_HEIGHT         541.2f
 
 #define TIMER_BERSERK           8*MINUTE*IN_MILLISECONDS
 #define TIMER_BOILING_BLOOD     15*IN_MILLISECONDS
@@ -382,14 +383,13 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
 
     void DoIntroCharge(Creature *Leader, uint32 FollowerId)   
     {
-        Leader->MonsterMove(m_creature->GetPositionX()-10, Leader->GetPositionY(), FLOOR_HEIGHT+5, 1000);
+        Leader->MonsterMove(m_creature->GetPositionX()-10.0f, Leader->GetPositionY(), PLATFORM_HEIGHT, 1500);
         std::list<Creature*> Followers;
         SummonMgr.GetAllSummonsWithId(Followers, FollowerId);
         for (std::list<Creature*>::const_iterator i = Followers.begin(); i != Followers.end(); ++i)
-            (*i)->MonsterMove(m_creature->GetPositionX()-10, (*i)->GetPositionY(), FLOOR_HEIGHT+5, 1000);
+            (*i)->MonsterMove(m_creature->GetPositionX()-10.0f, (*i)->GetPositionY(), PLATFORM_HEIGHT, 1500);
     }
 
-    
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
         Unit *BossSaurfang = m_creature->GetOwner();
@@ -495,7 +495,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                                 DoScriptText(EMOTE_SAURFANG_HORDE_INTRO8, HighSaurfang);
                                 DoIntroCharge(HighSaurfang, NPC_KORKRON_REAVER);
                             }
-                            TalkTimer = 1000;
+                            TalkTimer = 1500;
                             break;
                         case 9:
                             if (HighSaurfang)
@@ -520,16 +520,20 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             break;
                         // Outro
                         case 10:
-                            if (HighSaurfang)
+                            if (HighSaurfang && BossSaurfang)
                             {
                                 HighSaurfang->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
-                                HighSaurfang->MonsterMove(HighSaurfang->GetPositionX(), HighSaurfang->GetPositionY(), FLOOR_HEIGHT, 100);
-                                std::list<Creature*> Korkron; 
+                                float x, y;
+                                GetPointOnCircle(x, y, 1.0f, HighSaurfang->GetAngle(BossSaurfang), HighSaurfang->GetPositionX(), HighSaurfang->GetPositionY());
+                                HighSaurfang->MonsterMoveWithSpeed(x, y, FLOOR_HEIGHT);
+                                std::list<Creature*> Korkron;
                                 SummonMgr.GetAllSummonsWithId(Korkron, NPC_KORKRON_REAVER);
                                 for (std::list<Creature*>::const_iterator i = Korkron.begin(); i != Korkron.end(); ++i)
                                 {
                                     (*i)->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
-                                    (*i)->MonsterMove((*i)->GetPositionX(), (*i)->GetPositionY(), FLOOR_HEIGHT, 100);
+                                    float x, y;
+                                    GetPointOnCircle(x, y, 1.0f, (*i)->GetAngle(BossSaurfang), (*i)->GetPositionX(), (*i)->GetPositionY());
+                                    (*i)->MonsterMoveWithSpeed(x, y, FLOOR_HEIGHT);
                                 }
                                 DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO1, HighSaurfang);
                             }
@@ -539,7 +543,11 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             if (HighSaurfang)
                             {
                                 if (BossSaurfang)
-                                    HighSaurfang->MonsterMoveWithSpeed(BossSaurfang->GetPositionX(), BossSaurfang->GetPositionY(), BossSaurfang->GetPositionZ());
+                                {
+                                    float x, y;
+                                    BossSaurfang->GetNearPoint2D(x, y, CONTACT_DISTANCE, BossSaurfang->GetAngle(HighSaurfang));
+                                    HighSaurfang->MonsterMoveWithSpeed(x, y, BossSaurfang->GetPositionZ());
+                                }
                                 DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
                             }
                             TalkTimer = 6*IN_MILLISECONDS;
@@ -589,7 +597,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                                 DoScriptText(SAY_MURADIN_ALLIANCE_INTRO4, Muradin);
                                 DoIntroCharge(Muradin, NPC_SKYBREAKER_MARINE);
                             }
-                            TalkTimer = 1000;
+                            TalkTimer = 1500;
                             break;
                         case 5:
                             if (Muradin)
@@ -617,18 +625,25 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             break;
                         // Outro
                         case 10:
-                            if (Muradin)
+                            if (Muradin && BossSaurfang)
                             {
                                 Muradin->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
-                                Muradin->MonsterMove(Muradin->GetPositionX(), Muradin->GetPositionY(), FLOOR_HEIGHT, 100);
+                                float x, y;
+                                GetPointOnCircle(x, y, 2.0f, Muradin->GetAngle(BossSaurfang), Muradin->GetPositionX(), Muradin->GetPositionY());
+                                Muradin->MonsterMoveWithSpeed(x, y, FLOOR_HEIGHT);
+                                DoScriptText(EMOTE_MURADIN_ALLIANCE_OUTRO1, Muradin);
+                            }
+                            if (BossSaurfang)
+                            {
                                 std::list<Creature*> Marines; 
                                 SummonMgr.GetAllSummonsWithId(Marines, NPC_SKYBREAKER_MARINE);
                                 for (std::list<Creature*>::const_iterator i = Marines.begin(); i != Marines.end(); ++i)
                                 {
                                     (*i)->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
-                                    (*i)->MonsterMove((*i)->GetPositionX(), (*i)->GetPositionY(), FLOOR_HEIGHT, 100);
+                                    float x, y;
+                                    GetPointOnCircle(x, y, 1.0f, (*i)->GetAngle(BossSaurfang), (*i)->GetPositionX(), (*i)->GetPositionY());
+                                    (*i)->MonsterMoveWithSpeed(x, y, FLOOR_HEIGHT);
                                 }
-                                DoScriptText(EMOTE_MURADIN_ALLIANCE_OUTRO1, Muradin);
                             }
                             TalkTimer = 1*IN_MILLISECONDS;
                             break;
@@ -679,7 +694,15 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             SummonMgr.SummonCreature(NPC_JAINA_PROUDMOORE, -521.0f, 2220.4f, FLOOR_HEIGHT, 0.789f);
                             Creature *Varian = SummonMgr.SummonCreature(NPC_VARIAN_WYRM, -524.0f, 2221.4f, FLOOR_HEIGHT, 0.789f);
                             if (Varian)
+                            {
                                 DoScriptText(SAY_VARIAN_ALLIANCE_OUTRO8, Varian);
+                                if (Muradin)
+                                    Muradin->SetFacingToObject(Varian);
+                                std::list<Creature*> Marines; 
+                                SummonMgr.GetAllSummonsWithId(Marines, NPC_SKYBREAKER_MARINE);
+                                for (std::list<Creature*>::const_iterator i = Marines.begin(); i != Marines.end(); ++i)
+                                    (*i)->SetFacingToObject(Varian);
+                            }
                             TalkTimer = 5*IN_MILLISECONDS;
                             break;
                         }
@@ -690,7 +713,11 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             break;
                         case 19:
                             if (HighSaurfang && BossSaurfang)
-                                HighSaurfang->MonsterMove(BossSaurfang->GetPositionX(), BossSaurfang->GetPositionY(), BossSaurfang->GetPositionZ(), 8*IN_MILLISECONDS);
+                            {
+                                float x, y;
+                                BossSaurfang->GetNearPoint2D(x, y, CONTACT_DISTANCE, BossSaurfang->GetAngle(HighSaurfang));
+                                HighSaurfang->MonsterMove(x, y, BossSaurfang->GetPositionZ(), 8*IN_MILLISECONDS);
+                            }
                             TalkTimer = 8*IN_MILLISECONDS;
                             break;
                         case 20:
@@ -706,7 +733,8 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                         case 22:
                             if (HighSaurfang)
                             {
-                                HighSaurfang->SetOrientation(4.73f);
+                                if (Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM))
+                                    HighSaurfang->SetFacingToObject(Varian);
                                 DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO11, HighSaurfang);
                             }
                             TalkTimer = 8*IN_MILLISECONDS;
