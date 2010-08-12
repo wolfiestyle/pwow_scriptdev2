@@ -223,7 +223,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                         for (uint32 i = 0; i < 4; i++)
                         {
                             StartPos.orientation += i*(M_PI/2);
-                            ColdflameAttribs.push_back(std::make_pair(StartPos, 4));
+                            ColdflameAttribs.push_back(std::make_pair(StartPos, 6));
                         }
                     }
                     else
@@ -231,7 +231,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                         if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         {
                             StartPos.orientation = m_creature->GetAngle(target);
-                            ColdflameAttribs.push_back(std::make_pair(StartPos, 4));
+                            ColdflameAttribs.push_back(std::make_pair(StartPos, 6));
                         }
                     }
                     // (no break)
@@ -240,10 +240,10 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 {
                     for (ColdFlameList::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
                     {
-                        if (i->second <= 25)
+                        if (i->second <= 48)
                         {
                             float x, y;
-                            i->second += 3;
+                            i->second += 6;
                             GetPointOnCircle(x, y, i->second, i->first.orientation);
                             Creature *flame = SummonMgr.SummonCreatureAt(i->first, NPC_COLDFLAME, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000, x, y);
                             if (flame)
