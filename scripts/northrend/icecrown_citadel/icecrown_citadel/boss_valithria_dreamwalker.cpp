@@ -90,7 +90,7 @@ enum Adds
 
 enum Events
 {
-    EVENT_SUMMON_PORTALS = 1,
+    EVENT_SUMMON_PORTALS = 50, // high enough to avoid definition/event collisions with different scripts
     EVENT_BEGIN_FIGHT,
     EVENT_INIT_SCRIPT,
     EVENT_BERSERK,
