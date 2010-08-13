@@ -43,6 +43,9 @@ enum Spells
     SPELL_INHALED_BLIGHT            = 69166,
 
     SPELL_MALLEABLE_GOO             = 70852,
+    SPELL_DECIMATE                  = 71123,
+    SPELL_MORTAL_WOUND              = 71127,
+    SPELL_PLAGUE_STENCH             = 71805,
 };
 
 static const uint32 BlightSpells[3][2] = 
@@ -81,6 +84,9 @@ enum Events
     EVENT_GASTRIC_BLOAT,
     EVENT_MALLEABLE_GOO,
     EVENT_START_GAS_CLOUD,
+
+    EVENT_DECIMATE,
+    EVENT_MORTAL_WOUND,
 };
 
 #define TIMER_BERSERK           5*MINUTE*IN_MILLISECONDS
@@ -277,9 +283,65 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
     }
 };
 
+struct MANGOS_DLL_DECL mob_stinky_ICCAI : public ScriptedAI
+{
+    ScriptedInstance *m_pInstance;
+    EventManager Events;
+
+    mob_stinky_ICCAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData()))
+    {
+        Reset();
+    }
+    
+    void Reset()
+    {
+        if (!m_creature->HasAura(SPELL_PLAGUE_STENCH))
+            DoCast(m_creature, SPELL_PLAGUE_STENCH);
+
+        Events.Reset();
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        Events.ScheduleEventInRange(EVENT_DECIMATE, 10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_MORTAL_WOUND, 10*IN_MILLISECONDS, 15*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+        
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_DECIMATE:
+                    DoCast(m_creature->getVictim(), SPELL_DECIMATE, false);
+                    break;
+                case EVENT_MORTAL_WOUND:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_WOUND);
+                    break;
+            }
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        if (Creature* pFestergut = GET_CREATURE(TYPE_FESTERGUT))
+        {
+            m_creature->PlayDirectSound(16907); // if festergut is too far away, we play the sound
+            DoScriptText(SAY_STINKY_DEATH, pFestergut);
+        }
+    }
+
+};
+
 void AddSC_boss_festergut()
 {
     Script *newscript;
 
     REGISTER_SCRIPT(boss_festergut);
+    REGISTER_SCRIPT(mob_stinky_ICC);
 }

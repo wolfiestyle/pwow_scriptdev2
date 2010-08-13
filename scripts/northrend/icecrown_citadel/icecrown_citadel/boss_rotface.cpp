@@ -44,6 +44,11 @@ enum Spells
     // both oozes
     SPELL_STICKY_OOZE               = 69774,
     SPELL_STICKY_OOZE_DAMAGE_AURA   = 69776,
+
+    // precious
+    SPELL_DECIMATE                  = 71123,
+    SPELL_MORTAL_WOUND              = 71127,
+    SPELL_SUMMON_PLAYER             = 25104,
 };
 
 enum Npcs
@@ -79,6 +84,9 @@ enum Events
     
     EVENT_STICKY_OOZE,
     EVENT_DESPAWN_OOZE,
+
+    EVENT_DECIMATE,
+    EVENT_MORTAL_WOUND,
 };
 
 #define OOZE_FLOOD_CAST_HEIGHT      373.0f
@@ -343,10 +351,65 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI : public ScriptedAI
     }
 };
 
+struct MANGOS_DLL_DECL mob_precious_ICCAI : public ScriptedAI
+{
+    ScriptedInstance *m_pInstance;
+    EventManager Events;
+
+    mob_precious_ICCAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData()))
+    {
+    }
+    
+    void Reset()
+    {
+        Events.Reset();
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        Events.ScheduleEventInRange(EVENT_DECIMATE, 10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_MORTAL_WOUND, 10*IN_MILLISECONDS, 15*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+        
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_DECIMATE:
+                    DoCast(m_creature->getVictim(), SPELL_DECIMATE, false);
+                    break;
+                case EVENT_MORTAL_WOUND:
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_WOUND);
+                    break;
+            }
+
+        if (m_creature->GetDistance2d(m_creature->getVictim()) > 20.0f) // if our tank is too far, we summon it to us
+            DoCast(m_creature->getVictim(), SPELL_SUMMON_PLAYER, true);
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        if (Creature* pRotface = GET_CREATURE(TYPE_ROTFACE))
+        {
+            m_creature->PlayDirectSound(16993); // if rotface is too far away, we play the sound
+            DoScriptText(SAY_PRECIOUS_DEATH, pRotface);
+        }
+    }
+
+};
+
 void AddSC_boss_rotface()
 {
     Script *newscript;
 
     REGISTER_SCRIPT(boss_rotface);
     REGISTER_SCRIPT(mob_rotface_ooze);
+    REGISTER_SCRIPT(mob_precious_ICC);
 }
