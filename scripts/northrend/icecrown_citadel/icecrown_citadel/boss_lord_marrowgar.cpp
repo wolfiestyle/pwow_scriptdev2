@@ -68,11 +68,15 @@ enum Events
 
 #define TIMER_BONE_SLICE            1*IN_MILLISECONDS
 #define TIMER_COLDFLAME             4*IN_MILLISECONDS, 6*IN_MILLISECONDS
-#define TIMER_COLDFLAME_MOVE        10  // creature is updated rougly every 500ms, so this might not work as expected
+#define TIMER_COLDFLAME_MOVE        20
 #define TIMER_BONE_STORM            50*IN_MILLISECONDS
 #define TIMER_BONE_STORM_MOVE       5*IN_MILLISECONDS
 #define TIMER_BONE_SPIKE_GRAVEYARD  20*IN_MILLISECONDS
 #define TIMER_ENRAGE                10*MINUTE*IN_MILLISECONDS
+
+#define COLDFLAME_START_DIST        6
+#define COLDFLAME_STEP_DIST         6
+#define COLDFLAME_TOTAL_DIST        42
 
 struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
@@ -223,7 +227,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                         for (uint32 i = 0; i < 4; i++)
                         {
                             StartPos.orientation += i*(M_PI/2);
-                            ColdflameAttribs.push_back(std::make_pair(StartPos, 6));
+                            ColdflameAttribs.push_back(std::make_pair(StartPos, 0));
                         }
                     }
                     else
@@ -231,7 +235,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                         if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         {
                             StartPos.orientation = m_creature->GetAngle(target);
-                            ColdflameAttribs.push_back(std::make_pair(StartPos, 6));
+                            ColdflameAttribs.push_back(std::make_pair(StartPos, 0));
                         }
                     }
                     // (no break)
@@ -240,11 +244,11 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 {
                     for (ColdFlameList::iterator i = ColdflameAttribs.begin(); i != ColdflameAttribs.end(); )
                     {
-                        if (i->second <= 48)
+                        if (i->second <= COLDFLAME_TOTAL_DIST)
                         {
                             float x, y;
-                            i->second += 6;
-                            GetPointOnCircle(x, y, i->second, i->first.orientation);
+                            i->second += COLDFLAME_STEP_DIST;
+                            GetPointOnCircle(x, y, i->second + COLDFLAME_START_DIST, i->first.orientation);
                             Creature *flame = SummonMgr.SummonCreatureAt(i->first, NPC_COLDFLAME, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000, x, y);
                             if (flame)
                                 flame->CastSpell(m_creature, SPELL_COLDFLAME_DAMAGE_AURA, false);
