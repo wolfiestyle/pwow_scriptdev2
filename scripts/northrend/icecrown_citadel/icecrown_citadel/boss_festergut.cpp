@@ -271,7 +271,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_stinky_ICCAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_stinky_ICCAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     EventManager Events;
@@ -286,14 +286,14 @@ struct MANGOS_DLL_DECL mob_stinky_ICCAI : public ScriptedAI
     void Reset()
     {
         if (!m_creature->HasAura(SPELL_PLAGUE_STENCH))
-            DoCast(m_creature, SPELL_PLAGUE_STENCH);
+            DoCast(m_creature, SPELL_PLAGUE_STENCH, true);
 
         Events.Reset();
     }
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEventInRange(EVENT_DECIMATE, 10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_DECIMATE,     10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
         Events.ScheduleEventInRange(EVENT_MORTAL_WOUND, 10*IN_MILLISECONDS, 15*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
     }
 

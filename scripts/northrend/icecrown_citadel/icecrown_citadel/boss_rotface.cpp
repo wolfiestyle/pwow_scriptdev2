@@ -272,7 +272,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_rotface_oozeAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     EventManager Events;
@@ -351,7 +351,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI : public ScriptedAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_precious_ICCAI : public ScriptedAI
+struct MANGOS_DLL_DECL mob_precious_ICCAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
     EventManager Events;
@@ -361,7 +361,7 @@ struct MANGOS_DLL_DECL mob_precious_ICCAI : public ScriptedAI
         m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData()))
     {
     }
-    
+
     void Reset()
     {
         Events.Reset();
@@ -369,7 +369,7 @@ struct MANGOS_DLL_DECL mob_precious_ICCAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        Events.ScheduleEventInRange(EVENT_DECIMATE, 10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+        Events.ScheduleEventInRange(EVENT_DECIMATE,     10*IN_MILLISECONDS, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
         Events.ScheduleEventInRange(EVENT_MORTAL_WOUND, 10*IN_MILLISECONDS, 15*IN_MILLISECONDS, 20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
     }
 
@@ -377,7 +377,7 @@ struct MANGOS_DLL_DECL mob_precious_ICCAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
-        
+
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
