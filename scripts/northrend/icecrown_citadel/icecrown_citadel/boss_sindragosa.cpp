@@ -67,7 +67,7 @@ enum Says
     SAY_BERSERK                     = -1300538,
     SAY_DEATH                       = -1300539,
     SAY_BLISTERING_COLD_EMOTE       = -1300540,
-    SAY_ICE_TOMB_EMOTE            = -1300541,
+    SAY_ICE_TOMB_EMOTE              = -1300541,
 };
 
 enum Events
