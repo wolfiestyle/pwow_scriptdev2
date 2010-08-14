@@ -156,18 +156,6 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         }
     }
 
-    void RemoveInnoculate()
-    {
-        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit *pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
-            pPlayer->RemoveAurasByDifficulty(SPELL_INNOCULATED);
-        }
-    }
-
     void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
     {
         if (pSpell->Id == SPELL_INHALE_BLIGHT)
@@ -195,7 +183,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                 BlightTarget->CastSpell(BlightTarget, BlightSpells[0][1], true);
                 m_creature->RemoveAurasByDifficulty(SPELL_INHALED_BLIGHT);
                 CurrBlightStrength = 0;
-                RemoveInnoculate();
+                RemoveEncounterAuras(-SPELL_INNOCULATED);
                 DoScriptText(SAY_PUNGENT_BLIGHT2, m_creature);
             }
         }

@@ -174,20 +174,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         IsSoftEnraged = false;
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         m_creature->SetPower(POWER_ENERGY, 0);
-        RemoveAuras();
+        RemoveEncounterAuras(SPELL_MARK_FALLEN_CHAMPION);
         boss_icecrown_citadelAI::Reset();
-    }
-
-    void RemoveAuras()
-    {
-        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit *pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
-            pPlayer->RemoveAurasDueToSpell(SPELL_MARK_FALLEN_CHAMPION);
-        }
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -236,7 +224,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         Events.Reset();
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         DoScriptText(SAY_DEATH, m_creature);
-        RemoveAuras();
+        RemoveEncounterAuras(SPELL_MARK_FALLEN_CHAMPION);
         m_BossEncounter = DONE;
         DoCast(m_creature, SPELL_ACHIEVEMENT, true);
         // start outro

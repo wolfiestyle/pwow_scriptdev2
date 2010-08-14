@@ -181,6 +181,9 @@ struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI, public Script
     bool IsOutOfCombatArea() const;
     // resets boss if pulled out of combat area
     bool OutOfCombatAreaCheck();
+    // remove auras from all players in map
+    // if spellId is negative, removes with spell difficulty
+    void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);
 };
 
 #endif // DEF_ICECROWN_CITADEL_H

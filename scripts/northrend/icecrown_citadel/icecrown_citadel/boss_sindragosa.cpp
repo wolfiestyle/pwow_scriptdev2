@@ -24,7 +24,6 @@ EndScriptData */
 #include "precompiled.h"
 #include "icecrown_citadel.h"
 
-
 enum Spells
 {
     SPELL_BERSERK                   = 26662,
@@ -48,10 +47,10 @@ enum Spells
 
 enum Npcs
 {
-    NPC_RIMEFANG            = 37533,
-    NPC_SPINESTALKER        = 37534,
-    NPC_ICE_TOMB            = 36980,
-    NPC_FROST_BOMB_TARGET   = 37186,
+    NPC_RIMEFANG                    = 37533,
+    NPC_SPINESTALKER                = 37534,
+    NPC_ICE_TOMB                    = 36980,
+    NPC_FROST_BOMB_TARGET           = 37186,
 };
 
 enum Says
@@ -94,19 +93,19 @@ enum Phases
 {
     PHASE_LAND_ONE = 1, // 100% - 85%
     PHASE_AIR,
-    PHASE_LAND_TWO, // 85% - 35%
-    PHASE_LAND_THREE, // 35% - 0%
-    
+    PHASE_LAND_TWO,     // 85% - 35%
+    PHASE_LAND_THREE,   // 35% - 0%
+
     PMASK_AIR               = bit_mask<PHASE_AIR>::value,
     PMASK_LAND_TWO          = bit_mask<PHASE_LAND_TWO>::value,
     PMASK_LAND_THREE        = bit_mask<PHASE_LAND_THREE>::value,
     PMASK_LAND              = bit_mask<PHASE_LAND_ONE, PHASE_LAND_TWO, PHASE_LAND_THREE>::value,
 };
 
-#define FLOOR_HEIGHT                    203.4f
-#define CENTER_LINE_Y                   2484.5f
-#define CENTER_X                        4408.0f
-#define SUMMON_X                        4455.5f
+#define FLOOR_HEIGHT                203.4f
+#define CENTER_LINE_Y               2484.5f
+#define CENTER_X                    4408.0f
+#define SUMMON_X                    4455.5f
 
 #define TIMER_BERSERK               10*MINUTE*IN_MILLISECONDS
 #define TIMER_CLEAVE                10*IN_MILLISECONDS
@@ -133,22 +132,8 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
     void Reset()
     {
         SummonMgr.UnsummonAll();
+        RemoveEncounterAuras(SPELL_ICE_TOMB_AURA, SPELL_ICE_TOMB_AURA2, SPELL_ASPHYXIATION);
         boss_icecrown_citadelAI::Reset();
-        RemoveEncounterAuras();
-    }
-
-    void RemoveEncounterAuras()
-    {
-        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit *pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
-            pPlayer->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA);
-            pPlayer->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA2);
-            pPlayer->RemoveAurasDueToSpell(SPELL_ASPHYXIATION);
-        }
     }
 
     void Aggro(Unit* pWho)
@@ -204,7 +189,7 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
         m_BossEncounter = DONE;
         DoScriptText(SAY_DEATH, m_creature);
         SummonMgr.UnsummonAll();
-        RemoveEncounterAuras();
+        RemoveEncounterAuras(SPELL_ICE_TOMB_AURA, SPELL_ICE_TOMB_AURA2, SPELL_ASPHYXIATION);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -212,12 +197,12 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
-        if (m_creature->GetHealthPercent() < 85.0f && Events.GetPhase() == PHASE_LAND_ONE)
+        if (Events.GetPhase() == PHASE_LAND_ONE && m_creature->GetHealthPercent() < 85.0f)
         {
             Events.ScheduleEvent(EVENT_FLY, 0, TIMER_FLY, 0, 0, PMASK_LAND_TWO);
             Events.SetPhase(PHASE_LAND_TWO);
         }
-        else if (m_creature->GetHealthPercent() < 35.0f && Events.GetPhase() != PHASE_LAND_THREE)
+        else if (Events.GetPhase() != PHASE_LAND_THREE && m_creature->GetHealthPercent() < 35.0f)
         {
             Events.ScheduleEvent(EVENT_LAND, 0);
             Events.SetPhase(PHASE_LAND_THREE);
@@ -250,16 +235,15 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
                     break;
                 case EVENT_UNCHAINED_MAGIC:
                 {
-                    bool IsProperTarget;
-                    Player *Target = NULL;
-                    for (uint32 i = 2; i != 0; i--)
+                    for (uint32 i = 2; i; i--)
                     {
-                        IsProperTarget = false;
-                        for (uint32 j = 0; j < (m_bIs10Man ? 20 : 35); j++) // for loop instead of do/while loop just in case the raid is crazy and brought no mana users.
+                        bool IsProperTarget = false;
+                        Unit *Target = NULL;
+                        for (uint32 j = m_bIs10Man ? 20 : 35; j ; j--) // for loop instead of do/while loop just in case the raid is crazy and brought no mana users.
                         {
-                            Target = dynamic_cast<Player*>(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1));
-                            if (!Target)
-                                break;
+                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1);
+                            if (!Target || Target->GetTypeId() != TYPEID_PLAYER)
+                                continue;
                             if (Target->getPowerType() == POWER_MANA && Target->getClass() != CLASS_HUNTER)
                             {
                                 IsProperTarget = true;
@@ -304,16 +288,15 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
                     std::list<Creature*> FrostTombs;
                     SummonMgr.GetAllSummonsWithId(FrostTombs, NPC_ICE_TOMB);
                     for (std::list<Creature*>::iterator i = FrostTombs.begin(); i != FrostTombs.end(); ++i)
-                        if (*i)
-                            if (Unit *IcedTarget = (*i)->GetOwner())
-                                IcedTarget->CastSpell(IcedTarget, SPELL_ASPHYXIATION, true);
+                        if (Unit *IcedTarget = (*i)->GetOwner())
+                            IcedTarget->CastSpell(IcedTarget, SPELL_ASPHYXIATION, true);
                     break;
                 }
                 case EVENT_ICE_TOMB:
                 {
                     Unit *Target = NULL;
                     if (Events.GetPhase() == PHASE_AIR)
-                        for (int i = 0; i < (m_bIs10Man ? 2 : (m_bIsHeroic ? 6 : 5)); i++)
+                        for (int i = m_bIs10Man ? 2 : (m_bIsHeroic ? 6 : 5); i ; i--)
                         {
                             do // prevent selection of same target for ice tomb
                             {
