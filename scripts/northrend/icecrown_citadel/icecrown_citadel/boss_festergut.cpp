@@ -313,6 +313,8 @@ struct MANGOS_DLL_DECL mob_stinky_ICCAI: public ScriptedAI
                     DoCastSpellIfCan(m_creature->getVictim(), SPELL_MORTAL_WOUND);
                     break;
             }
+
+        DoMeleeAttackIfReady();
     }
 
     void JustDied(Unit* pKiller)

@@ -392,6 +392,8 @@ struct MANGOS_DLL_DECL mob_precious_ICCAI: public ScriptedAI
 
         if (m_creature->GetDistance2d(m_creature->getVictim()) > 20.0f) // if our tank is too far, we summon it to us
             DoCast(m_creature->getVictim(), SPELL_SUMMON_PLAYER, true);
+
+        DoMeleeAttackIfReady();
     }
 
     void JustDied(Unit* pKiller)
