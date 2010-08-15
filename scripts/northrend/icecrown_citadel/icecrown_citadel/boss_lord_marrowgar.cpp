@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -103,6 +104,8 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
         if (pTarget && pTarget->isAlive())
             m_creature->SetTargetGUID(m_TargetGuid);
+        else if (m_creature->isTemporarySummon())
+            static_cast<TemporarySummon*>(m_creature)->UnSummon();
         else
             m_creature->ForcedDespawn();
     }
@@ -117,6 +120,8 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
     void RemoveImpale()
     {
+        if (!m_TargetGuid)
+            return;
         if (Unit *pTarget = Unit::GetUnit(*m_creature, m_TargetGuid))
             pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
         m_TargetGuid = 0;
@@ -145,16 +150,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         m_bInBoneStorm = false;
         SummonMgr.UnsummonAll();
         ColdflameAttribs.clear();
-
-        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit *pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
-            pPlayer->RemoveAurasDueToSpell(SPELL_IMPALED);
-        }
-
+        RemoveEncounterAuras(SPELL_IMPALED);
         boss_icecrown_citadelAI::Reset();
     }
 
