@@ -93,7 +93,7 @@ enum Events
 #define TIMER_GAS_SPORE         35*IN_MILLISECONDS
 #define TIMER_VILE_GAS          20*IN_MILLISECONDS, 30*IN_MILLISECONDS
 #define TIMER_INHALE_BLIGHT     30*IN_MILLISECONDS, 35*IN_MILLISECONDS
-#define TIMER_GASTRIC_BLOAT     8*IN_MILLISECONDS, 12*IN_MILLISECONDS
+#define TIMER_GASTRIC_BLOAT     10*IN_MILLISECONDS, 14*IN_MILLISECONDS
 #define TIMER_MALLEABLE_GOO     17*IN_MILLISECONDS, 23*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
@@ -110,9 +110,10 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 
     void Reset()
     {
+        CurrBlightStrength = 0;
+        SummonMgr.UnsummonAll();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
-        SummonMgr.UnsummonAll();
         boss_icecrown_citadelAI::Reset();
     }
 
@@ -162,19 +163,19 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
             {
                 BlightTarget->RemoveAurasDueToSpell(BlightSpells[CurrBlightStrength][0]);
                 BlightTarget->RemoveAurasDueToSpell(BlightSpells[CurrBlightStrength][1]);
-                if (CurrBlightStrength < 2)
-                {
-                    BlightTarget->CastSpell(m_creature, BlightSpells[CurrBlightStrength+1][0], true);
-                    BlightTarget->CastSpell(BlightTarget, BlightSpells[CurrBlightStrength+1][1], true);
-                }
                 CurrBlightStrength++;
+                if (CurrBlightStrength <= 2)
+                {
+                    BlightTarget->CastSpell(m_creature, BlightSpells[CurrBlightStrength][0], true);
+                    BlightTarget->CastSpell(BlightTarget, BlightSpells[CurrBlightStrength][1], true);
+                }
                 return;
             }
         }
         else if (pSpell->SpellDifficultyId == 1988)  // Pungent Blight
         {
             Creature *BlightTarget = SummonMgr.GetFirstFoundSummonWithId(NPC_VILE_GAS_STALKER);
-            if (BlightTarget && CurrBlightStrength == 3)
+            if (BlightTarget && CurrBlightStrength >= 3)
             {
                 BlightTarget->CastSpell(m_creature, BlightSpells[0][0], true);
                 BlightTarget->CastSpell(BlightTarget, BlightSpells[0][1], true);
@@ -214,7 +215,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     break;
                 case EVENT_VILE_GAS:
                 {
-                    Unit *Target = GetPlayerAtMinimumRange(10);
+                    Unit *Target = GetPlayerAtMinimumRange(10.0f);
                     if (!Target)
                         Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                     if (Target)
@@ -223,11 +224,11 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_GASTRIC_BLOAT:
                 {
-                    Aura *PlayerAura;
-                    if (PlayerAura = m_creature->getVictim()->GetAuraByDifficulty(SPELL_GASTRIC_BLOAT, EFFECT_INDEX_1))
-                        if (PlayerAura->GetStackAmount() >= 9)
-                            m_creature->getVictim()->CastSpell(m_creature->getVictim(), SPELL_GASTRIC_EXPLOSION, true);
-                    DoCast(m_creature->getVictim(), SPELL_GASTRIC_BLOAT);
+                    Unit *target = m_creature->getVictim();
+                    DoCast(target, SPELL_GASTRIC_BLOAT);
+                    if (Aura *PlayerAura = target->GetAuraByDifficulty(SPELL_GASTRIC_BLOAT, EFFECT_INDEX_1))
+                        if (PlayerAura->GetStackAmount() >= 10)
+                            target->CastSpell(target, SPELL_GASTRIC_EXPLOSION, true);
                     break;
                 }
                 case EVENT_MALLEABLE_GOO:
