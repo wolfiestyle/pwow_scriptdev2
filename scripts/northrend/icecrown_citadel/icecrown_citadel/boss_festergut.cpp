@@ -27,7 +27,7 @@ EndScriptData */
 enum Spells
 {
     SPELL_BERSERK                   = 47008,
-    SPELL_GAS_SPORE                 = 71221,
+    SPELL_GAS_SPORE                 = 69278,
     SPELL_PUNGENT_BLIGHT            = 69195,
     SPELL_GASEOUS_BLIGHT_LEVEL0     = 69157, //strongest
     SPELL_GASEOUS_BLIGHT_LEVEL1     = 69162,
@@ -118,11 +118,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
-        Creature *GasTarget = SummonMgr.SummonCreatureAt(m_creature, NPC_VILE_GAS_STALKER);
-        if (GasTarget)
-        {
-            GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE );
-        }
+        if (Creature *GasTarget = SummonMgr.SummonCreatureAt(m_creature, NPC_VILE_GAS_STALKER))
+            GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         CurrBlightStrength = 0;
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4300.9f, 3192.2f, 389.4f);
@@ -133,7 +130,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         SCHEDULE_EVENT_R(GASTRIC_BLOAT);
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(MALLEABLE_GOO);
-        Events.ScheduleEvent(EVENT_START_GAS_CLOUD, 5000);
+        Events.ScheduleEvent(EVENT_START_GAS_CLOUD, 5*IN_MILLISECONDS);
         DoScriptText(SAY_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
     }
@@ -203,25 +200,9 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_BERSERK, m_creature);
                     break;
                 case EVENT_GAS_SPORE:
-                {
-                    Unit *Target = NULL;
-                    Unit *LastTarget = NULL;
-                    for (int i = 0; i < (m_bIs10Man ? 2 : 3); i++)
-                    {
-                        do // prevent selection of same target for gas spore
-                        {
-                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
-                            if (m_creature->getAttackers().size() <= (m_bIs10Man ? 2 : 3))
-                                break;
-                        }
-                        while (Target == LastTarget);
-                        if (Target)
-                            DoCast(Target, SPELL_GAS_SPORE, true);
-                        LastTarget = Target;
-                    }
+                    DoCast(m_creature, SPELL_GAS_SPORE);
                     DoScriptText(SAY_GAS_SPORE, m_creature);
                     break;
-                }
                 case EVENT_INHALE_BLIGHT:
                     if (CurrBlightStrength >= 3)
                     {
