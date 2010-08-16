@@ -176,7 +176,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     {
         if (pSender && pSender->GetEntry() == NPC_LITTLE_OOZE)
         {
-            if (Creature *BigOoze = SummonMgr.SummonCreatureAt(pSender, NPC_BIG_OOZE, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 500))
+            if (Creature *BigOoze = SummonMgr.SummonCreatureAt(pSender, NPC_BIG_OOZE, TEMPSUMMON_DEAD_DESPAWN))
             {
                 BigOoze->CastSpell(BigOoze, SPELL_RADIATING_OOZE, true);
                 BigOoze->SetInCombatWithZone();
