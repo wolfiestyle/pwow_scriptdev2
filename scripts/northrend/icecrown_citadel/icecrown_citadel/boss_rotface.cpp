@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -285,6 +286,10 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
 
     void Reset()
     {
+        if (m_creature->isTemporarySummon())
+            static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        else
+            m_creature->ForcedDespawn(100);
     }
 
     void JustSummoned(Creature *pSumm)
@@ -294,6 +299,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
             pSumm->setFaction(FACTION_HOSTILE);
             pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             pSumm->CastSpell(pSumm, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
+            // this may cause the sticky ooze to respawn
             pSumm->ForcedDespawn(30*IN_MILLISECONDS);
         }
     }
@@ -317,7 +323,10 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
             }
             else
                 BroadcastScriptMessageToEntry(m_creature, NPC_ROTFACE, 140.0f);
-            static_cast<Creature*>(pWho)->ForcedDespawn();
+            if (static_cast<Creature*>(pWho)->isTemporarySummon())
+                static_cast<TemporarySummon*>(pWho)->UnSummon();
+            else
+                static_cast<Creature*>(pWho)->ForcedDespawn();
         }
         ScriptedAI::MoveInLineOfSight(pWho);
     }
@@ -340,9 +349,10 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
                     DoCast(m_creature->getVictim(), SPELL_STICKY_OOZE);
                     break;
                 case EVENT_DESPAWN_OOZE:
+                    Events.Reset();
                     DoStartNoMovement(m_creature->getVictim());
                     SetCombatMovement(false);
-                    m_creature->SetVisibility(VISIBILITY_OFF);
+                    m_creature->SetPhaseMask(16, true);             // SetVisibility doesnt make the creature stop attacking (invisible creatures can cast spells)
                     m_creature->ForcedDespawn(20*IN_MILLISECONDS);  // Damage does not appply if original caster is nonexistant
                     break;
                 default:
