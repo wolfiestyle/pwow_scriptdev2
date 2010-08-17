@@ -201,7 +201,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_BERSERK, m_creature);
                     break;
                 case EVENT_GAS_SPORE:
-                    DoCast(m_creature, SPELL_GAS_SPORE);
+                    DoCast(m_creature, SPELL_GAS_SPORE, true);
                     DoScriptText(SAY_GAS_SPORE, m_creature);
                     break;
                 case EVENT_INHALE_BLIGHT:
@@ -209,9 +209,13 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     {
                         DoCast(m_creature, SPELL_PUNGENT_BLIGHT);
                         DoScriptText(SAY_PUNGENT_BLIGHT1, m_creature);
+                        Events.SetCooldown(3000);
                     }
                     else
+                    {
                         DoCast(m_creature, SPELL_INHALE_BLIGHT);
+                        Events.SetCooldown(3500);
+                    }
                     break;
                 case EVENT_VILE_GAS:
                 {
