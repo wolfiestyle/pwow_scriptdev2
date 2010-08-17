@@ -136,6 +136,14 @@ enum Messages
 };
 
 static const float IntroSummonPosition[2] = {-563.5f, 2211.6f};
+static const float BeastSummonPosition[5][2] = 
+{
+    {-493.331f, 2201.865f}, // side (left) platform
+    {-493.331f, 2221.148f}, // side (right) platform
+    {-502.591f, 2211.744f}, // front (middle) floor
+    {-478.226f, 2207.198f}, // behind (left) platform
+    {-478.226f, 2215.464f}  // behind (right) platform
+};
 
 #define FLOOR_HEIGHT            539.3f
 #define PLATFORM_HEIGHT         541.2f
@@ -305,13 +313,12 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 case EVENT_SUMMON_ADDS:
                 {
                     DoScriptText(SAY_SUMMON_ADDS, m_creature);
-                    static const float Positions[5][2] = {{0.0f, -10.0f}, {0.0f, 10.0f}, {10.0f, 0.0f}, {-5.0f, 5.0f}, {-5.0f, -5.0f}};
                     for (int i = 0; i < 2; i++)
-                        SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
+                        SummonMgr.SummonCreature(NPC_BLOOD_BEAST, BeastSummonPosition[i][0], BeastSummonPosition[i][1], PLATFORM_HEIGHT+1.0f, M_PI_F, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
 
                     if (!m_bIs10Man) //pentagon pattern in 25 man
                         for (int i = 2; i < 5; i++)
-                            SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
+                            SummonMgr.SummonCreature(NPC_BLOOD_BEAST, BeastSummonPosition[i][0], BeastSummonPosition[i][1], i == 2 ? FLOOR_HEIGHT+1.0f : PLATFORM_HEIGHT+1.0f, M_PI_F, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
 
                     if (m_bIsHeroic)
                         Events.ScheduleEvent(EVENT_BUFF_ADDS, TIMER_BUFF_ADDS);
