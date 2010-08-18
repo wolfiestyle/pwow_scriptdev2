@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: boss_deathbringer_saurfang
 SD%Complete: 75%
-SDComment: causes some random teleport (add spell)
+SDComment: 
 SDCategory: Icecrown Citadel
 EndScriptData */
 
@@ -136,14 +136,6 @@ enum Messages
 };
 
 static const float IntroSummonPosition[2] = {-563.5f, 2211.6f};
-static const float BeastSummonPosition[5][2] = 
-{
-    {-493.331f, 2201.865f}, // side (left) platform
-    {-493.331f, 2221.148f}, // side (right) platform
-    {-502.591f, 2211.744f}, // front (middle) floor
-    {-478.226f, 2207.198f}, // behind (left) platform
-    {-478.226f, 2215.464f}  // behind (right) platform
-};
 
 #define FLOOR_HEIGHT            539.3f
 #define PLATFORM_HEIGHT         541.2f
@@ -313,12 +305,16 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
                 case EVENT_SUMMON_ADDS:
                 {
                     DoScriptText(SAY_SUMMON_ADDS, m_creature);
-                    for (int i = 0; i < 2; i++)
-                        SummonMgr.SummonCreature(NPC_BLOOD_BEAST, BeastSummonPosition[i][0], BeastSummonPosition[i][1], PLATFORM_HEIGHT+1.0f, M_PI_F, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
-
-                    if (!m_bIs10Man) //pentagon pattern in 25 man
-                        for (int i = 2; i < 5; i++)
-                            SummonMgr.SummonCreature(NPC_BLOOD_BEAST, BeastSummonPosition[i][0], BeastSummonPosition[i][1], i == 2 ? FLOOR_HEIGHT+1.0f : PLATFORM_HEIGHT+1.0f, M_PI_F, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+                    static const float Positions[5][2] = {{0.0f, -10.0f}, {0.0f, 10.0f}, {10.0f, 0.0f}, {-5.0f, 5.0f}, {-5.0f, -5.0f}};
+                    float x, y, z;
+                    m_creature->GetPosition(x, y, z);
+                    for (int i = 0; i < (m_bIs10Man ? 2 : 5); i++)
+                    {
+                        if (!m_creature->IsWithinLOS(x + Positions[i][0], y + Positions[i][1], z))  // prevent summoning in wall
+                            SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+                        else
+                            SummonMgr.SummonCreatureAt(m_creature, NPC_BLOOD_BEAST, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000, Positions[i][0], Positions[i][1]);
+                    }
 
                     if (m_bIsHeroic)
                         Events.ScheduleEvent(EVENT_BUFF_ADDS, TIMER_BUFF_ADDS);
@@ -538,29 +534,30 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 2*IN_MILLISECONDS;
                             break;
                         case 11:
-                            if (HighSaurfang)
+                            if (HighSaurfang && BossSaurfang)
                             {
-                                if (BossSaurfang)
-                                {
-                                    float x, y;
-                                    BossSaurfang->GetNearPoint2D(x, y, CONTACT_DISTANCE, BossSaurfang->GetAngle(HighSaurfang));
-                                    HighSaurfang->MonsterMoveWithSpeed(x, y, BossSaurfang->GetPositionZ());
-                                }
-                                DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
+                                float x, y;
+                                BossSaurfang->GetNearPoint2D(x, y, CONTACT_DISTANCE, BossSaurfang->GetAngle(HighSaurfang));
+                                HighSaurfang->MonsterMove(x, y, BossSaurfang->GetPositionZ(), 4*IN_MILLISECONDS);
                             }
-                            TalkTimer = 6*IN_MILLISECONDS;
+                            TalkTimer = 4*IN_MILLISECONDS;
                             break;
                         case 12:
+                            if (HighSaurfang)
+                                DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
+                            TalkTimer = 6*IN_MILLISECONDS;
+                            break;
+                        case 13:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_OUTRO3, HighSaurfang);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
-                        case 13:
+                        case 14:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_OUTRO4, HighSaurfang);
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
-                        case 14:
+                        case 15:
                             SummonMgr.UnsummonAll();
                             if (BossSaurfang)
                                 SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_OUTRO);
