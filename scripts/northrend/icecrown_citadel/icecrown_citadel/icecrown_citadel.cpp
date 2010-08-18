@@ -99,9 +99,9 @@ bool boss_icecrown_citadelAI::IsOutOfCombatArea() const
         case NPC_SAURFANG:
             return std::abs(z - 539.29f) > 5.0f;
         case NPC_FESTERGUT:
-            return !m_creature->IsWithinDist2d(4267.939f, 3137.32f, 80.0f);
+            return !m_creature->IsWithinDist2d(4267.939f, 3137.32f, 47.5f);
         case NPC_ROTFACE:
-            return !m_creature->IsWithinDist2d(4445.60f, 3137.21f, 80.0f);
+            return !m_creature->IsWithinDist2d(4445.60f, 3137.21f, 47.5f);
         case NPC_PUTRICIDE:
             return std::abs(z - 389.398f) > 4.0f;
         case NPC_VALANAR:
@@ -141,6 +141,7 @@ void boss_icecrown_citadelAI::RemoveEncounterAuras(int32 spellId_1, int32 spellI
             Unit *pPlayer = itr->getSource();
             if (!pPlayer)
                 continue;
+
             if (spellId_1 > 0)
                 pPlayer->RemoveAurasDueToSpell(spellId_1);
             else if (spellId_1 < 0)
