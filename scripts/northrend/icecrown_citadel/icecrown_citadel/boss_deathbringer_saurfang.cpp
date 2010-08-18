@@ -372,9 +372,12 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
         TalkPhase(0),
         IsHorde(false)
     {
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void Reset() {}
+
+    void MoveInLineOfSight(Unit* pWho) {}
 
     void DoIntroCharge(Creature *Leader, uint32 FollowerId)   
     {
