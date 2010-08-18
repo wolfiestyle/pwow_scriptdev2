@@ -109,7 +109,7 @@ bool boss_icecrown_citadelAI::IsOutOfCombatArea() const
         case NPC_TALDARAM:
             return std::abs(z - 364.085f) > 6.0f;
         case NPC_LANATHEL:
-            return std::abs(z - 401.747f) > 5.0f;
+            return std::abs(z - 401.747f) > 30.0f;
         case NPC_SINDRAGOSA:
             return !m_creature->IsWithinDist2d(4407.94f, 2483.47, 150.0f);
         case NPC_LICH_KING:
