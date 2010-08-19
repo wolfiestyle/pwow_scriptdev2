@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_deathbringer_saurfang
-SD%Complete: 75%
+SD%Complete: 90%
 SDComment: 
 SDCategory: Icecrown Citadel
 EndScriptData */
@@ -169,8 +169,6 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Reset()
     {
-        if (m_BossEncounter == DONE)
-            return;
         IsSoftEnraged = false;
         SummonMgr.UnsummonAllWithId(NPC_BLOOD_BEAST);
         m_creature->SetPower(POWER_ENERGY, 0);
@@ -198,8 +196,6 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Aggro(Unit* pWho)
     {
-        if (IsDoingIntro)
-            return;
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(SUMMON_ADDS);
         SCHEDULE_EVENT(BOILING_BLOOD);
