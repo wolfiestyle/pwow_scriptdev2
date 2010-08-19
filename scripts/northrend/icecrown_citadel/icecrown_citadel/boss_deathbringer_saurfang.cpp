@@ -240,6 +240,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         pSummon->SetOwnerGUID(m_creature->GetGUID());
         pSummon->CastSpell(pSummon, SPELL_RESISTANT_SKIN, true);
         pSummon->CastSpell(pSummon, SPELL_ADD_BLOOD_LINK, true);
+        pSummon->SetInCombatWithZone();
     }
 
     void SummonedCreatureJustDied(Creature* pSummon)
