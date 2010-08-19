@@ -210,6 +210,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                         DoCast(m_creature, SPELL_PUNGENT_BLIGHT);
                         DoScriptText(SAY_PUNGENT_BLIGHT1, m_creature);
                         Events.SetCooldown(3000);
+                        Events.DelayEventsWithId(EVENT_VILE_GAS, 10*IN_MILLISECONDS);
                     }
                     else
                     {
