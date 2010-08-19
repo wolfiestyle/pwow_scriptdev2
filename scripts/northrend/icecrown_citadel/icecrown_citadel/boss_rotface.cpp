@@ -85,6 +85,7 @@ enum Events
     
     EVENT_STICKY_OOZE,
     EVENT_DESPAWN_OOZE,
+    EVENT_UNSUMMON,
 
     EVENT_DECIMATE,
     EVENT_MORTAL_WOUND,
@@ -273,14 +274,13 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
+struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
-    EventManager Events;
 
     mob_rotface_oozeAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData()))
+        ScriptEventInterface(pCreature)
     {
     }
 
@@ -289,7 +289,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
         if (m_creature->isTemporarySummon())
             static_cast<TemporarySummon*>(m_creature)->UnSummon();
         else
-            m_creature->ForcedDespawn(100);
+            m_creature->ForcedDespawn();
     }
 
     void JustSummoned(Creature *pSumm)
@@ -299,15 +299,15 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
             pSumm->setFaction(FACTION_HOSTILE);
             pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             pSumm->CastSpell(pSumm, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
-            // this may cause the sticky ooze to respawn
-            pSumm->ForcedDespawn(30*IN_MILLISECONDS);
+            pSumm->SetInCombatWithZone();
+            SendEventTo(pSumm, EVENT_UNSUMMON, 30*IN_MILLISECONDS);
         }
     }
 
     void MoveInLineOfSight(Unit *pWho)
     {
         if (pWho && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_LITTLE_OOZE &&
-            m_creature->GetVisibility() == VISIBILITY_ON && m_creature->IsWithinDistInMap(pWho, 10.0f))
+            m_creature->IsWithinDistInMap(pWho, 10.0f))
         {
             if (m_creature->GetEntry() == NPC_BIG_OOZE)
             {
@@ -323,10 +323,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
             }
             else
                 BroadcastScriptMessageToEntry(m_creature, NPC_ROTFACE, 140.0f);
-            if (static_cast<Creature*>(pWho)->isTemporarySummon())
-                static_cast<TemporarySummon*>(pWho)->UnSummon();
-            else
-                static_cast<Creature*>(pWho)->ForcedDespawn();
+            SendEventTo(static_cast<Creature*>(pWho), EVENT_UNSUMMON, 0);
         }
         ScriptedAI::MoveInLineOfSight(pWho);
     }
@@ -349,11 +346,15 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI
                     DoCast(m_creature->getVictim(), SPELL_STICKY_OOZE);
                     break;
                 case EVENT_DESPAWN_OOZE:
-                    Events.Reset();
+                    Events.CancelEvent(EVENT_STICKY_OOZE);
                     DoStartNoMovement(m_creature->getVictim());
                     SetCombatMovement(false);
-                    m_creature->SetPhaseMask(16, true);             // SetVisibility doesnt make the creature stop attacking (invisible creatures can cast spells)
-                    m_creature->ForcedDespawn(20*IN_MILLISECONDS);  // Damage does not appply if original caster is nonexistant
+                    m_creature->SetPhaseMask(16, true);
+                    // Damage does not appply if original caster is nonexistant
+                    Events.ScheduleEvent(EVENT_UNSUMMON, 20*IN_MILLISECONDS);
+                    break;
+                case EVENT_UNSUMMON:
+                    Reset();
                     break;
                 default:
                     break;
