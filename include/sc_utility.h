@@ -480,7 +480,7 @@ public:
     bool SendEventTo(Creature* target, uint32 event_id, uint32 event_timer);
 
     // sends an event to target creature stored in instance data
-    bool SendEventTo(uint32 data_id, uint32 event_id, uint32 event_timer);
+    bool SendEventToDataId(uint32 data_id, uint32 event_id, uint32 event_timer);
 
 protected:
     WorldObject *m_sender;

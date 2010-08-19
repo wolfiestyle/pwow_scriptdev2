@@ -438,7 +438,7 @@ bool ScriptEventInterface::SendEventTo(Creature* target, uint32 event_id, uint32
     return SendScriptMessageTo(target, m_sender, event_id, event_timer);
 }
 
-bool ScriptEventInterface::SendEventTo(uint32 data_id, uint32 event_id, uint32 event_timer)
+bool ScriptEventInterface::SendEventToDataId(uint32 data_id, uint32 event_id, uint32 event_timer)
 {
     InstanceData *instance = m_sender->GetInstanceData();
     if (!instance)
