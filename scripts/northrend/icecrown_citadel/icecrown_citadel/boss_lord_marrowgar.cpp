@@ -247,7 +247,10 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                             GetPointOnCircle(x, y, i->second + COLDFLAME_START_DIST, i->first.orientation);
                             Creature *flame = SummonMgr.SummonCreatureAt(i->first, NPC_COLDFLAME, TEMPSUMMON_TIMED_DESPAWN, m_bIsHeroic ? 8000 : 3000, x, y);
                             if (flame)
+                            {
+                                flame->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                                 flame->CastSpell(m_creature, SPELL_COLDFLAME_DAMAGE_AURA, false);
+                            }
                             Events.ScheduleEvent(EVENT_COLDFLAME_MOVE, TIMER_COLDFLAME_MOVE);
                             ++i;
                         }
@@ -272,8 +275,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                 case EVENT_BONE_STORM:
                     DoScriptText(SAY_BONE_STORM, m_creature);
                     DoCast(m_creature, SPELL_BONE_STORM);
-                    m_creature->SetSpeedRate(MOVE_WALK, 5.0f, true);
-                    m_creature->SetSpeedRate(MOVE_RUN, 5.0f, true);
+                    m_creature->SetSpeedRate(MOVE_WALK, 3.0f, true);
+                    m_creature->SetSpeedRate(MOVE_RUN, 3.0f, true);
                     DoStartNoMovement(m_creature->getVictim());
                     m_bInBoneStorm = true;
                     for (uint32 i = 0; i < (m_bIsHeroic ? 4 : 3); i++)
