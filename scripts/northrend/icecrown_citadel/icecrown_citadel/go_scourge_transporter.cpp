@@ -84,75 +84,63 @@ bool GOSelect_scourge_transporter(Player* pPlayer, GameObject* pGo, uint32 uiSen
 
 bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry *pAt)
 {
-    if (pPlayer && !pPlayer->isGameMaster()) // prevent GMs from activating transporters
+    if (!pPlayer || pPlayer->isGameMaster())    // prevent GMs from activating transporters
+        return false;
+
+    ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData());
+    if (!m_pInstance)
+        return false;
+
+    std::bitset<32> tpData = m_pInstance->GetData(DATA_TP_UNLOCKED);
+
+    switch (pAt->id)
     {
-        ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData());
-
-        if (!m_pInstance)
-            return false;
-
-        std::bitset<32> tpData = m_pInstance->GetData(DATA_TP_UNLOCKED);
-
-        switch (pAt->id)
-        {
-            case 5736:  // Light's Hammer
-                if (!tpData[TP_LIGHTS_HAMMER])
+        case 5736:  // Light's Hammer
+            if (!tpData[TP_LIGHTS_HAMMER])
+            {
+                tpData[TP_LIGHTS_HAMMER] = true;
+                m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                return true;
+            }
+            break;
+        case 5649:  // Upper Spire
+            // trigger enabled only if Saurfang is dead + someone actually gets there
+            if (!tpData[TP_UPPER_SPIRE] && m_pInstance->GetData(TYPE_SAURFANG) == DONE)
+            {
+                tpData[TP_UPPER_SPIRE] = true;
+                m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f, 351.06f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
+                return true;
+            }
+            break;
+        case 5604:  // Sindragosa's Lair
+            if (!tpData[TP_SINDRAGOSA_LAIR] && m_pInstance->GetData(TYPE_VALITHRIA) == DONE)
+            {
+                tpData[TP_SINDRAGOSA_LAIR] = true;
+                m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
+                return true;
+            }
+            break;
+        case 5718:  // LK Teleporter
+            if (!tpData[TP_FROZEN_THRONE])
+            {
+                if (m_pInstance->GetData(TYPE_SAURFANG) == DONE &&
+                    m_pInstance->GetData(TYPE_PUTRICIDE) == DONE &&
+                    m_pInstance->GetData(TYPE_LANATHEL) == DONE &&
+                    m_pInstance->GetData(TYPE_SINDRAGOSA) == DONE)
                 {
-                    tpData[TP_LIGHTS_HAMMER] = true;
-                    m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
-                    return true;
-                }
-                break;
-            case 5649:  // Upper Spire
-                if (!tpData[TP_UPPER_SPIRE])
-                {
-                    if (m_pInstance->GetData(TYPE_SAURFANG) == DONE) // trigger enabled only if Saurfang is dead + someone actually gets there
-                    {
-                        pPlayer->SummonCreature(NPC_CROK_SCOURGEBANE, 4199.25f,  2769.26f, 351.06f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25*IN_MILLISECONDS);
-                        tpData[TP_UPPER_SPIRE] = true;
-                        m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
-                        return true;
-                    }
-                    return false;  // we wont handle this event cause player shouldn't be here yet ;<
-                }
-                break;
-            case 5604:  // Sindragosa's Lair
-                if (!tpData[TP_SINDRAGOSA_LAIR])
-                {
-                    if (m_pInstance->GetData(TYPE_VALITHRIA) == DONE)
-                    {
-                        tpData[TP_SINDRAGOSA_LAIR] = true;
-                        m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
-                        return true;
-                    }
-                    return false;  // we wont handle this event cause player shouldn't be here yet ;<
-                }
-                break;
-            case 5718:  // LK Teleporter
-                if (!tpData[TP_FROZEN_THRONE])
-                {
-                    for (uint32 i = 0; i < MAX_ENCOUNTER-1; i++)
-                    {
-                        if (m_pInstance->GetData(i) != DONE)
-                            return false;
-                    }
                     tpData[TP_FROZEN_THRONE] = true;
                     m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
                     pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
                 }
-                else
-                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
-                break;
-            default:
-                break;
-        }
-        return false;
+            }
+            else
+                pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+            break;
+        default:
+            break;
     }
-    else 
-    {
-        //pPlayer->MonsterSay("GM's have no control under the Lich King's citadel!", 0, 0);
-        return false;
-    }
+    return false;
 };
 
 void AddSC_scourge_transporter()
