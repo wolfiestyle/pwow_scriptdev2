@@ -46,6 +46,9 @@ enum Spells
     SPELL_STICKY_OOZE               = 69774,
     SPELL_STICKY_OOZE_DAMAGE_AURA   = 69776,
 
+    // Unstable Ooze Explosion Stalker
+    SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED = 69833,
+
     // precious
     SPELL_DECIMATE                  = 71123,
     SPELL_MORTAL_WOUND              = 71127,
@@ -59,6 +62,7 @@ enum Npcs
     NPC_OOZE_SPRAY_STALKER          = 37986,    // Reciver of Slime Spray
     NPC_BIG_OOZE                    = 36899,
     NPC_LITTLE_OOZE                 = 36897,
+    NPC_OOZE_EXPLOSION_STALKER      = 38107,
 };
 
 enum Says
@@ -277,15 +281,18 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
+    SummonManager SummonMgr;
 
     mob_rotface_oozeAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        ScriptEventInterface(pCreature)
+        ScriptEventInterface(pCreature),
+        SummonMgr(pCreature)
     {
     }
 
     void Reset()
     {
+        SummonMgr.UnsummonAll();
         if (m_creature->isTemporarySummon())
             static_cast<TemporarySummon*>(m_creature)->UnSummon();
         else
@@ -301,6 +308,14 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
             pSumm->CastSpell(pSumm, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
             pSumm->SetInCombatWithZone();
             SendEventTo(pSumm, EVENT_UNSUMMON, 30*IN_MILLISECONDS);
+        }
+        if (pSumm && pSumm->GetEntry() == NPC_OOZE_EXPLOSION_STALKER) //summoned indirectly by spell unstable ooze explosion
+        {
+            pSumm->SetDisplayId(11686);
+            pSumm->setFaction(FACTION_HOSTILE);
+            pSumm->CastSpell(m_creature, SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED, true);
+            pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
         }
     }
 
