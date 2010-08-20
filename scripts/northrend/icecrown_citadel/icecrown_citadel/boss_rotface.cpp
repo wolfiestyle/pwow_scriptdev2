@@ -301,7 +301,9 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 
     void JustSummoned(Creature *pSumm)
     {
-        if (pSumm && pSumm->GetEntry() == NPC_STICKY_OOZE)
+        if (!pSumm)
+            return;
+        if (pSumm->GetEntry() == NPC_STICKY_OOZE)
         {
             pSumm->setFaction(FACTION_HOSTILE);
             pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -309,12 +311,13 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
             pSumm->SetInCombatWithZone();
             SendEventTo(pSumm, EVENT_UNSUMMON, 30*IN_MILLISECONDS);
         }
-        if (pSumm && pSumm->GetEntry() == NPC_OOZE_EXPLOSION_STALKER) //summoned indirectly by spell unstable ooze explosion
+        //summoned indirectly by spell unstable ooze explosion
+        else if (pSumm->GetEntry() == NPC_OOZE_EXPLOSION_STALKER)
         {
             pSumm->SetDisplayId(11686);
             pSumm->setFaction(FACTION_HOSTILE);
-            pSumm->CastSpell(m_creature, SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED, true);
-            pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            pSumm->CastSpell(pSumm, SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED, true);
             SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
         }
     }
