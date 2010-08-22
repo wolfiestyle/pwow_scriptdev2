@@ -242,8 +242,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                 {
                     DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0), SPELL_MUTATED_INFECTION);
                     int NextInfectionTime = TIMER_MUTATED_INFECTION - 25*NumInfections*IN_MILLISECONDS / 100;
-                    if (NextInfectionTime < 4000)
-                        NextInfectionTime = 4000;
+                    if (NextInfectionTime < 6000)
+                        NextInfectionTime = 6000;
                     Events.RescheduleEvent(EVENT_MUTATED_INFECTION, NextInfectionTime);
                     NumInfections++;
                     break;
