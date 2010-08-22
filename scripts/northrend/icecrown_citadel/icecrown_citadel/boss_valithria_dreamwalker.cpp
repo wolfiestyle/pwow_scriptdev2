@@ -42,7 +42,7 @@ enum Spells
     SPELL_TWISTING_NIGHTMARES   = 71941,
     SPELL_SUMMON_DREAM_PORTAL   = 71301,
     SPELL_SUMMON_NIGHTMARE_PORT = 71977,
-    //SPELL_NIGHTMARES            = 71946, // no reports of this being used actually
+    SPELL_NIGHTMARES            = 71946, // heroic mode spell
     // Blazing Skeletons
     SPELL_FIREBALL              = 70754,
     SPELL_LAY_WASTE             = 69325,
@@ -93,8 +93,6 @@ enum Events
     EVENT_SUMMON_PORTALS = 50, // high enough to avoid definition/event collisions with different scripts
     EVENT_BEGIN_FIGHT,
     EVENT_INIT_SCRIPT,
-    EVENT_BERSERK,
-    EVENT_WIN,
     EVENT_DESPAWN,
     EVENT_SUMMON_RISEN,
     EVENT_SUMMON_BLAZING,
@@ -147,7 +145,6 @@ static const float locations[4][2] =
 #define RISEN_SUMMON_TIMER      30*IN_MILLISECONDS
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
 #define PORTAL_TIMER            46.5*IN_MILLISECONDS
-#define BERSERK_TIMER           7*MINUTE*IN_MILLISECONDS
 #define SUMMON_PORTAL_RADIUS    30.0f
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
@@ -169,6 +166,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     void Reset()
     {
         m_abSays.reset();
+        DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
         //SummonMgr.UnsummonAll(); // she only summons the combat trigger which despawns when he receives the broadcasted message "Win" or "wipe"
 
         m_creature->SetHealthPercent(50.0f);
@@ -219,7 +217,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
     void JustDied(Unit* pKiller)
     {
-        SummonMgr.UnsummonAll();
+        DoScriptText(SAY_VALITHRIA_FAIL, m_creature);
+        BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_DESPAWN, 5*IN_MILLISECONDS, 100.0f);
         if (m_BossEncounter != DONE)
         {
             m_BossEncounter = NOT_STARTED;
@@ -260,8 +259,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
         m_creature->SetTargetGUID(0);
 
-        /*if(!m_creature->HasAura(SPELL_NIGHTMARES))        // Undocumented boss-related Spell
-            DoCast(m_creature, SPELL_NIGHTMARES, false);*/
+        if (m_bIsHeroic && !m_creature->HasAura(SPELL_NIGHTMARES))        // Heroic mode spell (boss takes damage over time)
+            DoCast(m_creature, SPELL_NIGHTMARES, true);
 
         if (!m_abSays[2] && m_creature->GetHealthPercent() <= 25.0f)
         {
@@ -280,7 +279,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
-            BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_WIN, 5*IN_MILLISECONDS, 100.0f);
+            BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_DESPAWN, 5*IN_MILLISECONDS, 100.0f);
             m_abSays[4] = true;
             Events.Reset();
             Events.ScheduleEvent(EVENT_DESPAWN, 5*IN_MILLISECONDS);
@@ -302,7 +301,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                     SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f, 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000);
 
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41500); // first portal timer (taken from DBM database)
-                    Events.RescheduleEvent(EVENT_BERSERK, BERSERK_TIMER);
 
                     if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_1))
                         Door->SetGoState(GO_STATE_ACTIVE);
@@ -338,14 +336,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                         m_creature->CastSpell(x, y, z, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
                     }
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, PORTAL_TIMER);
-                    break;
-                case EVENT_BERSERK:
-                    // either you die cause of add overwhelming or she dies (berserk spell is not documented)
-                    // perhaps she turns unfriendly and casts the same rage she casts at win, but noone lasts long enough to see that
-                    DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
-                    m_creature->RemoveAllAttackers();
-                    BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_BERSERK, 0, 150.0f, false);
-                    Reset();
                     break;
                 case EVENT_DESPAWN:
                     m_creature->SetPhaseMask(16, true);
@@ -415,8 +405,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
 
     void JustSummoned(Creature* pSummon)
     {
-        SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
-        pSummon->SetInCombatWithZone();        
+        pSummon->SetInCombatWithZone();
     }
 
     void JustDied(Unit* pSlayer)
@@ -461,12 +450,13 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     if (blazingWaveCount < sizeof(BlazingTimers)/sizeof(uint32) - 1)
                         blazingWaveCount++;
                     break;
-                case EVENT_BERSERK:
-                    Reset();
-                    break;
-                case EVENT_WIN:
+                case EVENT_DESPAWN:
                     SummonMgr.UnsummonAll();
-                    m_creature->ForcedDespawn(100);
+                    if (m_creature->isTemporarySummon())
+                        static_cast<TemporarySummon*>(m_creature)->UnSummon();
+                    else
+                        m_creature->ForcedDespawn();
+                    break;
                 default:
                     break;
             }
