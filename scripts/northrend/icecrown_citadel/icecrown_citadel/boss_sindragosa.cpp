@@ -71,7 +71,7 @@ enum Says
 
 enum Events
 {
-    EVENT_BERSERK = 1,
+    EVENT_BERSERK = 100,
     EVENT_CLEAVE,
     EVENT_TAIL_SMASH,
     EVENT_FROST_BREATH,
@@ -82,11 +82,9 @@ enum Events
     EVENT_FLY,
     EVENT_LAND,
     EVENT_ICE_TOMB,
-};
 
-enum Messages
-{
-    MESSAGE_OTHER_GUARD_DEAD = 1,
+    // Messages
+    MESSAGE_OTHER_GUARD_DEAD,
 };
 
 enum Phases

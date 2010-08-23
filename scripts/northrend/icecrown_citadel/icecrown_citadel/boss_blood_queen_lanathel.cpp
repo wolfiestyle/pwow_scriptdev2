@@ -49,7 +49,7 @@ enum Spells
 
 enum Events
 {
-    EVENT_BERSERK = 10,
+    EVENT_BERSERK = 20,
     EVENT_BITE,         // Happens only once @ 15 seconds of starting the fight
     EVENT_BLOODBOLT,
     EVENT_DELIRIOUS_SLASH,

@@ -125,11 +125,9 @@ enum Events
     // Taldaram
     EVENT_GLITTERING_SPARKS,
     EVENT_BALL_OF_FLAMES,
-};
 
-enum Messages
-{
-    MESSAGE_AGGRO = 1,
+    // Messages
+    MESSAGE_AGGRO,
     MESSAGE_DIE,
 };
 
