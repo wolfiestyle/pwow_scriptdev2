@@ -99,7 +99,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     {
         uint32 loot_id = 0, phased_id = 0;
         TeleportLocations tp_unlocked = TP_MAX;
-        std::list<uint32> door_ids;
+        std::deque<uint32> door_ids;
 
         switch (uiType)
         {
@@ -112,7 +112,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 phased_id = DATA_DEATHWHISPER_ELEV;
                 tp_unlocked = TP_RAMPART_OF_SKULLS;
                 // since Gunship Battle isn't implemented, we unlock it too
-                m_InstanceVars[DATA_TP_UNLOCKED] |= 1 << TP_DEATHBRINGER_RISE;
+                m_InstanceVars[DATA_TP_UNLOCKED] |= bit_mask<TP_DEATHBRINGER_RISE>::value;
                 break;
             case TYPE_GUNSHIP_BATTLE:
                 tp_unlocked = TP_DEATHBRINGER_RISE;
@@ -120,6 +120,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             case TYPE_SAURFANG:
                 loot_id = DATA_SAURFANG_CHEST;
                 door_ids.push_back(DATA_SAURFANG_DOOR);
+                // extra doors opened since we want all wings accessible
                 door_ids.push_back(DATA_BLOODWING_DOOR);
                 door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
                 //tp_unlocked = TP_UPPER_SPIRE;
@@ -134,8 +135,12 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
                 }
                 break;
+            /* NOTE: opening from saurfang instead
             case TYPE_PUTRICIDE:
+                door_ids.push_back(DATA_BLOODWING_DOOR);
+                door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
                 break;
+            */
             case TYPE_VALANAR:
                 door_ids.push_back(DATA_LANATHEL_DOOR_RIGHT);
                 door_ids.push_back(DATA_LANATHEL_DOOR_LEFT);
@@ -170,7 +175,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 if (WorldObject *pObj = instance->GetWorldObject(ObjGuid))
                     pObj->SetPhaseMask(1, true);
 
-        for (std::list<uint32>::const_iterator i = door_ids.begin(); i != door_ids.end(); ++i)
+        for (std::deque<uint32>::const_iterator i = door_ids.begin(); i != door_ids.end(); ++i)
             if (uint64 DoorGuid = GetData64(*i))
             {
                 DoUseDoorOrButton(DoorGuid);
@@ -273,10 +278,12 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         {
             case CRITERIA_SAURFANG_MESS_10:
             case CRITERIA_SAURFANG_MESS_10H:
-                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 && (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
+                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 &&
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
             case CRITERIA_SAURFANG_MESS_25:
             case CRITERIA_SAURFANG_MESS_25H:
-                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 && (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
+                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 &&
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
             case CRITERIA_SAURFANG_LK_KILLS_10:
                 return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC;
             case CRITERIA_SAURFANG_LK_KILLS_25:

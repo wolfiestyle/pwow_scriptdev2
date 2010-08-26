@@ -89,7 +89,10 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
     }
 
-    void Reset() {}
+    void Reset()
+    {
+        RemoveImpale();
+    }
 
     void JustDied(Unit *pKiller)
     {
