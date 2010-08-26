@@ -56,6 +56,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     void Initialize()
     {
         m_InstanceVars[DATA_FACTION] = 0;
+        m_InstanceVars[DATA_ACHIEVEMENT_COUNTER_SAURFANG] = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -119,6 +120,8 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             case TYPE_SAURFANG:
                 loot_id = DATA_SAURFANG_CHEST;
                 door_ids.push_back(DATA_SAURFANG_DOOR);
+                door_ids.push_back(DATA_BLOODWING_DOOR);
+                door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
                 //tp_unlocked = TP_UPPER_SPIRE;
                 break;
             case TYPE_FESTERGUT:
@@ -132,8 +135,6 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 }
                 break;
             case TYPE_PUTRICIDE:
-                door_ids.push_back(DATA_BLOODWING_DOOR);
-                door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
                 break;
             case TYPE_VALANAR:
                 door_ids.push_back(DATA_LANATHEL_DOOR_RIGHT);
@@ -266,16 +267,24 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 
-    /*
     bool CheckAchievementCriteriaMeet(uint32 CriteriaId, Player const* pPlayer, Unit const* pWho, uint32 misc1)
     {
         switch (CriteriaId)
         {
+            case CRITERIA_SAURFANG_MESS_10:
+            case CRITERIA_SAURFANG_MESS_10H:
+                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 && (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
+            case CRITERIA_SAURFANG_MESS_25:
+            case CRITERIA_SAURFANG_MESS_25H:
+                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 && (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
+            case CRITERIA_SAURFANG_LK_KILLS_10:
+                return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC;
+            case CRITERIA_SAURFANG_LK_KILLS_25:
+                return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC;
             default:
                 return false;
         }
     }
-    */
 };
 
 InstanceData* GetInstanceData_instance_icecrown_citadel(Map* pMap)

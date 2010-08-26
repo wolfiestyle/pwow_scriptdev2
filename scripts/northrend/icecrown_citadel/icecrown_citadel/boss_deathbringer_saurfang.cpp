@@ -154,6 +154,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
     bool HasDoneIntro :1;
     bool IsDoingIntro :1;
     bool IsHorde :1;
+    InstanceVar<uint32> m_uiSaurfangAchievement;
 
     boss_deathbringer_saurfangAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
@@ -161,7 +162,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         IsSoftEnraged(false),
         HasDoneIntro(false),
         IsDoingIntro(false),
-        IsHorde(true)
+        IsHorde(true),
+        m_uiSaurfangAchievement(DATA_ACHIEVEMENT_COUNTER_SAURFANG, m_pInstance)
     {
         m_creature->setPowerType(POWER_ENERGY);
         m_creature->SetMaxPower(POWER_ENERGY, 100);
@@ -205,6 +207,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         DoCast(m_creature, SPELL_BLOOD_LINK, true);
         DoCast(m_creature, SPELL_RUNE_OF_BLOOD_AURA, true);
         DoCast(m_creature, SPELL_MARK_FALLEN_CHAMPION_SELF, true);
+        m_uiSaurfangAchievement = 0;
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -281,6 +284,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
             if (pTarget)
                 DoCast(pTarget, SPELL_MARK_FALLEN_CHAMPION);
             DoScriptText(SAY_MARK_OF_THE_FALLEN_CHAMPION, m_creature);
+            m_uiSaurfangAchievement++;
             m_creature->SetPower(POWER_ENERGY, 0);
         }
 

@@ -66,6 +66,7 @@ enum
     // instance variables
     DATA_FACTION = 100,
     DATA_TP_UNLOCKED,
+    DATA_ACHIEVEMENT_COUNTER_SAURFANG,
 
     // creature entries
     NPC_MARROWGAR           = 36612,
@@ -127,6 +128,15 @@ enum
     FACTION_NEUTRAL         = 7,
     FACTION_HOSTILE         = 14,
     FACTION_FRIENDLY        = 35,
+
+    // achievement criteria IDs
+    CRITERIA_SAURFANG_MESS_10   = 12778,
+    CRITERIA_SAURFANG_MESS_10H  = 13035,
+    CRITERIA_SAURFANG_MESS_25   = 13036,
+    CRITERIA_SAURFANG_MESS_25H  = 13037,
+
+    CRITERIA_SAURFANG_LK_KILLS_10 = 13334,
+    CRITERIA_SAURFANG_LK_KILLS_25 = 13354,
 };
 
 enum TeleportLocations
