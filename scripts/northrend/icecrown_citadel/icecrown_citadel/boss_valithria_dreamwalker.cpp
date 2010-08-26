@@ -90,9 +90,10 @@ enum Adds
 
 enum Events
 {
-    EVENT_SUMMON_PORTALS = 50, // high enough to avoid definition/event collisions with different scripts
+    EVENT_INIT_SCRIPT = 50, // high enough to avoid definition/event collisions with different scripts
     EVENT_BEGIN_FIGHT,
-    EVENT_INIT_SCRIPT,
+    EVENT_COMBAT_CHECK,
+    EVENT_SUMMON_PORTALS,
     EVENT_DESPAWN,
     EVENT_SUMMON_RISEN,
     EVENT_SUMMON_BLAZING,
@@ -145,6 +146,8 @@ static const float locations[4][2] =
 #define RISEN_SUMMON_TIMER      30*IN_MILLISECONDS
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
 #define PORTAL_TIMER            46.5*IN_MILLISECONDS
+#define TIMER_COMBAT_CHECK      3*IN_MILLISECONDS
+
 #define SUMMON_PORTAL_RADIUS    30.0f
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
@@ -167,7 +170,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     {
         m_abSays.reset();
         DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
-        //SummonMgr.UnsummonAll(); // she only summons the combat trigger which despawns when he receives the broadcasted message "Win" or "wipe"
+        SummonMgr.UnsummonAll(); // she only summons the combat trigger which despawns when he receives the broadcasted message "Win" or "wipe"
 
         m_creature->SetHealthPercent(50.0f);
         m_creature->CastSpell(m_creature, SPELL_CORRUPTION, false);
@@ -202,6 +205,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             Unit* LK = m_creature->SummonCreature(NPC_LICH_KING_VOICE,
                     m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0,
                     TEMPSUMMON_TIMED_DESPAWN, 5000);
+            LK->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             LK->SetDisplayId(11686);
             DoScriptText(SAY_LICH_KING_GREEN_DRAGON, LK);
             m_abSays[0] = true;
@@ -209,8 +213,9 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_ENTRANCE)) //LK talk -> Doors Close and players enter in combat
                 Door->SetGoState(GO_STATE_READY);
 
-            Events.RescheduleEvent(EVENT_BEGIN_FIGHT, 12500);
             Events.RescheduleEvent(EVENT_INIT_SCRIPT, 3500);
+            Events.RescheduleEvent(EVENT_BEGIN_FIGHT, 12500);
+            Events.RescheduleEvent(EVENT_COMBAT_CHECK, 13*IN_MILLISECONDS, TIMER_COMBAT_CHECK);
             m_BossEncounter = IN_PROGRESS;
         }
     }
@@ -285,13 +290,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             Events.ScheduleEvent(EVENT_DESPAWN, 5*IN_MILLISECONDS);
         }
 
-        if (Unit* CombatTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
-            if (CombatTrigger->getThreatManager().getThreatList().size() == 0)
-            {
-                CombatTrigger->DealDamage(CombatTrigger, CombatTrigger->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
-                Reset();
-            }
-
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
@@ -320,6 +318,14 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                         DoScriptText(SAY_VALITHRIA_AGGRO, m_creature);
                         m_abSays[1] = true;
                     }
+                    break;
+                case EVENT_COMBAT_CHECK:
+                    if (Unit* CombatTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
+                        if (CombatTrigger->getThreatManager().getThreatList().size() == 0)
+                        {
+                            CombatTrigger->DealDamage(CombatTrigger, CombatTrigger->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                            Reset();
+                        }
                     break;
                 case EVENT_SUMMON_PORTALS:
                     if (!m_bIsHeroic)
