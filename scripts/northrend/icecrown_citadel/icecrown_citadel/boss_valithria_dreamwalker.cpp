@@ -430,6 +430,15 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         if (!m_creature->SelectHostileTarget() ||  !m_creature->getVictim())
             return;
 
+        if (m_pInstance->GetData(TYPE_VALITHRIA) == DONE) // apparently dead mobs dont sent events
+        {
+            SummonMgr.UnsummonAll();
+            if (m_creature->isTemporarySummon())
+                static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            else
+                m_creature->ForcedDespawn();
+        }
+
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
