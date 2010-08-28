@@ -40,14 +40,12 @@ enum Spells
     // big ooze
     SPELL_RADIATING_OOZE            = 69760,
     SPELL_UNSTABLE_OOZE_EXPLOSION   = 69839,
+    SPELL_UNSTABLE_OOZE_EXPLOSION_MISSILE = 69832,
     SPELL_UNSTABLE_OOZE             = 69558,
 
     // both oozes
     SPELL_STICKY_OOZE               = 69774,
     SPELL_STICKY_OOZE_DAMAGE_AURA   = 69776,
-
-    // Unstable Ooze Explosion Stalker
-    SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED = 69833,
 
     // precious
     SPELL_DECIMATE                  = 71123,
@@ -90,6 +88,7 @@ enum Events
     EVENT_STICKY_OOZE,
     EVENT_DESPAWN_OOZE,
     EVENT_UNSUMMON,
+    EVENT_BLOW_UP,
 
     EVENT_DECIMATE,
     EVENT_MORTAL_WOUND,
@@ -222,7 +221,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                     Angle = Position * M_PI/2;
                     for (int i = 0; i < 2; i++)
                     {
-                        Angle += M_PI/6;
+                        Angle += M_PI_F/6;
                         GetPointOnCircle(x, y, OOZE_FLOOD_CASTER_DISTANCE, Angle, CenterPosition[0], CenterPosition[1]);
                         Creature *Caster = SummonMgr.SummonCreature(NPC_PUDDLE_STALKER, x, y, OOZE_FLOOD_CAST_HEIGHT);
                         if (Caster)
@@ -281,18 +280,18 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
-    SummonManager SummonMgr;
+    bool m_bInUse : 1;
 
     mob_rotface_oozeAI(Creature* pCreature):
         ScriptedAI(pCreature),
         ScriptEventInterface(pCreature),
-        SummonMgr(pCreature)
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bInUse(false)
     {
     }
 
     void Reset()
     {
-        SummonMgr.UnsummonAll();
         if (m_creature->isTemporarySummon())
             static_cast<TemporarySummon*>(m_creature)->UnSummon();
         else
@@ -314,35 +313,49 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
         //summoned indirectly by spell unstable ooze explosion
         else if (pSumm->GetEntry() == NPC_OOZE_EXPLOSION_STALKER)
         {
+            float x,y,z;
+            pSumm->GetPosition(x, y, z);
             pSumm->SetDisplayId(11686);
-            pSumm->setFaction(FACTION_HOSTILE);
             pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            pSumm->CastSpell(pSumm, SPELL_UNSTABLE_OOZE_EXPLOSION_TRIGGERED, true);
-            SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
+            m_creature->CastSpell(x, y, z, SPELL_UNSTABLE_OOZE_EXPLOSION_MISSILE, true);
+            if (m_creature->isTemporarySummon())
+                static_cast<TemporarySummon*>(m_creature)->UnSummon();
+            else
+                m_creature->ForcedDespawn();
         }
     }
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (pWho && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_LITTLE_OOZE &&
+        if (m_bInUse)
+            return;
+        if (pWho && pWho->GetTypeId() == TYPEID_UNIT && m_creature->GetEntry() == NPC_LITTLE_OOZE &&
             m_creature->IsWithinDistInMap(pWho, 10.0f))
-        {
-            if (m_creature->GetEntry() == NPC_BIG_OOZE)
+            // we are the little ooze here
+            // we merge into big ooze (we dont make the big ooze "suck" us)
+            switch(pWho->GetEntry())
             {
-                m_creature->CastSpell(m_creature, SPELL_UNSTABLE_OOZE, true);
-                if (Aura *UnstableOozeAura = m_creature->GetAura(SPELL_UNSTABLE_OOZE, EFFECT_INDEX_0))
-                    if (UnstableOozeAura->GetStackAmount() >= 5)
-                    {
-                        DoCast(m_creature->getVictim(), SPELL_UNSTABLE_OOZE_EXPLOSION);
-                        Events.ScheduleEvent(EVENT_DESPAWN_OOZE, TIMER_DESPAWN_OOZE);
-                        if (Creature *Rotface = GET_CREATURE(TYPE_ROTFACE))
-                            DoScriptText(SAY_UNSTABLE_OOZE_EXPLOSION, Rotface);
-                    }
+                case NPC_LITTLE_OOZE: // we are the little ooze and we see another (we merge)
+                    m_bInUse = true;
+                    BroadcastScriptMessageToEntry(m_creature, NPC_ROTFACE, 140.0f);
+                    SendEventTo(static_cast<Creature*>(pWho), EVENT_UNSUMMON, 0);
+                    break;
+                case NPC_BIG_OOZE: // we are the little ooze and we see a big ooze (we want to join it!)
+                    m_bInUse = true;
+                    pWho->CastSpell(pWho, SPELL_UNSTABLE_OOZE, true);
+                    Events.ScheduleEvent(EVENT_DESPAWN_OOZE, 0); // we are the small ooze, we despawn cause we just merged with the big ooze
+                    if (Aura *UnstableOozeAura = pWho->GetAura(SPELL_UNSTABLE_OOZE, EFFECT_INDEX_0))
+                        if (UnstableOozeAura->GetStackAmount() >= 5)
+                        {
+                            SendEventTo(static_cast<Creature*>(pWho), EVENT_BLOW_UP, 0);
+                            SendEventTo(static_cast<Creature*>(pWho), EVENT_UNSUMMON, TIMER_DESPAWN_OOZE);
+                            if (Creature *Rotface = GET_CREATURE(TYPE_ROTFACE))
+                                DoScriptText(SAY_UNSTABLE_OOZE_EXPLOSION, Rotface);
+                        }
+                    break;
+                default:
+                    break;
             }
-            else
-                BroadcastScriptMessageToEntry(m_creature, NPC_ROTFACE, 140.0f);
-            SendEventTo(static_cast<Creature*>(pWho), EVENT_UNSUMMON, 0);
-        }
         ScriptedAI::MoveInLineOfSight(pWho);
     }
 
@@ -374,6 +387,8 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
                 case EVENT_UNSUMMON:
                     Reset();
                     break;
+                case EVENT_BLOW_UP:
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_UNSTABLE_OOZE_EXPLOSION, false);
                 default:
                     break;
             }
