@@ -832,7 +832,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
             if (m_creature->GetHealthPercent() < 25.0f && !m_bLowHealth)
             {
                 m_bLowHealth = true;
-                Events.ScheduleEvent(EVENT_ICEBOUND_ARMOR, 5*IN_MILLISECONDS, 1*MINUTE*IN_MILLISECONDS, 0, COMBAT_CATEGORY);
+                //Events.ScheduleEvent(EVENT_ICEBOUND_ARMOR, 5*IN_MILLISECONDS, 1*MINUTE*IN_MILLISECONDS, 0, COMBAT_CATEGORY);
                 if (m_creature->getVictim()->GetEntry() == NPC_SVALNA)
                     DoScriptText(FWH_CROK_SAY_LOW_HEALTHBOSS, m_creature);
                 else
@@ -841,7 +841,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
             if (m_creature->GetHealthPercent() > 25.0f && m_creature->HasAura(SPELL_ICEBOUND_ARMOR))
             {
                 m_bLowHealth = false;
-                Events.CancelEvent(EVENT_ICEBOUND_ARMOR);
+                //Events.CancelEvent(EVENT_ICEBOUND_ARMOR);
                 m_creature->RemoveAurasDueToSpell(SPELL_ICEBOUND_ARMOR);
             }
         }
