@@ -280,7 +280,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEventInterface
 {
     ScriptedInstance *m_pInstance;
-    bool m_bInUse : 1;
+    bool m_bInUse;
 
     mob_rotface_oozeAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -392,8 +392,8 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
     EventManager Events;
+    ObjectGuid BigOozeGUID;
     WorldLocation pos;
-    Creature* BigOoze;
 
     mob_rotface_ooze_explosion_stalkerAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature)
@@ -402,11 +402,11 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoM
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void ScriptMessage(WorldObject* pSender, uint32 eventID, uint32 event_timer)
+    void ScriptMessage(WorldObject* pSender, uint32 /*data1*/, uint32 /*data2*/)
     {
-        if (!pSender)
+        if (!pSender || pSender->GetEntry() != NPC_BIG_OOZE)
             return;
-        BigOoze = static_cast<Creature*>(pSender);
+        BigOozeGUID = pSender->GetObjectGuid();
         m_creature->GetPosition(pos);
         Events.ScheduleEvent(EVENT_BLOW_UP, 0);
     }
@@ -416,7 +416,7 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoM
         Events.Reset();
     }
 
-    void Aggro(){}
+    void Aggro() {}
 
     void UpdateAI(uint32 const uiDiff)
     {        
@@ -425,6 +425,9 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoM
             switch (uiEventId)
             {
                 case EVENT_BLOW_UP:
+                    if (BigOozeGUID.IsEmpty())
+                        return;
+                    Unit *BigOoze = m_creature->GetMap()->GetCreature(BigOozeGUID);
                     if (!BigOoze)
                         return;
                     BigOoze->CastSpell(pos.coord_x, pos.coord_y, pos.coord_z, SPELL_UNSTABLE_OOZE_EXPLOSION_MISSILE, true);
@@ -435,9 +438,6 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoM
                     break;
             }
     }
-
-    void JustDied(){}
-
 };
 
 struct MANGOS_DLL_DECL mob_precious_ICCAI: public ScriptedAI
