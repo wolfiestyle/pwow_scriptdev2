@@ -120,9 +120,6 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             case TYPE_SAURFANG:
                 loot_id = DATA_SAURFANG_CHEST;
                 door_ids.push_back(DATA_SAURFANG_DOOR);
-                // extra doors opened since we want all wings accessible
-                door_ids.push_back(DATA_BLOODWING_DOOR);
-                door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
                 //tp_unlocked = TP_UPPER_SPIRE;
                 break;
             case TYPE_FESTERGUT:
@@ -135,7 +132,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
                 }
                 break;
-            /* NOTE: opening from saurfang instead
+            /* NOTE: set to manually opened
             case TYPE_PUTRICIDE:
                 door_ids.push_back(DATA_BLOODWING_DOOR);
                 door_ids.push_back(DATA_BLOOD_PRINCE_DOOR);
@@ -161,6 +158,10 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 }
                 loot_id = DATA_VALITHRIA_CHEST;
                 //tp_unlocked = TP_SINDRAGOSA_LAIR;
+                break;
+            case TYPE_SINDRAGOSA:
+                door_ids.push_back(DATA_SINDRAGOSA_EXIT_DOOR);
+                door_ids.push_back(DATA_SINDRAGOSA_EXIT_DOOR2);
                 break;
             default:
                 return;
