@@ -23,7 +23,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -107,10 +106,8 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
         if (pTarget && pTarget->isAlive())
             m_creature->SetTargetGUID(m_TargetGuid);
-        else if (m_creature->isTemporarySummon())
-            static_cast<TemporarySummon*>(m_creature)->UnSummon();
         else
-            m_creature->ForcedDespawn();
+            DespawnCreature(m_creature);
     }
 
     void ScriptMessage(WorldObject* target, uint32 event_id, uint32 /*data2*/)

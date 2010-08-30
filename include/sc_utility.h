@@ -499,4 +499,7 @@ void GetRandomPointInCircle(float& x, float& y, float max_rad, float cx = 0.0f, 
 // get correct spell_id for the given difficulty
 uint32 GetSpellIdWithDifficulty(uint32, Difficulty);
 
+// properly despawns a summoned creature to avoid respawning
+void DespawnCreature(Creature* pSummon);
+
 #endif // SC_UTILITY_H

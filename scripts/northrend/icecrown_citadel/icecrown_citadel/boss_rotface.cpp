@@ -23,7 +23,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -295,10 +294,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 
     void Reset()
     {
-        if (m_creature->isTemporarySummon())
-            static_cast<TemporarySummon*>(m_creature)->UnSummon();
-        else
-            m_creature->ForcedDespawn();
+        DespawnCreature(m_creature);
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -323,7 +319,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
                     if (Aura *UnstableOozeAura = pWho->GetAura(SPELL_UNSTABLE_OOZE, EFFECT_INDEX_0))
                     {
                         switch (UnstableOozeAura->GetStackAmount())
-                            {
+                        {
                             case 2:
                                 pWho->MonsterTextEmote("Big Ooze grows more unstable!", 0, false);
                                 break;
@@ -333,7 +329,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
                             case 4:
                                 pWho->MonsterTextEmote("Big Ooze can barely maintain its form!", 0, false);
                                 break;
-                            }
+                        }
                         if (UnstableOozeAura->GetStackAmount() >= 5)
                         {
                             SendEventTo(static_cast<Creature*>(pWho), EVENT_BLOW_UP, 0);
@@ -396,8 +392,8 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 
 struct MANGOS_DLL_DECL mob_rotface_ooze_nmAI: public Scripted_NoMovementAI
 {
+    ScriptedInstance *m_pInstance;
     EventManager Events;
-    ScriptedInstance* m_pInstance;
 
     mob_rotface_ooze_nmAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature),
@@ -413,10 +409,7 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_nmAI: public Scripted_NoMovementAI
     void Reset()
     {
         Events.Reset();
-        if (m_creature->isTemporarySummon())
-            static_cast<TemporarySummon*>(m_creature)->UnSummon();
-        else
-            m_creature->ForcedDespawn();
+        DespawnCreature(m_creature);
     }
 
     void Aggro() {}
@@ -479,10 +472,7 @@ struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoM
                     if (!BigOoze)
                         return;
                     BigOoze->CastSpell(pos.coord_x, pos.coord_y, pos.coord_z, SPELL_UNSTABLE_OOZE_EXPLOSION_MISSILE, true);
-                    if (m_creature->isTemporarySummon())
-                        static_cast<TemporarySummon*>(m_creature)->UnSummon();
-                    else
-                        m_creature->ForcedDespawn();
+                    DespawnCreature(m_creature);
                     break;
             }
     }

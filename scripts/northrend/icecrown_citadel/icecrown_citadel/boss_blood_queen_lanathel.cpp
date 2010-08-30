@@ -23,7 +23,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -378,12 +377,7 @@ struct MANGOS_DLL_DECL mob_swarming_shadowsAI: public Scripted_NoMovementAI
     {
         m_uiDespawnTimer += uiDiff;
         if (m_uiDespawnTimer > SWARMING_SHADOWS_DESPAWN_TIMER || !m_pInstance->IsEncounterInProgress())
-        {
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
-            else
-                m_creature->ForcedDespawn();
-        }
+            DespawnCreature(m_creature);
     }
 };
 

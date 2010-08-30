@@ -23,7 +23,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
-#include "TemporarySummon.h"
 
 enum Spells
 {
@@ -274,19 +273,19 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         if (m_bIsHeroic && !m_creature->HasAura(SPELL_NIGHTMARES))        // Heroic mode spell (boss takes damage over time)
             DoCast(m_creature, SPELL_NIGHTMARES, true);
 
-        if (!m_abSays[2] && m_creature->GetHealthPercent() <= 25.0f)
+        if (m_bScriptStarted && !m_abSays[2] && m_creature->GetHealthPercent() <= 25.0f)
         {
             DoScriptText(SAY_VALITHRIA_25, m_creature);
             m_abSays[2] = true;
         }
 
-        if (!m_abSays[3] && m_creature->GetHealthPercent() >= 75.0f)
+        if (m_bScriptStarted && !m_abSays[3] && m_creature->GetHealthPercent() >= 75.0f)
         {
             DoScriptText(SAY_VALITHRIA_75, m_creature);
             m_abSays[3] = true;
         }
 
-        if (!m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f && m_bScriptStarted)
+        if (m_bScriptStarted && !m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f)
         {
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
@@ -366,10 +365,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 bool GossipHello_mob_valithria_portal(Player *player, Creature* pCreature)
 {
     player->CastSpell(player, SPELL_DREAM_STATE, true);
-    if (pCreature->isTemporarySummon())
-        static_cast<TemporarySummon*>(pCreature)->UnSummon();
-    else
-        pCreature->ForcedDespawn();
+    DespawnCreature(pCreature);
     return true;
 };
 
@@ -443,10 +439,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         if (m_pInstance->GetData(TYPE_VALITHRIA) == DONE) // apparently dead mobs dont sent events
         {
             SummonMgr.UnsummonAll();
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
-            else
-                m_creature->ForcedDespawn();
+            DespawnCreature(m_creature);
         }
 
         Events.Update(uiDiff);
@@ -477,10 +470,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     break;
                 case EVENT_DESPAWN:
                     SummonMgr.UnsummonAll();
-                    if (m_creature->isTemporarySummon())
-                        static_cast<TemporarySummon*>(m_creature)->UnSummon();
-                    else
-                        m_creature->ForcedDespawn();
+                    DespawnCreature(m_creature);
                     break;
                 default:
                     break;
@@ -515,10 +505,7 @@ struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
             m_creature->SummonCreature(m_creature->GetEntry() == NPC_DREAM_PORTAL_PRE ? NPC_DREAM_PORTAL : NPC_NIGHTMARE_PORTAL,
                     m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(),
                     TEMPSUMMON_TIMED_DESPAWN, 10*IN_MILLISECONDS);
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
-            else
-                m_creature->ForcedDespawn();
+            DespawnCreature(m_creature);
         }
         else
             timer -= uiDiff;
@@ -612,10 +599,7 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
     void Reset()
     {
         SummonMgr.UnsummonAll();
-        if (m_creature->isTemporarySummon())
-            static_cast<TemporarySummon*>(m_creature)->UnSummon(); 
-        else 
-            m_creature->ForcedDespawn(500);
+        DespawnCreature(m_creature);
     }
 
     void SummonedCreatureJustDied(Creature* pSummon)
@@ -785,10 +769,7 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
                     Events.ScheduleEvent(EVENT_DIE, 5*IN_MILLISECONDS);
                     break;
                 case EVENT_DIE:
-                    if (m_creature->isTemporarySummon())
-                        static_cast<TemporarySummon*>(m_creature)->UnSummon(); 
-                    else 
-                        m_creature->ForcedDespawn(500);
+                    DespawnCreature(m_creature);
                     break;
                 default:
                     break;

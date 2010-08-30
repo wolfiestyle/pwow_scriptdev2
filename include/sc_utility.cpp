@@ -475,3 +475,11 @@ uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
         return spell_id;
     return diff_entry->spellId[diff];
 }
+
+void DespawnCreature(Creature* pSummon)
+{
+    if (pSummon->isTemporarySummon())
+        static_cast<TemporarySummon*>(pSummon)->UnSummon();
+    else
+        pSummon->ForcedDespawn();
+}
