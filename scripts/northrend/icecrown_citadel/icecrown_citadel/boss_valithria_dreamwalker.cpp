@@ -66,6 +66,9 @@ enum Spells
     SPELL_ROT_SPAWN             = 70668,
     // Suppressers
     SPELL_SUPPRESSION           = 70588,
+
+    // Kill credit
+    SPELL_ACHIEVEMENT_CHECK     = 72706,
 };
 
 enum Adds
@@ -154,10 +157,12 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
     std::bitset<5> m_abSays;
+    bool m_bScriptStarted;
 
     boss_valithriaAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
-        SummonMgr(pCreature)
+        SummonMgr(pCreature),
+        m_bScriptStarted(false)
     {
         pCreature->SetHealthPercent(50.0f);
         pCreature->CastSpell(pCreature, SPELL_CORRUPTION, false);
@@ -174,6 +179,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
         m_creature->SetHealthPercent(50.0f);
         m_creature->CastSpell(m_creature, SPELL_CORRUPTION, false);
+        m_bScriptStarted = false;
 
         if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_ENTRANCE))
             Door->SetGoState(GO_STATE_ACTIVE);
@@ -222,6 +228,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
     void JustDied(Unit* pKiller)
     {
+        m_bScriptStarted = false;
         DoScriptText(SAY_VALITHRIA_FAIL, m_creature);
         BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_DESPAWN, 5*IN_MILLISECONDS, 100.0f);
         if (m_BossEncounter != DONE)
@@ -279,11 +286,12 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_abSays[3] = true;
         }
 
-        if (!m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f)
+        if (!m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f && m_bScriptStarted)
         {
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
+            m_creature->CastSpell(m_creature, SPELL_ACHIEVEMENT_CHECK, true);
             BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_DESPAWN, 5*IN_MILLISECONDS, 100.0f);
             m_abSays[4] = true;
             Events.Reset();
@@ -299,6 +307,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                     SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f, 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000);
 
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41500); // first portal timer (taken from DBM database)
+                    m_creature->SetHealthPercent(50.0f);
+                    m_bScriptStarted = true;
 
                     if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_1))
                         Door->SetGoState(GO_STATE_ACTIVE);
