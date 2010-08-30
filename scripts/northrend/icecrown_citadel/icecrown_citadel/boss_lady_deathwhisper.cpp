@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
         else
         {
             m_creature->SetPower(POWER_MANA, m_creature->GetPower(POWER_MANA) - damage);
-            damage = 0;
+            m_creature->SetHealth(m_creature->GetMaxHealth());
         }
     }
 
