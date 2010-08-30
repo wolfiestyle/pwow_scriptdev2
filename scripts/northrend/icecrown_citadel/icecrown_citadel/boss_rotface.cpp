@@ -107,6 +107,7 @@ static const float CenterPosition[2] = {4445.6f, 3137.21f};
 #define TIMER_VILE_GAS              30*IN_MILLISECONDS
 #define TIMER_STICKY_OOZE           15*IN_MILLISECONDS
 #define TIMER_DESPAWN_OOZE          4*IN_MILLISECONDS
+#define TIMER_DESPAWN_STICKY_OOZE   30*IN_MILLISECONDS
 
 struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 {
@@ -126,9 +127,11 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         SummonMgr.UnsummonAll();
         NumInfections = 0;
         OozeFloodPositionsUsed.reset();
+        m_BossEncounter = NOT_STARTED;
+        Events.Reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
-        boss_icecrown_citadelAI::Reset();
+        //boss_icecrown_citadelAI::Reset();
     }
 
     void Aggro(Unit* pWho)
@@ -298,20 +301,6 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
             m_creature->ForcedDespawn();
     }
 
-    void JustSummoned(Creature *pSumm)
-    {
-        if (!pSumm)
-            return;
-        if (pSumm->GetEntry() == NPC_STICKY_OOZE)
-        {
-            pSumm->setFaction(FACTION_HOSTILE);
-            pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            pSumm->CastSpell(pSumm, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
-            pSumm->SetInCombatWithZone();
-            SendEventTo(pSumm, EVENT_UNSUMMON, 30*IN_MILLISECONDS);
-        }
-    }
-
     void MoveInLineOfSight(Unit *pWho)
     {
         if (m_bInUse)
@@ -332,6 +321,19 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
                     pWho->CastSpell(pWho, SPELL_UNSTABLE_OOZE, true);
                     Events.ScheduleEvent(EVENT_UNSUMMON, 0); // we are the small ooze, we despawn cause we just merged with the big ooze
                     if (Aura *UnstableOozeAura = pWho->GetAura(SPELL_UNSTABLE_OOZE, EFFECT_INDEX_0))
+                    {
+                        switch (UnstableOozeAura->GetStackAmount())
+                            {
+                            case 2:
+                                pWho->MonsterTextEmote("Big Ooze grows more unstable!", 0, false);
+                                break;
+                            case 3:
+                                pWho->MonsterTextEmote("Big Ooze grows volatile!", 0, false);
+                                break;
+                            case 4:
+                                pWho->MonsterTextEmote("Big Ooze can barely maintain its form!", 0, false);
+                                break;
+                            }
                         if (UnstableOozeAura->GetStackAmount() >= 5)
                         {
                             SendEventTo(static_cast<Creature*>(pWho), EVENT_BLOW_UP, 0);
@@ -339,6 +341,7 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
                             if (Creature *Rotface = GET_CREATURE(TYPE_ROTFACE))
                                 DoScriptText(SAY_UNSTABLE_OOZE_EXPLOSION, Rotface);
                         }
+                    }
                     break;
                 default:
                     break;
@@ -353,6 +356,9 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (!m_pInstance->IsEncounterInProgress())
+            Reset();
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -388,6 +394,48 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
     }
 };
 
+struct MANGOS_DLL_DECL mob_rotface_ooze_nmAI: public Scripted_NoMovementAI
+{
+    EventManager Events;
+    ScriptedInstance* m_pInstance;
+
+    mob_rotface_ooze_nmAI(Creature* pCreature):
+        Scripted_NoMovementAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+    {
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        pCreature->setFaction(FACTION_HOSTILE);
+        pCreature->CastSpell(pCreature, SPELL_STICKY_OOZE_DAMAGE_AURA, true);
+        pCreature->SetInCombatWithZone();
+        Events.ScheduleEvent(EVENT_UNSUMMON, 30*IN_MILLISECONDS);
+    }
+
+    void Reset()
+    {
+        Events.Reset();
+        if (m_creature->isTemporarySummon())
+            static_cast<TemporarySummon*>(m_creature)->UnSummon();
+        else
+            m_creature->ForcedDespawn();
+    }
+
+    void Aggro() {}
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_pInstance->IsEncounterInProgress())
+            Reset();
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_UNSUMMON:
+                    Reset();
+                    break;
+            }
+    }
+};
 
 struct MANGOS_DLL_DECL mob_rotface_ooze_explosion_stalkerAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
@@ -502,6 +550,7 @@ void AddSC_boss_rotface()
 
     REGISTER_SCRIPT(boss_rotface);
     REGISTER_SCRIPT(mob_rotface_ooze);
+    REGISTER_SCRIPT(mob_rotface_ooze_nm);
     REGISTER_SCRIPT(mob_rotface_ooze_explosion_stalker);
     REGISTER_SCRIPT(mob_precious_ICC);
 }
