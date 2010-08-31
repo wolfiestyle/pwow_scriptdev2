@@ -212,14 +212,14 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void DamageTaken(Unit* pAttacker, uint32 &damage)
     {
-        if (!m_creature->HasAura(SPELL_MANA_BARRIER))
+        if (Events.GetPhase() != PHASE_ONE)
             return;
         if (m_creature->GetPower(POWER_MANA) < damage)
         {
+            Events.SetPhase(PHASE_TWO);
             damage -= m_creature->GetPower(POWER_MANA);
             m_creature->SetPower(POWER_MANA, 0);
             m_creature->RemoveAurasDueToSpell(SPELL_MANA_BARRIER);
-            Events.SetPhase(PHASE_TWO);
             DoStartMovement(m_creature->getVictim());
             DoScriptText(SAY_PHASE2, m_creature);
             m_creature->MonsterTextEmote("Lady Deathwhisper's Mana Barrier shimmers and fades away!", 0, true);
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
         else
         {
             m_creature->SetPower(POWER_MANA, m_creature->GetPower(POWER_MANA) - damage);
-            m_creature->SetHealth(m_creature->GetMaxHealth());
+            m_creature->SetHealthPercent(100.0f);
         }
     }
 
@@ -243,10 +243,24 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void ChangeSummonTo(Creature *OriginalSummon, uint32 NextSummonId)
     {
+        OriginalSummon->StopMoving();
         if (Creature *pSummon = SummonMgr.SummonCreatureAt(OriginalSummon, NextSummonId, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
         {
+            // copy threat list from original summon
+            ThreatList const& tlist = OriginalSummon->getThreatManager().getThreatList();
+            for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
+            {
+                Unit *hostil = Unit::GetUnit(*OriginalSummon, (*i)->getUnitGuid());
+                if (!hostil)
+                    continue;
+                hostil->SetInCombatWith(pSummon);
+                pSummon->AddThreat(hostil, (*i)->getThreat());
+            }
+            // preserve current target
+            if (OriginalSummon->getVictim())
+                pSummon->Attack(OriginalSummon->getVictim(), true);
+
             SummonMgr.UnsummonCreature(OriginalSummon);
-            pSummon->SetInCombatWithZone();
         }
     }
 
