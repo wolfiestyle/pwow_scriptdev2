@@ -132,21 +132,21 @@ enum Events
 };
 
 static const float CenterSummonPoint[3] = { 4658.3f, 2770.0f, 365.0f };
-static const float BossEntries[3]       = { NPC_VALANAR, NPC_KELESETH, NPC_TALDARAM};
+static const uint32 BossEntries[3]      = {NPC_VALANAR, NPC_KELESETH, NPC_TALDARAM};
 
 #define TIMER_BERSERK           10*MINUTE*IN_MILLISECONDS
 #define TIMER_CHANGE_INVOCATION 47*IN_MILLISECONDS
 
 // Valanar
 #define TIMER_START_VORTEX      3*IN_MILLISECONDS
-#define TIMER_SHOCK_VORTEX      16.5*IN_MILLISECONDS, 21.5*IN_MILLISECONDS
+#define TIMER_SHOCK_VORTEX      16500, 21500
 #define TIMER_KINETIC_BOMB      24*IN_MILLISECONDS          // 2/3 bombs always up [wowwiki] so 60/2.5 sec timer.
 #define TIMER_VORTEX_DECAY      3*IN_MILLISECONDS
 #define TIMER_MOVE_KINETIC_BOMB 1*IN_MILLISECONDS
 
 // Keleseth
 #define TIMER_DARK_NUCLEUS      14*IN_MILLISECONDS
-#define TIMER_SHADOW_LANCE      1.7*IN_MILLISECONDS
+#define TIMER_SHADOW_LANCE      1700
 
 // Taldaram
 #define TIMER_GLITTERING_SPARKS 15*IN_MILLISECONDS          // guessed, cannot find any timer references
