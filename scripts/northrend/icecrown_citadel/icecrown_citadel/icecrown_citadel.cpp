@@ -49,7 +49,12 @@ static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_LANATHEL_DOOR_RIGHT,        DATA_LANATHEL_DOOR_RIGHT)
     (GO_SINDRAGOSA_DOOR,            DATA_SINDRAGOSA_DOOR)
     (GO_SINDRAGOSA_EXIT_DOOR,       DATA_SINDRAGOSA_EXIT_DOOR)
-    (GO_SINDRAGOSA_EXIT_DOOR2,      DATA_SINDRAGOSA_EXIT_DOOR2);
+    (GO_SINDRAGOSA_EXIT_DOOR2,      DATA_SINDRAGOSA_EXIT_DOOR2)
+    (GO_LANATHEL_DOOR_RIGHT,        DATA_LANATHEL_DOOR_RIGHT)
+    (GO_LICHKING_SPIKE1,            DATA_LICHKING_SPIKE1)
+    (GO_LICHKING_SPIKE2,            DATA_LICHKING_SPIKE2)
+    (GO_LICHKING_SPIKE3,            DATA_LICHKING_SPIKE3)
+    (GO_LICHKING_SPIKE4,            DATA_LICHKING_SPIKE4);
 
 namespace icc {
 
@@ -114,7 +119,7 @@ bool boss_icecrown_citadelAI::IsOutOfCombatArea() const
         case NPC_LANATHEL:
             return std::abs(z - 401.747f) > 30.0f;
         case NPC_SINDRAGOSA:
-            return !m_creature->IsWithinDist2d(4407.94f, 2483.47, 150.0f);
+            return !m_creature->IsWithinDist2d(4407.94f, 2483.47f, 150.0f);
         case NPC_LICH_KING:
             return areaId != 4859;
         default:
