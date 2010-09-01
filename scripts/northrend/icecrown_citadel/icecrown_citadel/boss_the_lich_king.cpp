@@ -17,12 +17,12 @@
 /* ScriptData
 SDName: boss_the_lich_king
 SD%Complete: 80%
-SDComment: Various platfrom transformations not working, 
-Valkyr Shadowguards not working, 
-Frostmourne room looks terrible, 
-Ice Spheres don't have a 'beam' to the targeted player, 
-players can release after 10% outro,
-creature templates missing for 39190 (Wicked Spirits) - replaced with Vile Spirits.
+SDComment: Various platfrom transformations not working,
+           Valkyr Shadowguards not working,
+           Frostmourne room looks terrible,
+           Ice Spheres don't have a 'beam' to the targeted player,
+           players can release after 10% outro,
+           creature templates missing for 39190 (Wicked Spirits) - replaced with Vile Spirits.
 SDCategory: Icecrown Citadel
 EndScriptData */
 
@@ -257,17 +257,15 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     void Reset()
     {
         SummonMgr.UnsummonAll();
-        if (m_creature->isAlive())
-            RemoveAllFrostmournePlayers(true);
-        else
-            RemoveAllFrostmournePlayers(false);
+        RemoveAllFrostmournePlayers(m_creature->isAlive());
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         boss_icecrown_citadelAI::Reset();
     }
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && !TalkPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->IsWithinDist(m_creature, 50.0f) && !static_cast<Player*>(pWho)->isGameMaster())
+        if (!HasDoneIntro && !TalkPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
+            pWho->IsWithinDist(m_creature, 50.0f) && pWho->isTargetableForAttack())
         {
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             DoScriptText(SAY_LICHKING_INTRO1, m_creature);
@@ -369,7 +367,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 
     void RemoveAllFrostmournePlayers(bool Kill)
     {
-        for (std::list<uint64>::iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
+        for (std::list<uint64>::const_iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
             if (Unit *UnitInFrostmourne = Unit::GetUnit(*m_creature, *i))
             {
                 DoTeleportPlayer(UnitInFrostmourne, 530.0f, -2124.6f, 1040.8f, 3.142f);
@@ -493,13 +491,15 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         {
             if (Unit *UnitToKill = Unit::GetUnit(*m_creature, *i))
                 if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
+                {
                     if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
                     {
-                        UnitToKill->CastSpell(UnitToKill, 72627, false);         // kills player
+                        UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
                         i = PlayersToInstakill.erase(i);
                     }
                     else
                         ++i;
+                }
         }
 
         Events.Update(uiDiff);
@@ -822,6 +822,7 @@ struct MANGOS_DLL_DECL mob_shambling_horrorAI: public ScriptedAI
                 default:
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
@@ -935,6 +936,7 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
             Prisoner->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
     }
 };
+
 struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
 {
     uint32 UnfreezeTimer;
@@ -967,7 +969,8 @@ struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
     void UpdateAI(uint32 const uiDiff)
     {
         if (UnfreezeTimer)
-            if (UnfreezeTimer < uiDiff)
+        {
+            if (UnfreezeTimer <= uiDiff)
             {
                 SetCombatMovement(true);
                 m_creature->SetInCombatWithZone();
@@ -975,10 +978,8 @@ struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
                 UnfreezeTimer = 0;
             }
             else 
-            {
                 UnfreezeTimer -= uiDiff;
-                return;
-            }
+        }
     }
 };
 
@@ -987,8 +988,8 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
     EventManager Events;
     SummonManager SummonMgr;
     uint32 TalkPhase;
-    bool m_bIsHeroic: 1;
-    bool m_bIs10Man: 1;
+    bool m_bIsHeroic :1;
+    bool m_bIs10Man :1;
 
     mob_terenas_menethilAI(Creature* pCreature):
         ScriptedAI(pCreature),
@@ -1020,7 +1021,7 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-		if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         Events.Update(uiDiff);
@@ -1065,21 +1066,21 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_sprit_wardenAI: public ScriptedAI
 {
-	uint32 SoulRipTimer;
+    uint32 SoulRipTimer;
 
     mob_sprit_wardenAI(Creature* pCreature):
         ScriptedAI(pCreature),
-		SoulRipTimer(TIMER_SOUL_RIP)
+        SoulRipTimer(TIMER_SOUL_RIP)
     {
     }
 
     void Reset() {}
 
-	void Aggro(Unit *pWho)
-	{
-		DoCast(m_creature, SPELL_DARK_HUNGER_AURA);
-		SoulRipTimer = 5*IN_MILLISECONDS;
-	}
+    void Aggro(Unit *pWho)
+    {
+        DoCast(m_creature, SPELL_DARK_HUNGER_AURA);
+        SoulRipTimer = 5*IN_MILLISECONDS;
+    }
 
     void JustDied(Unit *pKiller)
     {
@@ -1088,25 +1089,27 @@ struct MANGOS_DLL_DECL mob_sprit_wardenAI: public ScriptedAI
                 SendScriptMessageTo(static_cast<Creature*>(pOwner), m_creature, 0, 0);
     }
 
-	void DamageDeal(Unit* pDoneTo, uint32& uiDamage)
-	{
-		int32 HealAmount = uiDamage / 2;
-		m_creature->CastCustomSpell(m_creature, SPELL_DARK_HUNGER_HEAL, &HealAmount, NULL, NULL, true);
-	}
+    void DamageDeal(Unit* pDoneTo, uint32& uiDamage)
+    {
+        int32 HealAmount = uiDamage / 2;
+        m_creature->CastCustomSpell(m_creature, SPELL_DARK_HUNGER_HEAL, &HealAmount, NULL, NULL, true);
+    }
 
-	void UpdateAI(uint32 const uiDiff)
-	{
-		if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-		if (SoulRipTimer < uiDiff)
-		{
-			DoCast(m_creature->getVictim(), SPELL_SOUL_RIP);
-			SoulRipTimer = TIMER_SOUL_RIP;
-		} else SoulRipTimer -= uiDiff;
+        if (SoulRipTimer < uiDiff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_SOUL_RIP);
+            SoulRipTimer = TIMER_SOUL_RIP;
+        }
+        else
+            SoulRipTimer -= uiDiff;
 
-		DoMeleeAttackIfReady();
-	}
+        DoMeleeAttackIfReady();
+    }
 };
 
 struct MANGOS_DLL_DECL mob_shadow_trapAI: public ScriptedAI
@@ -1132,15 +1135,19 @@ struct MANGOS_DLL_DECL mob_shadow_trapAI: public ScriptedAI
     void UpdateAI(uint32 const uiDiff)
     {
         if (StartTimer)
+        {
             if (StartTimer < uiDiff)
             {
                 DoCast(m_creature, SPELL_SHADOW_TRAP_AURA);
                 StartTimer = 0;
             }
-            else StartTimer -= uiDiff;
+            else
+                StartTimer -= uiDiff;
+        }
     }
 
 };
+
 void AddSC_boss_the_lich_king()
 {
     Script *newscript;
