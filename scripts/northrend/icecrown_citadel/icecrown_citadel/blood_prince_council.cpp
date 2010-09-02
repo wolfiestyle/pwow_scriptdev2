@@ -253,7 +253,10 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage) 
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_VALANAR))
-            m_creature->SetHealth(uiDamage+1);
+        {
+            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            uiDamage = 0;
+        }
     }
 
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
@@ -453,7 +456,10 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage) 
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_KELESETH))
-            m_creature->SetHealth(uiDamage+1);
+        {
+            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            uiDamage = 0;
+        }
     }
 
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
@@ -650,7 +656,10 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage) 
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_TALDARAM))
-            m_creature->SetHealth(uiDamage+1);
+        {
+            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            uiDamage = 0;
+        }
     }
 
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
