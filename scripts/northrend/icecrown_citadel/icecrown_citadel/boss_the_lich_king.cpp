@@ -454,7 +454,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         UpdateTalkPhases(uiDiff);
 
-        if (Events.GetPhase() == PHASE_OUTRO)       // diable AI during Outro
+        if (Events.GetPhase() == PHASE_OUTRO)       // disable AI during Outro
             return;
 
         if (PlayersInFrostmourne.empty() && Events.GetPhase() == PHASE_FROSTMOURNE) // Just in case something strange happens
@@ -475,17 +475,16 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             Events.SetPhase(PHASE_TRANSITION_TWO);
             StartTransitionPhase();
         }
-        else if (Events.GetPhase() == PHASE_THREE)
-            if (m_creature->GetHealthPercent() < 10.0f)
-            {
-                Events.SetPhase(PHASE_OUTRO);
-                DoCast(m_creature->getVictim(), SPELL_FURY_OF_FROSTMOURNE);
-                TalkPhase = 9;
-                TalkTimer = 2*IN_MILLISECONDS;
-                SetCombatMovement(false);
-                DoStartNoMovement(m_creature->getVictim());
-                return;
-            }
+        else if (Events.GetPhase() == PHASE_THREE && m_creature->GetHealthPercent() < 10.0f)
+        {
+            Events.SetPhase(PHASE_OUTRO);
+            DoCast(m_creature->getVictim(), SPELL_FURY_OF_FROSTMOURNE);
+            TalkPhase = 9;
+            TalkTimer = 2*IN_MILLISECONDS;
+            SetCombatMovement(false);
+            DoStartNoMovement(m_creature->getVictim());
+            return;
+        }
 
         for (std::list<uint64>::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
         {
@@ -645,7 +644,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         break;
                     case 4:
                         if (Fordring)
-                            DoScriptText(SAY_TIRION_INTRO4, m_creature);
+                            DoScriptText(SAY_TIRION_INTRO4, Fordring);
                         TalkTimer = 2*IN_MILLISECONDS;
                         break;
                     case 5:
