@@ -212,30 +212,30 @@ bool boss_icecrown_citadelAI::InstanceProgressionCheck()
 void boss_icecrown_citadelAI::RemoveEncounterAuras(int32 spellId_1, int32 spellId_2, int32 spellId_3, int32 spellId_4)
 {
     Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
-        {
-            Unit *pPlayer = itr->getSource();
-            if (!pPlayer)
-                continue;
+    for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
+    {
+        Unit *pPlayer = itr->getSource();
+        if (!pPlayer)
+            continue;
 
-            if (spellId_1 > 0)
-                pPlayer->RemoveAurasDueToSpell(spellId_1);
-            else if (spellId_1 < 0)
-                pPlayer->RemoveAurasByDifficulty(-spellId_1);
+        if (spellId_1 > 0)
+            pPlayer->RemoveAurasDueToSpell(spellId_1);
+        else if (spellId_1 < 0)
+            pPlayer->RemoveAurasByDifficulty(-spellId_1);
 
-            if (spellId_2 > 0)
-                pPlayer->RemoveAurasDueToSpell(spellId_2);
-            else if (spellId_2 < 0)
-                pPlayer->RemoveAurasByDifficulty(-spellId_2);
+        if (spellId_2 > 0)
+            pPlayer->RemoveAurasDueToSpell(spellId_2);
+        else if (spellId_2 < 0)
+            pPlayer->RemoveAurasByDifficulty(-spellId_2);
 
-            if (spellId_3 > 0)
-                pPlayer->RemoveAurasDueToSpell(spellId_3);
-            else if (spellId_3 < 0)
-                pPlayer->RemoveAurasByDifficulty(-spellId_3);
+        if (spellId_3 > 0)
+            pPlayer->RemoveAurasDueToSpell(spellId_3);
+        else if (spellId_3 < 0)
+            pPlayer->RemoveAurasByDifficulty(-spellId_3);
 
-            if (spellId_4 > 0)
-                pPlayer->RemoveAurasDueToSpell(spellId_4);
-            else if (spellId_4 < 0)
-                pPlayer->RemoveAurasByDifficulty(-spellId_4);
-        }
+        if (spellId_4 > 0)
+            pPlayer->RemoveAurasDueToSpell(spellId_4);
+        else if (spellId_4 < 0)
+            pPlayer->RemoveAurasByDifficulty(-spellId_4);
+    }
 }
