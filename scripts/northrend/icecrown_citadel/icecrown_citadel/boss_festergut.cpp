@@ -119,6 +119,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         if (Creature *GasTarget = SummonMgr.SummonCreatureAt(m_creature, NPC_VILE_GAS_STALKER))
             GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         CurrBlightStrength = 0;

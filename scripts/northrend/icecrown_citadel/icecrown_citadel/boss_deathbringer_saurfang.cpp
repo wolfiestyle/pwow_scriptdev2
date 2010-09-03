@@ -180,7 +180,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
+        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack() &&
+            icc::MeetsRequirementsForBoss(m_pInstance, TYPE_SAURFANG))
         {
             if (Creature *Controller = SummonMgr.SummonCreatureAt(m_creature, NPC_INTRO_OUTRO_CONTROLLER))
             {
@@ -198,6 +199,8 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(SUMMON_ADDS);
         SCHEDULE_EVENT(BOILING_BLOOD);

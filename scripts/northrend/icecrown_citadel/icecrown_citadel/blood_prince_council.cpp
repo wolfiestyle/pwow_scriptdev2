@@ -177,7 +177,8 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && !IntroTimer && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
+        if (!HasDoneIntro && !IntroTimer && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
+            pWho->isTargetableForAttack() && icc::MeetsRequirementsForBoss(m_pInstance, TYPE_VALANAR))
             if (Creature *Lanathel = GET_CREATURE(TYPE_LANATHEL))    
             {
                 DoScriptText(SAY_LANATHEL_INTRO1, Lanathel);
@@ -189,6 +190,8 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         BroadcastScriptMessage(m_creature, 200.0f, MESSAGE_AGGRO);
         BroadcastScriptMessage(m_creature, 200.0f, NPC_VALANAR, m_creature->GetHealth(), true);
         CurrInvocationBoss = 0;
@@ -420,6 +423,8 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         m_BossEncounter = IN_PROGRESS;
         BroadcastScriptMessage(m_creature, 200.0f, MESSAGE_AGGRO);
         SCHEDULE_EVENT(BERSERK);
@@ -601,6 +606,8 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         BroadcastScriptMessage(m_creature, 200.0f, MESSAGE_AGGRO);
         m_BossEncounter = IN_PROGRESS;
         SCHEDULE_EVENT(BERSERK);

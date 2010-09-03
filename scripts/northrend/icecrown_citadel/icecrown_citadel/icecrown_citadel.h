@@ -187,6 +187,9 @@ CreatureAI* GetAI(Creature *pCreature)
 uint32 GetType(Creature*);
 uint32 GetType(GameObject*);
 
+// check if group killed all previous bosses in progression order
+bool MeetsRequirementsForBoss(InstanceData* instance, uint32 boss_id);
+
 } // namespace icc
 
 // basic start point for bosses
@@ -201,10 +204,14 @@ struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI, public Script
     boss_icecrown_citadelAI(Creature*);
 
     void Reset();
+
     // check if boss has been pulled too far from its place
     bool IsOutOfCombatArea() const;
     // resets boss if pulled out of combat area
     bool OutOfCombatAreaCheck();
+    // prevents combat with boss if group doesn't meet requirements
+    bool InstanceProgressionCheck();
+
     // remove auras from all players in map
     // if spellId is negative, removes with spell difficulty
     void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);

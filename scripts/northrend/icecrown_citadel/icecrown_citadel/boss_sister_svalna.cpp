@@ -330,6 +330,8 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         if (GameObject* FWHDoor = GET_GAMEOBJECT(DATA_FROSTWING_DOOR_ENTRANCE))
             FWHDoor->SetGoState(GO_STATE_READY);
         DoCast(m_creature, SPELL_DIVINE_SURGE, true);
@@ -433,7 +435,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (!pWho || pWho->GetTypeId() != TYPEID_PLAYER || !pWho->isTargetableForAttack())
+        if (!pWho || pWho->GetTypeId() != TYPEID_PLAYER || !pWho->isTargetableForAttack() || !icc::MeetsRequirementsForBoss(m_pInstance, TYPE_SVALNA))
             return;
 
         currPosition = m_creature->GetPositionX() - teleporterloc[0][0] < 20.0f && m_creature->GetPositionY() - teleporterloc[0][1] < 20.0f ? POSITION_TELEPORTER : POSITION_FROSTWING;
@@ -1493,6 +1495,8 @@ bool AT_fwh_svalna_hall(Player* pPlayer, AreaTriggerEntry *pAt)
 
     if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData()))
     {
+        if (!icc::MeetsRequirementsForBoss(m_pInstance, TYPE_SVALNA))
+            return false;
         if (m_pInstance->GetData(TYPE_SVALNA) == DONE) // disable the trigger, encounter complete
             return true;
         if (m_pInstance->GetData(TYPE_SVALNA) == IN_PROGRESS)

@@ -144,6 +144,8 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         Events.SetPhase(PHASE_ONE);
         LastSummonSideIsOrange = true;
         m_BossEncounter = IN_PROGRESS;

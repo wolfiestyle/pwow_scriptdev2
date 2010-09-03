@@ -265,7 +265,8 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     void MoveInLineOfSight(Unit *pWho)
     {
         if (!HasDoneIntro && !TalkPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
-            pWho->IsWithinDist(m_creature, 50.0f) && pWho->isTargetableForAttack())
+            pWho->IsWithinDist(m_creature, 50.0f) && pWho->isTargetableForAttack() &&
+            icc::MeetsRequirementsForBoss(m_pInstance, TYPE_LICH_KING))
         {
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             DoScriptText(SAY_LICHKING_INTRO1, m_creature);
@@ -280,6 +281,8 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         if (m_creature->GetHealth() != m_creature->GetMaxHealth())  // Aggro() is sometimes called after players leave frostmourne on heroic
             return;
         PlayersToInstakill.clear();

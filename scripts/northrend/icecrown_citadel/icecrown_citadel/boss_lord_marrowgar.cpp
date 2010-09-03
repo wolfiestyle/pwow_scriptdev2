@@ -166,6 +166,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         DoScriptText(SAY_AGGRO, m_creature);
         SCHEDULE_EVENT_R(COLDFLAME);
         SCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);

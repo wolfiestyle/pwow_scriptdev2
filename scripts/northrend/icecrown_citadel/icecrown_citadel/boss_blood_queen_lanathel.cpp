@@ -138,6 +138,8 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         Events.ScheduleEvent(EVENT_BERSERK, TIMER_BERSERK);
         Events.ScheduleEvent(EVENT_BLOOD_MIRROR, 15*IN_MILLISECONDS, 0, 0, 0, PMASK_ALL);
         Events.ScheduleEvent(EVENT_MINDCONTROL_CHECK, 1*MINUTE*IN_MILLISECONDS, 5*IN_MILLISECONDS, 0, 0, PMASK_ALL);

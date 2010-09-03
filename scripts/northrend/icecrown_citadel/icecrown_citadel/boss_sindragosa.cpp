@@ -136,6 +136,8 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         m_BossEncounter = IN_PROGRESS;
         SetCombatMovement(true);
         DoCast(m_creature, SPELL_FROST_AURA, true);

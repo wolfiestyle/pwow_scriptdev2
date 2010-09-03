@@ -183,7 +183,8 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && !IntroPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
+        if (!HasDoneIntro && !IntroPhase && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
+            pWho->isTargetableForAttack() && icc::MeetsRequirementsForBoss(m_pInstance, TYPE_DEATHWHISPER))
         {
             IntroPhase = 1;
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -193,6 +194,8 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         Events.SetPhase(PHASE_ONE);
         DoScriptText(SAY_AGGRO, m_creature);
         //if (!m_bIs10Man || m_bIsHeroic)

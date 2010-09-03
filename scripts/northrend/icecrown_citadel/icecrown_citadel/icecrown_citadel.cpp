@@ -67,6 +67,53 @@ uint32 GetType(GameObject *pGO)
     return map_find(GameObjectEntryToType, pGO->GetEntry(), DATA_GUID_MAX);
 }
 
+#define BOSS_DONE(id)   (instance->GetData(id) == DONE)
+
+bool MeetsRequirementsForBoss(InstanceData* instance, uint32 boss_id)
+{
+    if (!instance)
+        return true;
+
+    switch (boss_id)
+    {
+        case TYPE_MARROWGAR:
+            //TODO: add heroic check here
+            return true;
+        case TYPE_DEATHWHISPER:
+            return BOSS_DONE(TYPE_MARROWGAR) && MeetsRequirementsForBoss(instance, TYPE_MARROWGAR);
+        case TYPE_GUNSHIP_BATTLE:
+            return BOSS_DONE(TYPE_DEATHWHISPER) && MeetsRequirementsForBoss(instance, TYPE_DEATHWHISPER);
+        case TYPE_SAURFANG:
+            return /*BOSS_DONE(TYPE_GUNSHIP_BATTLE) && */MeetsRequirementsForBoss(instance, TYPE_GUNSHIP_BATTLE);
+        case TYPE_FESTERGUT:
+        case TYPE_ROTFACE:
+        case TYPE_VALANAR:
+        case TYPE_KELESETH:
+        case TYPE_TALDARAM:
+        case TYPE_SVALNA:
+            return BOSS_DONE(TYPE_SAURFANG) && MeetsRequirementsForBoss(instance, TYPE_SAURFANG);
+        case TYPE_PUTRICIDE:
+            return BOSS_DONE(TYPE_FESTERGUT) && BOSS_DONE(TYPE_ROTFACE) &&
+                MeetsRequirementsForBoss(instance, TYPE_FESTERGUT); // same check for rotface
+        case TYPE_LANATHEL:
+            return BOSS_DONE(TYPE_VALANAR) && BOSS_DONE(TYPE_KELESETH) && BOSS_DONE(TYPE_TALDARAM) &&
+                MeetsRequirementsForBoss(instance, TYPE_VALANAR);   // same check for keleseth, taldaram
+        case TYPE_VALITHRIA:
+            return BOSS_DONE(TYPE_SVALNA) && MeetsRequirementsForBoss(instance, TYPE_SVALNA);
+        case TYPE_SINDRAGOSA:
+            return BOSS_DONE(TYPE_VALITHRIA) && MeetsRequirementsForBoss(instance, TYPE_VALITHRIA);
+        case TYPE_LICH_KING:
+            return BOSS_DONE(TYPE_PUTRICIDE) && BOSS_DONE(TYPE_LANATHEL) && BOSS_DONE(TYPE_SINDRAGOSA) &&
+                MeetsRequirementsForBoss(instance, TYPE_PUTRICIDE) &&
+                MeetsRequirementsForBoss(instance, TYPE_LANATHEL) &&
+                MeetsRequirementsForBoss(instance, TYPE_SINDRAGOSA);
+        default:    // unknown boss
+            return true;
+    }
+}
+
+#undef BOSS_DONE
+
 } // namespace icc
 
 boss_icecrown_citadelAI::boss_icecrown_citadelAI(Creature* pCreature):
@@ -134,6 +181,28 @@ bool boss_icecrown_citadelAI::OutOfCombatAreaCheck()
     if (IsOutOfCombatArea())
     {
         EnterEvadeMode();
+        return true;
+    }
+
+    return false;
+}
+
+bool boss_icecrown_citadelAI::InstanceProgressionCheck()
+{
+    if (!icc::MeetsRequirementsForBoss(m_pInstance, m_BossEncounter.getDataId()))
+    {
+        EnterEvadeMode();
+        // teleport offending players outside instance
+        std::deque<Player*> players;
+        Map::PlayerList const &plist = m_creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator i = plist.begin(); i != plist.end(); ++i)
+        {
+            Unit *pPlayer = i->getSource();
+            if (pPlayer && pPlayer->GetTypeId() == TYPEID_PLAYER)
+                players.push_back(static_cast<Player*>(pPlayer));
+        }
+        for (std::deque<Player*>::const_iterator i = players.begin(); i != players.end(); ++i)
+            (*i)->TeleportToHomebind();
         return true;
     }
 

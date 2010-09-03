@@ -135,6 +135,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
 
     void Aggro(Unit* pWho)
     {
+        if (InstanceProgressionCheck())
+            return;
         m_BossEncounter = IN_PROGRESS;
         SCHEDULE_EVENT(OOZE_FLOOD);
         //SCHEDULE_EVENT(SLIME_SPRAY);
