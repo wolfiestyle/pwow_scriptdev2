@@ -283,7 +283,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                     (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
             case CRITERIA_SAURFANG_MESS_25:
             case CRITERIA_SAURFANG_MESS_25H:
-                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 3 &&
+                return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 5 &&
                     (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
             case CRITERIA_SAURFANG_LK_KILLS_10:
                 return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC;
