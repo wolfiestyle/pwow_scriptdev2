@@ -270,8 +270,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
                 m_creature->SetInCombatWithZone();
                 return;
             case MESSAGE_DIE:
-                m_creature->SetHealth(0);
-                m_creature->setDeathState(JUST_DIED);
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 return;
         }
         if (pSender && pSender->GetEntry() == NPC_VALANAR)
@@ -475,8 +474,7 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
                 m_creature->SetInCombatWithZone();
                 return;
             case MESSAGE_DIE:
-                m_creature->SetHealth(0);
-                m_creature->setDeathState(JUST_DIED);
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 return;
         }
         if (pSender && pSender->GetEntry() == NPC_VALANAR)
@@ -677,8 +675,7 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
                 m_creature->SetInCombatWithZone();
                 return;
             case MESSAGE_DIE:
-                m_creature->SetHealth(0);
-                m_creature->setDeathState(JUST_DIED);
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 return;
         }
         if (pSender && pSender->GetEntry() == NPC_VALANAR)
