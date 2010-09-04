@@ -52,6 +52,7 @@ enum Spells
     SPELL_HARVEST_SOUL_DUMMY            = 76379,
     SPELL_KILL_FROSTMOURNE_PLAYER       = 72627,
     SPELL_VILE_SPIRITS                  = 70498,
+    SPELL_SUMMON_VALKYR                 = 69037,
     // Phase transitions
     SPELL_REMORSELESS_WINTER            = 68981,
     SPELL_SUMMON_ICE_SPHERE             = 69104,
@@ -62,6 +63,7 @@ enum Spells
     SPELL_ICE_LOCK                      = 71614,
     // Outro
     SPELL_FURY_OF_FROSTMOURNE           = 72350,
+    SPELL_FURY_OF_FROSTMOURNE_EFF       = 72351,    // prevent from "releasing" (needs core implementation)
     SPELL_RAISE_DEAD                    = 71769,
     SPELL_FROSTMOURNE_BROKEN_AURA       = 72405,
     SPELL_FROSTMOURNE_BROKEN_AURA2      = 72398,
@@ -87,6 +89,7 @@ enum Spells
     SPELL_SHOCKWAVE                     = 72149,
     SPELL_ENRAGE                        = 72143,
     SPELL_FRENZY                        = 28747,
+    SPELL_EMERGE_VISUAL                 = 50142,    // TODO: find a way to make this look better
     // Raging Spirit
     SPELL_SOUL_SHRIEK                   = 69242,
     // Vile Spirit
@@ -109,6 +112,9 @@ enum Npcs
     NPC_WICKED_SPIRIT                   = 39190,
     NPC_TIRION_FORDRING                 = 38995,
     NPC_FROSTMOURNE                     = 38584,
+    NPC_ICE_SPHERE                      = 36633,
+    NPC_SHAMBLING_HORROR                = 37698,
+    NPC_DRUDGE_GHOUL                    = 37695,
 };
 
 enum Says
@@ -168,6 +174,7 @@ enum Events
     EVENT_RAGING_SPIRIT,
     EVENT_ICE_SPHERE,
     EVENT_QUAKE,
+    EVENT_DROP_EDGES,
     // Shambling Horror
     EVENT_ENRAGE,
     EVENT_SHOCKWAVE,
@@ -209,7 +216,7 @@ static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1079.9f};
 #define OUTRO_CINEMATIC                     16
 
 #define TIMER_BERSERK                       15*MINUTE*IN_MILLISECONDS
-#define TIMER_SUMMON_DRUDGE_GHOULS          19*IN_MILLISECONDS
+#define TIMER_SUMMON_DRUDGE_GHOULS          20*IN_MILLISECONDS
 #define TIMER_SUMMON_SHAMBLING_HORROR       MINUTE*IN_MILLISECONDS
 #define TIMER_INFEST                        22*IN_MILLISECONDS
 #define TIMER_SHADOW_TRAP                   16*IN_MILLISECONDS
@@ -252,13 +259,17 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         TalkPhase(0),
         HasDoneIntro(false)
     {
+        pCreature->SetPhaseMask(65535, true); // all phases
     }
 
     void Reset()
     {
+        TalkTimer = 0;
+        TalkPhase = 0;
+        HasDoneIntro = false;
         SummonMgr.UnsummonAll();
         RemoveAllFrostmournePlayers(m_creature->isAlive());
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        //m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         boss_icecrown_citadelAI::Reset();
     }
 
@@ -270,9 +281,14 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         {
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             DoScriptText(SAY_LICHKING_INTRO1, m_creature);
+            m_creature->SetSheath(SHEATH_STATE_MELEE);
+            m_creature->SetStandState(EMOTE_STATE_NONE);
             m_creature->MonsterMoveWithSpeed(460.9f, -2124.4f, 1040.9f);
             if (Creature *Fordring = GetClosestCreatureWithEntry(m_creature, NPC_TIRION_FORDRING, 200.0f))
-                Fordring->MonsterMoveWithSpeed(476.7f, -2124.4f, 1040.9f);
+            {
+                Fordring->MonsterMoveWithSpeed(490.7f, -2124.4f, 1040.9f);
+                Fordring->SetPhaseMask(65535, true);
+            }
             TalkTimer = 14*IN_MILLISECONDS;
             TalkPhase = 1;
         }
@@ -291,14 +307,14 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         m_BossEncounter = IN_PROGRESS;
         DoCast(m_creature, SPELL_PLAGUE_AVOIDANCE, true);
         SCHEDULE_EVENT(BERSERK);
-        SCHEDULE_EVENT(SUMMON_DRUDGE_GHOULS, 0, 0, PMASK_PHASE_ONE);
-        SCHEDULE_EVENT(SUMMON_SHAMBLING_HORROR, 0, 0, PMASK_PHASE_ONE);
+        Events.ScheduleEvent(EVENT_SUMMON_DRUDGE_GHOULS, 10*IN_MILLISECONDS, TIMER_SUMMON_DRUDGE_GHOULS, 0, 0, PMASK_PHASE_ONE);
+        Events.RescheduleEvent(EVENT_SUMMON_SHAMBLING_HORROR, 15*IN_MILLISECONDS, TIMER_SUMMON_SHAMBLING_HORROR, 0, 0, PMASK_PHASE_ONE);
         SCHEDULE_EVENT(INFEST, 0, 0, PMASK_PHASE_ONE_AND_TWO);
         if (m_bIsHeroic)
             SCHEDULE_EVENT(SHADOW_TRAP, 0, 0, PMASK_PHASE_ONE);
         SCHEDULE_EVENT(NECROTIC_PLAGUE, 0, 0, PMASK_PHASE_ONE);
         SCHEDULE_EVENT(SOUL_REAPER, 0, 0, PMASK_PHASE_TWO_AND_THREE);
-        //SCHEDULE_EVENT(SUMMON_VALKYR, 0, 0, PMASK_PHASE_TWO);
+        SCHEDULE_EVENT(SUMMON_VALKYR, 0, 0, PMASK_PHASE_TWO);
         SCHEDULE_EVENT(DEFILE, 0, 0, PMASK_PHASE_TWO_AND_THREE);
         SCHEDULE_EVENT(HARVEST_SOUL, 0, 0, PMASK_PHASE_THREE);
         Events.ScheduleEvent(EVENT_VILE_SPIRITS, TIMER_VILE_SPIRITS/2, TIMER_VILE_SPIRITS, 0, 0, PMASK_PHASE_THREE);
@@ -330,12 +346,22 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     pSumm->CastSpell(pSumm, SPELL_FROSTMOURNE_BROKEN_AURA2, true);
                     pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     break;
+                case NPC_VALKYR_SHADOWGUARD:
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
+                       SendScriptMessageTo(pSumm, Target);
+                    pSumm->SetInCombatWithZone();
+                    break;
+                case NPC_SHAMBLING_HORROR:
+                case NPC_DRUDGE_GHOUL:
+                    pSumm->CastSpell(pSumm, SPELL_EMERGE_VISUAL, false);
+                    pSumm->SetInCombatWithZone();
+                    break;
+                    //no break
                 default:
                     pSumm->SetInCombatWithZone();
                     break;
             }
-            if (pSumm->GetEntry() != NPC_VALKYR_SHADOWGUARD     // NPCs that are summoned by SummonMgr
-                && pSumm->GetEntry() != NPC_TERENAS_MENETHIL_FROSTMOURNE
+            if (pSumm->GetEntry() != NPC_TERENAS_MENETHIL_FROSTMOURNE// NPCs that are summoned by SummonMgr
                 && pSumm->GetEntry() != NPC_SPIRIT_WARDEN
                 && pSumm->GetEntry() != NPC_TERENAS_MENETHIL_OUTRO)
                 SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
@@ -362,6 +388,14 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         DoStartNoMovement(m_creature->getVictim());
         m_creature->MonsterMove(CenterPosition[0], CenterPosition[1], CenterPosition[2], TIMER_REMORSELESS_WINTER);
+        if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM)) // Rebuild platform *doesnt work*
+        {
+            Platform->SetUInt32Value(GAMEOBJECT_DISPLAYID, 9276); //rebuild the GO *doesnt work*
+            //Platform->SendGameObjectCustomAnim(Platform->GetGUID(), 0);
+            //Platform->AddToClientUpdateList();
+        }
+        if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
+            Wind->SetGoState(GO_STATE_ACTIVE);
         Events.ScheduleEvent(EVENT_REMORSELESS_WINTER, TIMER_REMORSELESS_WINTER);
         Events.ScheduleEvent(EVENT_QUAKE, TIMER_QUAKE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -496,6 +530,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 {
                     if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
                     {
+                        UnitToKill->CastSpell(UnitToKill, SPELL_FURY_OF_FROSTMOURNE_EFF, true);
                         UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
                         i = PlayersToInstakill.erase(i);
                     }
@@ -540,9 +575,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoCast(m_creature->getVictim(), SPELL_SOUL_REAPER);
                     break;
                 case EVENT_SUMMON_VALKYR:
-                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
-                        if (Creature *Valkyr = SummonMgr.SummonCreatureAt(Target, NPC_VALKYR_SHADOWGUARD, TEMPSUMMON_DEAD_DESPAWN))
-                            SendScriptMessageTo(Valkyr, Target);
+                    DoCast(m_creature, SPELL_SUMMON_VALKYR, false);
                     DoScriptText(SAY_SUMMON_VALKYR, m_creature);
                     break;
                 case EVENT_DEFILE:
@@ -610,6 +643,9 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoStartMovement(m_creature->getVictim());
                     Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    Events.ScheduleEvent(EVENT_DROP_EDGES, 5*IN_MILLISECONDS);
+                    if (GameObject *EdgeWarning = GET_GAMEOBJECT(DATA_LICHKING_EDGE_WARNING))
+                        EdgeWarning->SetGoState(GO_STATE_ACTIVE);
                     if (Events.GetPhase() == PHASE_TRANSITION_ONE)
                         Events.SetPhase(PHASE_TWO);
                     else
@@ -618,6 +654,21 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         Events.ScheduleEvent(EVENT_HARVEST_SOUL, 5*IN_MILLISECONDS);
                     }
                     DoScriptText(SAY_REMORSELESS_WINTER_END, m_creature);
+                    break;
+                case EVENT_DROP_EDGES:
+                    if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
+                    {
+                        Platform->SetUInt32Value(GAMEOBJECT_DISPLAYID, 9258); //destroy the edges
+                        //Platform->SetGoState(GO_STATE_ACTIVE);
+                        /*Platform->SetGoAnimProgress(0);
+                        Platform->AddToClientUpdateList();*/
+                    }
+                    if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
+                        Wind->SetGoState(GO_STATE_READY);
+                    if (GameObject *EdgeWind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_EDGE))
+                        EdgeWind->SetGoState(GO_STATE_ACTIVE);
+                    if (GameObject *EdgeWarning = GET_GAMEOBJECT(DATA_LICHKING_EDGE_WARNING))
+                        EdgeWarning->SetGoState(GO_STATE_READY);
                     break;
                 default:
                     break;
@@ -643,88 +694,113 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         break;
                     case 3:
                         DoScriptText(SAY_LICHKING_INTRO3, m_creature);
-                        TalkTimer = 22*IN_MILLISECONDS;
+                        TalkTimer = 8*IN_MILLISECONDS;
+                        m_creature->HandleEmote(EMOTE_ONESHOT_TALK);
                         break;
                     case 4:
-                        if (Fordring)
-                            DoScriptText(SAY_TIRION_INTRO4, Fordring);
-                        TalkTimer = 2*IN_MILLISECONDS;
+                        m_creature->CastSpell(m_creature, 48348, false); // Emote: Exclamation
+                        TalkTimer = 5*IN_MILLISECONDS;
                         break;
                     case 5:
+                        m_creature->CastSpell(m_creature, 48349, false); // Emote: Point
+                        TalkTimer = 5*IN_MILLISECONDS;
+                        break;
+                    case 6:
+                        m_creature->CastSpell(m_creature, 48348, false); // Emote: Exclamation
+                        TalkTimer = 4*IN_MILLISECONDS;
+                        break;
+                    case 7:
+                        if (Fordring)
+                        {
+                            DoScriptText(SAY_TIRION_INTRO4, Fordring);
+                            Fordring->CastSpell(Fordring, 48349, false); // Emote: Point
+                        }
+                        TalkTimer = 2500;
+                        break;
+                    case 8:
+                        if (Fordring)
+                            Fordring->MonsterMoveWithSpeed(476.7f, -2124.4f, 1040.9f, 1*IN_MILLISECONDS);
                         if (Fordring)
                             DoCast(Fordring, SPELL_ICE_LOCK);
                         DoScriptText(SAY_LICHKING_INTRO5, m_creature);
                         TalkTimer = 19*IN_MILLISECONDS;
                         break;
-                    case 6:
+                    case 9:
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         m_creature->SetInCombatWithZone();
                         HasDoneIntro = true;
                         TalkPhase = 0;
                         break;
-                    case 10:    // Outro
+                    case 11:    // Outro
                         SummonMgr.UnsummonAll();
                         DoScriptText(SAY_LICHKING_OUTRO1, m_creature);
                         TalkTimer = 26*IN_MILLISECONDS;
                         break;
-                    case 11:
+                    case 12:
                         DoScriptText(SAY_LICHKING_OUTRO2, m_creature);
                         TalkTimer = 8*IN_MILLISECONDS;
                         break;
-                    case 12:
+                    case 13:
                         DoScriptText(SAY_LICHKING_OUTRO3, m_creature);
                         TalkTimer = 23*IN_MILLISECONDS;
                         break;
-                    case 13:
+                    case 14:
                         m_creature->MonsterMove(CenterPosition[0], CenterPosition[1], CenterPosition[2], 1*IN_MILLISECONDS);
                         TalkTimer = 1*IN_MILLISECONDS;
                         break;
-                    case 14:
+                    case 15:
+                        m_creature->MonsterMove(CenterPosition[0]-0.1f, CenterPosition[1], CenterPosition[2], 1*IN_MILLISECONDS);
+                        TalkTimer = 1*IN_MILLISECONDS;
+                        break;
+                    case 16:
                         DoCast(m_creature, SPELL_RAISE_DEAD);
                         DoScriptText(SAY_LICHKING_OUTRO4, m_creature);
                         TalkTimer = 26*IN_MILLISECONDS;
                         break;
-                    case 15:
+                    case 17:
                         DoScriptText(SAY_LICHKING_OUTRO5, m_creature);
                         TalkTimer = 6*IN_MILLISECONDS;
                         break;
-                    case 16:
+                    case 18:
                         if (Fordring)
                             DoScriptText(SAY_TIRION_OUTRO6, Fordring);
                         TalkTimer = 3*IN_MILLISECONDS;
                         break;
-                    case 17:
+                    case 19:
                         if (Fordring)
                             Fordring->CastSpell(Fordring, SPELL_BREAK_ICE_LOCK, false);
                         TalkTimer = 5*IN_MILLISECONDS;
                         break;
-                    case 18:
+                    case 20:
                         Fordring->RemoveAllAuras();
                         Fordring->MonsterMove(529.4f, -2124.3f, 1040.8f, 4*IN_MILLISECONDS);
                         Fordring->HandleEmote(375);
                         TalkTimer = 2*IN_MILLISECONDS;
                         break;
-                    case 19:
+                    case 21:
                         m_creature->InterruptNonMeleeSpells(true);
                         DoCast(m_creature, SPELL_BREAK_FROSTMOURNE, true);
                         if (Fordring)
                             Fordring->CastSpell(Fordring, SPELL_BREAK_FROSTMOURNE2, true);
                         SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP);
+                        //m_creature->HandleEmote();
                         TalkTimer = 2*IN_MILLISECONDS;
                         break;
-                    case 20:
+                    case 22:
                         DoScriptText(SAY_LICHKING_OUTRO7, m_creature);
                         TalkTimer = 1*IN_MILLISECONDS;
                         break;
-                    case 21:
+                    case 23:
                         if (Creature *Frostmourne = SummonMgr.GetFirstFoundSummonWithId(NPC_FROSTMOURNE))
                         {
-                            m_creature->MonsterMove(Frostmourne->GetPositionX(), Frostmourne->GetPositionY(), Frostmourne->GetPositionZ(), 100);
-                            m_creature->HandleEmote(473);
+                            m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
+                            m_creature->SetStandState(EMOTE_STATE_STRANGULATE);
+                            m_creature->MonsterMove(Frostmourne->GetPositionX(), Frostmourne->GetPositionY(), Frostmourne->GetPositionZ()+3.0f, 100);
+                            m_creature->HandleEmote(EMOTE_STATE_STRANGULATE);
                         }
                         TalkTimer = 1*IN_MILLISECONDS;
                         break;
-                    case 22:
+                    case 24:
                         if (Fordring)
                         {
                             Fordring->SetFacingToObject(m_creature);
@@ -732,12 +808,12 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         }
                         TalkTimer = 5*IN_MILLISECONDS;
                         break;
-                    case 23:
-                        if (Creature *Terenas = SummonMgr.SummonCreature(NPC_TERENAS_MENETHIL_OUTRO, 512.0f, -2124.3f, m_creature->GetPositionZ(), M_PI_F))
+                    case 25:
+                        if (Creature *Terenas = SummonMgr.SummonCreature(NPC_TERENAS_MENETHIL_OUTRO, 518.0f, -2124.3f, m_creature->GetPositionZ()-3.0f, M_PI_F))
                             DoScriptText(SAY_TERENAS_OUTRO9, Terenas);
                         TalkTimer = 10*IN_MILLISECONDS;
                         break;
-                    case 24:
+                    case 26:
                         if (Creature *Terenas = SummonMgr.GetFirstFoundSummonWithId(NPC_TERENAS_MENETHIL_OUTRO))
                         {
                             Terenas->CastSpell(Terenas, SPELL_MASS_RESSURECTION, false);
@@ -745,7 +821,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         }
                         TalkTimer = 3*IN_MILLISECONDS;
                         break;
-                    case 25:
+                    case 27:
                         if (Creature *Terenas = SummonMgr.GetFirstFoundSummonWithId(NPC_TERENAS_MENETHIL_OUTRO))
                         {
                             Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
@@ -763,14 +839,14 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                             DoScriptText(SAY_TIRION_OUTRO11, Fordring);
                             Fordring->AddThreat(m_creature, 50000.0f);
                         }
-                        m_creature->HandleEmote(473);
+                        m_creature->HandleEmote(EMOTE_STATE_STRANGULATE);
                         TalkTimer = 4*IN_MILLISECONDS;
                         break;
-                    case 26:
+                    case 28:
                         DoScriptText(SAY_LICHKING_OUTRO12, m_creature);
                         TalkTimer = 9*IN_MILLISECONDS;
                         break;
-                    case 27:
+                    case 29:
                         DoScriptText(SAY_LICHKING_OUTRO13, m_creature);
                         TalkPhase = 0;
                         break;
