@@ -289,6 +289,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         if (m_bScriptStarted && !m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f)
         {
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
+            SummonMgr.UnsummonAll();
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
             m_creature->CastSpell(m_creature, SPELL_ACHIEVEMENT_CHECK, true);
