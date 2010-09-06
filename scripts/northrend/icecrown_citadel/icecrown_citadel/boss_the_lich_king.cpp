@@ -89,7 +89,7 @@ enum Spells
     SPELL_SHOCKWAVE                     = 72149,
     SPELL_ENRAGE                        = 72143,
     SPELL_FRENZY                        = 28747,
-    SPELL_EMERGE_VISUAL                 = 50142,    // TODO: find a way to make this look better
+    SPELL_EMERGE_VISUAL                 = 20568,    // "Ragnaros Emerge" looks good, but is not the one im really looking for...
     // Raging Spirit
     SPELL_SOUL_SHRIEK                   = 69242,
     // Vile Spirit
@@ -175,6 +175,7 @@ enum Events
     EVENT_ICE_SPHERE,
     EVENT_QUAKE,
     EVENT_DROP_EDGES,
+    EVENT_REBUILD_PLATFORM,
     // Shambling Horror
     EVENT_ENRAGE,
     EVENT_SHOCKWAVE,
@@ -269,6 +270,19 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         HasDoneIntro = false;
         SummonMgr.UnsummonAll();
         RemoveAllFrostmournePlayers(m_creature->isAlive());
+        if (GameObject *Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
+            Platform->Rebuild(m_creature);
+        if (GameObject *Precipice = GET_GAMEOBJECT(DATA_LICHKING_PRECIPICE))
+            Precipice->Rebuild(m_creature);
+        for (uint32 i = 0; i < 4; i++)
+            if (GameObject *Spike = GET_GAMEOBJECT(DATA_LICHKING_SPIKE1 + i))
+                Spike->SetGoState(GO_STATE_READY);
+        if (Creature *Fordring = GetClosestCreatureWithEntry(m_creature, NPC_TIRION_FORDRING, 200.0f))
+        {
+            Fordring->RemoveAllAuras();
+            Fordring->GetMotionMaster()->MoveTargetedHome();
+            Fordring->SetPhaseMask(65535, true);
+        }
         //m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         boss_icecrown_citadelAI::Reset();
     }
@@ -301,6 +315,9 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             return;
         if (m_creature->GetHealth() != m_creature->GetMaxHealth())  // Aggro() is sometimes called after players leave frostmourne on heroic
             return;
+
+        SetCombatMovement(true);
+        DoStartMovement(pWho);
         PlayersToInstakill.clear();
         PlayersInFrostmourne.clear();
         Events.SetPhase(PHASE_ONE);
@@ -354,8 +371,6 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 case NPC_SHAMBLING_HORROR:
                 case NPC_DRUDGE_GHOUL:
                     pSumm->CastSpell(pSumm, SPELL_EMERGE_VISUAL, false);
-                    pSumm->SetInCombatWithZone();
-                    break;
                     //no break
                 default:
                     pSumm->SetInCombatWithZone();
@@ -388,17 +403,15 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         DoStartNoMovement(m_creature->getVictim());
         m_creature->MonsterMove(CenterPosition[0], CenterPosition[1], CenterPosition[2], TIMER_REMORSELESS_WINTER);
-        if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM)) // Rebuild platform *doesnt work*
-        {
-            Platform->SetUInt32Value(GAMEOBJECT_DISPLAYID, 9276); //rebuild the GO *doesnt work*
-            //Platform->SendGameObjectCustomAnim(Platform->GetGUID(), 0);
-            //Platform->AddToClientUpdateList();
-        }
+        if (Events.GetPhase() != PHASE_TRANSITION_ONE)
+            if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
+                Platform->DamageTaken(m_creature, 100000); //Rebuild platform
         if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
             Wind->SetGoState(GO_STATE_ACTIVE);
         Events.ScheduleEvent(EVENT_REMORSELESS_WINTER, TIMER_REMORSELESS_WINTER);
         Events.ScheduleEvent(EVENT_QUAKE, TIMER_QUAKE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveAllAuras(); //any kind of damage will remove remorseless winter (unknown why)
         Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
     }
 
@@ -515,7 +528,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         else if (Events.GetPhase() == PHASE_THREE && m_creature->GetHealthPercent() < 10.0f)
         {
             Events.SetPhase(PHASE_OUTRO);
-            DoCast(m_creature->getVictim(), SPELL_FURY_OF_FROSTMOURNE);
+            m_creature->CastSpell(m_creature->getVictim(), SPELL_FURY_OF_FROSTMOURNE, false);
             TalkPhase = 9;
             TalkTimer = 2*IN_MILLISECONDS;
             SetCombatMovement(false);
@@ -530,7 +543,6 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 {
                     if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
                     {
-                        UnitToKill->CastSpell(UnitToKill, SPELL_FURY_OF_FROSTMOURNE_EFF, true);
                         UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
                         i = PlayersToInstakill.erase(i);
                     }
@@ -616,13 +628,24 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoCast(m_creature, SPELL_VILE_SPIRITS);
                     break;
                 case EVENT_REMORSELESS_WINTER:
-                    DoCast(m_creature, SPELL_REMORSELESS_WINTER);
+                    m_creature->CastSpell(m_creature, SPELL_REMORSELESS_WINTER, false); // need to force-interrupt any current "cast"
                     DoStartNoMovement(m_creature->getVictim());
+                    SetCombatMovement(false);
                     if (Events.GetPhase() == PHASE_TRANSITION_ONE)
                         for (uint32 i = 0; i < 4; i++)
                             if (GameObject *Spike = GET_GAMEOBJECT(DATA_LICHKING_SPIKE1 + i))
-                                Spike->UseDoorOrButton();
+                                Spike->SetGoState(GO_STATE_ACTIVE);
+                    if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
+                        Wind->SetGoState(GO_STATE_ACTIVE);
+                    if (GameObject *EdgeWind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_EDGE))
+                        EdgeWind->SetGoState(GO_STATE_READY);
+                    if (Events.GetPhase() != PHASE_TRANSITION_ONE)
+                        Events.ScheduleEvent(EVENT_REBUILD_PLATFORM, 3*IN_MILLISECONDS);
                     DoScriptText(SAY_REMORSELESS_WINTER_START, m_creature);
+                    break;
+                case EVENT_REBUILD_PLATFORM:
+                    if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
+                        Platform->Rebuild(m_creature); // rebuild so we can destroy it again
                     break;
                 case EVENT_PAIN_AND_SUFFERING:
                     if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
@@ -639,8 +662,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoCast(m_creature, SPELL_SUMMON_ICE_SPHERE);
                     break;
                 case EVENT_QUAKE:
-                    DoCast(m_creature, SPELL_QUAKE);
-                    DoStartMovement(m_creature->getVictim());
+                    m_creature->CastSpell(m_creature, SPELL_QUAKE,false);
                     Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     Events.ScheduleEvent(EVENT_DROP_EDGES, 5*IN_MILLISECONDS);
@@ -656,13 +678,10 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_REMORSELESS_WINTER_END, m_creature);
                     break;
                 case EVENT_DROP_EDGES:
+                    DoStartMovement(m_creature->getVictim());
+                    SetCombatMovement(true);
                     if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
-                    {
-                        Platform->SetUInt32Value(GAMEOBJECT_DISPLAYID, 9258); //destroy the edges
-                        //Platform->SetGoState(GO_STATE_ACTIVE);
-                        /*Platform->SetGoAnimProgress(0);
-                        Platform->AddToClientUpdateList();*/
-                    }
+                        Platform->DamageTaken(m_creature, 100000); // hit it like ya mean it!
                     if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
                         Wind->SetGoState(GO_STATE_READY);
                     if (GameObject *EdgeWind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_EDGE))
