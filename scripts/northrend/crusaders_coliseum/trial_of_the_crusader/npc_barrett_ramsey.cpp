@@ -214,7 +214,7 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
     void DestroyFloor()
     {
         if (GameObject *pFloor = GET_GAMEOBJECT(TYPE_COLISEUM_FLOOR))
-            pFloor->Delete();   //hacky fix, type 33 (destructable building) not implemented
+            pFloor->DamageTaken(m_creature, 10);
     }
 
     // called when any creature wipes group
@@ -504,16 +504,24 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                             break;
                         case 3:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
+                            {
+                                LichKing->MonsterMoveWithSpeed(RoomCenter[0], RoomCenter[1], RoomCenter[2]+1.0f, 10*IN_MILLISECONDS);
                                 DoScriptText(SAY_LICHKING_ANUBARAK_INTRO4, LichKing);
-                            m_uiTalkTimer = 20*IN_MILLISECONDS;
+                            }
+                            m_uiTalkTimer = 15*IN_MILLISECONDS;
                             break;
                         case 4:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
-                                DoScriptText(SAY_LICHKING_ANUBARAK_INTRO5, LichKing);
-                            DestroyFloor();
-                            m_uiTalkTimer = 9*IN_MILLISECONDS;
+                                LichKing->CastSpell(LichKing, 72262 /* SPELL_QUAKE */, false); // from LK's script
+                            m_uiTalkTimer = 5*IN_MILLISECONDS;
                             break;
                         case 5:
+                            if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
+                                DoScriptText(SAY_LICHKING_ANUBARAK_INTRO5, LichKing);
+                            DestroyFloor();
+                            m_uiTalkTimer = 3*IN_MILLISECONDS;
+                            break;
+                        case 6:
                             if (Creature *LichKing = GET_CREATURE(TYPE_LICH_KING))
                                 LichKing->ForcedDespawn();
                             m_bIsInTalkPhase = false;
