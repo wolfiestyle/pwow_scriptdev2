@@ -257,7 +257,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_VALANAR))
         {
-            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            m_creature->AddThreat(pDoneBy, uiDamage);
             uiDamage = 0;
         }
     }
@@ -461,7 +461,7 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_KELESETH))
         {
-            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            m_creature->AddThreat(pDoneBy, uiDamage );
             uiDamage = 0;
         }
     }
@@ -662,7 +662,7 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
     {
         if (!m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_TALDARAM))
         {
-            m_creature->AddThreat(pDoneBy, uiDamage / 10.0f);
+            m_creature->AddThreat(pDoneBy, uiDamage );
             uiDamage = 0;
         }
     }
