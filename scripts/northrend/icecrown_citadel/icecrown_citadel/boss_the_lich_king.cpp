@@ -249,6 +249,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     SummonManager SummonMgr;
     std::list<uint64> PlayersInFrostmourne;
     std::list<uint64> PlayersToInstakill;       // weird things happed when a player dies in a loading screen - delay it until they have arrived
+    uint32 NumberOfHarvestsToApply;             // number of SPELL_HARVESTED_SOULs to cast on self upon player exit on heroic
     uint32 TalkTimer;
     uint32 TalkPhase;
     bool HasDoneIntro;
@@ -256,6 +257,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     boss_the_lich_kingAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
+        NumberOfHarvestsToApply(0),
         TalkTimer(0),
         TalkPhase(0),
         HasDoneIntro(false)
@@ -265,6 +267,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 
     void Reset()
     {
+        NumberOfHarvestsToApply = 0;
         TalkTimer = 0;
         TalkPhase = 0;
         HasDoneIntro = false;
@@ -368,6 +371,9 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                        SendScriptMessageTo(pSumm, Target);
                     pSumm->SetInCombatWithZone();
                     break;
+                case NPC_TERENAS_MENETHIL_FROSTMOURNE:  // Friendly summons
+                case NPC_TERENAS_MENETHIL_OUTRO:
+                    break;
                 case NPC_SHAMBLING_HORROR:
                 case NPC_DRUDGE_GHOUL:
                     pSumm->CastSpell(pSumm, SPELL_EMERGE_VISUAL, false);
@@ -415,14 +421,21 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
     }
 
-    void RemoveAllFrostmournePlayers(bool Kill)
+    void RemoveAllFrostmournePlayers(bool Kill, bool Attack = false)
     {
         for (std::list<uint64>::const_iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
+        {
             if (Unit *UnitInFrostmourne = Unit::GetUnit(*m_creature, *i))
             {
                 DoTeleportPlayer(UnitInFrostmourne, 530.0f, -2124.6f, 1040.8f, 3.142f);
                 UnitInFrostmourne->RemoveAura(SPELL_HARVEST_SOUL_TELEPORT, EFFECT_INDEX_0, NULL, Kill ? AURA_REMOVE_BY_EXPIRE : AURA_REMOVE_BY_DISPEL);
+                if (Attack && UnitInFrostmourne->isAlive())
+                {
+                    m_creature->SetInCombatWith(UnitInFrostmourne);
+                    m_creature->AddThreat(UnitInFrostmourne);
+                }
             }
+        }
 
         PlayersInFrostmourne.clear();
     }
@@ -439,7 +452,10 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         {
                             Terenas->SetOwnerGUID(m_creature->GetGUID());
                             if (m_bIsHeroic)
+                            {
+                                m_creature->MonsterMove(515.0f, CenterPosition[1], CenterPosition[2], 2000);
                                 Events.SetPhase(PHASE_FROSTMOURNE);
+                            }
                             else
                                 if (Creature *SpritWarden = SummonMgr.SummonCreature(NPC_SPIRIT_WARDEN, TerenasSummonPosition[0] - 10.0f, TerenasSummonPosition[1] - 10.0f, TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))
                                 {
@@ -454,13 +470,17 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 default:
                     break;
             }
-            if (pSpell->SpellDifficultyId == 2296)    // player supposed to die inside frostmourne
+            if (pSpell->SpellDifficultyId == 2296 && pCaster->GetTypeId() == TYPEID_PLAYER)    // player supposed to die inside frostmourne
             {
-                PlayersInFrostmourne.remove(pCaster->GetGUID());
                 PlayersToInstakill.push_back(pCaster->GetGUID());   // could be still teleporting - put player on queue for killing (how wonderfully morbid)
-                SummonMgr.UnsummonAllWithId(NPC_TERENAS_MENETHIL_FROSTMOURNE);
-                SummonMgr.UnsummonAllWithId(NPC_SPIRIT_WARDEN);
-                DoScriptText(SAY_PLAYER_KILLED_IN_FROSTMOURNE, m_creature);
+                if (!m_bIsHeroic)
+                {
+                    SummonMgr.UnsummonAllWithId(NPC_TERENAS_MENETHIL_FROSTMOURNE);
+                    SummonMgr.UnsummonAllWithId(NPC_SPIRIT_WARDEN);
+                    DoScriptText(SAY_PLAYER_KILLED_IN_FROSTMOURNE, m_creature);
+                }
+                else
+                    NumberOfHarvestsToApply++;
             }
         }
     }
@@ -473,7 +493,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 SummonMgr.AddSummonToList(pSender->GetObjectGuid());
                 return;
             case NPC_SPIRIT_WARDEN:                    // spirit warden died
-                RemoveAllFrostmournePlayers(false);
+                RemoveAllFrostmournePlayers(false, true);
                 SummonMgr.UnsummonAllWithId(NPC_TERENAS_MENETHIL_FROSTMOURNE);
                 SummonMgr.UnsummonAllWithId(NPC_SPIRIT_WARDEN);
                 DoScriptText(SAY_PLAYER_ESCAPE_FROSTMOURNE, m_creature);
@@ -481,12 +501,18 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             case NPC_TERENAS_MENETHIL_FROSTMOURNE:    // terenas died OR restore soul finished casting (heroic).
                 if (m_bIsHeroic)                      // finished casting
                 {
-                    RemoveAllFrostmournePlayers(false);
+                    RemoveAllFrostmournePlayers(false, true);
                     SummonMgr.UnsummonAllWithId(NPC_TERENAS_MENETHIL_FROSTMOURNE);
                     SummonMgr.UnsummonAllWithId(NPC_VILE_SPIRIT);
                     Events.SetPhase(PHASE_THREE);
                     m_creature->SetInCombatWithZone();
                     m_creature->InterruptNonMeleeSpells(false);
+                    if (NumberOfHarvestsToApply)
+                    {
+                        m_creature->RemoveAurasByDifficulty(SPELL_HARVESTED_SOUL);
+                        for (; NumberOfHarvestsToApply; NumberOfHarvestsToApply--)
+                            DoCast(m_creature, SPELL_HARVESTED_SOUL, true);
+                    }
                     DoScriptText(SAY_PLAYER_ESCAPE_FROSTMOURNE, m_creature);
                 }
                 else                                  // he died
@@ -504,15 +530,31 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         UpdateTalkPhases(uiDiff);
 
-        if (Events.GetPhase() == PHASE_OUTRO)       // disable AI during Outro
-            return;
+        // kill any players ready for killing
+        for (std::list<uint64>::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
+        {
+            if (Unit *UnitToKill = Unit::GetUnit(*m_creature, *i))
+                if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
+                    {
+                        UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
+                        PlayersInFrostmourne.remove(*i);
+                        i = PlayersToInstakill.erase(i);
+                    }
+                    else
+                        ++i;
+                }
+        }
 
         if (PlayersInFrostmourne.empty() && Events.GetPhase() == PHASE_FROSTMOURNE) // Just in case something strange happens
             Events.SetPhase(PHASE_THREE);
 
-        if (Events.GetPhase() != PHASE_FROSTMOURNE)   // skip evade check when players in frostmourne
-            if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
-                return;
+        if (Events.GetPhase() == PHASE_OUTRO || Events.GetPhase() == PHASE_FROSTMOURNE)       // disable AI during Outro, Frostmourne
+            return;
+
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
+            return;
 
         if (Events.GetPhase() == PHASE_ONE && m_creature->GetHealthPercent() < 70.0f)
         {
@@ -534,21 +576,6 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             SetCombatMovement(false);
             DoStartNoMovement(m_creature->getVictim());
             return;
-        }
-
-        for (std::list<uint64>::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
-        {
-            if (Unit *UnitToKill = Unit::GetUnit(*m_creature, *i))
-                if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
-                {
-                    if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
-                    {
-                        UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
-                        i = PlayersToInstakill.erase(i);
-                    }
-                    else
-                        ++i;
-                }
         }
 
         Events.Update(uiDiff);
@@ -693,7 +720,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     break;
             }
 
-        if (Events.GetPhase() != PHASE_TRANSITION_ONE && Events.GetPhase() != PHASE_TRANSITION_TWO && Events.GetPhase() != PHASE_FROSTMOURNE)
+        if (Events.GetPhase() != PHASE_TRANSITION_ONE && Events.GetPhase() != PHASE_TRANSITION_TWO)
             DoMeleeAttackIfReady();
     }
 
@@ -1118,9 +1145,6 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
