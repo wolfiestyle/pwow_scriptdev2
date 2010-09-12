@@ -9,9 +9,7 @@ extern void AddSC_battleground();
 
 //custom
 extern void AddSC_npc_acherus_taxi();        //Taxi for DK start area.
-extern void AddSC_npc_wyrmresttempel_taxi(); //Taxi for DK start area.
-extern void AddSC_quest_DK_StartingArea();   //Nahpalm: Scripts for DK starting area.
-extern void AddSC_DK_Quest();
+extern void AddSC_npc_wyrmresttempel_taxi(); //Taxi for Wyrmrest Temple
 extern void AddSC_Mirror_Image();
 extern void AddSC_npc_training_dummy();
 
@@ -480,9 +478,7 @@ void AddScripts()
 
     //custom
     AddSC_npc_acherus_taxi();        //taxi for DK start area.
-    AddSC_npc_wyrmresttempel_taxi(); //taxi for DK start area.
-    AddSC_quest_DK_StartingArea();
-    AddSC_DK_Quest();
+    AddSC_npc_wyrmresttempel_taxi(); //taxi for Wyrmrest Temple.
     AddSC_Mirror_Image();
     AddSC_npc_training_dummy();
 
