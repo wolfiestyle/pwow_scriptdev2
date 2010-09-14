@@ -840,7 +840,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         if (Creature *Frostmourne = SummonMgr.GetFirstFoundSummonWithId(NPC_FROSTMOURNE))
                         {
                             m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
-                            m_creature->SetStandState(EMOTE_STATE_STRANGULATE);
+                            //m_creature->SetStandState(EMOTE_STATE_STRANGULATE);   //FIXME: what this suppoed to do?
                             m_creature->MonsterMove(Frostmourne->GetPositionX(), Frostmourne->GetPositionY(), Frostmourne->GetPositionZ()+3.0f, 100);
                             m_creature->HandleEmote(EMOTE_STATE_STRANGULATE);
                         }
