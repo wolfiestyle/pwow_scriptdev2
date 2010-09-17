@@ -56,7 +56,7 @@ struct MANGOS_DLL_DECL npc_spirit_guideAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         // auto cast the whole time this spell
-        if (!m_creature->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        if (!m_creature->IsNonMeleeSpellCasted(false))
             m_creature->CastSpell(m_creature, SPELL_SPIRIT_HEAL_CHANNEL, false);
     }
 
