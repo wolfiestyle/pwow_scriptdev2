@@ -455,7 +455,7 @@ struct MANGOS_DLL_DECL mob_concentrated_orbAI: public ScriptedAI
                 pTarget->CastSpell(pTarget, IsLight ? SPELL_EMPOWERED_LIGHT : SPELL_EMPOWERED_DARKNESS, true);
             }
             else
-                aur->SetStackAmount(powerstack);
+                aur->GetHolder()->SetStackAmount(powerstack);
         }
     }
 

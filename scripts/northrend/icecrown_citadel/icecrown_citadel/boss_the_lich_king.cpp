@@ -428,7 +428,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             if (Unit *UnitInFrostmourne = Unit::GetUnit(*m_creature, *i))
             {
                 DoTeleportPlayer(UnitInFrostmourne, 530.0f, -2124.6f, 1040.8f, 3.142f);
-                UnitInFrostmourne->RemoveAura(SPELL_HARVEST_SOUL_TELEPORT, EFFECT_INDEX_0, NULL, Kill ? AURA_REMOVE_BY_EXPIRE : AURA_REMOVE_BY_DISPEL);
+                UnitInFrostmourne->RemoveAurasDueToSpell(SPELL_HARVEST_SOUL_TELEPORT, NULL, Kill ? AURA_REMOVE_BY_EXPIRE : AURA_REMOVE_BY_DISPEL);
                 if (Attack && UnitInFrostmourne->isAlive())
                 {
                     m_creature->SetInCombatWith(UnitInFrostmourne);

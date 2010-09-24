@@ -500,8 +500,8 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
         uint32 dispelMask = GetDispellMask(dispelType);
         uint32 count = 0;
 
-        Unit::AuraMap const& auras = pTarget->GetAuras();
-        for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        Unit::SpellAuraHolderMap const& auras = pTarget->GetSpellAuraHolderMap();
+        for (Unit::SpellAuraHolderMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         {
             SpellEntry const* spell = itr->second->GetSpellProto();
             if ((1 << spell->Dispel) & dispelMask && itr->second->IsPositive() == PositiveSpells)
