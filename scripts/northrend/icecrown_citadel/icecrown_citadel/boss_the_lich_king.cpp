@@ -383,6 +383,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     break;
             }
             if (pSumm->GetEntry() != NPC_TERENAS_MENETHIL_FROSTMOURNE// NPCs that are summoned by SummonMgr
+                && pSumm->GetEntry() != NPC_SHAMBLING_HORROR
                 && pSumm->GetEntry() != NPC_SPIRIT_WARDEN
                 && pSumm->GetEntry() != NPC_TERENAS_MENETHIL_OUTRO)
                 SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
@@ -590,7 +591,8 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoCast(m_creature, SPELL_SUMMON_DRUDGE_GHOULS);
                     break;
                 case EVENT_SUMMON_SHAMBLING_HORROR:
-                    DoCast(m_creature, SPELL_SUMMON_SHAMBLING_HORROR);
+                    //DoCast(m_creature, SPELL_SUMMON_SHAMBLING_HORROR); // TODO: Spell doesnt work correctly, its summoning many overlapped horrors
+                    SummonMgr.SummonCreature(NPC_SHAMBLING_HORROR, m_creature->GetPositionX() -5 + rand()%10, m_creature->GetPositionY() -5 + rand()%10, m_creature->GetPositionZ() +1.0f, m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6*IN_MILLISECONDS);
                     if (roll_chance_i(20))
                         DoScriptText(urand(0,1) ? SAY_SPECIAL : SAY_SPECIAL2, m_creature);
                     break;

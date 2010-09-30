@@ -230,7 +230,12 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                     }
                     else
                     {
-                        if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        Unit *target;
+                        do
+                            target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                        while (target && target->IsWithinDist(m_creature, 5.0f) && target != m_creature->getVictim());
+
+                        if (target)
                         {
                             StartPos.orientation = m_creature->GetAngle(target);
                             ColdflameAttribs.push_back(std::make_pair(StartPos, 0));
