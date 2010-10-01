@@ -95,7 +95,7 @@ private:
 // helper for calculating bit masks (compile time constant that can be used in enums)
 // usage: bit_mask<bit_num, ...>::value
 template <int N1, int N2 = -1, int N3 = -1, int N4 = -1, int N5 = -1, int N6 = -1>
-struct bit_mask { enum { value = 1 << N1 | bit_mask<N2, N3, N4, N5, N6, -1>::value }; };
+struct bit_mask { enum { value = 1UL << N1 | bit_mask<N2, N3, N4, N5, N6, -1>::value }; };
 
 template <>
 struct bit_mask<-1, -1, -1, -1, -1, -1> { enum { value = 0 }; };
@@ -356,7 +356,10 @@ class SummonManager
 public:
     typedef std::list<ObjectGuid> SummonContainer;
 
-    explicit SummonManager(Creature* pCreature): m_creature(pCreature) { }
+    explicit SummonManager(WorldObject* pSource): m_source(pSource) {}
+
+    WorldObject* GetSource() const { return m_source; }
+    SummonContainer const& GetSummonList() const { return m_Summons; }
 
     void AddSummonToList(ObjectGuid const&);
     void RemoveSummonFromList(ObjectGuid const&);
@@ -376,8 +379,17 @@ public:
 
     template <typename ContainerType>
     void GetAllSummonsWithId(ContainerType& list, uint32 Id) const;
+
     Creature* GetFirstFoundSummonWithId(uint32 Id) const;
-    SummonContainer const& GetSummonList() const { return m_Summons; }
+
+    template <typename Worker>
+    void ForAllSummonsWithId(Worker& func, uint32 Id) const
+    {
+        for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
+            if (i->GetEntry() == Id)
+                if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
+                    func(pSummon);
+    }
 
     void UnsummonCreature(Creature*);
     void UnsummonByGuid(ObjectGuid const&);
@@ -385,7 +397,7 @@ public:
     void UnsummonAll();
 
 protected:
-    Creature *m_creature;
+    WorldObject *m_source;      // summoner object
     SummonContainer m_Summons;
 
 private:

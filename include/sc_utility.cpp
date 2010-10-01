@@ -258,7 +258,7 @@ void SummonManager::AddSummonToList(ObjectGuid const& guid)
 
 void SummonManager::RemoveSummonFromList(ObjectGuid const& guid)
 {
-    // could have used remove(guid) but we know they're unique so it wastes time searching after unique entry removed
+    // could have used remove(guid) but we assume they're unique so it wastes time searching after unique entry removed
     for (SummonContainer::iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (*i == guid)
         {
@@ -269,7 +269,7 @@ void SummonManager::RemoveSummonFromList(ObjectGuid const& guid)
 
 Creature* SummonManager::SummonCreature(uint32 Id, float x, float y, float z, float ang, TempSummonType type, uint32 SummonTimer)
 {
-    Creature *pSummon = m_creature->SummonCreature(Id, x, y, z, ang, type, SummonTimer);
+    Creature *pSummon = m_source->SummonCreature(Id, x, y, z, ang, type, SummonTimer);
     if (pSummon)
         AddSummonToList(pSummon->GetObjectGuid());
     return pSummon;
@@ -317,7 +317,7 @@ void SummonManager::GetAllSummonsWithId(ContainerType& list, uint32 Id) const
 {
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (i->GetEntry() == Id)
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+            if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
                 list.push_back(pSummon);
 }
 
@@ -329,7 +329,7 @@ Creature* SummonManager::GetFirstFoundSummonWithId(uint32 Id) const
 {
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (i->GetEntry() == Id)
-            return m_creature->GetMap()->GetCreature(*i);
+            return m_source->GetMap()->GetCreature(*i);
     return NULL;
 }
 
@@ -346,7 +346,7 @@ void SummonManager::UnsummonCreature(Creature *pSummon)
 
 void SummonManager::UnsummonByGuid(ObjectGuid const& guid)
 {
-    if (Creature *pSummon = m_creature->GetMap()->GetCreature(guid))
+    if (Creature *pSummon = m_source->GetMap()->GetCreature(guid))
         UnsummonCreature(pSummon);
 }
 
@@ -356,7 +356,7 @@ void SummonManager::UnsummonAllWithId(uint32 Id)
     {
         if (i->GetEntry() == Id)
         {
-            if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+            if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
             {
                 if (pSummon->isTemporarySummon())
                     static_cast<TemporarySummon*>(pSummon)->UnSummon();
@@ -373,7 +373,7 @@ void SummonManager::UnsummonAllWithId(uint32 Id)
 void SummonManager::UnsummonAll()
 {
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
-        if (Creature *pSummon = m_creature->GetMap()->GetCreature(*i))
+        if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
         {
             if (pSummon->isTemporarySummon())
                 static_cast<TemporarySummon*>(pSummon)->UnSummon();
