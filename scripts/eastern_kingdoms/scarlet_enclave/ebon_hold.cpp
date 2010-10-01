@@ -1177,7 +1177,7 @@ bool QuestAccept_npc_koltira_deathweaver(Player* pPlayer, Creature* pCreature, c
         pCreature->SetStandState(UNIT_STAND_STATE_STAND);
 
         if (npc_koltira_deathweaverAI* pEscortAI = dynamic_cast<npc_koltira_deathweaverAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -2188,9 +2188,9 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                 AttackStart(who);
     }
 
-    void Start( bool isActive, bool bRun, uint64 playerGUID)
+    void Start(bool bRun, uint64 playerGUID)
     {
-        npc_escortAI::Start(isActive, bRun, playerGUID);
+        npc_escortAI::Start(bRun, playerGUID);
     }
 
     void SetHoldState(bool bOnHold)
@@ -2373,7 +2373,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         if (!m_uiEventCooldownTimer && m_QueuedPlayers.size() /* && m_QueuedPlayers.size() >= ENCOUNTER_DK_NUMBER*/)
                         {
                             UpdateWorldState(m_creature->GetMap(),WORLD_STATE_COUNTDOWN, 0);
-                            Start(true, false, 0);
+                            Start(false, 0);
                             JumpToNextStep(3000);
                         }
                         // if we dont have enough players to begin the quest with, we delay it till we have enough
