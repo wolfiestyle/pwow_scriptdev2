@@ -383,7 +383,7 @@ public:
     Creature* GetFirstFoundSummonWithId(uint32 Id) const;
 
     template <typename Worker>
-    void ForAllSummonsWithId(Worker& func, uint32 Id) const
+    void ForAllSummonsWithId(Worker func, uint32 Id) const
     {
         for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
             if (i->GetEntry() == Id)
