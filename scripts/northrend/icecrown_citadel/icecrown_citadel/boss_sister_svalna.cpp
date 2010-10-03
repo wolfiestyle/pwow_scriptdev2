@@ -1488,7 +1488,7 @@ struct MANGOS_DLL_DECL npc_fwh_trashAI: public ScriptedAI
     }
 };
 
-bool AT_fwh_svalna_hall(Player* pPlayer, AreaTriggerEntry *pAt)
+bool AT_fwh_svalna_hall(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (!pPlayer || pPlayer->isGameMaster())
         return false;

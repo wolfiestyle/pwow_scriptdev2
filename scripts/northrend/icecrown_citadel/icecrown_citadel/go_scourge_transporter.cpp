@@ -82,7 +82,7 @@ bool GOSelect_scourge_transporter(Player* pPlayer, GameObject* pGo, uint32 uiSen
     return true;
 }
 
-bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry *pAt)
+bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (!pPlayer || pPlayer->isGameMaster())    // prevent GMs from activating transporters
         return false;
