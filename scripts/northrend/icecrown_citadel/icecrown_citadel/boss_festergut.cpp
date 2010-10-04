@@ -156,7 +156,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         }
     }
 
-    void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
+    void SpellHit(Unit* pDoneBy, SpellEntry const* pSpell)
     {
         if (pSpell->Id == SPELL_INHALE_BLIGHT)
         {
@@ -183,10 +183,16 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                 BlightTarget->CastSpell(BlightTarget, BlightSpells[0][1], true);
                 m_creature->RemoveAurasByDifficulty(SPELL_INHALED_BLIGHT);
                 CurrBlightStrength = 0;
-                RemoveEncounterAuras(-SPELL_INNOCULATED);
                 DoScriptText(SAY_PUNGENT_BLIGHT2, m_creature);
             }
         }
+    }
+
+    void SpellHitTarget(Unit* pVictim, SpellEntry const* pSpell)
+    {
+        // Pungent Blight - remove Inoculate
+        if (pVictim && pSpell->SpellDifficultyId == 1988)
+            pVictim->RemoveAurasByDifficulty(SPELL_INNOCULATED);
     }
 
     void UpdateAI(uint32 const uiDiff)
