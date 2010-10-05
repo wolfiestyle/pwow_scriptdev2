@@ -1411,7 +1411,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
         {
             if (m_uiExecuteSpeech_Timer < uiDiff)
             {
-                Player* pPlayer = (Player*)Unit::GetUnit(*m_creature, m_uiPlayerGUID);
+                Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiPlayerGUID);
 
                 if (!pPlayer)
                 {
@@ -3419,8 +3419,6 @@ bool GossipSelect_npc_highlord_darion_mograine(Player *pPlayer, Creature *pCreat
 CreatureAI* GetAI_npc_highlord_darion_mograine(Creature *pCreature)
 {
     npc_highlord_darion_mograineAI* tempAI = new npc_highlord_darion_mograineAI(pCreature);
-
-    //tempAI->FillPointMovementListForCreature();
 
     return (CreatureAI*)tempAI;
 }

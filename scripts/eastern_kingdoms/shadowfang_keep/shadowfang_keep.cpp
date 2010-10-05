@@ -93,7 +93,7 @@ struct MANGOS_DLL_DECL npc_shadowfang_prisonerAI : public npc_escortAI
                 break;
             case 12:
                 if (m_uiNpcEntry != NPC_ASH)
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_USESTANDING);
+                    m_creature->HandleEmote(EMOTE_ONESHOT_USESTANDING);
                 break;
             case 13:
                 if (m_uiNpcEntry == NPC_ASH)
@@ -143,7 +143,7 @@ CreatureAI* GetAI_npc_shadowfang_prisoner(Creature* pCreature)
 
 bool GossipHello_npc_shadowfang_prisoner(Player* pPlayer, Creature* pCreature)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
+    ScriptedInstance* pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
 
     if (pInstance && pInstance->GetData(TYPE_FREE_NPC) != DONE && pInstance->GetData(TYPE_RETHILGORE) == DONE)
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_DOOR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -774,11 +774,11 @@ struct MANGOS_DLL_DECL npc_arugalAI : public ScriptedAI
                     break;
                 case 4:
                     DoScriptText(SAY_INTRO_1, m_creature);
-                    //m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                    //m_creature->HandleEmote(EMOTE_ONESHOT_TALK);
                     m_uiSpeechTimer = 1750;
                     break;
                 case 5:
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+                    m_creature->HandleEmote(EMOTE_ONESHOT_POINT);
                     m_uiSpeechTimer = 1750;
                     break;
                 case 6:
@@ -786,16 +786,16 @@ struct MANGOS_DLL_DECL npc_arugalAI : public ScriptedAI
                     m_uiSpeechTimer = 1750;
                     break;
                 case 7:
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+                    m_creature->HandleEmote(EMOTE_ONESHOT_EXCLAMATION);
                     m_uiSpeechTimer = 1750;
                     break;
                 case 8:
-                    //m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                    //m_creature->HandleEmote(EMOTE_ONESHOT_TALK);
                     DoScriptText(SAY_INTRO_3, m_creature);
                     m_uiSpeechTimer = 1750;
                     break;
                 case 9:
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
+                    m_creature->HandleEmote(EMOTE_ONESHOT_LAUGH);
                     m_uiSpeechTimer = 1750;
                     break;
                 case 10:

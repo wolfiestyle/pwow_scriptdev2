@@ -158,7 +158,7 @@ struct MANGOS_DLL_DECL npc_air_force_botsAI : public ScriptedAI
 
     Creature* GetSummonedGuard()
     {
-        Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, m_uiSpawnedGUID);
+        Creature* pCreature = m_creature->GetMap()->GetCreature(m_uiSpawnedGUID);
 
         if (pCreature && pCreature->isAlive())
             return pCreature;
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL npc_air_force_botsAI : public ScriptedAI
 
             Creature* pLastSpawnedGuard = m_uiSpawnedGUID == 0 ? NULL : GetSummonedGuard();
 
-            // prevent calling Unit::GetUnit at next MoveInLineOfSight call - speedup
+            // prevent calling GetCreature at next MoveInLineOfSight call - speedup
             if (!pLastSpawnedGuard)
                 m_uiSpawnedGUID = 0;
 
@@ -387,11 +387,11 @@ struct MANGOS_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
 
         switch(uiEmote)
         {
-            case TEXTEMOTE_DANCE: DoCastSpellIfCan(pPlayer, SPELL_FIERY_SEDUCTION);   break;// dance -> cast SPELL_FIERY_SEDUCTION
-            case TEXTEMOTE_WAVE:  m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;// wave -> wave
-            case TEXTEMOTE_JOKE:  m_creature->HandleEmoteCommand(EMOTE_STATE_LAUGH);  break;// silly -> laugh(with sound)
-            case TEXTEMOTE_BOW:   m_creature->HandleEmoteCommand(EMOTE_ONESHOT_BOW);  break;// bow -> bow
-            case TEXTEMOTE_KISS:  m_creature->HandleEmoteCommand(TEXTEMOTE_CURTSEY);  break;// kiss -> curtsey
+            case TEXTEMOTE_DANCE: DoCastSpellIfCan(pPlayer, SPELL_FIERY_SEDUCTION); break;// dance -> cast SPELL_FIERY_SEDUCTION
+            case TEXTEMOTE_WAVE:  m_creature->HandleEmote(EMOTE_ONESHOT_WAVE);      break;// wave -> wave
+            case TEXTEMOTE_JOKE:  m_creature->HandleEmote(EMOTE_STATE_LAUGH);       break;// silly -> laugh(with sound)
+            case TEXTEMOTE_BOW:   m_creature->HandleEmote(EMOTE_ONESHOT_BOW);       break;// bow -> bow
+            case TEXTEMOTE_KISS:  m_creature->HandleEmote(TEXTEMOTE_CURTSEY);       break;// kiss -> curtsey
         }
     }
 };
@@ -563,8 +563,11 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
             {
                 if (Doctorguid)
                 {
-                    if (Creature* Doctor = ((Creature*)Unit::GetUnit((*m_creature), Doctorguid)))
-                        ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, ((Player*)caster), Coord);
+                    if (Creature* pDoctor = m_creature->GetMap()->GetCreature(Doctorguid))
+                    {
+                        if (npc_doctorAI* pDocAI = dynamic_cast<npc_doctorAI*>(pDoctor->AI()))
+                            pDocAI->PatientSaved(m_creature, (Player*)caster, Coord);
+                    }
                 }
             }
             //make not selectable
@@ -618,8 +621,11 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
 
             if (Doctorguid)
             {
-                if (Creature* Doctor = ((Creature*)Unit::GetUnit((*m_creature), Doctorguid)))
-                    ((npc_doctorAI*)Doctor->AI())->PatientDied(Coord);
+                if (Creature* pDoctor = m_creature->GetMap()->GetCreature(Doctorguid))
+                {
+                    if (npc_doctorAI* pDocAI = dynamic_cast<npc_doctorAI*>(pDoctor->AI()))
+                        pDocAI->PatientDied(Coord);
+                }
             }
         }
     }
@@ -661,7 +667,7 @@ void npc_doctorAI::BeginEvent(Player* pPlayer)
 
 void npc_doctorAI::PatientDied(Location* Point)
 {
-    Player* pPlayer = ((Player*)Unit::GetUnit((*m_creature), Playerguid));
+    Player* pPlayer = m_creature->GetMap()->GetPlayer(Playerguid);
 
     if (pPlayer && ((pPlayer->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || (pPlayer->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE)))
     {
@@ -700,7 +706,7 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* pPlayer, Location* Po
                     std::list<uint64>::iterator itr;
                     for(itr = Patients.begin(); itr != Patients.end(); ++itr)
                     {
-                        if (Creature* Patient = ((Creature*)Unit::GetUnit((*m_creature), *itr)))
+                        if (Creature* Patient = m_creature->GetMap()->GetCreature(*itr))
                             Patient->setDeathState(JUST_DIED);
                     }
                 }
@@ -759,10 +765,16 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
                 Patient->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
                 Patients.push_back(Patient->GetGUID());
-                ((npc_injured_patientAI*)Patient->AI())->Doctorguid = m_creature->GetGUID();
 
-                if (Point)
-                    ((npc_injured_patientAI*)Patient->AI())->Coord = Point;
+                npc_injured_patientAI* pPatientAI = dynamic_cast<npc_injured_patientAI*>(Patient->AI());
+
+                if (pPatientAI)
+                {
+                    pPatientAI->Doctorguid = m_creature->GetGUID();
+
+                    if (Point)
+                        pPatientAI->Coord = Point;
+                }
 
                 Coordinates.erase(itr);
             }
@@ -969,15 +981,15 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
         {
             if (RunAwayTimer <= diff)
             {
-                if (Unit *pUnit = Unit::GetUnit(*m_creature,caster))
+                if (Player* pPlayer = m_creature->GetMap()->GetPlayer(caster))
                 {
                     switch(m_creature->GetEntry())
                     {
-                        case ENTRY_SHAYA: DoScriptText(SAY_SHAYA_GOODBYE,m_creature,pUnit); break;
-                        case ENTRY_ROBERTS: DoScriptText(SAY_ROBERTS_GOODBYE,m_creature,pUnit); break;
-                        case ENTRY_DOLF: DoScriptText(SAY_DOLF_GOODBYE,m_creature,pUnit); break;
-                        case ENTRY_KORJA: DoScriptText(SAY_KORJA_GOODBYE,m_creature,pUnit); break;
-                        case ENTRY_DG_KEL: DoScriptText(SAY_DG_KEL_GOODBYE,m_creature,pUnit); break;
+                        case ENTRY_SHAYA: DoScriptText(SAY_SHAYA_GOODBYE, m_creature, pPlayer); break;
+                        case ENTRY_ROBERTS: DoScriptText(SAY_ROBERTS_GOODBYE, m_creature, pPlayer); break;
+                        case ENTRY_DOLF: DoScriptText(SAY_DOLF_GOODBYE, m_creature, pPlayer); break;
+                        case ENTRY_KORJA: DoScriptText(SAY_KORJA_GOODBYE, m_creature, pPlayer); break;
+                        case ENTRY_DG_KEL: DoScriptText(SAY_DG_KEL_GOODBYE, m_creature, pPlayer); break;
                     }
 
                     Start(true);

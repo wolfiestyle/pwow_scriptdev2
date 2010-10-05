@@ -130,13 +130,13 @@ struct MANGOS_DLL_DECL npc_clintar_dw_spiritAI : public npc_escortAI
                 DoScriptText(SAY_START, m_creature, pPlayer);
                 break;
             case 13:
-                m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING_NOSHEATHE);
+                m_creature->HandleEmote(EMOTE_STATE_USESTANDING_NOSHEATHE);
                 break;
             case 14:
                 DoScriptText(SAY_RELIC1, m_creature, pPlayer);
                 break;
             case 26:
-                m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING_NOSHEATHE);
+                m_creature->HandleEmote(EMOTE_STATE_USESTANDING_NOSHEATHE);
                 break;
             case 27:
                 DoScriptText(SAY_RELIC2, m_creature, pPlayer);
@@ -145,7 +145,7 @@ struct MANGOS_DLL_DECL npc_clintar_dw_spiritAI : public npc_escortAI
                 m_creature->SummonCreature(NPC_ASPECT_OF_RAVEN, 7465.321f, -3088.515f, 429.006f, 5.550f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                 break;
             case 35:
-                m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING_NOSHEATHE);
+                m_creature->HandleEmote(EMOTE_STATE_USESTANDING_NOSHEATHE);
                 break;
             case 36:
                 DoScriptText(SAY_RELIC3, m_creature, pPlayer);
@@ -219,7 +219,8 @@ bool EffectDummyCreature_npc_clintar_dw_spirit(Unit *pCaster, uint32 spellId, Sp
             return true;
 
         //done here, escort can start
-        ((npc_clintar_dw_spiritAI*)pCreatureTarget->AI())->DoStart(pCaster->GetGUID());
+        if (npc_clintar_dw_spiritAI* pSpiritAI = dynamic_cast<npc_clintar_dw_spiritAI*>(pCreatureTarget->AI()))
+            pSpiritAI->DoStart(pCaster->GetGUID());
 
         //always return true when we are handling this spell and effect
         return true;
