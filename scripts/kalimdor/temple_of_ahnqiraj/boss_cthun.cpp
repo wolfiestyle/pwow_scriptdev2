@@ -1038,7 +1038,7 @@ struct MANGOS_DLL_DECL claw_tentacleAI : public ScriptedAI
             if (EvadeTimer < diff)
         {
             if (Creature* pCreature = m_creature->GetMap()->GetCreature(Portal))
-                pCreature->DealDamage(pCreature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                pCreature->DealDamage(pCreature, pCreature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
 
             //Dissapear and reappear at new position
             m_creature->SetVisibility(VISIBILITY_OFF);
@@ -1133,7 +1133,7 @@ struct MANGOS_DLL_DECL giant_claw_tentacleAI : public ScriptedAI
             if (EvadeTimer < diff)
         {
             if (Creature* pCreature = m_creature->GetMap()->GetCreature(Portal))
-                pCreature->DealDamage(pCreature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                pCreature->DealDamage(pCreature, pCreature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
 
             //Dissapear and reappear at new position
             m_creature->SetVisibility(VISIBILITY_OFF);
