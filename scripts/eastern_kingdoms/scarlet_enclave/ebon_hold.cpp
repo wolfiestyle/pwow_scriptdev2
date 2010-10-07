@@ -120,7 +120,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiate_anchorAI : public ScriptedAI
 
     void NotifyMe(Unit* pSource)
     {
-        Creature* pInitiate = (Creature*)Unit::GetUnit(*m_creature, m_uiMyInitiate);
+        Creature* pInitiate = m_creature->GetMap()->GetCreature(m_uiMyInitiate);
 
         if (pInitiate && pSource)
         {
@@ -610,7 +610,7 @@ struct MANGOS_DLL_DECL mob_dark_rider_of_acherusAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        if (Unit* pPlayer = Unit::GetUnit(*m_creature, uiPlayerGUID))
+        if (Unit* pPlayer = m_creature->GetMap()->GetUnit(uiPlayerGUID))
             pPlayer->CastSpell(pPlayer, DARKRIDER_SPELL_DEATH_RACE_COMPLETE, true);
     }
 };
@@ -697,7 +697,7 @@ struct MANGOS_DLL_DECL npc_death_knight_initiateAI : public ScriptedAI
         {
             uiDamage = 0;
 
-            if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiDuelerGUID))
+            if (Unit* pUnit = m_creature->GetMap()->GetUnit(m_uiDuelerGUID))
                 m_creature->CastSpell(pUnit, SPELL_DUEL_VICTORY, true);
 
             //possibly not evade, but instead have end sequenze
@@ -715,7 +715,7 @@ struct MANGOS_DLL_DECL npc_death_knight_initiateAI : public ScriptedAI
                 {
                     m_creature->setFaction(FACTION_HOSTILE);
 
-                    if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiDuelerGUID))
+                    if (Unit* pUnit = m_creature->GetMap()->GetUnit(m_uiDuelerGUID))
                         AttackStart(pUnit);
                 }
                 else
@@ -967,7 +967,7 @@ struct MANGOS_DLL_DECL npc_persuade_scarletAI : public ScriptedAI
             {
                 m_creature->CombatStop(true);
                 m_creature->StopMoving();
-                Unit* pPlayer = Unit::GetUnit(*m_creature, uiPlayerGUID);
+                Unit* pPlayer = m_creature->GetMap()->GetUnit(uiPlayerGUID);
 
                 switch(uiSpeech_counter)
                 {
@@ -1127,7 +1127,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
                         break;
                     case 4:
                     {
-                        Unit* pTemp = Unit::GetUnit(*m_creature, m_uiValrothGUID);
+                        Unit* pTemp = m_creature->GetMap()->GetUnit(m_uiValrothGUID);
 
                         if (!pTemp || !pTemp->isAlive())
                         {
@@ -2706,7 +2706,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
                         break;
 
                     case 33: // Darion supports to jump to lich king here
-// disable              if (Creature *pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiLichKingGUID)))
+// disable              if (Creature *pTemp = m_creature->GetMap()->GetUnit(uiLichKingGUID))
 //  because mangos          DoCast(m_creature, SPELL_MOGRAINE_CHARGE); // jumping charge
 //   doesn't make it looks well, so workarounds, Darion charges, looks better
                         m_creature->SetSpeedRate(MOVE_RUN, 3.0f);
@@ -3437,7 +3437,7 @@ struct MANGOS_DLL_DECL npc_patchwerkAI : public ScriptedAI
         ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
         {
-            Unit* TheKiller = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+            Unit* TheKiller = m_creature->GetMap()->GetUnit((*i)->getUnitGuid());
             if(TheKiller->GetTypeId()==TYPEID_PLAYER)
             {
                 Player* pKiller = (Player*)TheKiller;

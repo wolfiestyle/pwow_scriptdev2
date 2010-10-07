@@ -168,7 +168,7 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
     {
         if (pSumm && pSumm->GetEntry() == NPC_ICE_TOMB)
         {
-            if (Unit *IcedTarget = Unit::GetUnit(*m_creature, pSumm->GetCreatorGUID()))
+            if (Unit *IcedTarget = m_creature->GetMap()->GetUnit(pSumm->GetCreatorGUID()))
             {
                 IcedTarget->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA);
                 IcedTarget->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA2);

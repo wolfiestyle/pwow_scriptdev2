@@ -102,7 +102,7 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
         if (!m_TargetGuid)
             return;
-        Unit *pTarget = Unit::GetUnit(*m_creature, m_TargetGuid);
+        Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
         if (pTarget && pTarget->isAlive())
             m_creature->SetTargetGUID(m_TargetGuid);
@@ -122,7 +122,7 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
         if (!m_TargetGuid)
             return;
-        if (Unit *pTarget = Unit::GetUnit(*m_creature, m_TargetGuid))
+        if (Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid))
             pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
         m_TargetGuid = 0;
     }

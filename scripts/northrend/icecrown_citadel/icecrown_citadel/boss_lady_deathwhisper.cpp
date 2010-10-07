@@ -253,7 +253,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
             ThreatList const& tlist = OriginalSummon->getThreatManager().getThreatList();
             for (ThreatList::const_iterator i = tlist.begin(); i != tlist.end(); ++i)
             {
-                Unit *hostil = Unit::GetUnit(*OriginalSummon, (*i)->getUnitGuid());
+                Unit *hostil = OriginalSummon->GetMap()->GetUnit((*i)->getUnitGuid());
                 if (!hostil)
                     continue;
                 hostil->SetInCombatWith(pSummon);

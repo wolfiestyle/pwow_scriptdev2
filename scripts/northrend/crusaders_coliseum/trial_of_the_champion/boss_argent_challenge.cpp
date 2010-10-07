@@ -157,7 +157,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
 
         if (Hammer_Dmg_Timer < diff)
         {
-            if (Unit *pHammerTarget = Unit::GetUnit(*m_creature, HammerTarget))
+            if (Unit *pHammerTarget = m_creature->GetMap()->GetUnit(HammerTarget))
                 DoCast(pHammerTarget, SPELL_HAMMER);
             Hammer_Dmg_Timer = 50000;
         }

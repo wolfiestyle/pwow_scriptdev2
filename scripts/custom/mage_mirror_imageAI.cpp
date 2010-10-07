@@ -1,50 +1,55 @@
 #include "precompiled.h"
 
-#define SPELL_FIREBLAST    59637
-#define SPELL_FROSTBOLT    59638
-
-struct MANGOS_DLL_DECL MirrorAI : public ScriptedAI
+enum Spells
 {
-    MirrorAI(Creature* pCreature) : ScriptedAI(pCreature)
+    SPELL_FIREBLAST     = 59637,
+    SPELL_FROSTBOLT     = 59638,
+};
+
+struct MANGOS_DLL_DECL MirrorAI: public ScriptedAI
+{
+    ObjectGuid m_PlayerGUID;
+    uint32 m_FrostboltTimer;
+    uint32 m_FireblastTimer;
+
+    MirrorAI(Creature* pCreature):
+        ScriptedAI(pCreature)
     {
-        PlayerGUID = 0;
-        if (Player* pPlayer = GetPlayerAtMinimumRange(0.5f))
-            PlayerGUID = pPlayer->GetGUID();
+        if (Player *pPlayer = GetPlayerAtMinimumRange(0.5f))    //FIXME: get owner player instead
+            m_PlayerGUID = pPlayer->GetObjectGuid();
         Reset();
     }
 
-    uint64 PlayerGUID;
-    uint32 Frostbolt;
-    uint32 Fireblast;
-
     void Reset()
     {
-        Frostbolt = 3000 + rand()%500;
-        Fireblast = 6000 + rand()%500;
+        m_FrostboltTimer = urand(3000, 3500);
+        m_FireblastTimer = urand(6000, 6500);
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 const diff)
     {
-        if (PlayerGUID)
-        {
-            if (Unit* pPlayer = Unit::GetUnit(*m_creature, PlayerGUID))
+        if (!m_PlayerGUID.IsEmpty())
+            if (Unit *pPlayer = m_creature->GetMap()->GetUnit(m_PlayerGUID))
                 AttackStart(pPlayer->getAttackerForHelper());
-        }
 
         if (!m_creature->getVictim())
             return;
 
-        if (Fireblast < diff)
+        if (m_FireblastTimer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FIREBLAST);
-            Fireblast = 6000 + rand()%500;
-        }else Fireblast -= diff;
+            DoCast(m_creature->getVictim(), SPELL_FIREBLAST);
+            m_FireblastTimer = urand(6000, 6500);
+        }
+        else
+            m_FireblastTimer -= diff;
 
-        if (Frostbolt < diff)
+        if (m_FrostboltTimer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FROSTBOLT);
-            Frostbolt = 3000 + rand()%500;
-        }else Frostbolt -= diff;
+            DoCast(m_creature->getVictim(), SPELL_FROSTBOLT);
+            m_FrostboltTimer = urand(3000, 3500);
+        }
+        else
+            m_FrostboltTimer -= diff;
     }
 
 };

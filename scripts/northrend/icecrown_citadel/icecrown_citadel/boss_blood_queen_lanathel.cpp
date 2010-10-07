@@ -220,7 +220,7 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                         ThreatList const &m_tList = m_creature->getThreatManager().getThreatList();
                         for (ThreatList::const_iterator i = m_tList.begin(); i != m_tList.end(); ++i)
                         {
-                            Unit* pPlayer = m_creature->GetUnit(*m_creature, (*i)->getUnitGuid());
+                            Unit* pPlayer = m_creature->GetMap()->GetUnit((*i)->getUnitGuid());
                             if (pPlayer->GetTypeId() != TYPEID_PLAYER)
                                 continue;
                             if ((pPlayer->HasAuraByDifficulty(SPELL_ESSENCE_OF_THE_BLOODQUEEN) 

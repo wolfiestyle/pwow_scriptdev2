@@ -117,7 +117,7 @@ struct MANGOS_DLL_DECL boss_vezaxAI: public ScriptedAI
         ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator it = tlist.begin(); it != tlist.end(); it++)
         {
-            Unit *target = Unit::GetUnit(*m_creature, (*it)->getUnitGuid());
+            Unit *target = m_creature->GetMap()->GetUnit((*it)->getUnitGuid());
             if (target && target->GetTypeId() == TYPEID_PLAYER && m_creature->IsInMap(target))
             {
                 if (m_creature->IsWithinDist(target, fMinDist))

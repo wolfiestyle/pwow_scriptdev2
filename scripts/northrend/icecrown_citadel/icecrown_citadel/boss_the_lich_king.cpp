@@ -426,7 +426,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         for (std::list<uint64>::const_iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
         {
-            if (Unit *UnitInFrostmourne = Unit::GetUnit(*m_creature, *i))
+            if (Unit *UnitInFrostmourne = m_creature->GetMap()->GetUnit(*i))
             {
                 DoTeleportPlayer(UnitInFrostmourne, 530.0f, -2124.6f, 1040.8f, 3.142f);
                 UnitInFrostmourne->RemoveAurasDueToSpell(SPELL_HARVEST_SOUL_TELEPORT, NULL, Kill ? AURA_REMOVE_BY_EXPIRE : AURA_REMOVE_BY_DISPEL);
@@ -534,7 +534,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         // kill any players ready for killing
         for (std::list<uint64>::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
         {
-            if (Unit *UnitToKill = Unit::GetUnit(*m_creature, *i))
+            if (Unit *UnitToKill = m_creature->GetMap()->GetUnit(*i))
                 if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
                 {
                     if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
@@ -992,7 +992,7 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
     void Aggro(Unit *pWho)
     {
         Unit* Creator = NULL;
-        if (Creator = Unit::GetUnit(*m_creature, m_creature->GetCreatorGUID()))
+        if (Creator = m_creature->GetMap()->GetUnit(m_creature->GetCreatorGUID()))
             m_creature->SetDisplayId(Creator->GetDisplayId());
         BroadcastScriptMessageToEntry(m_creature, NPC_LICH_KING, 300.0f);
         SCHEDULE_EVENT(SOUL_SHRIEK);
@@ -1058,7 +1058,7 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
             return;
         }*/
 
-        if (Unit *Prisoner = Unit::GetUnit(*m_creature, PrisonerGuid))
+        if (Unit *Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid))
             Prisoner->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
     }
 };

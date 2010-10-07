@@ -287,8 +287,8 @@ struct MANGOS_DLL_DECL boss_feugenAI : public ScriptedAI
         //Unlock Thaddius
         if (StalaggGUID && ThaddiusGUID)
         {
-            Creature* Stalagg = ((Creature*)Unit::GetUnit((*m_creature), StalaggGUID));
-            Creature* Thaddius = ((Creature*)Unit::GetUnit((*m_creature), ThaddiusGUID));
+            Creature* Stalagg = m_creature->GetMap()->GetCreature(StalaggGUID);
+            Creature* Thaddius = m_creature->GetMap()->GetCreature(ThaddiusGUID);
             if(Stalagg && !Stalagg->isAlive() && Thaddius)
             {
                 Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -312,7 +312,7 @@ struct MANGOS_DLL_DECL boss_feugenAI : public ScriptedAI
         //Respawn Stalagg after 5 seconds
         if (StalaggGUID)
         {
-            Creature* Stalagg = ((Creature*)Unit::GetUnit((*m_creature), StalaggGUID));
+            Creature* Stalagg = m_creature->GetMap()->GetCreature(StalaggGUID);
             if (Stalagg && !Stalagg->isAlive())
             {
                 if (Resurrect_Timer < diff)
@@ -401,8 +401,8 @@ struct MANGOS_DLL_DECL boss_stalaggAI : public ScriptedAI
         //Unlock Thaddius
         if (FeugenGUID && ThaddiusGUID)
         {
-            Creature* Feugen = ((Creature*)Unit::GetUnit((*m_creature), FeugenGUID));
-            Creature* Thaddius = ((Creature*)Unit::GetUnit((*m_creature), ThaddiusGUID));
+            Creature* Feugen = m_creature->GetMap()->GetCreature(FeugenGUID);
+            Creature* Thaddius = m_creature->GetMap()->GetCreature(ThaddiusGUID);
             if(Feugen && !Feugen->isAlive() && Thaddius)
             {
                 Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -428,7 +428,7 @@ struct MANGOS_DLL_DECL boss_stalaggAI : public ScriptedAI
         //Respawn Feugen after 5 seconds
         if (FeugenGUID)
         {
-            Creature* Feugen = ((Creature*)Unit::GetUnit((*m_creature), FeugenGUID));
+            Creature* Feugen = m_creature->GetMap()->GetCreature(FeugenGUID);
             if (Feugen && !Feugen->isAlive())
             {
                 if (Resurrect_Timer < diff)

@@ -190,13 +190,13 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 Phase2_Summons = false;
                 for (uint8 i=0;i<2;i++)
                 {
-                    if (Creature* pSummon = (Creature*)Unit::GetUnit(*m_creature, NexusLord_GUID[i]))
+                    if (Creature* pSummon = m_creature->GetMap()->GetCreature(NexusLord_GUID[i]))
                         if (pSummon->isAlive())
                             Phase2_Summons = true;
                 }
                 for (uint8 i=0;i<2;i++)
                 {
-                    if (Creature* pSummon = (Creature*)Unit::GetUnit(*m_creature, ScionOfEternity_GUID[i]))
+                    if (Creature* pSummon = m_creature->GetMap()->GetCreature(ScionOfEternity_GUID[i]))
                         if (pSummon->isAlive())
                             Phase2_Summons = true;
                 }
@@ -284,7 +284,7 @@ bool GOHello_go_TheFocusingIris(Player* pPlayer, GameObject* pGO)
         uint64 MalygosGUID = m_pInstance->GetData64(DATA_MALYGOS);
         if (MalygosGUID)
         {
-			if (Creature* Malygos = (Creature*)Unit::GetUnit(*pGO, MalygosGUID))
+			if (Creature* Malygos = pGO->GetMap()->GetCreature(MalygosGUID))
 			{
 				Malygos->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
 				Malygos->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);

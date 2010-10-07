@@ -119,7 +119,7 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
 
         for(std::list<uint64>::const_iterator itr = m_lSentryGUIDList.begin(); itr != m_lSentryGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
             {
                 if (pTemp->isAlive())
                     //pTemp->ForcedDespawn();

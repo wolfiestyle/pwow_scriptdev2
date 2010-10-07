@@ -182,7 +182,7 @@ struct MANGOS_DLL_DECL boss_kologarnAI: public Scripted_NoMovementAI
                     ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
                     for (ThreatList::const_iterator hr = tlist.begin(); hr != tlist.end(); hr++)
                     {
-                        Unit *hostil = Unit::GetUnit(*m_creature, (*hr)->getUnitGuid());
+                        Unit *hostil = m_creature->GetMap()->GetUnit((*hr)->getUnitGuid());
                         if (hostil && hostil->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(hostil, KOLOGARN_ATTACK_DISTANCE))
                         {
                             player_in_melee_range = true;
@@ -259,7 +259,7 @@ struct MANGOS_DLL_DECL boss_kologarn_armAI: public Scripted_NoMovementAI
         ThreatList const& tlist = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator hr = tlist.begin(); hr != tlist.end(); hr++)
         {
-            Unit *hostil = Unit::GetUnit(*m_creature, (*hr)->getUnitGuid());
+            Unit *hostil = m_creature->GetMap()->GetUnit((*hr)->getUnitGuid());
             if (hostil && hostil->isAlive())
                 hostil->RemoveAurasDueToSpell(HEROIC(SPELL_STONE_GRIP_DOT, SPELL_STONE_GRIP_DOT_H));
         }

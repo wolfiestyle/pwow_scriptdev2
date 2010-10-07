@@ -289,7 +289,7 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
     {
         if (!m_TargetGuid)
             return;
-        Unit *pImpaled = Unit::GetUnit(*m_creature, m_TargetGuid);
+        Unit *pImpaled = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
         if (pImpaled && pImpaled->isAlive())
             m_creature->SetTargetGUID(m_TargetGuid);
@@ -304,7 +304,7 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
 
     void RemoveImpale()
     {
-        if (Unit *pImpaled = Unit::GetUnit(*m_creature, m_TargetGuid))
+        if (Unit *pImpaled = m_creature->GetMap()->GetUnit(m_TargetGuid))
             pImpaled->RemoveAurasDueToSpell(SPELL_IMPALING_SPEAR_PLA);
         m_TargetGuid = 0;
     }

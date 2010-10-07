@@ -157,7 +157,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
 
         for(std::list<uint64>::const_iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
             {
                 if (pTemp->isAlive())
                     //pTemp->ForcedDespawn();
@@ -204,7 +204,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
                     if (!m_lWaterElementsGUIDList.empty())
                     {
                         for(std::list<uint64>::const_iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
-                            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                            if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
                                 if (pTemp->isAlive())
 								{
                                     bIsWaterElementsAlive = true;
