@@ -231,7 +231,6 @@ struct MANGOS_DLL_DECL boss_trial_of_the_crusaderAI: public ScriptedAI, public S
     boss_trial_of_the_crusaderAI(Creature*);
 
     void Reset();
-    void KilledUnit(Unit*);
 };
 
 #endif //DEF_TRIAL_OF_THE_CRUSADER_H

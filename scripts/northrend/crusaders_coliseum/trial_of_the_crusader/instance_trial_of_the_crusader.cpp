@@ -58,6 +58,11 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
         pWho->SendUpdateWorldState(WORLD_STATE_TOTGC, 0);
     }
 
+    void OnPlayerDeath(Player* pWho)
+    {
+        m_InstanceVars[DATA_IMMORTAL] = 0;
+    }
+
     void Initialize()
     {
         m_InstanceVars[DATA_FACTION]                = 0;
@@ -240,7 +245,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             //case TRIBUTE_TO_DEDICATED_INSANITY:      //TODO: uncomment this line once the checks for gear get applied for every encounter
             case REALMFIRST_GRAND_CRUSADER_CRITERIA:
                 return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
-            case TRIBUTE_TO_IMMORTALITY_CRITERIA_25H:  //TODO: achievement reward into DB (missing item templates)
+            case TRIBUTE_TO_IMMORTALITY_CRITERIA_25H:
             case TRIBUTE_TO_IMMORTALITY_CRITERIA_25A:
                 return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50 && m_InstanceVars[DATA_IMMORTAL];
             default:

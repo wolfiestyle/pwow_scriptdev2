@@ -100,9 +100,3 @@ void boss_trial_of_the_crusaderAI::Reset()
         if (ScriptedAI *barrettAI = dynamic_cast<ScriptedAI*>(barrett->AI()))
             barrettAI->Reset();
 }
-
-void boss_trial_of_the_crusaderAI::KilledUnit(Unit* pWho)
-{
-    if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
-        m_pInstance->SetData(DATA_IMMORTAL, 0);
-}

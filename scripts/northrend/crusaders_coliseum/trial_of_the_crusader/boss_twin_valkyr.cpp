@@ -157,7 +157,6 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
     void KilledUnit(Unit *who)
     {
-        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
         DoScriptText(urand(0,1) ? SAY_TWIN_VALKYR_KILLED_PLAYER1 : SAY_TWIN_VALKYR_KILLED_PLAYER2, m_creature);
@@ -300,7 +299,6 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void KilledUnit(Unit *who)
     {
-        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
         DoScriptText(urand(0,1) ? SAY_TWIN_VALKYR_KILLED_PLAYER1 : SAY_TWIN_VALKYR_KILLED_PLAYER2, m_creature);

@@ -294,7 +294,6 @@ struct MANGOS_DLL_DECL boss_faction_championAI: public boss_trial_of_the_crusade
     // boss kills player
     void KilledUnit(Unit *who)
     {
-        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
         if (Creature *source = m_EnemyLeader.getObject<Creature>())

@@ -217,7 +217,6 @@ struct MANGOS_DLL_DECL boss_anubarak_trialAI: public boss_trial_of_the_crusaderA
 
     void KilledUnit(Unit *who)
     {
-        boss_trial_of_the_crusaderAI::KilledUnit(who);
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
         DoScriptText(urand(0,1) ? SAY_KILLED_PLAYER1 : SAY_KILLED_PLAYER2, m_creature);
@@ -367,12 +366,6 @@ struct MANGOS_DLL_DECL mob_toc_nerubian_burrowerAI: public ScriptedAI, public Sc
         }
     }
 
-    void KilledUnit(Unit *pWho)
-    {
-        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
-            m_pInstance->SetData(DATA_IMMORTAL, 0);
-    }
-
     void Aggro(Unit *who)
     {
         Events.Reset();
@@ -458,12 +451,6 @@ struct MANGOS_DLL_DECL mob_toc_swarm_scarabAI: public ScriptedAI, public ScriptE
     void Reset()
     {
         Events.Reset();
-    }
-
-    void KilledUnit(Unit *pWho)
-    {
-        if (m_pInstance && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
-            m_pInstance->SetData(DATA_IMMORTAL, 0);
     }
 
     void Aggro(Unit *who)
