@@ -293,9 +293,6 @@ extern void AddSC_boss_galdarah();
 extern void AddSC_boss_moorabi();
 extern void AddSC_boss_sladran();
 extern void AddSC_instance_gundrak();
-extern void AddSC_boss_bronjahm();                          //forge_of_souls
-extern void AddSC_boss_devourer_of_souls();
-extern void AddSC_instance_forge_of_souls();
 extern void AddSC_boss_falryn();                            //halls_of_reflection
 extern void AddSC_boss_lich_king();
 extern void AddSC_boss_marwyn();
@@ -775,9 +772,6 @@ void AddScripts()
     AddSC_boss_moorabi();
     AddSC_boss_sladran();
     AddSC_instance_gundrak();
-    AddSC_boss_bronjahm();                                  //forge_of_souls
-    AddSC_boss_devourer_of_souls();
-    AddSC_instance_forge_of_souls();
     AddSC_boss_falryn();                                    //halls_of_reflection
     AddSC_boss_lich_king();
     AddSC_boss_marwyn();

@@ -22,8 +22,3 @@ SDCategory: The Forge of Souls
 EndScriptData */
 
 #include "precompiled.h"
-#include "forge_of_souls.h"
-
-void AddSC_boss_bronjahm()
-{
-}
