@@ -36,8 +36,6 @@ base/follower_ai.cpp \
 base/follower_ai.h \
 base/guard_ai.cpp \
 base/guard_ai.h \
-base/simple_ai.cpp \
-base/simple_ai.h \
 include/precompiled.cpp \
 include/precompiled.h \
 include/sc_creature.cpp \
@@ -385,7 +383,7 @@ scripts/northrend/icecrown_citadel/icecrown_citadel/boss_deathbringer_saurfang.c
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_festergut.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_lady_deathwhisper.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_lord_marrowgar.cpp \
-scripts/northrend/icecrown_citadel/icecrown_citadel/boss_proffesor_putricide.cpp \
+scripts/northrend/icecrown_citadel/icecrown_citadel/boss_professor_putricide.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_rotface.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_sindragosa.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_sister_svalna.cpp \

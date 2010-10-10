@@ -380,14 +380,6 @@
 				RelativePath="..\base\guard_ai.h"
 				>
 			</File>
-			<File
-				RelativePath="..\base\simple_ai.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\base\simple_ai.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="scripts"
@@ -2314,7 +2306,7 @@
 							>
 						</File>
 						<File
-							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_proffesor_putricide.cpp"
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_professor_putricide.cpp"
 							>
 						</File>
 						<File
