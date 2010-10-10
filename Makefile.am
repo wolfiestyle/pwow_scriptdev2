@@ -119,6 +119,10 @@ scripts/eastern_kingdoms/blackwing_lair/instance_blackwing_lair.cpp \
 scripts/eastern_kingdoms/deadmines/deadmines.cpp \
 scripts/eastern_kingdoms/deadmines/deadmines.h \
 scripts/eastern_kingdoms/deadmines/instance_deadmines.cpp \
+scripts/eastern_kingdoms/gnomeregan/boss_thermaplugg.cpp \
+scripts/eastern_kingdoms/gnomeregan/gnomeregan.cpp \
+scripts/eastern_kingdoms/gnomeregan/gnomeregan.h \
+scripts/eastern_kingdoms/gnomeregan/instance_gnomeregan.cpp \
 scripts/eastern_kingdoms/karazhan/boss_curator.cpp \
 scripts/eastern_kingdoms/karazhan/boss_maiden_of_virtue.cpp \
 scripts/eastern_kingdoms/karazhan/boss_midnight.cpp \
@@ -360,6 +364,9 @@ scripts/northrend/gundrak/boss_moorabi.cpp \
 scripts/northrend/gundrak/boss_sladran.cpp \
 scripts/northrend/gundrak/gundrak.h \
 scripts/northrend/gundrak/instance_gundrak.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_bronjahm.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_devourer_of_souls.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/instance_forge_of_souls.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_falryn.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_lich_king.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_marwyn.cpp \
@@ -372,8 +379,6 @@ scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/boss_scourgelord_ty
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/instance_pit_of_saron.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/pit_of_saron.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/pit_of_saron.h \
-scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_bronjahm.cpp \
-scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_devourer_of_souls.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/blood_prince_council.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_blood_queen_lanathel.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_deathbringer_saurfang.cpp \
@@ -455,7 +460,7 @@ scripts/northrend/ulduar/ulduar/boss_kologarn.cpp \
 scripts/northrend/ulduar/ulduar/boss_mimiron.cpp \
 scripts/northrend/ulduar/ulduar/boss_razorscale.cpp \
 scripts/northrend/ulduar/ulduar/boss_thorim.cpp \
-scripts/northrend/ulduar/ulduar/boss_xt_022.cpp \
+scripts/northrend/ulduar/ulduar/boss_xt_002.cpp \
 scripts/northrend/ulduar/ulduar/boss_yogg_saron.cpp \
 scripts/northrend/ulduar/ulduar/instance_ulduar.cpp \
 scripts/northrend/ulduar/ulduar/ulduar.cpp \

@@ -68,6 +68,9 @@ extern void AddSC_boss_nefarian();
 extern void AddSC_boss_victor_nefarius();
 extern void AddSC_deadmines();                              //deadmines
 extern void AddSC_instance_deadmines();
+extern void AddSC_gnomeregan();                             //gnomeregan
+extern void AddSC_boss_thermaplugg();
+extern void AddSC_instance_gnomeregan();
 extern void AddSC_boss_attumen();                           //karazhan
 extern void AddSC_boss_curator();
 extern void AddSC_boss_maiden_of_virtue();
@@ -293,6 +296,9 @@ extern void AddSC_boss_galdarah();
 extern void AddSC_boss_moorabi();
 extern void AddSC_boss_sladran();
 extern void AddSC_instance_gundrak();
+extern void AddSC_boss_bronjahm();                          // ICC, forge_of_souls
+extern void AddSC_boss_devourer_of_souls();
+extern void AddSC_instance_forge_of_souls();
 extern void AddSC_boss_falryn();                            //halls_of_reflection
 extern void AddSC_boss_lich_king();
 extern void AddSC_boss_marwyn();
@@ -547,6 +553,9 @@ void AddScripts()
     AddSC_boss_victor_nefarius();
     AddSC_deadmines();                                      //deadmines
     AddSC_instance_deadmines();
+    AddSC_gnomeregan();                                     //gnomeregan
+    AddSC_boss_thermaplugg();
+    AddSC_instance_gnomeregan();
     AddSC_boss_attumen();                                   //karazhan
     AddSC_boss_curator();
     AddSC_boss_maiden_of_virtue();
@@ -772,6 +781,9 @@ void AddScripts()
     AddSC_boss_moorabi();
     AddSC_boss_sladran();
     AddSC_instance_gundrak();
+    AddSC_boss_bronjahm();                                  // ICC, forge_of_souls
+    AddSC_boss_devourer_of_souls();
+    AddSC_instance_forge_of_souls();
     AddSC_boss_falryn();                                    //halls_of_reflection
     AddSC_boss_lich_king();
     AddSC_boss_marwyn();
