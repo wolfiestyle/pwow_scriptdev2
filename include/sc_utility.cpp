@@ -389,15 +389,15 @@ void SummonManager::UnsummonAll()
 void BroadcastScriptMessage(WorldObject* pSender, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
 {
     AllCreaturesInRangeCheck check(pSender, fMaxRange);
-    ScriptMessageDeliverer<AllCreaturesInRangeCheck> deliverer(pSender, check, data1, data2, to_self);
+    ScriptMessageDeliverer<AllCreaturesInRangeCheck> deliverer(check, data1, data2, to_self);
 
     Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
 }
 
 void BroadcastScriptMessageToEntry(WorldObject* pSender, uint32 entry, float fMaxRange, uint32 data1, uint32 data2, bool to_self)
 {
-    AllCreaturesOfEntryInRange check(pSender, entry, fMaxRange);
-    ScriptMessageDeliverer<AllCreaturesOfEntryInRange> deliverer(pSender, check, data1, data2, to_self);
+    AllCreaturesOfEntryInRangeCheck check(pSender, entry, fMaxRange);
+    ScriptMessageDeliverer<AllCreaturesOfEntryInRangeCheck> deliverer(check, data1, data2, to_self);
 
     Cell::VisitGridObjects(pSender, deliverer, fMaxRange);
 }

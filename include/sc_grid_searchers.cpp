@@ -52,7 +52,7 @@ DynamicObject* GetClosestDynamicObjectWithEntry(WorldObject* pSource, uint32 spe
     DynamicObject* pDynObj = NULL;
 
     NearestDynamicObjectEntryInRangeCheck check(*pSource, spellId, fMaxSearchRange);
-    DynamicObjectLastSearcher<NearestDynamicObjectEntryInRangeCheck> searcher(pSource, pDynObj, check);
+    DynamicObjectLastSearcher<NearestDynamicObjectEntryInRangeCheck> searcher(pDynObj, check);
 
     Cell::VisitGridObjects(pSource, searcher, fMaxSearchRange);
 
@@ -63,7 +63,7 @@ DynamicObject* GetClosestDynamicObjectWithEntry(WorldObject* pSource, uint32 spe
 void GetDynamicObjectListWithEntryInGrid(std::list<DynamicObject*>& lList, WorldObject* pSource, uint32 spellId, float fMaxSearchRange)
 {
     AllDynamicObjectsWithEntryInRangeCheck check(*pSource, spellId, fMaxSearchRange);
-    DynamicObjectListSearcher<AllDynamicObjectsWithEntryInRangeCheck> searcher(pSource, lList, check);
+    DynamicObjectListSearcher<AllDynamicObjectsWithEntryInRangeCheck> searcher(lList, check);
 
     Cell::VisitGridObjects(pSource, searcher, fMaxSearchRange);
 }

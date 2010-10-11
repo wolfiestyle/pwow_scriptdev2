@@ -108,8 +108,8 @@ struct DynamicObjectLastSearcher
     DynamicObject*& i_object;
     Check& i_check;
 
-    DynamicObjectLastSearcher(WorldObject const* searcher, DynamicObject*& result, Check& check):
-        i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check)
+    DynamicObjectLastSearcher(DynamicObject*& result, Check& check):
+        i_phaseMask(check.GetFocusObject().GetPhaseMask()), i_object(result), i_check(check)
     {
     }
 
@@ -121,7 +121,7 @@ struct DynamicObjectLastSearcher
                     i_object = itr->getSource();
     }
 
-    template <class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) { }
+    template <class SKIP> void Visit(GridRefManager<SKIP>&) {}
 };
 
 template <class Check>
@@ -129,10 +129,10 @@ struct DynamicObjectListSearcher
 {
     uint32 i_phaseMask;
     std::list<DynamicObject*> &i_objects;
-    Check& i_check;
+    Check &i_check;
 
-    DynamicObjectListSearcher(WorldObject const* searcher, std::list<DynamicObject*>& objects, Check& check):
-        i_phaseMask(searcher->GetPhaseMask()), i_objects(objects), i_check(check)
+    DynamicObjectListSearcher(std::list<DynamicObject*>& objects, Check& check):
+        i_phaseMask(check.GetFocusObject().GetPhaseMask()), i_objects(objects), i_check(check)
     {
     }
 
@@ -144,7 +144,7 @@ struct DynamicObjectListSearcher
                     i_objects.push_back(itr->getSource());
     }
 
-    template <class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) { }
+    template <class SKIP> void Visit(GridRefManager<SKIP>&) {}
 };
 
 // DynamicObject checks
@@ -155,6 +155,8 @@ public:
         i_obj(obj), i_spellId(spellId), i_range(range)
     {
     }
+
+    WorldObject const& GetFocusObject() const { return i_obj; }
 
     bool operator() (DynamicObject *dynobj)
     {
@@ -183,6 +185,8 @@ public:
         i_obj(obj), i_spellId(spellId), i_range(range)
     {
     }
+
+    WorldObject const& GetFocusObject() const { return i_obj; }
 
     bool operator() (DynamicObject* dynobj)
     {

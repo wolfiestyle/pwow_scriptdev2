@@ -419,24 +419,23 @@ template <class Check>
 class ScriptMessageDeliverer
 {
 public:
-    ScriptMessageDeliverer(WorldObject* sender, Check& check, uint32 data1, uint32 data2, bool to_self):
-        i_sender(sender), i_check(check), i_data1(data1), i_data2(data2), i_toSelf(to_self)
+    ScriptMessageDeliverer(Check& check, uint32 data1, uint32 data2, bool to_self):
+        i_check(check), i_data1(data1), i_data2(data2), i_toSelf(to_self)
     {
     }
 
     void Visit(CreatureMapType& m)
     {
         for (CreatureMapType::iterator i = m.begin(); i != m.end(); ++i)
-            if (i_toSelf || i->getSource() != i_sender)
+            if (i_toSelf || i->getSource()->GetObjectGuid() != i_check.GetFocusObject().GetObjectGuid())
                 if (i_check(i->getSource()))
                     if (ScriptMessageInterface *smi = dynamic_cast<ScriptMessageInterface*>(i->getSource()->AI()))
-                        smi->ScriptMessage(i_sender, i_data1, i_data2);
+                        smi->ScriptMessage(const_cast<WorldObject*>(&i_check.GetFocusObject()), i_data1, i_data2);
     }
 
     template <class SKIP> void Visit(GridRefManager<SKIP>&) {}
 
 private:
-    WorldObject *i_sender;
     Check &i_check;
     uint32 i_data1, i_data2;
     bool i_toSelf;
@@ -450,6 +449,8 @@ public:
         i_source(source), i_range(range)
     {
     }
+
+    WorldObject const& GetFocusObject() const { return *i_source; }
 
     bool operator() (Unit* pUnit)
     {
