@@ -212,7 +212,7 @@ enum Phases
 };
 
 static const float CenterPosition[3]        = {503.7f, -2124.5f, 1040.8f};
-static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1079.9f};
+static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1052.9f};
 
 #define OUTRO_CINEMATIC                     16
 
@@ -248,7 +248,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
     std::list<uint64> PlayersInFrostmourne;
-    std::list<uint64> PlayersToInstakill;       // weird things happed when a player dies in a loading screen - delay it until they have arrived
+    std::list<uint64> PlayersToInstakill;       // weird things happed when a player dies in a loading screen - delay it until they have arrived (server crash!)
     uint32 NumberOfHarvestsToApply;             // number of SPELL_HARVESTED_SOULs to cast on self upon player exit on heroic
     uint32 TalkTimer;
     uint32 TalkPhase;
@@ -341,7 +341,6 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         SCHEDULE_EVENT(PAIN_AND_SUFFERING, 0, COOLDOWN_TRANSITION_PHASE, PMASK_TRANSITION_PHASE);
         SCHEDULE_EVENT(RAGING_SPIRIT, 0, COOLDOWN_TRANSITION_PHASE, PMASK_TRANSITION_PHASE);
         SCHEDULE_EVENT(ICE_SPHERE, 0, COOLDOWN_TRANSITION_PHASE, PMASK_TRANSITION_PHASE);
-        DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void KilledUnit(Unit* pWho)
@@ -771,11 +770,12 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         if (Fordring)
                             DoCast(Fordring, SPELL_ICE_LOCK);
                         DoScriptText(SAY_LICHKING_INTRO5, m_creature);
+                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        m_creature->SetInCombatWithZone();
                         TalkTimer = 19*IN_MILLISECONDS;
                         break;
                     case 9:
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        m_creature->SetInCombatWithZone();
+                        DoScriptText(SAY_AGGRO, m_creature);
                         HasDoneIntro = true;
                         TalkPhase = 0;
                         break;

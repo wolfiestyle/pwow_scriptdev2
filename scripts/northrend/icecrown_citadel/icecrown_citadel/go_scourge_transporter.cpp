@@ -38,7 +38,7 @@ static float const TeleportCoords[TP_MAX][4] =
     { 4199.35f, 2769.42f, 350.977f, 0.0f},
     { 4356.58f, 2565.75f, 220.402f, -1.5708f},
     //{ 4356.93f, 2769.41f, 355.955f, -2.35619f},
-    { 529.3f,   -2124.7f, 1043.0f,  3.14159f} // this dest location for Frozen Throne teleport
+    { 529.3f,   -2124.7f, 1046.0f,  3.14159f} // this dest location for Frozen Throne teleport
 };
 
 static char const* const GossipStrings[TP_MAX] =
