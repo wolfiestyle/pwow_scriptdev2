@@ -161,10 +161,6 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
     {
         if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
-            // Just in case...
-            pWho->setFaction(Player::getFactionForRace(pWho->getRace()));
-            static_cast<Player*>(pWho)->SetClientControl(pWho, true);
-
             if (roll_chance_i(60)) // just to prevent spam
                 DoScriptText(urand(0,1) ? SAY_BLOODQUEEN_SLAY01 : SAY_BLOODQUEEN_SLAY02, m_creature);
         }
@@ -180,25 +176,6 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
     void RemoveAuras()
     {
         RemoveEncounterAuras(-SPELL_BLOOD_MIRROR_MASTER, -SPELL_BLOOD_MIRROR_SLAVE);
-        Map* pMap = m_creature->GetMap();
-        if (pMap && pMap->IsDungeon())
-        {
-            Map::PlayerList const &PlayerList = pMap->GetPlayers();
-
-            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-            {
-                Player* pPlayer = i->getSource();
-                if (!pPlayer->isAlive())
-                    continue;
-                if (pPlayer->HasAuraByDifficulty(SPELL_UNCONTROLLABLE_FRENZY))
-                {
-                    pPlayer->RemoveAurasByDifficulty(SPELL_UNCONTROLLABLE_FRENZY);
-                    // we set it friendly again (workaround for the mind control so these players become useless)
-                    pPlayer->setFaction(pPlayer->getFactionForRace(pPlayer->getRace()));
-                    pPlayer->SetClientControl(pPlayer, true);
-                }
-            }
-        }
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -216,7 +193,6 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     break;
                 case EVENT_MINDCONTROL_CHECK:
                     {
-                        // TODO: find a better way to do this.
                         ThreatList const &m_tList = m_creature->getThreatManager().getThreatList();
                         for (ThreatList::const_iterator i = m_tList.begin(); i != m_tList.end(); ++i)
                         {
@@ -234,14 +210,6 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                             {
                                 DoCast(pPlayer, SPELL_UNCONTROLLABLE_FRENZY, true);
                                 DoScriptText(SAY_BLOODQUEEN_MINDCONTROL, m_creature);
-                                pPlayer->setFaction(m_creature->getFaction()); // we set it unfriendly
-                                static_cast<Player*>(pPlayer)->SetClientControl(pPlayer, false);
-                                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                                    if (target->GetGUID() != pPlayer->GetGUID())
-                                        pPlayer->Attack(target, true);
-                                    else
-                                        pPlayer->ClearInCombat();
-                                //pPlayer->SetCharmerGUID(m_creature->GetGUID());
                             }
                         }
                     }
@@ -301,9 +269,8 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     break;
                 case EVENT_SWARMING_SHADOWS:
                     DoScriptText(SAY_BLOODQUEEN_SPECIAL01, m_creature);
-                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 2)) //dont target tanks
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) //dont target tanks
                     {
-                        // TODO: this spell should work exactly like Jaraxxus' Legion Flames however, the error im getting is: "wrong zone"
                         m_creature->MonsterTextEmote(SWARMING_SHADOWS_EMOTE, target->GetGUID(), true);
                         DoCast(target, SPELL_SWARMING_SHADOWS);
                     }                    
