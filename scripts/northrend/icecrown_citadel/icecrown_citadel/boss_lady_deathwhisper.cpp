@@ -198,8 +198,8 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
             return;
         Events.SetPhase(PHASE_ONE);
         DoScriptText(SAY_AGGRO, m_creature);
-        //if (!m_bIs10Man || m_bIsHeroic)
-        //    SCHEDULE_EVENT(DOMINATE_MIND); // spell doesn't work!
+        if (!m_bIs10Man || m_bIsHeroic)
+            SCHEDULE_EVENT(DOMINATE_MIND);
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT_R(DEATH_AND_DECAY);
         SCHEDULE_EVENT(SHADOWBOLT, 0, 0, PMASK_ONE);
@@ -356,9 +356,9 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                         DoCast(target, SPELL_DEATH_AND_DECAY);
                     break;
                 case EVENT_DOMINATE_MIND:
-                    for (uint32 count = !m_bIs10Man && m_bIsHeroic ? 3 : 1; count; --count)
+                    for (uint32 count = (!m_bIs10Man && m_bIsHeroic) ? 3 : 1; count; --count)
                         if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
-                            DoCast(target, SPELL_DOMINATE_MIND);
+                            DoCast(target, SPELL_DOMINATE_MIND, true);
                     DoScriptText(SAY_DOMINATE_MIND, m_creature);
                     break;
                 case EVENT_SUMMON_ADDS:
