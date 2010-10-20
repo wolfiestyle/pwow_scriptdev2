@@ -189,13 +189,18 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         m_BossEncounter = DONE;
     }
 
-    void SpellHitTarget(Unit* victim, SpellEntry const* pSpell)
+    void SpellHitTarget(Unit* pVictim, SpellEntry const* pSpell)
     {
+        //do not attack tanks or self
+        if (!pVictim || m_creature == pVictim || m_creature->getVictim() == pVictim)
+            return;
+
         SpellEntry const *CompareSpell = GetSpellStore()->LookupEntry(SPELL_BONE_SPIKE_GRAVEYARD);
-        if (CompareSpell && pSpell->SpellDifficultyId == CompareSpell->SpellDifficultyId)
-            if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) //do not attack tanks.
-                if (Creature *pSumm = SummonMgr.SummonCreatureAt(pTarget, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
-                    SendScriptMessageTo(pSumm, pTarget, EVENT_BONE_SPIKE_GRAVEYARD);
+        if (!CompareSpell || pSpell->SpellDifficultyId != CompareSpell->SpellDifficultyId)
+            return;
+
+        if (Creature *pSumm = SummonMgr.SummonCreatureAt(pVictim, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
+            SendScriptMessageTo(pSumm, pVictim, EVENT_BONE_SPIKE_GRAVEYARD);
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)
