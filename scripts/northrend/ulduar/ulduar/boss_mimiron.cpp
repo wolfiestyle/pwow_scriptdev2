@@ -204,6 +204,7 @@ struct MANGOS_DLL_DECL boss_mimironAI: public Scripted_NoMovementAI
 
     boss_mimironAI(Creature *pCreature);
 
+    void MoveInLineOfSight(Unit* pWho);
     void Reset();
     void JustDied(Unit *pKiller);
     void Aggro(Unit *pWho);
@@ -885,6 +886,12 @@ boss_mimironAI::boss_mimironAI(Creature *pCreature):
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     HasFinished = false;
     Reset();
+}
+
+void boss_mimironAI::MoveInLineOfSight(Unit *pWho)
+{
+    if (pWho && m_creature->GetDistance2d(pWho) < 15.0f && pWho->isTargetableForAttack())
+        m_creature->SetInCombatWithZone();
 }
 
 void boss_mimironAI::Reset()
