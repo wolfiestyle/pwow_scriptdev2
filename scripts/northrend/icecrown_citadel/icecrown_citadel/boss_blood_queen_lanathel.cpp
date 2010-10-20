@@ -193,23 +193,29 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     break;
                 case EVENT_MINDCONTROL_CHECK:
                     {
-                        ThreatList const &m_tList = m_creature->getThreatManager().getThreatList();
-                        for (ThreatList::const_iterator i = m_tList.begin(); i != m_tList.end(); ++i)
+                        Map* pMap = m_creature->GetMap();
+
+                        if (pMap && pMap->IsDungeon())
                         {
-                            Unit* pPlayer = m_creature->GetMap()->GetUnit((*i)->getUnitGuid());
-                            if (pPlayer->GetTypeId() != TYPEID_PLAYER)
-                                continue;
-                            if ((pPlayer->HasAuraByDifficulty(SPELL_ESSENCE_OF_THE_BLOODQUEEN) 
-                                || pPlayer->HasAuraByDifficulty(SPELL_FRENZIED_BLOODTHIRST))
-                                && !m_Vampires.count(pPlayer->GetGUID()))
-                                m_Vampires.insert(pPlayer->GetGUID());
-                            else if (m_Vampires.count(pPlayer->GetGUID())
-                                && !pPlayer->HasAuraByDifficulty(SPELL_ESSENCE_OF_THE_BLOODQUEEN) 
-                                && !pPlayer->HasAuraByDifficulty(SPELL_FRENZIED_BLOODTHIRST)
-                                && !pPlayer->HasAuraByDifficulty(SPELL_UNCONTROLLABLE_FRENZY))
+                            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             {
-                                DoCast(pPlayer, SPELL_UNCONTROLLABLE_FRENZY, true);
-                                DoScriptText(SAY_BLOODQUEEN_MINDCONTROL, m_creature);
+                                Unit* pPlayer = i->getSource();
+                                if (pPlayer->GetTypeId() != TYPEID_PLAYER)
+                                    continue;
+                                if ((pPlayer->HasAuraByDifficulty(SPELL_ESSENCE_OF_THE_BLOODQUEEN) 
+                                    || pPlayer->HasAuraByDifficulty(SPELL_FRENZIED_BLOODTHIRST))
+                                    && !m_Vampires.count(pPlayer->GetGUID()))
+                                    m_Vampires.insert(pPlayer->GetGUID());
+                                else if (m_Vampires.count(pPlayer->GetGUID())
+                                    && !pPlayer->HasAuraByDifficulty(SPELL_ESSENCE_OF_THE_BLOODQUEEN) 
+                                    && !pPlayer->HasAuraByDifficulty(SPELL_FRENZIED_BLOODTHIRST)
+                                    && !pPlayer->HasAuraByDifficulty(SPELL_UNCONTROLLABLE_FRENZY))
+                                {
+                                    DoCast(pPlayer, SPELL_UNCONTROLLABLE_FRENZY, true);
+                                    DoScriptText(SAY_BLOODQUEEN_MINDCONTROL, m_creature);
+                                }
                             }
                         }
                     }
