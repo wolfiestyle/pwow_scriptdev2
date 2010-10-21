@@ -20,6 +20,7 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_LICH_KING,         TYPE_LICH_KING);
 
 static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
+    (GO_MARROWGAR_ENTRANCE,         DATA_MARROWGAR_DOOR_ENTRANCE)
     (GO_MARROWGAR_DOOR_1,           DATA_MARROWGAR_DOOR_1)
     (GO_MARROWGAR_DOOR_2,           DATA_MARROWGAR_DOOR_2)
     (GO_DEATHWHISPER_ELEV,          DATA_DEATHWHISPER_ELEV)
@@ -39,6 +40,10 @@ static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_VALITHRIA_DOOR_R1,          DATA_VALITHRIA_DOOR_RIGHT_1)
     (GO_VALITHRIA_DOOR_L2,          DATA_VALITHRIA_DOOR_LEFT_2)
     (GO_VALITHRIA_DOOR_R2,          DATA_VALITHRIA_DOOR_RIGHT_2)
+    (GO_GREEN_TUBES,                DATA_GREEN_TUBES)
+    (GO_ORANGE_TUBES,               DATA_ORANGE_TUBES)
+    (GO_ROTFACE_DOOR,               DATA_ROTFACE_DOOR)
+    (GO_FESTERGUT_DOOR,             DATA_FESTERGUT_DOOR)
     (GO_PUTRICIDE_UPPER_DOOR,       DATA_PUTRICIDE_UPPER_DOOR)
     (GO_PUTRICIDE_LOWER_DOOR,       DATA_PUTRICIDE_LOWER_DOOR)
     (GO_PUTRICIDE_LOWER_DOOR_ORANGE,DATA_PUTRICIDE_LOWER_DOOR_ORANGE)

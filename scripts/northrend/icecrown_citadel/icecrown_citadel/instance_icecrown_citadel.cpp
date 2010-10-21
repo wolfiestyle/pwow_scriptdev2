@@ -104,6 +104,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
         switch (uiType)
         {
             case TYPE_MARROWGAR:
+                door_ids.push_back(DATA_MARROWGAR_DOOR_ENTRANCE);
                 door_ids.push_back(DATA_MARROWGAR_DOOR_1);
                 door_ids.push_back(DATA_MARROWGAR_DOOR_2);
                 tp_unlocked = TP_ORATORY;
@@ -124,12 +125,33 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 break;
             case TYPE_FESTERGUT:
             case TYPE_ROTFACE:
+                switch(uiType)
+                {
+                    case TYPE_FESTERGUT:
+                        door_ids.push_back(DATA_FESTERGUT_DOOR);
+                        door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_ORANGE);
+                        door_ids.push_back(DATA_ORANGE_TUBES);
+                        break;
+                    case TYPE_ROTFACE:
+                        door_ids.push_back(DATA_ROTFACE_DOOR);
+                        door_ids.push_back(DATA_GREEN_TUBES);
+                        door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
+                        break;
+                }
                 if (m_InstanceVars[TYPE_ROTFACE] == DONE && m_InstanceVars[TYPE_FESTERGUT] == DONE)
                 {
                     door_ids.push_back(DATA_PUTRICIDE_UPPER_DOOR);
-                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR);        // Note: does not animate opening of door.
-                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_ORANGE);
-                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR_GREEN);
+                    door_ids.push_back(DATA_PUTRICIDE_LOWER_DOOR);
+                    if (GameObject* Door = instance->GetGameObject(GetData64(DATA_PUTRICIDE_LOWER_DOOR_GREEN)))
+                    {
+                        Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                        m_InstanceVars[DATA_PUTRICIDE_LOWER_DOOR_GREEN] = GO_STATE_ACTIVE_ALTERNATIVE;
+                    }
+                    if (GameObject* Door = instance->GetGameObject(GetData64(DATA_PUTRICIDE_LOWER_DOOR_ORANGE)))
+                    {
+                        Door->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                        m_InstanceVars[DATA_PUTRICIDE_LOWER_DOOR_ORANGE] = GO_STATE_ACTIVE_ALTERNATIVE;
+                    }
                 }
                 break;
             /* NOTE: set to manually opened

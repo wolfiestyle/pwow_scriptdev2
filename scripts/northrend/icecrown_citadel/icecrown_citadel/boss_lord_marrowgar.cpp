@@ -147,6 +147,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
 
     void Reset()
     {
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_MARROWGAR_DOOR_ENTRANCE))
+            Door->SetGoState(GO_STATE_ACTIVE);
         m_bInBoneStorm = false;
         SummonMgr.UnsummonAll();
         ColdflameAttribs.clear();
@@ -168,6 +170,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
     {
         if (InstanceProgressionCheck())
             return;
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_MARROWGAR_DOOR_ENTRANCE))
+            Door->SetGoState(GO_STATE_READY);
         DoScriptText(SAY_AGGRO, m_creature);
         SCHEDULE_EVENT_R(COLDFLAME);
         SCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);

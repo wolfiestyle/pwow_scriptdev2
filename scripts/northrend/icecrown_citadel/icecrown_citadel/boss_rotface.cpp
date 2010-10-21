@@ -130,6 +130,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         Events.Reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_ROTFACE_DOOR))
+            Door->SetGoState(GO_STATE_ACTIVE);
         //boss_icecrown_citadelAI::Reset();
     }
 
@@ -139,6 +141,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
             return;
         m_BossEncounter = IN_PROGRESS;
         SCHEDULE_EVENT(OOZE_FLOOD);
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_ROTFACE_DOOR))
+            Door->SetGoState(GO_STATE_READY);
         //SCHEDULE_EVENT(SLIME_SPRAY);
         if (m_bIsHeroic)
             SCHEDULE_EVENT(VILE_GAS);

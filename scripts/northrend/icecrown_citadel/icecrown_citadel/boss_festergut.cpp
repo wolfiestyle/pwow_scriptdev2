@@ -114,6 +114,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         SummonMgr.UnsummonAll();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_FESTERGUT_DOOR))
+            Door->SetGoState(GO_STATE_ACTIVE);
         boss_icecrown_citadelAI::Reset();
     }
 
@@ -126,6 +128,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         CurrBlightStrength = 0;
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
             Putricide->MonsterMoveWithSpeed(4300.9f, 3192.2f, 389.4f);
+        if (GameObject* Door = GET_GAMEOBJECT(DATA_FESTERGUT_DOOR))
+            Door->SetGoState(GO_STATE_READY);
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(GAS_SPORE);
         SCHEDULE_EVENT_R(INHALE_BLIGHT);
