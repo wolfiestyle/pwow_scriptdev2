@@ -232,7 +232,34 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
                     break;
                 case EVENT_VILE_GAS:
                 {
-                    Unit *Target = GetPlayerAtMinimumRange(10.0f);
+                    Map* pMap = m_creature->GetMap();
+
+                    Unit* Target = NULL;
+                    if (pMap && pMap->IsDungeon())
+                    {
+                        Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                        std::vector<Unit*> ranged_players;
+
+                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        {
+                            Unit* pPlayer = i->getSource();
+                            if (pPlayer->GetTypeId() != TYPEID_PLAYER)
+                                continue;
+
+                            if (pPlayer->GetDistance2d(m_creature) > 10.0f)
+                                ranged_players.push_back(pPlayer);
+                        }
+                        // check amount of players on melee / range
+                        // if there is enough ranged players, the vile gas will be casted 
+                        // on range only, otherwise it will hit randomly any member (including melee)
+                        if (ranged_players.size() < (m_bIs10Man ? 3 : 8))
+                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                        else
+                        {
+                            std::random_shuffle(ranged_players.begin(), ranged_players.end());
+                            Target = ranged_players[0];
+                        }
+                    }
                     if (!Target)
                         Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                     if (Target)
