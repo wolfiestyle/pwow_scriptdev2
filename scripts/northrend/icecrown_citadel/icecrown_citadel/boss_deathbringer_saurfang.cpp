@@ -436,7 +436,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                     break;
                 }
                 case MESSAGE_START_OUTRO:
-                    TalkPhase = 9;
+                    TalkPhase = 10;
                     break;
                 default:
                     break;
@@ -459,35 +459,47 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                         // Intro
                         case 2:
                             if (BossSaurfang)
+                            {
+                                if (GameObject* Door = GET_GAMEOBJECT(GO_SAURFANG_DOOR))
+                                    Door->SetGoState(GO_STATE_ACTIVE);
+                                BossSaurfang->GetMotionMaster()->MovePoint(0, -493.905f ,2211.35f ,541.114f);
                                 DoScriptText(SAY_DEATHFANG_HORDE_INTRO2, BossSaurfang);
-                            TalkTimer = 14*IN_MILLISECONDS;
+                            }
+                            TalkTimer = 3*IN_MILLISECONDS;
                             break;
                         case 3:
+                            if (BossSaurfang)
+                                BossSaurfang->GetMotionMaster()->MovePoint(0xFFFFFE, -493.905f ,2211.35f ,541.114f );
+                            if (GameObject* Door = GET_GAMEOBJECT(GO_SAURFANG_DOOR))
+                                Door->SetGoState(GO_STATE_READY);
+                            TalkTimer = 11*IN_MILLISECONDS;
+                            break;
+                        case 4:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_INTRO3, HighSaurfang);
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
-                        case 4:
+                        case 5:
                             if (BossSaurfang)
                                 DoScriptText(SAY_DEATHFANG_HORDE_INTRO4, BossSaurfang);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
-                        case 5:
+                        case 6:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_INTRO5, HighSaurfang);
                             TalkTimer = 15*IN_MILLISECONDS;
                             break;
-                        case 6:
+                        case 7:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_INTRO6, HighSaurfang);
                             TalkTimer = 14*IN_MILLISECONDS;
                             break;
-                        case 7:
+                        case 8:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_INTRO7, HighSaurfang);
                             TalkTimer = 4*IN_MILLISECONDS;
                             break;
-                        case 8:
+                        case 9:
                             if (HighSaurfang)
                             {
                                 DoScriptText(EMOTE_SAURFANG_HORDE_INTRO8, HighSaurfang);
@@ -495,7 +507,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 1500;
                             break;
-                        case 9:
+                        case 10:
                             if (HighSaurfang)
                             {
                                 HighSaurfang->CastSpell(HighSaurfang, SPELL_INTRO_CHOKE, true);
@@ -517,7 +529,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkPhase = 0;
                             break;
                         // Outro
-                        case 10:
+                        case 11:
                             if (HighSaurfang && BossSaurfang)
                             {
                                 HighSaurfang->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
@@ -537,7 +549,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 2*IN_MILLISECONDS;
                             break;
-                        case 11:
+                        case 12:
                             if (HighSaurfang && BossSaurfang)
                             {
                                 float x, y;
@@ -546,22 +558,22 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 4*IN_MILLISECONDS;
                             break;
-                        case 12:
+                        case 13:
                             if (HighSaurfang)
                                 DoScriptText(EMOTE_SAURFANG_HORDE_OUTRO2, HighSaurfang);
                             TalkTimer = 6*IN_MILLISECONDS;
                             break;
-                        case 13:
+                        case 14:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_OUTRO3, HighSaurfang);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
-                        case 14:
+                        case 15:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_HORDE_OUTRO4, HighSaurfang);
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
-                        case 15:
+                        case 16:
                             SummonMgr.UnsummonAll();
                             if (BossSaurfang)
                                 SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_OUTRO);
@@ -582,15 +594,26 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                         // Intro
                         case 2:
                             if (BossSaurfang)
+                            {
+                                if (GameObject* Door = GET_GAMEOBJECT(GO_SAURFANG_DOOR))
+                                    Door->SetGoState(GO_STATE_ACTIVE);
+                                BossSaurfang->GetMotionMaster()->MovePoint(0, -493.905f ,2211.35f ,541.114f);
                                 DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO2, BossSaurfang);
-                            TalkTimer = 10*IN_MILLISECONDS;
+                            }
+                            TalkTimer = 3*IN_MILLISECONDS;
                             break;
                         case 3:
+                            if (BossSaurfang)
+                                BossSaurfang->GetMotionMaster()->MovePoint(0xFFFFFE, -493.905f ,2211.35f ,541.114f );
+                            if (GameObject* Door = GET_GAMEOBJECT(GO_SAURFANG_DOOR))
+                                Door->SetGoState(GO_STATE_READY);
+                            TalkTimer = 7*IN_MILLISECONDS;
+                        case 4:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_INTRO3, Muradin);
                             TalkTimer = 5*IN_MILLISECONDS;
                             break;
-                        case 4:
+                        case 5:
                             if (Muradin)
                             {
                                 DoScriptText(SAY_MURADIN_ALLIANCE_INTRO4, Muradin);
@@ -598,7 +621,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 1500;
                             break;
-                        case 5:
+                        case 6:
                             if (Muradin)
                             {
                                 Muradin->CastSpell(Muradin, SPELL_INTRO_CHOKE, true);
@@ -613,7 +636,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 1*IN_MILLISECONDS;
                             break;
-                        case 6:
+                        case 7:
                             if (BossSaurfang)
                             {
                                 DoScriptText(SAY_DEATHFANG_ALLIANCE_INTRO5, BossSaurfang);
@@ -623,7 +646,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkPhase = 0;
                             break;
                         // Outro
-                        case 10:
+                        case 11:
                             if (Muradin && BossSaurfang)
                             {
                                 Muradin->RemoveAurasDueToSpell(SPELL_INTRO_CHOKE);
@@ -646,17 +669,17 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 1*IN_MILLISECONDS;
                             break;
-                        case 11:
+                        case 12:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO2, Muradin);
                             TalkTimer = 6*IN_MILLISECONDS;
                             break;
-                        case 12:
+                        case 13:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO3, Muradin);
                             TalkTimer = 3*IN_MILLISECONDS;
                             break;
-                        case 13:
+                        case 14:
                             if (Muradin)
                             {
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO4, Muradin);
@@ -671,24 +694,24 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             if (Creature *Saurfang = SummonMgr.SummonCreature(NPC_HIGH_OVERLORD_SAURFANG, -518.0f, 2247.0f, FLOOR_HEIGHT, 5.33f))
                                 Saurfang->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             break;
-                        case 14:
+                        case 15:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO5, Muradin);
                             if (HighSaurfang)
                                 HighSaurfang->MonsterMoveWithSpeed(-511.5f, 2236.2f, FLOOR_HEIGHT);
                             TalkTimer = 6*IN_MILLISECONDS;
                             break;
-                        case 15:
+                        case 16:
                             if (HighSaurfang)
                                 DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO6, HighSaurfang);
                             TalkTimer = 7.5*IN_MILLISECONDS;
                             break;
-                        case 16:
+                        case 17:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO7, Muradin);
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
-                        case 17:
+                        case 18:
                         {
                             SummonMgr.SummonCreature(NPC_JAINA_PROUDMOORE, -521.0f, 2220.4f, FLOOR_HEIGHT, 0.789f);
                             Creature *Varian = SummonMgr.SummonCreature(NPC_VARIAN_WYRM, -524.0f, 2221.4f, FLOOR_HEIGHT, 0.789f);
@@ -705,12 +728,12 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 5*IN_MILLISECONDS;
                             break;
                         }
-                        case 18:
+                        case 19:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO9, Muradin);
                             TalkTimer = 2*IN_MILLISECONDS;
                             break;
-                        case 19:
+                        case 20:
                             if (HighSaurfang && BossSaurfang)
                             {
                                 float x, y;
@@ -719,17 +742,17 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 8*IN_MILLISECONDS;
                             break;
-                        case 20:
+                        case 21:
                             if (HighSaurfang) // needs to pick up deathbringer saurfang, not sure how to do so.
                                 DoScriptText(SAY_SAURFANG_ALLIANCE_OUTRO10, HighSaurfang);
                             TalkTimer = 5*IN_MILLISECONDS;
                             break;
-                        case 21:
+                        case 22:
                             if (HighSaurfang)
                                 HighSaurfang->MonsterMove(-518.0f, 2247.0f, FLOOR_HEIGHT, 10*IN_MILLISECONDS);
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
-                        case 22:
+                        case 23:
                             if (HighSaurfang)
                             {
                                 if (Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM))
@@ -738,7 +761,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             }
                             TalkTimer = 8*IN_MILLISECONDS;
                             break;
-                        case 23:
+                        case 24:
                         {
                             Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
                             if (Varian)
@@ -746,7 +769,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 17*IN_MILLISECONDS;
                             break;
                         }
-                        case 24:
+                        case 25:
                         {
                             SummonMgr.UnsummonAllWithId(NPC_HIGH_OVERLORD_SAURFANG);
                             Creature *Jaina = SummonMgr.GetFirstFoundSummonWithId(NPC_JAINA_PROUDMOORE);
@@ -755,7 +778,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 4*IN_MILLISECONDS;
                             break;
                         }
-                        case 25:
+                        case 26:
                         {
                             Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
                             if (Varian)
@@ -763,7 +786,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 3*IN_MILLISECONDS;
                             break;
                         }
-                        case 26:
+                        case 27:
                         {
                             Creature *Jaina = SummonMgr.GetFirstFoundSummonWithId(NPC_JAINA_PROUDMOORE);
                             if (Jaina)
@@ -771,7 +794,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 7*IN_MILLISECONDS;
                             break;
                         }
-                        case 27:
+                        case 28:
                         {
                             Creature *Varian = SummonMgr.GetFirstFoundSummonWithId(NPC_VARIAN_WYRM);
                             if (Varian)
@@ -779,12 +802,12 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             TalkTimer = 10*IN_MILLISECONDS;
                             break;
                         }
-                        case 28:
+                        case 29:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_OUTRO17, Muradin);
                             TalkTimer = 3*IN_MILLISECONDS;
                             break;
-                        case 29:
+                        case 30:
                             SummonMgr.UnsummonAll();
                             if (BossSaurfang)
                                 SendScriptMessageTo(BossSaurfang, m_creature, MESSAGE_END_OUTRO);
