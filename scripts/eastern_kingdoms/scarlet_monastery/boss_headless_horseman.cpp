@@ -42,6 +42,11 @@ enum
     SAY_PLAYER4            = -1189034
 };
 
+enum Spells
+{
+    SPELL_CREATE_PUMPKIN_TREATS = 42754,
+};
+
 struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
 {
     boss_headless_horsemanAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
@@ -63,6 +68,14 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        Map::PlayerList const &Players = m_creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
+        {
+            Unit *pPlayer = itr->getSource();
+            if (pPlayer)
+                pPlayer->CastSpell(pPlayer, SPELL_CREATE_PUMPKIN_TREATS, true);
+        }
     }
 
     void UpdateAI(const uint32 uiDiff)
