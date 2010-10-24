@@ -166,22 +166,22 @@ enum Phases
 
 struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public ScriptEventInterface
 {
-    Unit *m_uiPlayer;
+    SummonManager SummonMgr;
     uint32 m_uiTalkPhase;
     uint32 m_uiTalkTimer;
-    SummonManager SummonMgr;
-    bool m_bHasDoneIntro : 1;
-    bool m_bNotified : 1;
+    bool m_bHasDoneIntro :1;
+    bool m_bNotified :1;
     float m_fX, m_fY, m_fZ;
+    ObjectGuid m_PlayerGuid;
 
     boss_headless_horsemanAI(Creature* pCreature) :
         ScriptedAI(pCreature),
         ScriptEventInterface(pCreature),
+        SummonMgr(pCreature),
         m_uiTalkPhase(0),
         m_uiTalkTimer(1000),
         m_bHasDoneIntro(false),
-        m_bNotified(false),
-        SummonMgr(pCreature)
+        m_bNotified(false)
     {
         pCreature->GetPosition(m_fX, m_fY, m_fZ);
         pCreature->SetDisplayId(11686); //spawn invisible to handle the "rhyme"
@@ -190,13 +190,10 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
 
     void Reset()
     {
-        if (m_creature->HasAura(SPELL_BODY_REGEN))
-            m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN);
-        if (m_creature->HasAura(SPELL_BODY_REGEN_2))
-            m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN_2);
-        if (m_creature->HasAura(SPELL_BODY_REGEN_3))
-            m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN_3);
-        m_creature->CastSpell(m_creature, SPELL_HEAD_VISUAL, false);
+        m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN);
+        m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN_2);
+        m_creature->RemoveAurasDueToSpell(SPELL_BODY_REGEN_3);
+        m_creature->CastSpell(m_creature, SPELL_HEAD_VISUAL, true);
         m_bNotified = false;
         Events.Reset();
         SummonMgr.UnsummonAll();
@@ -205,11 +202,10 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (!m_bHasDoneIntro && pWho->GetDistance2d(m_creature) < 20.0f &&
-            pWho->isTargetableForAttack() && pWho->GetTypeId() == TYPEID_PLAYER &&
-            !m_uiTalkPhase)
+        if (!m_bHasDoneIntro && !m_uiTalkPhase && pWho->GetTypeId() == TYPEID_PLAYER &&
+            pWho->isTargetableForAttack() && pWho->IsWithinDist(m_creature, 20.0f, false))
         {
-            m_uiPlayer = pWho;
+            m_PlayerGuid = pWho->GetObjectGuid();
             m_uiTalkPhase = 1;
         }
         else
@@ -221,7 +217,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
         // summon the head somewhere close to the tanks/party
         float x, y, z;
         pWho->GetPosition(x, y, z);
-        z = z + 1.0f;
+        z += 1.0f;
         SummonMgr.SummonCreature(NPC_HEADLESS_HORSEMAN_HEAD, x, y, z, 
             m_creature->GetOrientation(),TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS);
         Events.ScheduleEventInRange(EVENT_CLEAVE, TIMER_CLEAVE, TIMER_CLEAVE, 0, 0, PMASK_PHASE_ALL_ACTIVE);
@@ -242,7 +238,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
                 Events.SetPhase(PHASE_3);
                 if (m_creature->HasAura(SPELL_WHIRLWIND))
                     m_creature->RemoveAurasDueToSpell(SPELL_WHIRLWIND);
-             }
+            }
             m_creature->CastSpell(pDoneBy, SPELL_COMMAND_RETURN_HEAD, true);
         }
         else if (spell->Id == SPELL_RETURN_HEAD)
@@ -278,7 +274,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
     void SummonedCreatureJustDied(Creature* pSumm)
     {
         if (pSumm->GetEntry() == NPC_HEADLESS_HORSEMAN_HEAD)
-            m_creature->CastSpell(m_creature,SPELL_BODY_DEATH, false);
+            m_creature->CastSpell(m_creature, SPELL_BODY_DEATH, true);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -344,21 +340,21 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
             switch(m_uiTalkPhase)
             {
                 case 1:
-                    if (m_uiPlayer)
-                        m_uiPlayer->MonsterSay(SAY_RHYME_1, 0, 0);
+                    if (Player* plr = m_creature->GetMap()->GetPlayer(m_PlayerGuid))
+                        plr->MonsterSay(SAY_RHYME_1, 0, 0);
                     m_uiTalkTimer = 1500;
                     m_uiTalkPhase = 2;
                     break;
                 case 2:
-                    if (m_uiPlayer)
-                        m_uiPlayer->MonsterSay(SAY_RHYME_2, 0, 0);
+                    if (Player* plr = m_creature->GetMap()->GetPlayer(m_PlayerGuid))
+                        plr->MonsterSay(SAY_RHYME_2, 0, 0);
                     m_creature->CastSpell(m_creature, SPELL_SUMMONING_SHAKE_2, true);
                     m_uiTalkTimer = 1500;
                     m_uiTalkPhase = 3;
                     break;
                 case 3:
-                    if (m_uiPlayer)
-                        m_uiPlayer->MonsterSay(SAY_RHYME_3, 0, 0);
+                    if (Player* plr = m_creature->GetMap()->GetPlayer(m_PlayerGuid))
+                        plr->MonsterSay(SAY_RHYME_3, 0, 0);
                     m_creature->CastSpell(m_creature, SPELL_SUMMONING_SHAKE_2, true);
                     m_uiTalkTimer = 1500;
                     m_uiTalkPhase = 4;
@@ -369,8 +365,8 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
                     m_uiTalkPhase = 5;
                     break;
                 case 5:
-                    if (m_uiPlayer)
-                        m_uiPlayer->MonsterSay(SAY_RHYME_4, 0, 0);
+                    if (Player* plr = m_creature->GetMap()->GetPlayer(m_PlayerGuid))
+                        plr->MonsterSay(SAY_RHYME_4, 0, 0);
                     m_creature->CastSpell(m_creature, SPELL_SUMMONING_SHAKE, true);
                     m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
                     if (Unit* earth_Bunny = SummonMgr.SummonCreature(NPC_EARTH_EXPLOSION_BUNNY, m_creature->GetPositionX(),
@@ -424,25 +420,25 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
         switch(m_uiTalkPhase)
         {
             case 5:
-                y = y - 30;
-                z = z + 7;
+                y -= 30;
+                z += 7;
                 m_uiTalkTimer = 2000;
                 break;
             case 6:
                 m_creature->CastSpell(m_creature, SPELL_LAUGH, false);
-                x = x - 30;
+                x -= 30;
                 m_uiTalkTimer = 1500;
-                z = z + 3;
+                z += 3;
                 break;
             case 7:
-                y = y + 40;
+                y += 40;
                 m_uiTalkTimer = 1500;
-                z = z - 3;
+                z -= 3;
                 break;
             case 8:
-                x = x + urand(25, 40);
+                x += urand(25, 40);
                 m_uiTalkTimer = 2000;
-                z = z - 7;
+                z -= 7;
                 break;
             case 9:
                 m_creature->CastSpell(m_creature, SPELL_LAUGH, false);
