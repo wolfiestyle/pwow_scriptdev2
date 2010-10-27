@@ -27,7 +27,7 @@ struct MANGOS_DLL_DECL npc_training_dummyAI: public Scripted_NoMovementAI
         if (!m_creature->isAlive() || !m_creature->isInCombat() || m_creature->IsInEvadeMode())
             return;
 
-        m_creature->SetTargetGUID(0);
+        m_creature->SetTargetGuid(ObjectGuid());
 
         if (m_creature->GetHealthPercent() < 100.0f)
             m_creature->SetHealthPercent(100.0f);

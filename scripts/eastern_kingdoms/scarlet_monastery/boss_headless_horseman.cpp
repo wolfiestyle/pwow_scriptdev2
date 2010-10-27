@@ -459,7 +459,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI, public Scri
     {
         if (!m_bHasDoneIntro || Events.GetPhase() == PHASE_TRANSITION_1 || 
             Events.GetPhase() == PHASE_TRANSITION_2 || Events.GetPhase() == PHASE_TRANSITION_3)
-            m_creature->SetTargetGUID(0);
+            m_creature->SetTargetGuid(ObjectGuid());
 
         if (!m_bHasDoneIntro)
             UpdateTalkPhase(uiDiff);
@@ -547,7 +547,7 @@ struct MANGOS_DLL_DECL boss_headless_horseman_headAI : public ScriptedAI, public
 
     void UpdateAI(const uint32 uiDiff)
     {
-        m_creature->SetTargetGUID(0);
+        m_creature->SetTargetGuid(ObjectGuid());
         if (!m_bIsActive)
             return;
         if (phase == 1 && m_creature->GetHealthPercent() < 66.67f)

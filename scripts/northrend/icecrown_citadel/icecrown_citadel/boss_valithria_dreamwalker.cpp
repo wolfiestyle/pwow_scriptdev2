@@ -269,7 +269,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         if (m_BossEncounter != IN_PROGRESS)
             return;
 
-        m_creature->SetTargetGUID(0);
+        m_creature->SetTargetGuid(ObjectGuid());
 
         if (m_bIsHeroic && !m_creature->HasAura(SPELL_NIGHTMARES))        // Heroic mode spell (boss takes damage over time)
             DoCast(m_creature, SPELL_NIGHTMARES, true);
@@ -672,7 +672,7 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
             if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
                 if (m_creature->IsWithinDist(Valithria, 20.0f))
                 {
-                    m_creature->SetTargetGUID(Valithria->GetGUID());
+                    m_creature->SetTargetGuid(Valithria->GetObjectGuid());
                     m_creature->CastSpell(Valithria, SPELL_SUPPRESSION, true);
                 }
 
@@ -760,7 +760,7 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        m_creature->SetTargetGUID(0);   // prevent void/column from targetting ppl or moving
+        m_creature->SetTargetGuid(ObjectGuid());    // prevent void/column from targetting ppl or moving
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())

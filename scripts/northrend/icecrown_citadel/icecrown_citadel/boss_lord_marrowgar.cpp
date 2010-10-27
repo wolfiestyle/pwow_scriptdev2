@@ -80,11 +80,10 @@ enum Events
 
 struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
-    uint64 m_TargetGuid;
+    ObjectGuid m_TargetGuid;
 
     mob_bone_spikeAI(Creature *pCreature):
-        Scripted_NoMovementAI(pCreature),
-        m_TargetGuid(0)
+        Scripted_NoMovementAI(pCreature)
     {
     }
 
@@ -100,12 +99,12 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_TargetGuid)
+        if (m_TargetGuid.IsEmpty())
             return;
         Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
         if (pTarget && pTarget->isAlive())
-            m_creature->SetTargetGUID(m_TargetGuid);
+            m_creature->SetTargetGuid(m_TargetGuid);
         else
             DespawnCreature(m_creature);
     }
@@ -114,17 +113,17 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
         if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_BONE_SPIKE_GRAVEYARD)
             return;
-        m_TargetGuid = target->GetGUID();
+        m_TargetGuid = target->GetObjectGuid();
         DoCast(static_cast<Unit*>(target), SPELL_IMPALED, true);
     }
 
     void RemoveImpale()
     {
-        if (!m_TargetGuid)
+        if (m_TargetGuid.IsEmpty())
             return;
         if (Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid))
             pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
-        m_TargetGuid = 0;
+        m_TargetGuid.Clear();
     }
 };
 

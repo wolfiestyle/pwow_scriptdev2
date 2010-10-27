@@ -264,11 +264,10 @@ static const float teleporterloc[2][3] =
 // for the spear: we either click it or we kill it, both ways, the "bubble" will burst from Svalna
 struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
-    uint64 m_TargetGuid;
+    ObjectGuid m_TargetGuid;
 
     npc_icecrown_impaling_spearAI(Creature* pCreature):
-        Scripted_NoMovementAI(pCreature),
-        m_TargetGuid(0)
+        Scripted_NoMovementAI(pCreature)
     {
         pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
@@ -281,18 +280,18 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
     {
         if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_SPEAR)
             return;
-        m_TargetGuid = target->GetGUID();
+        m_TargetGuid = target->GetObjectGuid();
         // impale spell is casted from Svalna
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_TargetGuid)
+        if (m_TargetGuid.IsEmpty())
             return;
         Unit *pImpaled = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
         if (pImpaled && pImpaled->isAlive())
-            m_creature->SetTargetGUID(m_TargetGuid);
+            m_creature->SetTargetGuid(m_TargetGuid);
         else
             m_creature->ForcedDespawn();
     }
@@ -306,7 +305,7 @@ struct MANGOS_DLL_DECL npc_icecrown_impaling_spearAI: public Scripted_NoMovement
     {
         if (Unit *pImpaled = m_creature->GetMap()->GetUnit(m_TargetGuid))
             pImpaled->RemoveAurasDueToSpell(SPELL_IMPALING_SPEAR_PLA);
-        m_TargetGuid = 0;
+        m_TargetGuid.Clear();
     }
 };
 
