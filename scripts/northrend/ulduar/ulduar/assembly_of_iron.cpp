@@ -596,7 +596,7 @@ struct MANGOS_DLL_DECL mob_lightning_elementalAI : public ScriptedAI
         if (spell->Id == HEROIC(SPELL_LIGHTNING_BLAST, SPELL_LIGHTNING_BLAST_H))
         {
             m_creature->SetHealth(0);
-            m_creature->setDeathState(JUST_DIED);
+            m_creature->SetDeathState(JUST_DIED);
         }
     }
 
@@ -648,7 +648,7 @@ struct MANGOS_DLL_DECL mob_rune_of_summoningAI : public ScriptedAI
                         else
                         {
                             m_creature->SetHealth(0);
-                            m_creature->setDeathState(JUST_DIED);
+                            m_creature->SetDeathState(JUST_DIED);
                         }
                     }
                     break;

@@ -464,7 +464,7 @@ struct MANGOS_DLL_DECL npc_crok_scourgebaneAI: public npc_escortAI, public Scrip
         if (m_BossEncounter != DONE)
         {
             DoScriptText(FWH_CROK_SAY_WIPE, m_creature);
-            m_creature->setDeathState(JUST_DIED);
+            m_creature->SetDeathState(JUST_DIED);
             m_creature->Respawn();
             m_BossEncounter = NOT_STARTED;
         }
@@ -902,7 +902,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
         currWaypoint = 0;
         fallen = false;
         m_creature->RemoveAllAuras();
-        m_creature->setDeathState(ALIVE);
+        m_creature->SetDeathState(ALIVE);
         m_creature->setFaction(2230); // Argent Crusade
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -989,7 +989,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                 SetEscortPaused(true);
                 Events.CancelEventsWithCategory(COMBAT_CATEGORY); // Dead ppl shouldn't attack
                 m_creature->getThreatManager().clearReferences();
-                m_creature->setDeathState(JUST_ALIVED);
+                m_creature->SetDeathState(JUST_ALIVED);
                 m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                 m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
@@ -1025,7 +1025,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
             {
                 Events.CancelEventsWithCategory(COMBAT_CATEGORY); // Dead ppl shouldn't attack
                 m_creature->getThreatManager().clearReferences();
-                m_creature->setDeathState(JUST_ALIVED);
+                m_creature->SetDeathState(JUST_ALIVED);
                 m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                 m_creature->SetStandState(UNIT_STAND_STATE_DEAD); // even if they "really die" we just feign their death
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED); // TODO: prevent it "moving" while dead
@@ -1062,7 +1062,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     if (fallen) // we were feigning death till this point
                     {
                         m_creature->setFaction(FACTION_HOSTILE);
-                        m_creature->setDeathState(ALIVE);
+                        m_creature->SetDeathState(ALIVE);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE | UNIT_FLAG_STUNNED );
                         m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                         m_creature->SetStandState(UNIT_STAND_STATE_STAND);
@@ -1099,7 +1099,7 @@ struct MANGOS_DLL_DECL npc_icecrown_argent_captainAI: public npc_escortAI, publi
                     break;
                 // all champions will receive this one on wipe
                 case EVENT_RESET:
-                    m_creature->setDeathState(JUST_DIED);
+                    m_creature->SetDeathState(JUST_DIED);
                     m_creature->Respawn();
                     break;
                 // sent on Svalna's Death to all the champions in order to kill (argent guys who died in svalna's fight and not mid-escort)
@@ -1378,8 +1378,8 @@ struct MANGOS_DLL_DECL npc_fwh_trash_nmAI: public Scripted_NoMovementAI
                 for (Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end();++i)
                 {
                     if (Unit* pPlayer = i->getSource())
-                        if (pPlayer->IsWithinDist(m_creature, 50.0f) && pPlayer->hasQuest(QUEST_FEAST_OF_SOULS))
-                            DoCast(pPlayer, SPELL_SOUL_FEAST, false);
+                        if (pPlayer->IsWithinDist(m_creature, 50.0f) && pPlayer->HasQuest(QUEST_FEAST_OF_SOULS))
+                            DoCast(pPlayer, SPELL_SOUL_FEAST, true);
                 }
             }
         }
@@ -1480,8 +1480,8 @@ struct MANGOS_DLL_DECL npc_fwh_trashAI: public ScriptedAI
                 for (Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end();++i)
                 {
                     if (Unit* pPlayer = i->getSource())
-                        if (pPlayer->IsWithinDist(m_creature, 50.0f) && pPlayer->hasQuest(QUEST_FEAST_OF_SOULS))
-                            DoCast(pPlayer, SPELL_SOUL_FEAST, false);
+                        if (pPlayer->IsWithinDist(m_creature, 50.0f) && pPlayer->HasQuest(QUEST_FEAST_OF_SOULS))
+                            DoCast(pPlayer, SPELL_SOUL_FEAST, true);
                 }
             }
         }

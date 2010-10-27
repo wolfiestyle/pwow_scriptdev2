@@ -1453,10 +1453,7 @@ struct MANGOS_DLL_DECL mob_twilight_whelpAI: public ScriptedAI
         //Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
-            if (m_creature->isTemporarySummon())
-                static_cast<TemporarySummon*>(m_creature)->UnSummon();
-            else
-                m_creature->ForcedDespawn();
+            DespawnCreature(m_creature);
             return;
         }
 

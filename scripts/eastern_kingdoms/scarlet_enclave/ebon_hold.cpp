@@ -396,7 +396,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI: public ScriptedAI
 
         pOwner->InterruptSpell(CURRENT_CHANNELED_SPELL);
         pOwner->RemoveAurasDueToSpell(m_creature->GetUInt32Value(UNIT_CREATED_BY_SPELL));
-        if (pOwner->GetTypeId() == TYPEID_PLAYER && m_creature->isPet())
+        if (pOwner->GetTypeId() == TYPEID_PLAYER && m_creature->IsPet())
             static_cast<Player*>(pOwner)->RemoveGuardian(static_cast<Pet*>(m_creature));
         m_creature->RemoveFromWorld();
         m_creature->SetOwnerGUID(NULL);
@@ -478,7 +478,7 @@ bool GossipSelect_npc_havenshire_horse(Player *player, Creature *_Creature, uint
 
 			player->SetUInt32Value(UNIT_FIELD_FLAGS , 0x001000);
 			player->Mount(MOUNT_PALOMINO);
-			_Creature->setDeathState(DEAD);
+			_Creature->SetDeathState(DEAD);
 
 			player->SetSpeedRate(MOVE_RUN, 1.2f);
 			player->SetSpeedRate(MOVE_SWIM, 1.2f);
@@ -2658,7 +2658,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
                     case 27:
                         if (Creature *pTemp = SummonMgr.GetFirstFoundSummonWithId(NPC_DARION_MOGRAINE))
-                            pTemp->setDeathState(JUST_DIED);
+                            pTemp->SetDeathState(JUST_DIED);
                         JumpToNextStep(24000);
                         break;
 

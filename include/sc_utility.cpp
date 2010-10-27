@@ -338,7 +338,7 @@ void SummonManager::UnsummonCreature(Creature *pSummon)
     if (!pSummon)
         return;
     RemoveSummonFromList(pSummon->GetObjectGuid());
-    if (pSummon->isTemporarySummon())
+    if (pSummon->IsTemporarySummon())
         static_cast<TemporarySummon*>(pSummon)->UnSummon();
     else    // called for non-summoned unit
         pSummon->ForcedDespawn();
@@ -358,7 +358,7 @@ void SummonManager::UnsummonAllWithId(uint32 Id)
         {
             if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
             {
-                if (pSummon->isTemporarySummon())
+                if (pSummon->IsTemporarySummon())
                     static_cast<TemporarySummon*>(pSummon)->UnSummon();
                 else    // non-summoned creature in list
                     pSummon->ForcedDespawn();
@@ -375,7 +375,7 @@ void SummonManager::UnsummonAll()
     for (SummonContainer::const_iterator i = m_Summons.begin(); i != m_Summons.end(); ++i)
         if (Creature *pSummon = m_source->GetMap()->GetCreature(*i))
         {
-            if (pSummon->isTemporarySummon())
+            if (pSummon->IsTemporarySummon())
                 static_cast<TemporarySummon*>(pSummon)->UnSummon();
             else    // non-summoned creature in list
                 pSummon->ForcedDespawn();
@@ -478,7 +478,7 @@ uint32 GetSpellIdWithDifficulty(uint32 spell_id, Difficulty diff)
 
 void DespawnCreature(Creature* pSummon)
 {
-    if (pSummon->isTemporarySummon())
+    if (pSummon->IsTemporarySummon())
         static_cast<TemporarySummon*>(pSummon)->UnSummon();
     else
         pSummon->ForcedDespawn();

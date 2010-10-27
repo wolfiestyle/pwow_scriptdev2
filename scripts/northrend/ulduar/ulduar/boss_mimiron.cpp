@@ -313,7 +313,7 @@ struct MANGOS_DLL_DECL VoltronPieceAI: public ScriptedAI
         IsInUse = true;
         IsVoltron = true;
         SetCombatMovement(false);
-        m_creature->setDeathState(JUST_ALIVED);
+        m_creature->SetDeathState(JUST_ALIVED);
         m_creature->SetHealth(m_creature->GetMaxHealth()/2);
         Aggro(m_creature->getVictim());
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);

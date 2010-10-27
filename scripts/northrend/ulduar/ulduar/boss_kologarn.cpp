@@ -109,13 +109,13 @@ struct MANGOS_DLL_DECL boss_kologarnAI: public Scripted_NoMovementAI
             if (LeftArm->isAlive())
             {
                 LeftArm->SetHealth(0);
-                LeftArm->setDeathState(JUST_DIED);
+                LeftArm->SetDeathState(JUST_DIED);
             }
         if (Creature *RightArm = GET_CREATURE(DATA_RIGHT_ARM))
             if (RightArm->isAlive())
             {
                 RightArm->SetHealth(0);
-                RightArm->setDeathState(JUST_DIED);
+                RightArm->SetDeathState(JUST_DIED);
             }
         DoScriptText(SAY_DEATH, m_creature);
         if (m_pInstance)
