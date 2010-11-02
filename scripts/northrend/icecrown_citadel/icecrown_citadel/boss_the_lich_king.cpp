@@ -262,7 +262,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         TalkPhase(0),
         HasDoneIntro(false)
     {
-        pCreature->SetPhaseMask(65535, true); // all phases
+        pCreature->SetPhaseMask(0xFFFF, true); // all phases
     }
 
     void Reset()
@@ -304,7 +304,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
             if (Creature *Fordring = GetClosestCreatureWithEntry(m_creature, NPC_TIRION_FORDRING, 200.0f))
             {
                 Fordring->MonsterMoveWithSpeed(490.7f, -2124.4f, 1040.9f);
-                Fordring->SetPhaseMask(65535, true);
+                Fordring->SetPhaseMask(0xFFFF, true);
             }
             TalkTimer = 14*IN_MILLISECONDS;
             TalkPhase = 1;
@@ -1020,13 +1020,16 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
 
 struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public ScriptEventInterface
 {
-    uint64 PrisonerGuid;
+    ObjectGuid PrisonerGuid;
 
     mob_valkyr_shadowguardAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        ScriptEventInterface(pCreature),
-        PrisonerGuid(0)
+        ScriptEventInterface(pCreature)
     {
+        // prevent it from moving too fast
+        pCreature->SetSpeedRate(MOVE_WALK, 0.7f, true);
+        pCreature->SetSpeedRate(MOVE_RUN, 0.7f, true);
+        pCreature->SetSpeedRate(MOVE_FLIGHT, 0.7f, true);
         DoCast(m_creature, SPELL_WINGS_OF_THE_DAMNED);
     }
 
@@ -1035,14 +1038,22 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
     void ScriptMessage(WorldObject *pSender, uint32, uint32)
     {
         if (pSender && pSender->GetTypeId() == TYPEID_PLAYER)
-            PrisonerGuid = pSender->GetGUID();
+            PrisonerGuid = pSender->GetObjectGuid();
+        Unit* Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid);
+        if (Prisoner)
+        {
+            DoStartNoMovement(Prisoner);
+            float x, y, z;
+            Prisoner->GetPosition(x, y, z);
+            m_creature->NearTeleportTo(x, y, z, Prisoner->GetOrientation(), false);
+        }
         float Angle, x, y;
         Angle = m_creature->GetAngle(CenterPosition[0], CenterPosition[1]);
         if (Angle < M_PI_F/4 && Angle > 7*M_PI_F/4)
             Angle = 3*M_PI_F/2;
         Angle += M_PI_F;
         GetPointOnCircle(x, y, 80.0f, Angle, CenterPosition[0], CenterPosition[1]);
-        m_creature->MonsterMoveWithSpeed(x, y, m_creature->GetPositionZ());
+        m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
     }
 
     void MoveInLineOfSight(Unit *pWho) {}
@@ -1059,7 +1070,12 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
         }*/
 
         if (Unit *Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid))
-            Prisoner->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+        {
+            m_creature->SetTargetGuid(PrisonerGuid);
+            Prisoner->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(),
+                m_creature->GetPositionZ(), Prisoner->GetOrientation(), false);
+            //Prisoner->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+        }
     }
 };
 
