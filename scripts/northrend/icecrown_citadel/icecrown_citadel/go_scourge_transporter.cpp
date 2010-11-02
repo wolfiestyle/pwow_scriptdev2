@@ -29,16 +29,15 @@ enum
     GOSSIP_TEXT_ID      = 15221,
 };
 
-static float const TeleportCoords[TP_MAX][4] =
+static uint32 const TeleportSpells[TP_MAX] =
 {
-    {-17.0711f, 2211.47f, 30.0546f, 0.0f},
-    { -503.62f, 2211.47f, 62.8235f, 3.13002f},
-    {-615.145f, 2211.47f, 199.972f, 6.27553f},
-    {-549.131f, 2211.29f, 539.291f, 6.26765f},
-    { 4199.35f, 2769.42f, 350.977f, 0.0f},
-    { 4356.58f, 2565.75f, 220.402f, -1.5708f},
-    //{ 4356.93f, 2769.41f, 355.955f, -2.35619f},
-    { 529.3f,   -2124.7f, 1046.0f,  3.14159f} // this dest location for Frozen Throne teleport
+    70781,
+    70856,
+    70857,
+    70858,
+    70859,
+    70861,
+    70860,
 };
 
 static char const* const GossipStrings[TP_MAX] =
@@ -74,7 +73,7 @@ bool GOSelect_scourge_transporter(Player* pPlayer, GameObject* pGo, uint32 uiSen
     if (uiAction >= GOSSIP_ACTION_INFO_DEF && uiAction < GOSSIP_ACTION_INFO_DEF + TP_MAX)
     {
         uint32 i = uiAction - GOSSIP_ACTION_INFO_DEF;
-        pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[i][0], TeleportCoords[i][1], TeleportCoords[i][2], TeleportCoords[i][3], 0);
+        pPlayer->CastSpell(pPlayer, TeleportSpells[i], false);
     }
 
     pPlayer->CLOSE_GOSSIP_MENU();
@@ -131,11 +130,11 @@ bool AT_scourge_transporter_trigger(Player* pPlayer, AreaTriggerEntry const* pAt
                 {
                     tpData[TP_FROZEN_THRONE] = true;
                     m_pInstance->SetData(DATA_TP_UNLOCKED, tpData.to_ulong());
-                    pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+                    pPlayer->CastSpell(pPlayer, TeleportSpells[TP_FROZEN_THRONE], false);
                 }
             }
             else
-                pPlayer->TeleportTo(pPlayer->GetMapId(), TeleportCoords[TP_FROZEN_THRONE][0], TeleportCoords[TP_FROZEN_THRONE][1], TeleportCoords[TP_FROZEN_THRONE][2], TeleportCoords[TP_FROZEN_THRONE][3], 0);
+                pPlayer->CastSpell(pPlayer, TeleportSpells[TP_FROZEN_THRONE], false);
             break;
         default:
             break;
