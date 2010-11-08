@@ -32,6 +32,8 @@ enum Spells
     SPELL_BONE_STORM            = 69076,
     SPELL_COLDFLAME_DAMAGE_AURA = 69145,
     SPELL_IMPALED               = 69065,
+
+    SPDIFF_BONE_SPIKE_GRAVEYARD = 1822,
 };
 
 enum Summons
@@ -192,18 +194,15 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         m_BossEncounter = DONE;
     }
 
-    void SpellHitTarget(Unit* pVictim, SpellEntry const* pSpell)
+    void SpellHit(Unit* pDoneBy, SpellEntry const* pSpell)
     {
-        //do not attack tanks or self
-        if (!pVictim || m_creature == pVictim || m_creature->getVictim() == pVictim)
+        if (pSpell->SpellDifficultyId != SPDIFF_BONE_SPIKE_GRAVEYARD)
             return;
 
-        SpellEntry const *CompareSpell = GetSpellStore()->LookupEntry(SPELL_BONE_SPIKE_GRAVEYARD);
-        if (!CompareSpell || pSpell->SpellDifficultyId != CompareSpell->SpellDifficultyId)
-            return;
-
-        if (Creature *pSumm = SummonMgr.SummonCreatureAt(pVictim, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
-            SendScriptMessageTo(pSumm, pVictim, EVENT_BONE_SPIKE_GRAVEYARD);
+        //TODO: spell actually has AoE target with effect SPELL_EFFECT_SCRIPT_EFFECT
+        if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2))
+            if (Creature *pSumm = SummonMgr.SummonCreatureAt(pTarget, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
+                SendScriptMessageTo(pSumm, pTarget, EVENT_BONE_SPIKE_GRAVEYARD);
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)
