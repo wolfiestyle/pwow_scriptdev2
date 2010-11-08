@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: boss_valithria
-SD%Complete: 80%
+SD%Complete: 90%
 SDComment:
 SDCategory: Icecrown Citadel
 EndScriptData */
@@ -209,11 +209,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_uiPortalsUsed++;
     }
 
-    bool PortalJokey()
-    {
-        return (m_uiPortalsUsed == m_uiPortalsSummoned && m_uiPortalsSummoned > 0)? true : false;
-    }
-
     void Aggro(Unit* pWho)
     {
         //m_BossEncounter = IN_PROGRESS;
@@ -307,7 +302,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         {
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
-            if (PortalJokey())
+            if (m_uiPortalsUsed == m_uiPortalsSummoned && m_uiPortalsSummoned > 0)  // Portal Jokey
                 m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA, 1);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
             if (Unit* pTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
@@ -364,12 +359,10 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 
                     for (uint32 i = m_bIs10Man ? 3 : 6; i; i--)
                     {
-                        uint32 maxangle = m_bIs10Man ? 90 : 360; //M_PI_F/2 : 2*M_PI_F; // just a cone in front / all around
-                        uint32 angle = urand(0, maxangle);
-                        float x, y, z;
-                        x = SUMMON_PORTAL_RADIUS * cos((angle * M_PI_F) / 180 - M_PI_F / 4.0f) + m_creature->GetPositionX();
-                        y = SUMMON_PORTAL_RADIUS * sin((angle * M_PI_F) / 180 - M_PI_F / 4.0f) + m_creature->GetPositionY();
-                        z = m_creature->GetPositionZ() + 1.0f;
+                        float angle = frand(0.0f, m_bIs10Man ? M_PI_F/2.0f : 2.0f*M_PI_F);  // just a cone in front / all around
+                        float x = SUMMON_PORTAL_RADIUS * cos(angle - M_PI_F / 4.0f) + m_creature->GetPositionX();
+                        float y = SUMMON_PORTAL_RADIUS * sin(angle - M_PI_F / 4.0f) + m_creature->GetPositionY();
+                        float z = m_creature->GetPositionZ() + 1.0f;
                         m_creature->CastSpell(x, y, z, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
                         m_uiPortalsSummoned++;
                     }
@@ -389,9 +382,9 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 bool GossipHello_mob_valithria_portal(Player *pPlayer, Creature* pCreature)
 {
     pPlayer->CastSpell(pPlayer, SPELL_DREAM_STATE, true);
-    if (pPlayer->GetMap()->IsDungeon())
-        if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData()))
-            if (Creature* pValithria = GetClosestCreatureWithEntry(pCreature, NPC_VALITHRIA, 50.0f))
+    if (pCreature->GetMap()->IsDungeon())
+        if (ScriptedInstance *m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+            if (Creature *pValithria = GET_CREATURE(TYPE_VALITHRIA))
                 if (boss_valithriaAI *valithriaAI = dynamic_cast<boss_valithriaAI*>(pValithria->AI()))
                     valithriaAI->AchieveCheck(pCreature);
     DespawnCreature(pCreature);
