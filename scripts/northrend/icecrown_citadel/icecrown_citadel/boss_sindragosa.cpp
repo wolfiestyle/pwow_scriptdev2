@@ -294,13 +294,13 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_ICE_TOMB:
                 {
-                    Unit *Target = NULL;
                     if (Events.GetPhase() == PHASE_AIR)
                         for (int i = m_bIs10Man ? 2 : (m_bIsHeroic ? 6 : 5); i ; i--)
                         {
+                            Unit *Target = NULL;
                             do // prevent selection of same target for ice tomb
                             {
-                                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
                                 if (m_creature->getAttackers().size() <= (m_bIs10Man ? 2 : 5))
                                     break;
                             }
@@ -312,10 +312,10 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
                             }
                         }
                     else
-                        if (Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                         {
                             DoCast(Target, SPELL_FROST_BEACON, true);
-                            DoCast(Target, SPELL_ICE_TOMB_VISUAL, false);
+                            DoCast(Target, SPELL_ICE_TOMB_VISUAL, true);
                             DoScriptText(SAY_ICE_TOMB_EMOTE, m_creature, Target);
                         }
                     break;
