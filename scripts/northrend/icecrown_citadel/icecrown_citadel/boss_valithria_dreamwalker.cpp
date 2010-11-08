@@ -157,11 +157,15 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     SummonManager SummonMgr;
     std::bitset<5> m_abSays;
     bool m_bScriptStarted;
+    uint32 m_uiPortalsUsed;
+    uint32 m_uiPortalsSummoned;
 
     boss_valithriaAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
-        m_bScriptStarted(false)
+        m_bScriptStarted(false),
+        m_uiPortalsUsed(0),
+        m_uiPortalsSummoned(0)
     {
         pCreature->SetHealthPercent(50.0f);
         pCreature->CastSpell(pCreature, SPELL_CORRUPTION, false);
@@ -179,6 +183,8 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         m_creature->SetHealthPercent(50.0f);
         m_creature->CastSpell(m_creature, SPELL_CORRUPTION, false);
         m_bScriptStarted = false;
+        m_uiPortalsUsed     = 0;
+        m_uiPortalsSummoned = 0;
 
         if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_ENTRANCE))
             Door->SetGoState(GO_STATE_ACTIVE);
@@ -195,6 +201,17 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         }
 
         boss_icecrown_citadelAI::Reset();
+    }
+
+    void AchieveCheck(Unit* pCaller)
+    {
+        if (pCaller->GetTypeId() == TYPEID_UNIT)
+            m_uiPortalsUsed++;
+    }
+
+    bool PortalJokey()
+    {
+        return (m_uiPortalsUsed == m_uiPortalsSummoned && m_uiPortalsSummoned > 0)? true : false;
     }
 
     void Aggro(Unit* pWho)
@@ -289,11 +306,12 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         if (m_bScriptStarted && !m_abSays[4] && m_creature->GetHealthPercent() >= 99.7f)
         {
             m_creature->RemoveAurasDueToSpell(SPELL_CORRUPTION);
-            SummonMgr.UnsummonAll();
             DoScriptText(SAY_VALITHRIA_WIN, m_creature);
+            if (PortalJokey())
+                m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA, 1);
             m_creature->CastSpell(m_creature, SPELL_DREAMWALKER_RAGE, false);
-            m_creature->CastSpell(m_creature, SPELL_ACHIEVEMENT_CHECK, true);
-            BroadcastEventToEntry(NPC_GREEN_DRAGON_COMBAT_TRIGGER, EVENT_DESPAWN, 5*IN_MILLISECONDS, 100.0f);
+            if (Unit* pTrigger = SummonMgr.GetFirstFoundSummonWithId(NPC_GREEN_DRAGON_COMBAT_TRIGGER))
+                pTrigger->CastSpell(pTrigger, SPELL_ACHIEVEMENT_CHECK, false);
             m_abSays[4] = true;
             Events.Reset();
             Events.ScheduleEvent(EVENT_DESPAWN, 5*IN_MILLISECONDS);
@@ -305,11 +323,13 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             {
                 case EVENT_INIT_SCRIPT:
                     //spawn a combat trigger to keep track of players
-                    SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, 4268.0f, 2484.0f, 365.02f, 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000);
+                    SummonMgr.SummonCreature(NPC_GREEN_DRAGON_COMBAT_TRIGGER, m_creature->GetPositionX(), m_creature->GetPositionY(),
+                        m_creature->GetPositionZ()+3.0f, 3.175f, TEMPSUMMON_MANUAL_DESPAWN, 20000);
 
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, 41500); // first portal timer (taken from DBM database)
                     m_creature->SetHealthPercent(50.0f);
                     m_bScriptStarted = true;
+                    m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA, 0);
 
                     if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_LEFT_1))
                         Door->SetGoState(GO_STATE_ACTIVE);
@@ -351,10 +371,12 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                         y = SUMMON_PORTAL_RADIUS * sin((angle * M_PI_F) / 180 - M_PI_F / 4.0f) + m_creature->GetPositionY();
                         z = m_creature->GetPositionZ() + 1.0f;
                         m_creature->CastSpell(x, y, z, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
+                        m_uiPortalsSummoned++;
                     }
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, PORTAL_TIMER);
                     break;
                 case EVENT_DESPAWN:
+                    SummonMgr.UnsummonAll();
                     m_creature->SetPhaseMask(16, true);
                     m_BossEncounter = DONE;
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
@@ -364,9 +386,14 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     }
 };
 
-bool GossipHello_mob_valithria_portal(Player *player, Creature* pCreature)
+bool GossipHello_mob_valithria_portal(Player *pPlayer, Creature* pCreature)
 {
-    player->CastSpell(player, SPELL_DREAM_STATE, true);
+    pPlayer->CastSpell(pPlayer, SPELL_DREAM_STATE, true);
+    if (pPlayer->GetMap()->IsDungeon())
+        if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData()))
+            if (Creature* pValithria = GetClosestCreatureWithEntry(pCreature, NPC_VALITHRIA, 50.0f))
+                if (boss_valithriaAI *valithriaAI = dynamic_cast<boss_valithriaAI*>(pValithria->AI()))
+                    valithriaAI->AchieveCheck(pCreature);
     DespawnCreature(pCreature);
     return true;
 };
@@ -390,6 +417,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC),
         started(false)
     {
+        pCreature->SetLevel(83);
         pCreature->setFaction(FACTION_HOSTILE);
         pCreature->SetInCombatWithZone();
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);

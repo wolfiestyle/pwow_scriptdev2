@@ -57,6 +57,7 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
     {
         m_InstanceVars[DATA_FACTION] = 0;
         m_InstanceVars[DATA_ACHIEVEMENT_COUNTER_SAURFANG] = 0;
+        m_InstanceVars[DATA_ACHIEVEMENT_CHECK_VALITHRIA] = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -308,9 +309,19 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
                 return GetData(DATA_ACHIEVEMENT_COUNTER_SAURFANG) < 5 &&
                     (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
             case CRITERIA_SAURFANG_LK_KILLS_10:
+            case CRITERIA_VALITHRIA_LK_KILLS_10:
                 return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC;
             case CRITERIA_SAURFANG_LK_KILLS_25:
+            case CRITERIA_VALITHRIA_LK_KILLS_25:
                 return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC;
+            case CRITERIA_PORTAL_JOKEY_10:
+            case CRITERIA_PORTAL_JOKEY_10H:
+                return GetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA) == 1 && 
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
+            case CRITERIA_PORTAL_JOKEY_25:
+            case CRITERIA_PORTAL_JOKEY_25H:
+                return GetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA) == 1 && 
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
             default:
                 return false;
         }
