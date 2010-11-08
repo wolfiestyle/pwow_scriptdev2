@@ -477,14 +477,16 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     SummonAdd(NPC_BLISTERING_ZOMBIE);
                     break;
                 case EVENT_SUMMON_SUPPRESSERS:
-                    if (m_uiSuppresorCount == 0)
+                {
+                    uint32 max_count = m_bIs10man ? 5 : 7;
+                    if (m_uiSuppresorCount < max_count)
                     {
-                        uint32 count = m_bIs10man ? 5 : 7;
-                        m_uiSuppresorCount = count;
-                        for (; count; --count)
+                        for (uint32 count = max_count - m_uiSuppresorCount; count; --count)
                             SummonAdd(NPC_SUPPRESSER);
+                        m_uiSuppresorCount = max_count;
                     }
                     break;
+                }
                 case EVENT_SUMMON_RISEN:
                     SummonAdd(NPC_RISEN_ARCHMAGE);
                     break;
