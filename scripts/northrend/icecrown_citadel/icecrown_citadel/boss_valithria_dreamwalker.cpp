@@ -395,20 +395,20 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
 {
     EventManager Events;
     SummonManager SummonMgr;
-    uint32 abomWaveCount;
-    uint32 blazingWaveCount;
+    uint32 m_uiAbomWaveCount;
+    uint32 m_uiBlazingWaveCount;
+    uint32 m_uiSuppresorCount;
     ScriptedInstance* m_pInstance;
-    bool m_bIs10man :1;
-    bool started :1;
+    bool m_bIs10man;
 
     mob_green_dragon_combat_triggerAI(Creature* pCreature):
         Scripted_NoMovementAI(pCreature),
         SummonMgr(pCreature),
-        abomWaveCount(0),
-        blazingWaveCount(0),
+        m_uiAbomWaveCount(0),
+        m_uiBlazingWaveCount(0),
+        m_uiSuppresorCount(0),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-        m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC),
-        started(false)
+        m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC)
     {
         pCreature->SetLevel(83);
         pCreature->setFaction(FACTION_HOSTILE);
@@ -417,16 +417,17 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         Events.ScheduleEvent(EVENT_SUMMON_RISEN, RISEN_SUMMON_TIMER + urand(5, 6)*IN_MILLISECONDS, RISEN_SUMMON_TIMER);
         Events.ScheduleEvent(EVENT_SUMMON_SUPPRESSERS, 23*IN_MILLISECONDS, SUPPRESSER_SUMMON_TIMER);
         Events.ScheduleEvent(EVENT_SUMMON_ZOMBIE, ZOMBIE_SUMMON_TIMER, ZOMBIE_SUMMON_TIMER);
-        Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[abomWaveCount++]*IN_MILLISECONDS);
-        Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[blazingWaveCount++]*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[m_uiAbomWaveCount++]*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[m_uiBlazingWaveCount++]*IN_MILLISECONDS);
     }
 
     void Reset()
     {
         Events.Reset();
         SummonMgr.UnsummonAll();
-        abomWaveCount = 0;
-        blazingWaveCount = 0;
+        m_uiAbomWaveCount = 0;
+        m_uiBlazingWaveCount = 0;
+        m_uiSuppresorCount = 0;
     }
 
     void SummonedCreatureJustDied(Creature* pSummon)
@@ -436,6 +437,9 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         if (roll_chance_i(10))  //10% chance of having her say stuff for killing adds
             if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
                 DoScriptText(SAY_VALITHRIA_SLAY_BAD, Valithria);
+
+        if (pSummon->GetEntry() == NPC_SUPPRESSER && m_uiSuppresorCount > 0)
+            --m_uiSuppresorCount;
     }
 
     void JustSummoned(Creature* pSummon)
@@ -473,23 +477,28 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
                     SummonAdd(NPC_BLISTERING_ZOMBIE);
                     break;
                 case EVENT_SUMMON_SUPPRESSERS:
-                    for (uint32 count = m_bIs10man ? 5 : 7; count; count--)
-                        SummonAdd(NPC_SUPPRESSER);
+                    if (m_uiSuppresorCount == 0)
+                    {
+                        uint32 count = m_bIs10man ? 5 : 7;
+                        m_uiSuppresorCount = count;
+                        for (; count; --count)
+                            SummonAdd(NPC_SUPPRESSER);
+                    }
                     break;
                 case EVENT_SUMMON_RISEN:
                     SummonAdd(NPC_RISEN_ARCHMAGE);
                     break;
                 case EVENT_SUMMON_ABOMS:
                     SummonAdd(NPC_GLUTTONOUS_ABOMINATION);
-                    Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[abomWaveCount]*IN_MILLISECONDS);
-                    if (abomWaveCount < sizeof(AbomTimers)/sizeof(uint32) - 1)
-                        abomWaveCount++;
+                    Events.ScheduleEvent(EVENT_SUMMON_ABOMS, AbomTimers[m_uiAbomWaveCount]*IN_MILLISECONDS);
+                    if (m_uiAbomWaveCount < sizeof(AbomTimers)/sizeof(uint32) - 1)
+                        m_uiAbomWaveCount++;
                     break;
                 case EVENT_SUMMON_BLAZING:
                     SummonAdd(NPC_BLAZING_SKELETON);
-                    Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[blazingWaveCount]*IN_MILLISECONDS);
-                    if (blazingWaveCount < sizeof(BlazingTimers)/sizeof(uint32) - 1)
-                        blazingWaveCount++;
+                    Events.ScheduleEvent(EVENT_SUMMON_BLAZING, BlazingTimers[m_uiBlazingWaveCount]*IN_MILLISECONDS);
+                    if (m_uiBlazingWaveCount < sizeof(BlazingTimers)/sizeof(uint32) - 1)
+                        m_uiBlazingWaveCount++;
                     break;
                 case EVENT_DESPAWN:
                     SummonMgr.UnsummonAll();
@@ -503,11 +512,11 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
 
 struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
 {
-    uint32 timer;
+    uint32 m_uiTimer;
 
     mob_valithria_pre_portalAI(Creature *pCreature):
         ScriptedAI(pCreature),
-        timer(15*IN_MILLISECONDS)
+        m_uiTimer(15*IN_MILLISECONDS)
     {
         pCreature->CastSpell(pCreature, pCreature->GetEntry() == NPC_DREAM_PORTAL_PRE ? SPELL_DREAM_PORTAL_PRE : SPELL_NIGHTMARE_PORTAL_PRE, false);
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -523,7 +532,7 @@ struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (timer <= uiDiff)
+        if (m_uiTimer <= uiDiff)
         {
             m_creature->SummonCreature(m_creature->GetEntry() == NPC_DREAM_PORTAL_PRE ? NPC_DREAM_PORTAL : NPC_NIGHTMARE_PORTAL,
                     m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(),
@@ -531,7 +540,7 @@ struct MANGOS_DLL_DECL mob_valithria_pre_portalAI: public ScriptedAI
             DespawnCreature(m_creature);
         }
         else
-            timer -= uiDiff;
+            m_uiTimer -= uiDiff;
     }
 };
 
