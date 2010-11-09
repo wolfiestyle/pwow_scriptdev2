@@ -212,14 +212,13 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             return;
 
         //TODO: spell actually has AoE target with effect SPELL_EFFECT_SCRIPT_EFFECT
-        uint32 maxTargets = m_bIs10Man? 1 : 3;
-        for (int i = m_bIs10Man? 1 : 3; i ; i--)
+        for (int i = m_bIs10Man ? 1 : 3; i ; --i)
         {
             Unit *Target = NULL;
             do // prevent selection of same target for Bone Spike
             {
                 Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2); // dont get tanks
-                if (m_creature->getAttackers().size() <= (m_bIs10Man ? 3 : 5))
+                if (!Target || m_creature->getAttackers().size() <= (m_bIs10Man ? 3 : 5))
                     break;
             }
             while (Target->HasAura(SPELL_IMPALED));

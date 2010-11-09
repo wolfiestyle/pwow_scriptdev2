@@ -301,7 +301,7 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
                             do // prevent selection of same target for ice tomb
                             {
                                 Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
-                                if (m_creature->getAttackers().size() <= (m_bIs10Man ? 2 : 5))
+                                if (!Target || m_creature->getAttackers().size() <= (m_bIs10Man ? 2 : 5))
                                     break;
                             }
                             while (Target->HasAura(SPELL_FROST_BEACON));
