@@ -75,6 +75,7 @@ enum Events
 #define TIMER_BONE_STORM_MOVE       5*IN_MILLISECONDS
 #define TIMER_BONE_SPIKE_GRAVEYARD  20*IN_MILLISECONDS
 #define TIMER_ENRAGE                10*MINUTE*IN_MILLISECONDS
+#define TIMER_BONED                 8*IN_MILLISECONDS
 
 #define COLDFLAME_START_DIST        6
 #define COLDFLAME_STEP_DIST         6
@@ -83,9 +84,13 @@ enum Events
 struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
     ObjectGuid m_TargetGuid;
+    ScriptedInstance* m_pInstance;
+    uint32 m_uiBonedTimer;
 
     mob_bone_spikeAI(Creature *pCreature):
-        Scripted_NoMovementAI(pCreature)
+        Scripted_NoMovementAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_uiBonedTimer(0)
     {
     }
 
@@ -103,6 +108,11 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
     {
         if (m_TargetGuid.IsEmpty())
             return;
+
+        m_uiBonedTimer += uiDiff;
+        if (m_uiBonedTimer >= TIMER_BONED && m_pInstance->GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0) // just set it once
+            m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 1);
+
         Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
         if (pTarget && pTarget->isAlive())
@@ -173,6 +183,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             return;
         if (GameObject* Door = GET_GAMEOBJECT(DATA_MARROWGAR_DOOR_ENTRANCE))
             Door->SetGoState(GO_STATE_READY);
+        m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 0); // reset achievement check on engage
         DoScriptText(SAY_AGGRO, m_creature);
         SCHEDULE_EVENT_R(COLDFLAME);
         SCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);
@@ -191,6 +202,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        RemoveEncounterAuras(SPELL_IMPALED);
         m_BossEncounter = DONE;
     }
 
@@ -200,9 +212,21 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             return;
 
         //TODO: spell actually has AoE target with effect SPELL_EFFECT_SCRIPT_EFFECT
-        if (Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2))
-            if (Creature *pSumm = SummonMgr.SummonCreatureAt(pTarget, NPC_BONE_SPIKE, TEMPSUMMON_TIMED_DESPAWN, 5*MINUTE*IN_MILLISECONDS))
-                SendScriptMessageTo(pSumm, pTarget, EVENT_BONE_SPIKE_GRAVEYARD);
+        uint32 maxTargets = m_bIs10Man? 1 : 3;
+        for (int i = m_bIs10Man? 1 : 3; i ; i--)
+        {
+            Unit *Target = NULL;
+            do // prevent selection of same target for Bone Spike
+            {
+                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2); // dont get tanks
+                if (m_creature->getAttackers().size() <= (m_bIs10Man ? 3 : 5))
+                    break;
+            }
+            while (Target->HasAura(SPELL_IMPALED));
+            if (Target)
+                if (Creature *pSumm = SummonMgr.SummonCreatureAt(Target, NPC_BONE_SPIKE, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                    SendScriptMessageTo(pSumm, Target, EVENT_BONE_SPIKE_GRAVEYARD);
+        }
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)

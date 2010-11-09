@@ -322,6 +322,14 @@ struct MANGOS_DLL_DECL instance_icecrown_citadel: public ScriptedInstance
             case CRITERIA_PORTAL_JOKEY_25H:
                 return GetData(DATA_ACHIEVEMENT_CHECK_VALITHRIA) == 1 && 
                     (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
+            case CRITERIA_MARROWGAR_BONED_10:
+            case CRITERIA_MARROWGAR_BONED_10H:
+                return GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0 && 
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC);
+            case CRITERIA_MARROWGAR_BONED_25:
+            case CRITERIA_MARROWGAR_BONED_25H:
+                return GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0 && 
+                    (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC);
             default:
                 return false;
         }
