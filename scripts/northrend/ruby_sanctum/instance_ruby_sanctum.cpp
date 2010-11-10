@@ -90,13 +90,11 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
         }
     }
 
-    bool HalionCheck()
+    bool HalionCheck() const
     {
-        if (m_InstanceVars[TYPE_SAVIANA] == DONE &&
-            m_InstanceVars[TYPE_ZARITHRIAN] == DONE &&
-            m_InstanceVars[TYPE_BALTHARUS] == DONE)
-            return true;
-        return false;
+        return  map_find(m_InstanceVars, TYPE_SAVIANA) == DONE &&
+                map_find(m_InstanceVars, TYPE_ZARITHRIAN) == DONE &&
+                map_find(m_InstanceVars, TYPE_BALTHARUS) == DONE;
     }
 
     void OnEncounterComplete(uint32 uiType)
@@ -117,14 +115,7 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
                 break;
             case TYPE_ZARITHRIAN:
                 go_ids.push_back(DATA_FLAME_WALLS);
-                if (HalionCheck())
-                {
-                    go_ids.push_back(DATA_BURNING_TREE_1);
-                    go_ids.push_back(DATA_BURNING_TREE_2);
-                    go_ids.push_back(DATA_BURNING_TREE_3);
-                    go_ids.push_back(DATA_BURNING_TREE_4);
-                }
-                break;
+                // (no break)
             case TYPE_SAVIANA:
                 if (HalionCheck())
                 {
@@ -140,6 +131,7 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
             default:
                 break;
         }
+
         for (std::deque<uint32>::const_iterator i = go_ids.begin(); i != go_ids.end(); ++i)
             if (uint64 DoorGuid = GetData64(*i))
             {

@@ -7,7 +7,8 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_BALTHARUS,         TYPE_BALTHARUS)
     (NPC_SAVIANA_RAGEFIRE,  TYPE_SAVIANA)
     (NPC_ZARITHRIAN,        TYPE_ZARITHRIAN)
-    (NPC_HALION_PHYSICAL,   TYPE_HALION);
+    (NPC_HALION_PHYSICAL,   TYPE_HALION)
+    ;
 
 static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_HALION_FLAME_RING,  DATA_HALION_FLAME_RING)
@@ -16,7 +17,8 @@ static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
     (GO_BURNING_TREE_1,     DATA_BURNING_TREE_1)
     (GO_BURNING_TREE_2,     DATA_BURNING_TREE_2)
     (GO_BURNING_TREE_3,     DATA_BURNING_TREE_3)
-    (GO_BURNING_TREE_4,     DATA_BURNING_TREE_4);
+    (GO_BURNING_TREE_4,     DATA_BURNING_TREE_4)
+    ;
 
 namespace rs {
 
@@ -48,7 +50,7 @@ bool MeetsRequirementsForBoss(InstanceData* instance, uint32 boss_id)
 
 #undef BOSS_DONE
 
-} // namespace icc
+} // namespace rs
 
 boss_ruby_sanctumAI::boss_ruby_sanctumAI(Creature* pCreature):
     ScriptedAI(pCreature),

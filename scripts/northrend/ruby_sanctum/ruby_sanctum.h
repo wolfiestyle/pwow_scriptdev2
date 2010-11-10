@@ -10,23 +10,24 @@
 #define SCHEDULE_EVENT(EV, ...)   Events.ScheduleEvent(EVENT_##EV, TIMER_##EV, TIMER_##EV, ## __VA_ARGS__)
 #define SCHEDULE_EVENT_R(EV, ...) Events.ScheduleEventInRange(EVENT_##EV, TIMER_##EV, TIMER_##EV, ## __VA_ARGS__)
 
-enum{
+enum
+{
     MAX_ENCOUNTER           = 4,
 
     // Bosses
-    TYPE_BALTHARUS          = 1,
-    TYPE_SAVIANA            = 2, 
-    TYPE_ZARITHRIAN         = 3,
-    TYPE_HALION             = 4,
+    TYPE_BALTHARUS          = 0,
+    TYPE_SAVIANA            = 1, 
+    TYPE_ZARITHRIAN         = 2,
+    TYPE_HALION             = 3,
 
-    //Gameobjects
-    DATA_HALION_FLAME_RING  = 5,
-    DATA_FIRE_FIELD         = 6,
-    DATA_FLAME_WALLS        = 7,
-    DATA_BURNING_TREE_1     = 8,
-    DATA_BURNING_TREE_2     = 9,
-    DATA_BURNING_TREE_3     = 10,
-    DATA_BURNING_TREE_4     = 11,
+    // Gameobjects
+    DATA_HALION_FLAME_RING,
+    DATA_FIRE_FIELD,
+    DATA_FLAME_WALLS,
+    DATA_BURNING_TREE_1,
+    DATA_BURNING_TREE_2,
+    DATA_BURNING_TREE_3,
+    DATA_BURNING_TREE_4,
 
     // total count of guid values stored
     DATA_GUID_MAX,
@@ -41,16 +42,16 @@ enum{
     NPC_HALION_TWILIGHT     = 40142,
     NPC_HALION_CONTROLLER   = 40146,
 
-    // GOs
+    // GO entries
     GO_HALION_FLAME_RING    = 203007, // Halion
     GO_FIRE_FIELD           = 203005, // Baltharus
     GO_FIRE_WALLS           = 203006, // Zarithrian
-
     GO_BURNING_TREE_1       = 203034,
     GO_BURNING_TREE_2       = 203035,
     GO_BURNING_TREE_3       = 203036,
     GO_BURNING_TREE_4       = 203037,
 };
+
 //---------------------------------------------------------
 
 namespace rs {
@@ -102,4 +103,4 @@ struct MANGOS_DLL_DECL boss_ruby_sanctumAI: public ScriptedAI, public ScriptEven
     void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);
 };
 
-#endif// DEF_RUBY_SANCTUM_H
+#endif // DEF_RUBY_SANCTUM_H
