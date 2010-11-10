@@ -41,7 +41,7 @@ enum Spells
     SPELL_TWISTING_NIGHTMARES   = 71941,
     SPELL_SUMMON_DREAM_PORTAL   = 71301,
     SPELL_SUMMON_NIGHTMARE_PORT = 71977,
-    SPELL_NIGHTMARES            = 71946, // heroic mode spell
+    //SPELL_NIGHTMARES            = 71946, // trigered from nightmare cloud
     // Blazing Skeletons
     SPELL_FIREBALL              = 70754,
     SPELL_LAY_WASTE             = 69325,
@@ -149,13 +149,14 @@ static const float locations[4][2] =
 #define SUPPRESSER_SUMMON_TIMER 60*IN_MILLISECONDS
 #define PORTAL_TIMER            46.5*IN_MILLISECONDS
 #define TIMER_COMBAT_CHECK      3*IN_MILLISECONDS
-
+#define MAX_SPAWN_POSITIONS     8 // we spawn 2 per point
 #define SUMMON_PORTAL_RADIUS    30.0f
 
 struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
     std::bitset<5> m_abSays;
+    bool m_bHeroicPortalsSummoned;
     bool m_bScriptStarted;
     uint32 m_uiPortalsUsed;
     uint32 m_uiPortalsSummoned;
@@ -163,6 +164,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
     boss_valithriaAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
+        m_bHeroicPortalsSummoned(false),
         m_bScriptStarted(false),
         m_uiPortalsUsed(0),
         m_uiPortalsSummoned(0)
@@ -179,6 +181,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
         m_abSays.reset();
         DoScriptText(SAY_VALITHRIA_BERSERK, m_creature);
         SummonMgr.UnsummonAll(); // she only summons the combat trigger which despawns when he receives the broadcasted message "Win" or "wipe"
+        m_bHeroicPortalsSummoned = false;
 
         m_creature->SetHealthPercent(50.0f);
         m_creature->CastSpell(m_creature, SPELL_CORRUPTION, false);
@@ -282,10 +285,6 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             return;
 
         m_creature->SetTargetGuid(ObjectGuid());
-
-        if (m_bIsHeroic && !m_creature->HasAura(SPELL_NIGHTMARES))        // Heroic mode spell (boss takes damage over time)
-            DoCast(m_creature, SPELL_NIGHTMARES, true);
-
         if (m_bScriptStarted && !m_abSays[2] && m_creature->GetHealthPercent() <= 25.0f)
         {
             DoScriptText(SAY_VALITHRIA_25, m_creature);
@@ -366,7 +365,27 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
                         m_creature->CastSpell(x, y, z, m_bIsHeroic ? SPELL_SUMMON_NIGHTMARE_PORT : SPELL_SUMMON_DREAM_PORTAL, true);
                         m_uiPortalsSummoned++;
                     }
+                    if (!m_bIsHeroic)
+                        SummonMgr.UnsummonAllWithId(NPC_DREAM_CLOUD); // remove leftovers
+
+                    if (!m_bHeroicPortalsSummoned)
+                        for (uint32 i = MAX_SPAWN_POSITIONS; i ; i--)
+                        {
+                            float x, y, z;
+                            m_creature->GetPosition(x, y, z);
+                            z = 383.0f + frand(0.0f, 5.0f);
+                            x += (SUMMON_PORTAL_RADIUS - 5.0f)*cos(i*(2*M_PI/MAX_SPAWN_POSITIONS));
+                            y += (SUMMON_PORTAL_RADIUS - 5.0f)*sin(i*(2*M_PI/MAX_SPAWN_POSITIONS));
+                            for (uint32 j = 2 ; j ; j--)
+                            {
+                                Creature* pSumm = SummonMgr.SummonCreature(m_bIsHeroic ? NPC_NIGHTMARE_CLOUD : NPC_DREAM_CLOUD, 
+                                    x + frand(-5.0f, 5.0f), y + frand(-5.0f, 5.0f) ,z + frand(-5.0f, 5.0f), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10*MINUTE*IN_MILLISECONDS);
+                                pSumm->SetPhaseMask(16, true);
+                            }
+                        }
                     Events.RescheduleEvent(EVENT_SUMMON_PORTALS, PORTAL_TIMER);
+                    if (m_bIsHeroic && !m_bHeroicPortalsSummoned) // on heroic, we dont resummon the clouds inside the "dream world"
+                        m_bHeroicPortalsSummoned = true;
                     break;
                 case EVENT_DESPAWN:
                     SummonMgr.UnsummonAll();
@@ -410,6 +429,7 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC)
     {
+        pCreature->SetPhaseMask(pCreature->GetPhaseMask() | 16, true);
         pCreature->SetLevel(83);
         pCreature->setFaction(FACTION_HOSTILE);
         pCreature->SetInCombatWithZone();
@@ -573,11 +593,11 @@ struct MANGOS_DLL_DECL mob_valithria_cloudAI: public ScriptedAI
         switch (m_creature->GetEntry())
         {
             case NPC_DREAM_CLOUD:
-                DoCast(pWho, SPELL_EMERALD_VIGOR, false);
+                DoCast(m_creature, SPELL_EMERALD_VIGOR, false);
                 m_bIsUsed = true;
                 break;
             case NPC_NIGHTMARE_CLOUD:
-                DoCast(pWho, SPELL_TWISTING_NIGHTMARES, false);
+                DoCast(m_creature, SPELL_TWISTING_NIGHTMARES, false);
                 m_bIsUsed = true;
                 break;
             default:
@@ -664,8 +684,8 @@ struct MANGOS_DLL_DECL mob_valithria_addAI: public ScriptedAI
         if (pKilled->GetTypeId() != TYPEID_PLAYER)
             return;
         if (roll_chance_i(50)) //50% chance of having her say stuff for killing players
-            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))        
-                DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);        
+            if (Creature* Valithria = GET_CREATURE(TYPE_VALITHRIA))
+                DoScriptText(SAY_VALITHRIA_SLAY_GOOD, Valithria);
     }
 
     void Aggro(Unit* pWho)
