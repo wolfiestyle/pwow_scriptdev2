@@ -429,7 +429,6 @@ struct MANGOS_DLL_DECL mob_green_dragon_combat_triggerAI: public Scripted_NoMove
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_bIs10man(m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL || m_pInstance->instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC)
     {
-        pCreature->SetPhaseMask(pCreature->GetPhaseMask() | 16, true);
         pCreature->SetLevel(83);
         pCreature->setFaction(FACTION_HOSTILE);
         pCreature->SetInCombatWithZone();
