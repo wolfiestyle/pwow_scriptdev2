@@ -2015,6 +2015,10 @@
 					Name="ruby_sanctum"
 					>
 					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_baltharus.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\northrend\ruby_sanctum\boss_halion.cpp"
 						>
 					</File>
@@ -2023,11 +2027,19 @@
 						>
 					</File>
 					<File
-						RelativePath="..\scripts\northrend\ruby_sanctum\boss_baltharus.cpp"
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_zarithian.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\scripts\northrend\ruby_sanctum\boss_zarithian.cpp"
+						RelativePath="..\scripts\northrend\ruby_sanctum\instance_ruby_sanctum.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\\ruby_sanctum.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\\ruby_sanctum.h"
 						>
 					</File>
 				</Filter>

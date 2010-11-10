@@ -22,3 +22,56 @@ SDCategory: Ruby Sanctum
 EndScriptData */
 
 #include "precompiled.h"
+#include "ruby_sanctum.h"
+
+struct MANGOS_DLL_DECL boss_halionAI: public boss_ruby_sanctumAI
+{
+    boss_halionAI(Creature* pCreature):
+        boss_ruby_sanctumAI(pCreature)
+    {
+    }
+
+    /*
+    void Reset()
+    {
+        boss_ruby_sanctumAI::Reset();
+    }
+    */
+
+    void Aggro(Unit* pWho)
+    {
+        m_BossEncounter = IN_PROGRESS;
+    }
+
+    void KilledUnit(Unit* pWho)
+    {
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        m_BossEncounter = DONE;
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                default:
+                    break;
+            }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+void AddSC_boss_halion()
+{
+    Script *newscript;
+
+    REGISTER_SCRIPT(boss_halion);
+};
