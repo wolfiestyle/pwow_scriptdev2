@@ -103,7 +103,7 @@ struct MANGOS_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
 
     void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
     {
-        if (pSpell->SpellClassMask.bits(CF_ALL_GIFT_OF_THE_NAARU))
+        if (pSpell->SpellClassMask.test<CF_ALL_GIFT_OF_THE_NAARU>())
         {
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
             m_creature->SetStandState(UNIT_STAND_STATE_STAND);
