@@ -349,7 +349,7 @@ struct MANGOS_DLL_DECL mob_sindragosa_guardAI: public ScriptedAI, ScriptMessageI
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
         if (data1 == MESSAGE_OTHER_GUARD_DEAD && m_creature->GetHealth() == 0)
-            if (Creature *Sindragosa = m_creature->SummonCreature(NPC_SINDRAGOSA, SUMMON_X, CENTER_LINE_Y, FLOOR_HEIGHT, M_PI_F, TEMPSUMMON_MANUAL_DESPAWN, 0))
+            if (Creature *Sindragosa = m_creature->SummonCreature(NPC_SINDRAGOSA, SUMMON_X, CENTER_LINE_Y, FLOOR_HEIGHT, M_PI_F, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS))
                 Sindragosa->SetInCombatWithZone();
     }
 

@@ -211,8 +211,8 @@ enum Phases
     PMASK_TRANSITION_PHASE      = bit_mask<PHASE_TRANSITION_ONE, PHASE_TRANSITION_TWO>::value,
 };
 
-static const float CenterPosition[3]        = {503.7f, -2124.5f, 1040.8f};
-static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1052.9f};
+static const float CenterPosition[3]        = {503.7f, -2124.5f, 1043.8f};
+static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1060.8f};
 
 #define OUTRO_CINEMATIC                     16
 
@@ -415,7 +415,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
             Wind->SetGoState(GO_STATE_ACTIVE);
         Events.ScheduleEvent(EVENT_REMORSELESS_WINTER, TIMER_REMORSELESS_WINTER);
-        Events.ScheduleEvent(EVENT_QUAKE, TIMER_QUAKE);
+        Events.ScheduleEvent(EVENT_QUAKE, TIMER_QUAKE + 4*IN_MILLISECONDS);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveAllAuras(); //any kind of damage will remove remorseless winter (unknown why)
         Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
@@ -1063,11 +1063,11 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        /*if (!m_creature->IsWithinDist2d(CenterPosition[0], CenterPosition[1], 75.0f))
+        if (!m_creature->IsWithinDist2d(CenterPosition[0], CenterPosition[1], 75.0f))
         {
-            m_creature->ForcedDespawn();
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, 0, false);
             return;
-        }*/
+        }
 
         if (Unit *Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid))
         {
@@ -1200,6 +1200,15 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
                     TalkPhase++;
                     break;
             }
+        if (m_creature->getVictim())
+            DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit *pKiller)
+    {
+        if (Unit *pOwner = m_creature->GetOwner())
+            if (pOwner->GetTypeId() == TYPEID_UNIT)
+                SendScriptMessageTo(static_cast<Creature*>(pOwner), m_creature, 0, 0);
     }
 };
 
