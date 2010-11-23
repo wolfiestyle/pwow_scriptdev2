@@ -86,11 +86,20 @@ bool boss_ruby_sanctumAI::IsOutOfCombatArea() const
     if (m_creature->GetMapId() != 724)  // invalid check outside RS
         return false;
 
-    float z = m_creature->GetPositionZ();
     uint32 areaId = m_creature->GetAreaId();
 
     switch (m_creature->GetEntry())
     {
+        case NPC_SAVIANA_RAGEFIRE:
+            return !m_creature->IsWithinDist2d(3162.77f, 638.14f, 75.0f);
+        case NPC_BALTHARUS:
+        case NPC_BALTHARUS_CLONE:
+            return !m_creature->IsWithinDist2d(3153.06f, 389.48f, 63.0f);
+        case NPC_ZARITHRIAN:
+            return !m_creature->IsWithinDist2d(3004.659f, 535.489f, 63.0f);
+        case NPC_HALION_PHYSICAL:
+        case NPC_HALION_TWILIGHT:
+            return !m_creature->IsWithinDist2d(3152.08f, 532.163f, 55.0f);
         default:
             return false;
     }

@@ -255,7 +255,7 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
     {
         if (m_bIsIntro && !m_bHasDoneIntro)
             UpdateTalk(uiDiff);
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
         Events.Update(uiDiff);

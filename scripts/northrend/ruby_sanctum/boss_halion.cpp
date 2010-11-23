@@ -54,7 +54,7 @@ struct MANGOS_DLL_DECL boss_halionAI: public boss_ruby_sanctumAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
         Events.Update(uiDiff);
