@@ -8,6 +8,8 @@ static EntryTypeMap const CreatureEntryToType = map_initializer<EntryTypeMap>
     (NPC_SAVIANA_RAGEFIRE,  TYPE_SAVIANA)
     (NPC_ZARITHRIAN,        TYPE_ZARITHRIAN)
     (NPC_HALION_PHYSICAL,   TYPE_HALION)
+    (NPC_SANCTUM_GUARD_XERESTRASZA, DATA_XERESTRASZA)
+    (NPC_HALION_CONTROLLER, DATA_HALION_CONTROLLER)
     ;
 
 static EntryTypeMap const GameObjectEntryToType = map_initializer<EntryTypeMap>
@@ -70,6 +72,13 @@ void boss_ruby_sanctumAI::Reset()
     Events.Reset();
     if (m_creature->isAlive())
         m_BossEncounter = NOT_STARTED;
+}
+
+void boss_ruby_sanctumAI::JustDied(Unit* pKiller)
+{
+    if (rs::MeetsRequirementsForBoss(m_pInstance, TYPE_HALION))
+        if (Creature* Controller = GET_CREATURE(DATA_HALION_CONTROLLER))
+            SendEventTo(Controller, 1, 0); // on boss death if notifiers are ready, init the spawning of the twilight destroyer
 }
 
 bool boss_ruby_sanctumAI::IsOutOfCombatArea() const

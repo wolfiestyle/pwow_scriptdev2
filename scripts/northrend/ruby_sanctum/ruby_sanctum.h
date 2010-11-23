@@ -28,6 +28,9 @@ enum
     DATA_BURNING_TREE_2,
     DATA_BURNING_TREE_3,
     DATA_BURNING_TREE_4,
+    // Aditional NPCs
+    DATA_XERESTRASZA,
+    DATA_HALION_CONTROLLER,
 
     // total count of guid values stored
     DATA_GUID_MAX,
@@ -90,6 +93,7 @@ struct MANGOS_DLL_DECL boss_ruby_sanctumAI: public ScriptedAI, public ScriptEven
     boss_ruby_sanctumAI(Creature*);
 
     void Reset();
+    void JustDied(Unit* pKiller);
 
     // check if boss has been pulled too far from its place
     bool IsOutOfCombatArea() const;
@@ -97,7 +101,6 @@ struct MANGOS_DLL_DECL boss_ruby_sanctumAI: public ScriptedAI, public ScriptEven
     bool OutOfCombatAreaCheck();
     // prevents combat with boss if group doesn't meet requirements
     bool InstanceProgressionCheck();
-
     // remove auras from all players in map
     // if spellId is negative, removes with spell difficulty
     void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);
