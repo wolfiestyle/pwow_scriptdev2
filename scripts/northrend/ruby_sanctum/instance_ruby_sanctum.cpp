@@ -90,13 +90,6 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
         }
     }
 
-    bool HalionCheck() const
-    {
-        return  map_find(m_InstanceVars, TYPE_SAVIANA) == DONE &&
-                map_find(m_InstanceVars, TYPE_ZARITHRIAN) == DONE &&
-                map_find(m_InstanceVars, TYPE_BALTHARUS) == DONE;
-    }
-
     void OnEncounterComplete(uint32 uiType)
     {
         std::deque<uint32> go_ids;
@@ -105,25 +98,11 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
         {
             case TYPE_BALTHARUS:
                 go_ids.push_back(DATA_FIRE_FIELD);
-                if (HalionCheck())
-                {
-                    go_ids.push_back(DATA_BURNING_TREE_1);
-                    go_ids.push_back(DATA_BURNING_TREE_2);
-                    go_ids.push_back(DATA_BURNING_TREE_3);
-                    go_ids.push_back(DATA_BURNING_TREE_4);
-                }
                 break;
             case TYPE_ZARITHRIAN:
                 go_ids.push_back(DATA_FLAME_WALLS);
                 // (no break)
             case TYPE_SAVIANA:
-                if (HalionCheck())
-                {
-                    go_ids.push_back(DATA_BURNING_TREE_1);
-                    go_ids.push_back(DATA_BURNING_TREE_2);
-                    go_ids.push_back(DATA_BURNING_TREE_3);
-                    go_ids.push_back(DATA_BURNING_TREE_4);
-                }
                 break;
             case TYPE_HALION:
                 go_ids.push_back(DATA_HALION_FLAME_RING);
