@@ -236,8 +236,9 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
                 SendEventTo(Guardian, EVENT_OUTRO, 0);
             DoScriptText(BALTHARUS_DEATH01, m_creature);
             SummonMgr.UnsummonAll();
+            m_BossEncounter = DONE;
+            boss_ruby_sanctumAI::JustDied(pKiller);
         }
-        m_BossEncounter = DONE;
     }
 
     void UpdateTalk(uint32 const uiDiff)

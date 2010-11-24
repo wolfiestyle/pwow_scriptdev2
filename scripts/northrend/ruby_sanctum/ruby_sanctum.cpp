@@ -77,7 +77,7 @@ void boss_ruby_sanctumAI::Reset()
 void boss_ruby_sanctumAI::JustDied(Unit* pKiller)
 {
     if (rs::MeetsRequirementsForBoss(m_pInstance, TYPE_HALION))
-        if (Creature* Controller = GET_CREATURE(DATA_HALION_CONTROLLER))
+        if (Creature* Controller = m_creature->SummonCreature(NPC_HALION_CONTROLLER, 3154.27f, 532.342f, 72.887f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS))
             SendEventTo(Controller, 1, 0); // on boss death if notifiers are ready, init the spawning of the twilight destroyer
 }
 
