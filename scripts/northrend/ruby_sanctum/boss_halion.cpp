@@ -74,4 +74,4 @@ void AddSC_boss_halion()
     Script *newscript;
 
     REGISTER_SCRIPT(boss_halion);
-};
+}

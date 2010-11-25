@@ -74,6 +74,7 @@ enum Spells
     SPELL_SIMPLE_TELEPORT   = 70618,
     SPELL_BARRIER_CHANNEL   = 76221,
 };
+
 #define TIMER_CLEAVE            5*IN_MILLISECONDS, 15*IN_MILLISECONDS
 #define TIMER_TEMPEST           22*IN_MILLISECONDS, 30*IN_MILLISECONDS
 #define TIMER_ENERVATING_BRAND  5*IN_MILLISECONDS, 8*IN_MILLISECONDS
@@ -93,9 +94,9 @@ struct MANGOS_DLL_DECL npc_xerestraszaAI: public ScriptedAI, ScriptEventInterfac
     {
     }
 
-    void Reset(){}
+    void Reset() {}
 
-    void Aggro(Unit* ){}
+    void Aggro(Unit* pWho) {}
 
     void UpdateAI(uint32 const uiDiff)
     {
@@ -155,20 +156,21 @@ struct MANGOS_DLL_DECL npc_xerestraszaAI: public ScriptedAI, ScriptEventInterfac
 
 struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
 {
-    bool m_bHasDoneIntro : 1;
-    bool m_bIsIntro : 1;
-    bool m_bSplit1 : 1;
-    bool m_bSplit2 : 1;
-    uint32 m_uiTalkTimer;
     SummonManager SummonMgr;
+    uint32 m_uiTalkTimer;
+    bool m_bHasDoneIntro :1;
+    bool m_bIsIntro :1;
+    bool m_bSplit1 :1;
+    bool m_bSplit2 :1;
 
     boss_baltharusAI(Creature* pCreature):
         boss_ruby_sanctumAI(pCreature),
+        SummonMgr(pCreature),
+        m_uiTalkTimer(0),
         m_bHasDoneIntro(false),
         m_bIsIntro(false),
         m_bSplit1(false),
-        m_bSplit2(false),
-        SummonMgr(pCreature)
+        m_bSplit2(false)
     {
         if (pCreature->GetEntry() == NPC_BALTHARUS_CLONE)
             DoCast(m_creature, SPELL_SIMPLE_TELEPORT);
@@ -189,8 +191,7 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
     {
         if (m_creature->GetEntry() == NPC_BALTHARUS_CLONE)
             m_creature->SetInCombatWithZone();
-        else
-        if (!m_bHasDoneIntro && !m_bIsIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
+        else if (!m_bHasDoneIntro && !m_bIsIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
             pWho->IsWithinDist(m_creature, 50.0f) && pWho->isTargetableForAttack())
         {
             if (Creature *Xerestrasza = GET_CREATURE(DATA_XERESTRASZA))
@@ -222,10 +223,8 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
 
     void KilledUnit(Unit* pWho)
     {
-        if (roll_chance_i(50))
-            DoScriptText(BALTHARUS_SLAY01, m_creature);
-        else
-            DoScriptText(BALTHARUS_SLAY02, m_creature);
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+            DoScriptText(urand(0,1) ? BALTHARUS_SLAY01 : BALTHARUS_SLAY02, m_creature);
     }
 
     void JustDied(Unit* pKiller)
@@ -293,7 +292,7 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
         DoMeleeAttackIfReady();
     }
 
-    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
         if (m_creature->GetEntry() == NPC_BALTHARUS_CLONE)
             return;
@@ -328,4 +327,4 @@ void AddSC_boss_baltharus()
 
     REGISTER_SCRIPT(boss_baltharus);
     REGISTER_SCRIPT(npc_xerestrasza);
-};
+}

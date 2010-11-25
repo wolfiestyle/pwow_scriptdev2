@@ -31,7 +31,6 @@ enum Says
     SAVIANA_SLAY02      = -1620032,
     SAVIANA_DEATH01     = -1620033,
     SAVIANA_SPECIAL01   = -1620034,
-
 };
 
 enum Events
@@ -82,17 +81,16 @@ struct MANGOS_DLL_DECL boss_savianaAI: public boss_ruby_sanctumAI
 
     void KilledUnit(Unit* pWho)
     {
-        if (roll_chance_i(50))
-            DoScriptText(SAVIANA_SLAY01, m_creature);
-        else
-            DoScriptText(SAVIANA_SLAY02, m_creature);
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+            DoScriptText(urand(0,1) ? SAVIANA_SLAY01 : SAVIANA_SLAY02, m_creature);
     }
 
-    void SpellHitTarget(Unit *pWho, const SpellEntry *pSpell)
+    void SpellHitTarget(Unit* pWho, SpellEntry const* pSpell)
     {
         if (pWho && pSpell->Id == SPELL_CONFLAGRATION)
             m_creature->CastSpell(pWho, SPELL_CONFLAG_REAL, true);
     }
+
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAVIANA_DEATH01, m_creature);
@@ -158,4 +156,4 @@ void AddSC_boss_saviana()
     Script *newscript;
 
     REGISTER_SCRIPT(boss_saviana);
-};
+}

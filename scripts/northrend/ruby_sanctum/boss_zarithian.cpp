@@ -70,6 +70,7 @@ enum Adds
 struct MANGOS_DLL_DECL mob_flamecaller_rsAI: public ScriptedAI
 {
     EventManager Events;
+
     mob_flamecaller_rsAI(Creature* pCreature):
         ScriptedAI(pCreature)
     {
@@ -78,7 +79,7 @@ struct MANGOS_DLL_DECL mob_flamecaller_rsAI: public ScriptedAI
     void Reset()
     {
         Events.Reset();
-    };
+    }
 
     void Aggro(Unit* pWho)
     {
@@ -110,6 +111,7 @@ struct MANGOS_DLL_DECL mob_flamecaller_rsAI: public ScriptedAI
 struct MANGOS_DLL_DECL boss_zarithrianAI: public boss_ruby_sanctumAI
 {
     SummonManager SummonMgr;
+
     boss_zarithrianAI(Creature* pCreature):
         boss_ruby_sanctumAI(pCreature),
         SummonMgr(m_creature)
@@ -137,10 +139,8 @@ struct MANGOS_DLL_DECL boss_zarithrianAI: public boss_ruby_sanctumAI
 
     void KilledUnit(Unit* pWho)
     {
-        if (roll_chance_i(50))
-            DoScriptText(ZARITHRIAN_SLAY01, m_creature);
-        else
-            DoScriptText(ZARITHRIAN_SLAY02, m_creature);
+        if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
+            DoScriptText(urand(0,1) ? ZARITHRIAN_SLAY01 : ZARITHRIAN_SLAY02, m_creature);
     }
 
     void JustDied(Unit* pKiller)
@@ -181,11 +181,13 @@ struct MANGOS_DLL_DECL boss_zarithrianAI: public boss_ruby_sanctumAI
 
     void JustSummoned(Creature* pSumm)
     {
-        if (pSumm && pSumm->GetEntry() == NPC_FLAMECALLER)
+        if (!pSumm)
+            return;
+        if (pSumm->GetEntry() == NPC_FLAMECALLER)
             SummonMgr.AddSummonToList(pSumm->GetObjectGuid());
-        if (pSumm)
-            pSumm->SetInCombatWithZone();
-    };
+
+        pSumm->SetInCombatWithZone();
+    }
 };
 
 void AddSC_boss_zarithrian()
@@ -194,4 +196,4 @@ void AddSC_boss_zarithrian()
 
     REGISTER_SCRIPT(boss_zarithrian);
     REGISTER_SCRIPT(mob_flamecaller_rs);
-};
+}

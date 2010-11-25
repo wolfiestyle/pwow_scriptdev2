@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Instance Ruby Sanctum
-SD%Complete: 0%
+SD%Complete: 90%
 SDComment:
 SDCategory: Ruby Sanctum
 EndScriptData */
@@ -46,13 +46,15 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
         Initialize();
     }
 
-    void OnPlayerEnter(Player *pWho)
-    {
-    }
-
     void Initialize()
     {
     }
+
+    /*
+    void OnPlayerEnter(Player *pWho)
+    {
+    }
+    */
 
     bool IsEncounterInProgress() const
     {
@@ -99,16 +101,16 @@ struct MANGOS_DLL_DECL instance_ruby_sanctum: public ScriptedInstance
             case TYPE_BALTHARUS:
                 go_ids.push_back(DATA_FIRE_FIELD);
                 break;
+            /*case TYPE_SAVIANA:
+                break;*/
             case TYPE_ZARITHRIAN:
                 go_ids.push_back(DATA_FLAME_WALLS);
-                // (no break)
-            case TYPE_SAVIANA:
                 break;
             case TYPE_HALION:
                 go_ids.push_back(DATA_HALION_FLAME_RING);
                 break;
             default:
-                break;
+                return;
         }
 
         for (std::deque<uint32>::const_iterator i = go_ids.begin(); i != go_ids.end(); ++i)
