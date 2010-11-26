@@ -275,6 +275,7 @@ struct MANGOS_DLL_DECL boss_baltharusAI: public boss_ruby_sanctumAI
                     break;
                 case EVENT_SPLIT_COMBO:
                     m_creature->InterruptNonMeleeSpells(true);
+                    m_creature->RemoveAllAuras();
                     DoCast(m_creature, SPELL_REPELLING_WAVE, false);
                     Events.DelayEventsWithId(EVENT_CLEAVE, 10*IN_MILLISECONDS);
                     Events.DelayEventsWithId(EVENT_TEMPEST, 10*IN_MILLISECONDS);
