@@ -848,6 +848,9 @@ struct MANGOS_DLL_DECL npc_barrett_ramseyAI: public ScriptedAI
                 Anub->ForcedDespawn();
         }
 
+        if (CurrPhase == PHASE_TWIN_VALKYR) // engage manually
+            return;
+
         if (m_bCombatStart)
         {
             if (m_uiAggroTimer < uiDiff)

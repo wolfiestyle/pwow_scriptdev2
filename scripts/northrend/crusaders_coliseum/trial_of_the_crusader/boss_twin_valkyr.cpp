@@ -214,10 +214,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
         DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
         {
-            Darkbane->SetHealth(0);
-            Darkbane->SetDeathState(JUST_DIED);
-            if (killer)
-                Darkbane->AI()->JustDied(NULL);
+            Darkbane->DealDamage(Darkbane, Darkbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         // for some odd reason, SummonCreatureJustDied() is not called when using SetDeathState() + setHealth()...
         if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
@@ -392,10 +389,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
         if (Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
         {
-            Lightbane->SetDeathState(JUST_DIED);
-            Lightbane->SetHealth(0);
-            if (killer)
-                Lightbane->AI()->JustDied(NULL);
+            Lightbane->DealDamage(Lightbane, Lightbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         // for some odd reason, SummonCreatureJustDied() is not called when using SetDeathState() + setHealth()...
         if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
