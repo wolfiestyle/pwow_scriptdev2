@@ -109,8 +109,6 @@ struct MANGOS_DLL_DECL boss_ruby_sanctumAI: public ScriptedAI, public ScriptEven
     bool IsOutOfCombatArea() const;
     // resets boss if pulled out of combat area
     bool OutOfCombatAreaCheck();
-    // prevents combat with boss if group doesn't meet requirements
-    bool InstanceProgressionCheck();
     // remove auras from all players in map
     // if spellId is negative, removes with spell difficulty
     void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);

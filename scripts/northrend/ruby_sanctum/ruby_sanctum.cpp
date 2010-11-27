@@ -82,7 +82,7 @@ void boss_ruby_sanctumAI::Reset()
 void boss_ruby_sanctumAI::JustDied(Unit* pKiller)
 {
     if (rs::MeetsRequirementsForBoss(m_pInstance, TYPE_HALION))
-        if (Creature* Controller = m_creature->SummonCreature(NPC_HALION_CONTROLLER, 3154.27f, 532.342f, 72.887f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS))
+        if (Creature* Controller = m_creature->SummonCreature(NPC_HALION_CONTROLLER, 3154.27f, 532.342f, 72.887f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS, true))
             SendEventTo(Controller, 1, 0); // on boss death if notifiers are ready, init the spawning of the twilight destroyer
 }
 
@@ -118,28 +118,6 @@ bool boss_ruby_sanctumAI::OutOfCombatAreaCheck()
     if (IsOutOfCombatArea())
     {
         EnterEvadeMode();
-        return true;
-    }
-
-    return false;
-}
-
-bool boss_ruby_sanctumAI::InstanceProgressionCheck()
-{
-    if (!rs::MeetsRequirementsForBoss(m_pInstance, m_BossEncounter.getDataId()))
-    {
-        EnterEvadeMode();
-        // teleport offending players outside instance
-        std::deque<Player*> players;
-        Map::PlayerList const &plist = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator i = plist.begin(); i != plist.end(); ++i)
-        {
-            Unit *pPlayer = i->getSource();
-            if (pPlayer && pPlayer->GetTypeId() == TYPEID_PLAYER)
-                players.push_back(static_cast<Player*>(pPlayer));
-        }
-        for (std::deque<Player*>::const_iterator i = players.begin(); i != players.end(); ++i)
-            (*i)->TeleportToHomebind();
         return true;
     }
 
