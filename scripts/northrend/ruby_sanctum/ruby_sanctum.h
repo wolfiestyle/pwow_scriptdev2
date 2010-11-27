@@ -22,16 +22,21 @@ enum
 
     // Gameobjects
     DATA_HALION_FLAME_RING,
+    DATA_HALION_TWILIGHT_RING,
     DATA_FIRE_FIELD,
     DATA_FLAME_WALLS,
     DATA_BURNING_TREE_1,
     DATA_BURNING_TREE_2,
     DATA_BURNING_TREE_3,
     DATA_BURNING_TREE_4,
+    DATA_PORTAL_TO_TWILIGHT_1,
+    DATA_PORTAL_FROM_TWILIGHT_2,
+    DATA_PORTAL_TO_TWILIGHT_2,
 
     // Aditional NPCs
     DATA_XERESTRASZA,
     DATA_HALION_CONTROLLER,
+    DATA_HALION_T,
 
     // total count of guid values stored
     DATA_GUID_MAX,
@@ -48,12 +53,16 @@ enum
 
     // GO entries
     GO_HALION_FLAME_RING    = 203007, // Halion
+    GO_HALION_TWILIGHT_RING = 203624,
     GO_FIRE_FIELD           = 203005, // Baltharus
     GO_FIRE_WALLS           = 203006, // Zarithrian
     GO_BURNING_TREE_1       = 203034,
     GO_BURNING_TREE_2       = 203035,
     GO_BURNING_TREE_3       = 203036,
     GO_BURNING_TREE_4       = 203037,
+    GO_PORTAL_T_TWILIGHT_1  = 202794,
+    GO_PORTAL_F_TWILIGHT_2  = 202796,
+    GO_PORTAL_T_TWILIGHT_2  = 202795,
 };
 
 //---------------------------------------------------------
