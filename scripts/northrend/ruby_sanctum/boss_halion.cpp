@@ -298,7 +298,7 @@ struct MANGOS_DLL_DECL npc_shadow_orb_rsAI: public ScriptedAI
     {
         if (m_uiMoveTimer < uiDiff)
         {
-           GoToNextSpot(m_movePhase++);
+           GoToNextSpot(m_movePhase--); // clockwise move
            m_uiMoveTimer = 500;
         }
         else
@@ -388,11 +388,8 @@ struct MANGOS_DLL_DECL boss_halion_baseAI: public boss_ruby_sanctumAI
 
 struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
 {
-    bool m_bCantDie;
-
     boss_halion_physicalAI(Creature* pCreature):
-        boss_halion_baseAI(pCreature),
-        m_bCantDie(true)
+        boss_halion_baseAI(pCreature)
     {
     }
 
@@ -401,7 +398,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
         if (m_uiCorporeality != newIdx)
         {
             m_creature->MonsterTextEmote(m_uiCorporeality > newIdx ? HALION_TE_PHYS_DEC : HALION_TE_PHYS_INC, 0, true);
-            m_uiCorporeality = newIdx;
+            m_uiCorporeality = m_uiCorporeality > newIdx ? m_uiCorporeality + 1 : m_uiCorporeality - 1;
             DoCast(m_creature, Corporeality[m_uiCorporeality], true);
         }
     }
@@ -410,7 +407,6 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
     {
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
         m_creature->RemoveAllAuras();
-        m_bCantDie = true;
         SummonMgr.UnsummonAll();
         Events.SetPhase(PHASE_PHYSICAL);
         boss_ruby_sanctumAI::Reset();
@@ -447,8 +443,6 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                 m_creature->SetHealthPercent(pHalion->GetHealthPercent());
             m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_PHASING);
         }
-        else if (pSender->GetEntry() == NPC_HALION_TWILIGHT)
-            m_bCantDie = false;
     }
 
     void JustDied(Unit* pKiller)
@@ -518,11 +512,36 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
         if (Events.GetPhase() == PHASE_3 && pDoneBy != m_creature)
         {
             m_uiDamageTaken += uiDamage;
-            if (uiDamage > m_creature->GetHealth() && m_bCantDie)
-                uiDamage = 0;
             if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
                 pHalion->DealDamage(pHalion, uiDamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
+        // check if there are players at the twilight realm on "kill event"
+        if (uiDamage > m_creature->GetHealth())
+        {
+            // if twilight halion is alive -> kill him (his death will notify the controller to stop DPS calc)
+            if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
+                if (pHalion->isAlive())
+                    m_creature->DealDamage(pHalion, pHalion->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+
+            Map* pMap = m_creature->GetMap();
+
+            // check if there are players in the twilight realm (if so then phase them back in by removing the "phasing" spell)
+            if (pMap && pMap->IsDungeon())
+            {
+                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    if (i->getSource()->HasAura(SPELL_TWILIGHT_REALM, EFFECT_INDEX_0))
+                    {
+                        RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
+                        uiDamage = 0; //cancel damage until all players are back into the physical realm
+                        break;
+                    }
+                }
+            }
+         }
+                // if theres noone in there, allow death here
     }
 };
 
@@ -543,7 +562,7 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
         if (m_uiCorporeality != newIdx)
         {
             m_creature->MonsterTextEmote(m_uiCorporeality > newIdx ? HALION_TE_TWIL_DEC : HALION_TE_TWIL_INC, 0, true);
-            m_uiCorporeality = newIdx;
+            m_uiCorporeality = m_uiCorporeality > newIdx ? m_uiCorporeality + 1 : m_uiCorporeality - 1;
             DoCast(m_creature, Corporeality[m_uiCorporeality], true);
         }
     }
@@ -592,7 +611,6 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
 
     void JustDied(Unit* pKiller)
     {
-        DoScriptText(HALION_DEATH01, m_creature);
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
     }
 
@@ -685,6 +703,16 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
         pCreature->SetObjectScale(3.0f); // just so its big!
     }
 
+    void SummonedCreatureJustDied(Creature* pSumm)
+    {
+        if (!pSumm)
+            return;
+        if (pSumm->GetEntry() == NPC_HALION_PHYSICAL) // if physical form dies -> fight is really over
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        else if (pSumm->GetEntry() == NPC_HALION_TWILIGHT)
+            Events.CancelEvent(EVENT_CALCULATE_DPS);
+    }
+
     void Reset()
     {
         Events.Reset();
@@ -714,10 +742,10 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
                     pPortal->SetPhaseMask(1, true);
                 if (GameObject* pPortal = GET_GAMEOBJECT(DATA_PORTAL_FROM_TWILIGHT_2))
                     pPortal->SetPhaseMask(32, true);
-                Events.ScheduleEvent(EVENT_CALCULATE_DPS, 5*IN_MILLISECONDS);
+                Events.ScheduleEvent(EVENT_CALCULATE_DPS, 10*IN_MILLISECONDS, TIMER_DPS_CHECK);
                 return;
             case MESSAGE_ENGAGE:
-                Events.ScheduleEvent(EVENT_ENGAGE, 1*IN_MILLISECONDS);
+                Events.ScheduleEvent(EVENT_ENGAGE, 5*IN_MILLISECONDS);
                 return;
             case MESSAGE_RESET:
                 m_creature->RemoveAllAttackers();
