@@ -49,6 +49,8 @@ enum Events
     EVENT_PHASE_3,
     MESSAGE_PHASE_3,
     MESSAGE_RESET,
+    MESSAGE_WIN,
+    EVENT_CLEAR_AURAS,
 
     // Meteor Strike
     EVENT_BLOW,
@@ -338,7 +340,7 @@ struct MANGOS_DLL_DECL npc_special_rsAI: public Scripted_NoMovementAI
 // Both
 #define TIMER_CLEAVE            15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 #define TIMER_TAIL_LASH         30*IN_MILLISECONDS
-#define TIMER_DPS_CHECK         5*IN_MILLISECONDS
+#define TIMER_DPS_CHECK         10*IN_MILLISECONDS
 // Physical Halion
 #define TIMER_PHYSICAL_SPECIAL  40*IN_MILLISECONDS
 #define TIMER_FLAME_BREATH      19*IN_MILLISECONDS, 25*IN_MILLISECONDS
@@ -373,7 +375,7 @@ struct MANGOS_DLL_DECL boss_halion_baseAI: public boss_ruby_sanctumAI
         curr_corp = m_uiCorporeality;
         curr_dps = m_uiDamageTaken;
         pdps = m_prevDps;
-        m_prevDps = m_uiDamageTaken;
+        m_prevDps = (m_uiDamageTaken + pdps) / 2;
         m_uiDamageTaken = 0;
     }
 
@@ -388,8 +390,11 @@ struct MANGOS_DLL_DECL boss_halion_baseAI: public boss_ruby_sanctumAI
 
 struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
 {
+    bool m_bCanDie : 1;
+
     boss_halion_physicalAI(Creature* pCreature):
-        boss_halion_baseAI(pCreature)
+        boss_halion_baseAI(pCreature),
+        m_bCanDie(false)
     {
     }
 
@@ -405,6 +410,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
 
     void Reset()
     {
+        m_bCanDie = false;
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
         m_creature->RemoveAllAuras();
         SummonMgr.UnsummonAll();
@@ -442,6 +448,10 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
             if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
                 m_creature->SetHealthPercent(pHalion->GetHealthPercent());
             m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_PHASING);
+        }
+        else if (data1 == MESSAGE_WIN)
+        {
+            Events.ScheduleEvent(EVENT_CLEAR_AURAS, 0, 1*IN_MILLISECONDS);
         }
     }
 
@@ -490,6 +500,29 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                     if (Unit* pTarget  = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1)) // dont get tanks
                         DoCast(pTarget, SPELL_FIERY_COMBUSTION, false);
                     break;
+                case EVENT_CLEAR_AURAS:
+                {
+                    //RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
+                    bool pass = true;
+                    Map* pMap = m_creature->GetMap();
+                    // check if there are players in the twilight realm (if so then phase them back in by removing the "phasing" spell)
+                    if (pMap && pMap->IsDungeon())
+                    {
+                        Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        {
+                            if (i->getSource()->HasAura(SPELL_TWILIGHT_REALM, EFFECT_INDEX_0))
+                            {
+                               RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
+                               pass = false;
+                               break;
+                            }
+                        }
+                    }
+                    if (pass)
+                        m_bCanDie = pass;
+                }
+                    break;
                 default:
                     break;
             }
@@ -516,32 +549,11 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                 pHalion->DealDamage(pHalion, uiDamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         // check if there are players at the twilight realm on "kill event"
-        if (uiDamage > m_creature->GetHealth())
+        if (uiDamage > m_creature->GetHealth() && !m_bCanDie)
         {
-            // if twilight halion is alive -> kill him (his death will notify the controller to stop DPS calc)
-            if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
-                if (pHalion->isAlive())
-                    m_creature->DealDamage(pHalion, pHalion->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
-
-            Map* pMap = m_creature->GetMap();
-
-            // check if there are players in the twilight realm (if so then phase them back in by removing the "phasing" spell)
-            if (pMap && pMap->IsDungeon())
-            {
-                Map::PlayerList const &PlayerList = pMap->GetPlayers();
-
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                {
-                    if (i->getSource()->HasAura(SPELL_TWILIGHT_REALM, EFFECT_INDEX_0))
-                    {
-                        RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
-                        uiDamage = 0; //cancel damage until all players are back into the physical realm
-                        break;
-                    }
-                }
-            }
-         }
-                // if theres noone in there, allow death here
+            uiDamage = 0;
+        }
+        // if theres noone in there, allow death here
     }
 };
 
@@ -612,6 +624,8 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
     void JustDied(Unit* pKiller)
     {
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
+        if (Creature* pHalion = GET_CREATURE(TYPE_HALION))
+            SendScriptMessageTo(pHalion, m_creature, MESSAGE_WIN, 0);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -742,7 +756,7 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
                     pPortal->SetPhaseMask(1, true);
                 if (GameObject* pPortal = GET_GAMEOBJECT(DATA_PORTAL_FROM_TWILIGHT_2))
                     pPortal->SetPhaseMask(32, true);
-                Events.ScheduleEvent(EVENT_CALCULATE_DPS, 10*IN_MILLISECONDS, TIMER_DPS_CHECK);
+                Events.ScheduleEvent(EVENT_CALCULATE_DPS, TIMER_DPS_CHECK, TIMER_DPS_CHECK);
                 return;
             case MESSAGE_ENGAGE:
                 Events.ScheduleEvent(EVENT_ENGAGE, 5*IN_MILLISECONDS);
