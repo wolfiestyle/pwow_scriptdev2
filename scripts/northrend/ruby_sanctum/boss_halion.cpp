@@ -60,7 +60,7 @@ enum Events
     EVENT_RESET,
     EVENT_CLEAVE,
     EVENT_TAIL_LASH,
-    EVENT_CALCULATE_DPS,
+    EVENT_UPDATE_CORPOREALITY,
 
     // Halion Phisycal
     EVENT_COMBUSTION,
@@ -340,7 +340,7 @@ struct MANGOS_DLL_DECL npc_special_rsAI: public Scripted_NoMovementAI
 // Both
 #define TIMER_CLEAVE            15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 #define TIMER_TAIL_LASH         30*IN_MILLISECONDS
-#define TIMER_DPS_CHECK         10*IN_MILLISECONDS
+#define TIMER_DPS_CHECK         1*IN_MILLISECONDS
 // Physical Halion
 #define TIMER_PHYSICAL_SPECIAL  40*IN_MILLISECONDS
 #define TIMER_FLAME_BREATH      19*IN_MILLISECONDS, 25*IN_MILLISECONDS
@@ -354,43 +354,74 @@ struct MANGOS_DLL_DECL npc_special_rsAI: public Scripted_NoMovementAI
 #define HALION_TE_TWIL_INC  "Your companion's efforts have forced Halion further into the Twilight realm!"
 #define HALION_TE_TWIL_DEC  "Your efforts have forced Halion further out of the Twilight realm!"
 
+#define DPS_CHECK_INTERVAL      5
+
 struct MANGOS_DLL_DECL boss_halion_baseAI: public boss_ruby_sanctumAI
 {
     SummonManager SummonMgr;
-    uint32 m_uiDamageTaken;
-    uint32 m_uiCorporeality;
-    uint32 m_prevDps;
 
-    boss_halion_baseAI(Creature* pCreature):
-        boss_ruby_sanctumAI(pCreature),
-        SummonMgr(pCreature),
-        m_uiDamageTaken(0),
-        m_uiCorporeality(5),
-        m_prevDps(0)
+    void Reset()
     {
+        m_DamageTaken.clear();
+        m_uiDamageTimer = 1;
+        m_uiCorporeality = 5;
     }
 
-    void GetAndUpdateDPS(uint32& curr_corp, uint32& curr_dps, uint32& pdps)
+    void GetDPS(float& curr_dps)
     {
-        curr_corp = m_uiCorporeality;
-        curr_dps = m_uiDamageTaken;
-        pdps = m_prevDps;
-        m_prevDps = (m_uiDamageTaken + pdps) / 2;
-        m_uiDamageTaken = 0;
+        int32 time_window = int32(m_uiDamageTimer) / 1000 - DPS_CHECK_INTERVAL;
+        uint32 damage = 0;
+        for (DpsMap::iterator i = m_DamageTaken.begin(); i != m_DamageTaken.end(); )
+            if (i->first > time_window)
+            {
+                damage += i->second;
+                ++i;
+            }
+            else
+                m_DamageTaken.erase(i++);
+        curr_dps = damage / DPS_CHECK_INTERVAL;
     }
 
-    virtual void UpdateCorporeality(uint32 newIdx) = 0;
+    void UpdateCorporeality(uint32 newIdx)
+    {
+        if (newIdx == m_uiCorporeality)
+            return;
+        CorporealityAnnounce(newIdx < m_uiCorporeality);
+        m_uiCorporeality = newIdx < m_uiCorporeality ? m_uiCorporeality - 1 : m_uiCorporeality + 1;
+        DoCast(m_creature, Corporeality[m_uiCorporeality], true);
+    }
+
+    virtual void CorporealityAnnounce(bool dec) = 0;
 
     void KilledUnit(Unit* pWho)
     {
         if (pWho && pWho->GetTypeId() == TYPEID_PLAYER)
             DoScriptText(urand(0,1) ? HALION_SLAY01: HALION_SLAY02, m_creature);
     }
+
+protected:
+    typedef std::map<int32 /*time*/, uint32 /*dmg*/> DpsMap;
+    DpsMap m_DamageTaken;
+    uint32 m_uiDamageTimer;     // updated from UpdateAI
+    uint32 m_uiCorporeality;
+
+    boss_halion_baseAI(Creature* pCreature):
+        boss_ruby_sanctumAI(pCreature),
+        SummonMgr(pCreature),
+        m_uiDamageTimer(1),
+        m_uiCorporeality(5)
+    {
+    }
+
+    void UpdateDPS(uint32 damage)
+    {
+        m_DamageTaken[int32(m_uiDamageTimer) / 1000] += damage;
+    }
 };
 
 struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
 {
-    bool m_bCanDie : 1;
+    bool m_bCanDie;
 
     boss_halion_physicalAI(Creature* pCreature):
         boss_halion_baseAI(pCreature),
@@ -398,14 +429,9 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
     {
     }
 
-    void UpdateCorporeality(uint32 newIdx)
+    void CorporealityAnnounce(bool dec)
     {
-        if (m_uiCorporeality != newIdx)
-        {
-            m_creature->MonsterTextEmote(m_uiCorporeality > newIdx ? HALION_TE_PHYS_DEC : HALION_TE_PHYS_INC, 0, true);
-            m_uiCorporeality = m_uiCorporeality > newIdx ? m_uiCorporeality + 1 : m_uiCorporeality - 1;
-            DoCast(m_creature, Corporeality[m_uiCorporeality], true);
-        }
+        m_creature->MonsterTextEmote(dec ? HALION_TE_PHYS_DEC : HALION_TE_PHYS_INC, 0, true);
     }
 
     void Reset()
@@ -415,6 +441,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
         m_creature->RemoveAllAuras();
         SummonMgr.UnsummonAll();
         Events.SetPhase(PHASE_PHYSICAL);
+        boss_halion_baseAI::Reset();
         boss_ruby_sanctumAI::Reset();
     }
 
@@ -466,6 +493,8 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
     {
         if (Events.GetPhase() == PHASE_TWILIGHT)
             return;
+        else if (Events.GetPhase() == PHASE_3)
+            m_uiDamageTimer += uiDiff;
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
         {
@@ -544,7 +573,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
         }
         if (Events.GetPhase() == PHASE_3 && pDoneBy != m_creature)
         {
-            m_uiDamageTaken += uiDamage;
+            UpdateDPS(uiDamage);
             if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
                 pHalion->DealDamage(pHalion, uiDamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
@@ -569,14 +598,9 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
     {
     }
 
-    void UpdateCorporeality(uint32 newIdx)
+    void CorporealityAnnounce(bool dec)
     {
-        if (m_uiCorporeality != newIdx)
-        {
-            m_creature->MonsterTextEmote(m_uiCorporeality > newIdx ? HALION_TE_TWIL_DEC : HALION_TE_TWIL_INC, 0, true);
-            m_uiCorporeality = m_uiCorporeality > newIdx ? m_uiCorporeality + 1 : m_uiCorporeality - 1;
-            DoCast(m_creature, Corporeality[m_uiCorporeality], true);
-        }
+        m_creature->MonsterTextEmote(dec ? HALION_TE_TWIL_DEC : HALION_TE_TWIL_INC, 0, true);
     }
 
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
@@ -589,6 +613,7 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
         m_creature->RemoveAllAuras();
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
         Events.SetPhase(PHASE_PHYSICAL);
+        boss_halion_baseAI::Reset();
         boss_ruby_sanctumAI::Reset();
     }
 
@@ -630,6 +655,9 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (Events.GetPhase() == PHASE_3)
+            m_uiDamageTimer += uiDiff;
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
         {
             if (Creature* Controller = GET_CREATURE(DATA_HALION_CONTROLLER))
@@ -689,9 +717,9 @@ struct MANGOS_DLL_DECL boss_halion_twilightAI: public boss_halion_baseAI
         }
         if (Events.GetPhase() == PHASE_3 && pDoneBy != m_creature)
         {
+            UpdateDPS(uiDamage);
             if (uiDamage > m_creature->GetHealth())
                 RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
-            m_uiDamageTaken += uiDamage;
             if (Creature* pHalion = GET_CREATURE(TYPE_HALION))
                 pHalion->DealDamage(pHalion, uiDamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
@@ -724,7 +752,7 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
         if (pSumm->GetEntry() == NPC_HALION_PHYSICAL) // if physical form dies -> fight is really over
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         else if (pSumm->GetEntry() == NPC_HALION_TWILIGHT)
-            Events.CancelEvent(EVENT_CALCULATE_DPS);
+            Events.CancelEvent(EVENT_UPDATE_CORPOREALITY);
     }
 
     void Reset()
@@ -756,7 +784,7 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
                     pPortal->SetPhaseMask(1, true);
                 if (GameObject* pPortal = GET_GAMEOBJECT(DATA_PORTAL_FROM_TWILIGHT_2))
                     pPortal->SetPhaseMask(32, true);
-                Events.ScheduleEvent(EVENT_CALCULATE_DPS, TIMER_DPS_CHECK, TIMER_DPS_CHECK);
+                Events.ScheduleEvent(EVENT_UPDATE_CORPOREALITY, 5*IN_MILLISECONDS, TIMER_DPS_CHECK);
                 return;
             case MESSAGE_ENGAGE:
                 Events.ScheduleEvent(EVENT_ENGAGE, 5*IN_MILLISECONDS);
@@ -844,86 +872,23 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
                     if (Creature* pHalion = SummonMgr.GetFirstFoundSummonWithId(NPC_HALION_PHYSICAL))
                         pHalion->CastSpell(pHalion, SPELL_BERSERK, true);
                     break;
-                case EVENT_CALCULATE_DPS:
+                case EVENT_UPDATE_CORPOREALITY:
                 {
-                    uint32 p_corp_b1, p_corp_b2, dps_b1, dps_b2, pdps_b1, pdps_b2;
-                    boss_halion_baseAI *halionTwAI = NULL, *halionPhAI = NULL;
-                    if (Creature* tHalion = SummonMgr.GetFirstFoundSummonWithId(NPC_HALION_TWILIGHT))
-                        halionTwAI = dynamic_cast<boss_halion_baseAI*>(tHalion->AI());
+                    boss_halion_baseAI *halionPhAI = NULL, *halionTwAI = NULL;
                     if (Creature* pHalion = SummonMgr.GetFirstFoundSummonWithId(NPC_HALION_PHYSICAL))
                         halionPhAI = dynamic_cast<boss_halion_baseAI*>(pHalion->AI());
-                    if (!halionTwAI || !halionPhAI)
+                    if (Creature* tHalion = SummonMgr.GetFirstFoundSummonWithId(NPC_HALION_TWILIGHT))
+                        halionTwAI = dynamic_cast<boss_halion_baseAI*>(tHalion->AI());
+                    if (!halionPhAI || !halionTwAI)
                         break;
-                    halionTwAI->GetAndUpdateDPS(p_corp_b1, dps_b1, pdps_b1);
-                    halionPhAI->GetAndUpdateDPS(p_corp_b2, dps_b2, pdps_b2);
-                    float b1 = (dps_b1 + pdps_b1);
-                    float b2 = (dps_b2 + pdps_b2);
-                    if (b2 == 0)
-                        b2 = 1;
-                    float dps_ratio = b1 / b2;
-                    uint32 new_corp1, new_corp2;
-                    if (dps_ratio > 3.0f) // be very "nice" 100-0
-                    {
-                        new_corp1 = 0;
-                        new_corp2 = 10;
-                    }
-                    else if (dps_ratio > 2.6f) // 90 - 10
-                    {
-                        new_corp1 = 1;
-                        new_corp2 = 9;
-                    }
-                    else if (dps_ratio > 2.2f) // 80 - 20
-                    {
-                        new_corp1 = 2;
-                        new_corp2 = 8;
-                    }
-                    else if (dps_ratio > 1.8f) // 70 - 30
-                    {
-                        new_corp1 = 3;
-                        new_corp2 = 7;
-                    }
-                    else if (dps_ratio > 1.4f) // 60 - 40
-                    {
-                        new_corp1 = 4;
-                        new_corp2 = 6;
-                    }
-                    else if (dps_ratio > 1.0f) // 50 - 50
-                    {
-                        new_corp1 = 5;
-                        new_corp2 = 5;
-                    }
-                    else if (dps_ratio < 1/3.0f)// 0 - 100
-                    {
-                        new_corp1 = 10;
-                        new_corp2 = 0;
-                    }
-                    else if (dps_ratio < 1/2.6f)// 10 - 90
-                    {
-                        new_corp1 = 9;
-                        new_corp2 = 1;
-                    }
-                    else if (dps_ratio < 1/2.2f)// 20 - 80
-                    {
-                        new_corp1 = 2;
-                        new_corp2 = 8;
-                    }
-                    else if (dps_ratio < 1/1.8f)// 30 - 70
-                    {
-                        new_corp1 = 3;
-                        new_corp2 = 7;
-                    }
-                    else if (dps_ratio < 1/1.4f)// 40 - 60
-                    {
-                        new_corp1 = 4;
-                        new_corp2 = 6;
-                    }
-                    else if (dps_ratio < 1/1.0f)// 50 - 50
-                    {
-                        new_corp1 = 5;
-                        new_corp2 = 5;
-                    }
-                    halionTwAI->UpdateCorporeality(new_corp1);
-                    halionPhAI->UpdateCorporeality(new_corp2);
+                    float dps_ph, dps_tw;
+                    halionPhAI->GetDPS(dps_ph);
+                    halionTwAI->GetDPS(dps_tw);
+                    float total_dps = dps_ph + dps_tw;
+                    uint32 ph_corp = uint32(std::floor(dps_tw / total_dps * 10.0f + 0.5f));
+                    uint32 tw_corp = uint32(std::floor(dps_ph / total_dps * 10.0f + 0.5f));
+                    halionPhAI->UpdateCorporeality(ph_corp);
+                    halionTwAI->UpdateCorporeality(tw_corp);
                     break;
                 }
                 default:
