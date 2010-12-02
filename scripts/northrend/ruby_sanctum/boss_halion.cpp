@@ -885,6 +885,8 @@ struct MANGOS_DLL_DECL npc_halion_controllerAI: public Scripted_NoMovementAI, Sc
                     halionPhAI->GetDPS(dps_ph);
                     halionTwAI->GetDPS(dps_tw);
                     float total_dps = dps_ph + dps_tw;
+                    if (total_dps <= 1.0f)  // prevent numerical unstability
+                        break;
                     uint32 ph_corp = uint32(std::floor(dps_tw / total_dps * 10.0f + 0.5f));
                     uint32 tw_corp = uint32(std::floor(dps_ph / total_dps * 10.0f + 0.5f));
                     halionPhAI->UpdateCorporeality(ph_corp);
