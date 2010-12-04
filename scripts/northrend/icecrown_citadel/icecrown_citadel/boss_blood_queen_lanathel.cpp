@@ -131,6 +131,7 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
     void Reset()
     {
         m_Vampires.clear();
+        m_DarkfallenTargets.clear();
         if (m_creature->HasSplineFlag(SPLINEFLAG_FLYING))
         {
             m_creature->SetSplineFlags(SPLINEFLAG_WALKMODE);
@@ -289,8 +290,12 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                                 check = false;
                         }
                     }
+                    // check - all darkfallen players are 5 yards of each other
                     if (check)
+                    {
                         RemoveEncounterAuras(SPELL_PACT_OF_THE_DARKFALLEN);
+                        m_DarkfallenTargets.clear();
+                    }
                     else
                         Events.RescheduleEvent(EVENT_PACT_LINK_CHECK, 500);
                 }
