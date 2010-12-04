@@ -238,13 +238,13 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     break;
                 case EVENT_PACT_OF_THE_DARKFALLEN:
                     DoScriptText(SAY_BLOODQUEEN_SPECIAL02, m_creature);
-                    for (int i = m_bIs10Man ? 2 : 5; i ; --i)
+                    for (int i = 0; i < (m_bIs10Man ? 2 : 5) ; i++)
                     {
                         Unit *Target = NULL;
                         do // prevent selection of same target for Pact of the Darkfallen
                         {
                             Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2); // dont get tanks
-                            if (!Target || m_creature->getAttackers().size() <= (m_bIs10Man ? 4 : 7))
+                            if (!Target || m_creature->getAttackers().size() < (m_bIs10Man ? 4 : 7))
                                 {
                                     // prevent applying if there arent enough targets
                                     Target = NULL;
@@ -254,12 +254,12 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                         while (Target->HasAura(SPELL_PACT_OF_THE_DARKFALLEN));
                         if (Target)
                         {
-                            DoCast(Target, SPELL_PACT_OF_THE_DARKFALLEN, true);
+                            Target->CastSpell(Target, SPELL_PACT_OF_THE_DARKFALLEN, true, NULL, NULL, m_creature->GetObjectGuid());
                             m_DarkfallenTargets[i] = Target->GetObjectGuid();
                         }
 
                     }
-                    Events.ScheduleEvent(EVENT_PACT_LINK_CHECK, 500);
+                    Events.ScheduleEvent(EVENT_PACT_LINK_CHECK, 1*IN_MILLISECONDS);
                     break;
                 case EVENT_PACT_LINK_CHECK:
                 {
@@ -269,15 +269,12 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
 
                     // map the targets from our target map, remove dead targets
                     for (uint32 i = 0; i < (m_bIs10Man ? 2 : 5); i++)
-                    {
                         if (Player* pTar = m_creature->GetMap()->GetPlayer(m_DarkfallenTargets[i]))
-                        {
                             if (pTar->isAlive())
                                 i_realTargets[size++] = pTar->GetObjectGuid();
-                        }
-                    }
+
                     // if for some reason the other target died, we remove the effect
-                    if (size <= 1)
+                    if (size < 2)
                         RemoveEncounterAuras(SPELL_PACT_OF_THE_DARKFALLEN);
                     else
                     {
