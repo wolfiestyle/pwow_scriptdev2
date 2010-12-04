@@ -34,7 +34,8 @@ enum Spells
     SPELL_DELIRIOUS_SLASH           = 71623,
     SPELL_BLOOD_MIRROR_MASTER       = 70821,
     SPELL_BLOOD_MIRROR_SLAVE        = 71510,
-    SPELL_PACT_OF_THE_DARKFALLEN    = 71340,
+    SPELL_PACT_OF_THE_DARKFALLEN    = 71340, // debuff
+    SPELL_POTD_LINK                 = 71390, // visual link between affected targets
     SPELL_SWARMING_SHADOWS          = 71264,
     SPELL_INCITE_TERROR             = 73070,
     SPELL_SUMMON_BLOODBOLT_WHIRL    = 71772,
@@ -54,6 +55,7 @@ enum Events
     EVENT_DELIRIOUS_SLASH,
     EVENT_BLOOD_MIRROR,
     EVENT_PACT_OF_THE_DARKFALLEN,
+    EVENT_PACT_LINK_CHECK,
     EVENT_SWARMING_SHADOWS,
     EVENT_INCITE_TERROR,
     EVENT_INCITE_TERROR2,
@@ -102,7 +104,7 @@ enum Phases
 #define TIMER_BLOODBOLT             10*IN_MILLISECONDS, 20*IN_MILLISECONDS
 #define TIMER_BLOODWHIRL            10*IN_MILLISECONDS, 20*IN_MILLISECONDS
 #define TIMER_DELIRIOUS_SLASH       10*IN_MILLISECONDS, 25*IN_MILLISECONDS
-#define TIMER_PACT_OF_THE_DARKFALLEN 20*IN_MILLISECONDS, 30*IN_MILLISECONDS
+#define TIMER_PACT_OF_THE_DARKFALLEN 32*IN_MILLISECONDS, 40*IN_MILLISECONDS // Enough time for the effect to wear off
 #define TIMER_DARKFALLEN_CHECK      2*IN_MILLISECONDS
 #define TIMER_SWARMING_SHADOWS      30500
 #define TIMER_PACTOFTHEDARKFALLEN   30500
@@ -116,6 +118,9 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
 {
     SummonManager SummonMgr;
     std::set<uint64> m_Vampires;
+
+    typedef std::map<int32 /*index*/, ObjectGuid /*target*/> DarkfallenTargetMap;
+    DarkfallenTargetMap m_DarkfallenTargets;
 
     boss_blood_queen_lanathelAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
@@ -213,8 +218,12 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                                     && !pPlayer->HasAuraByDifficulty(SPELL_FRENZIED_BLOODTHIRST)
                                     && !pPlayer->HasAuraByDifficulty(SPELL_UNCONTROLLABLE_FRENZY))
                                 {
-                                    DoCast(pPlayer, SPELL_UNCONTROLLABLE_FRENZY, true);
-                                    DoScriptText(SAY_BLOODQUEEN_MINDCONTROL, m_creature);
+                                    if (pPlayer->isAlive())
+                                    {
+                                        DoCast(pPlayer, SPELL_UNCONTROLLABLE_FRENZY, true);
+                                        DoScriptText(SAY_BLOODQUEEN_MINDCONTROL, m_creature);
+                                        pPlayer->SetHealth(pPlayer->GetMaxHealth());
+                                    }
                                 }
                             }
                         }
@@ -228,11 +237,63 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     break;
                 case EVENT_PACT_OF_THE_DARKFALLEN:
                     DoScriptText(SAY_BLOODQUEEN_SPECIAL02, m_creature);
-                    // TODO: Spell max targets = 2 (10 man) 5 (25 man)
-                    // TODO: Spell doesnt trigger the "damage" part
-                    // TODO: Spell doesnt remove once all "chained" targets are @ 5 yards of each other
-                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2))
-                        DoCast(target, SPELL_PACT_OF_THE_DARKFALLEN, false);
+                    for (int i = m_bIs10Man ? 2 : 5; i ; --i)
+                    {
+                        Unit *Target = NULL;
+                        do // prevent selection of same target for Pact of the Darkfallen
+                        {
+                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2); // dont get tanks
+                            if (!Target || m_creature->getAttackers().size() <= (m_bIs10Man ? 4 : 7))
+                                {
+                                    // prevent applying if there arent enough targets
+                                    Target = NULL;
+                                    break;
+                                }
+                        }
+                        while (Target->HasAura(SPELL_PACT_OF_THE_DARKFALLEN));
+                        if (Target)
+                        {
+                            DoCast(Target, SPELL_PACT_OF_THE_DARKFALLEN, true);
+                            m_DarkfallenTargets[i] = Target->GetObjectGuid();
+                        }
+
+                    }
+                    Events.ScheduleEvent(EVENT_PACT_LINK_CHECK, 500);
+                    break;
+                case EVENT_PACT_LINK_CHECK:
+                {
+                    bool check = true;
+                    DarkfallenTargetMap i_realTargets;
+                    uint32 size = 0;
+
+                    // map the targets from our target map, remove dead targets
+                    for (uint32 i = 0; i < (m_bIs10Man ? 2 : 5); i++)
+                    {
+                        if (Player* pTar = m_creature->GetMap()->GetPlayer(m_DarkfallenTargets[i]))
+                        {
+                            if (pTar->isAlive())
+                                i_realTargets[size++] = pTar->GetObjectGuid();
+                        }
+                    }
+                    // if for some reason the other target died, we remove the effect
+                    if (size <= 1)
+                        RemoveEncounterAuras(SPELL_PACT_OF_THE_DARKFALLEN);
+                    else
+                    {
+                        for (uint32 i = size -1; i; i--)
+                        {
+                            Player* pA = m_creature->GetMap()->GetPlayer(i_realTargets[i]);
+                            Player* pB = m_creature->GetMap()->GetPlayer(i_realTargets[(i+1) >= size ? 0 : (i+1)]); // just to close the loop visually
+                            pA->CastSpell(pB, SPELL_POTD_LINK, true);
+                            if (!pA->IsWithinDist(pB, 5.0f))
+                                check = false;
+                        }
+                    }
+                    if (check)
+                        RemoveEncounterAuras(SPELL_PACT_OF_THE_DARKFALLEN);
+                    else
+                        Events.RescheduleEvent(EVENT_PACT_LINK_CHECK, 500);
+                }
                     break;
                 case EVENT_DELIRIOUS_SLASH:
                     if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO_PLAYER, 1))
