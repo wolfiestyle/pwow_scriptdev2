@@ -291,7 +291,7 @@ struct MANGOS_DLL_DECL npc_shadow_orb_rsAI: public ScriptedAI
 
     void GoToNextSpot(uint32 i)
     {
-        float angle = i * M_PI_F / MAX_STEPS + m_fInitialAngle;
+        float angle = 2*M_PI_F - (i * M_PI_F / MAX_STEPS + m_fInitialAngle);
         m_creature->GetMotionMaster()->MovePoint(0, ROOM_CENTER_X + TRACK_RADIUS*cos(angle),
             ROOM_CENTER_Y + TRACK_RADIUS*sin(angle), m_creature->GetPositionZ());
     }
@@ -300,8 +300,10 @@ struct MANGOS_DLL_DECL npc_shadow_orb_rsAI: public ScriptedAI
     {
         if (m_uiMoveTimer < uiDiff)
         {
-           GoToNextSpot(m_movePhase--); // clockwise move
+           GoToNextSpot(m_movePhase++); // clockwise move
            m_uiMoveTimer = 500;
+           if (m_movePhase >= (MAX_STEPS*2))
+               m_movePhase = 0;
         }
         else
             m_uiMoveTimer -= uiDiff;
