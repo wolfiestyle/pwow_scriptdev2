@@ -396,6 +396,10 @@
 				Name="custom"
 				>
 				<File
+					RelativePath="..\scripts\custom\deathknight_summons.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\scripts\custom\mage_mirror_imageAI.cpp"
 					>
 				</File>

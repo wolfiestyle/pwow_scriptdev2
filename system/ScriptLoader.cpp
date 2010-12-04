@@ -12,6 +12,7 @@ extern void AddSC_npc_acherus_taxi();        //Taxi for DK start area.
 extern void AddSC_npc_wyrmresttempel_taxi(); //Taxi for Wyrmrest Temple
 extern void AddSC_Mirror_Image();
 extern void AddSC_npc_training_dummy();
+extern void AddSC_deathknight_summons();
 
 //examples
 extern void AddSC_example_creature();
@@ -502,6 +503,7 @@ void AddScripts()
     AddSC_npc_wyrmresttempel_taxi(); //taxi for Wyrmrest Temple.
     AddSC_Mirror_Image();
     AddSC_npc_training_dummy();
+    AddSC_deathknight_summons();
 
     //examples
     AddSC_example_creature();
