@@ -48,11 +48,11 @@ include/sc_instance.h \
 include/sc_utility.cpp \
 include/sc_utility.h \
 scripts/battlegrounds/battleground.cpp \
+scripts/custom/deathknight_summons.cpp \
 scripts/custom/mage_mirror_imageAI.cpp \
 scripts/custom/npc_acherus_taxi.cpp \
 scripts/custom/npc_wyrmresttempel_taxi.cpp \
 scripts/custom/training_dummies.cpp \
-scripts/custom/deathknight_summons.cpp \
 scripts/eastern_kingdoms/alterac_mountains.cpp \
 scripts/eastern_kingdoms/arathi_highlands.cpp \
 scripts/eastern_kingdoms/blasted_lands.cpp \

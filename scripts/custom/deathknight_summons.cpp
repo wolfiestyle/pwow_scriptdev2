@@ -5,11 +5,11 @@ enum Spells
     SPELL_BLOODWORM_HEALTH_LEECH = 50454,
 };
 
-struct MANGOS_DLL_DECL npc_bloodwornAI: public ScriptedAI
+struct MANGOS_DLL_DECL npc_bloodwormAI: public ScriptedAI
 {
     ObjectGuid mOwner;
 
-    npc_bloodwornAI(Creature* pCreature):
+    npc_bloodwormAI(Creature* pCreature):
         ScriptedAI(pCreature),
         mOwner(m_creature->GetOwnerGUID())
     {
@@ -39,15 +39,15 @@ struct MANGOS_DLL_DECL npc_bloodwornAI: public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_bloodworn(Creature* pCreature)
+CreatureAI* GetAI_npc_bloodworm(Creature* pCreature)
 {
-    return new npc_bloodwornAI(pCreature);
+    return new npc_bloodwormAI(pCreature);
 }
 
 void AddSC_deathknight_summons()
 {
     Script *newscript = new Script;
     newscript->Name = "npc_bloodworm";
-    newscript->GetAI = &GetAI_npc_bloodworn;
+    newscript->GetAI = &GetAI_npc_bloodworm;
     newscript->RegisterSelf();
 }
