@@ -115,8 +115,16 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
 
         Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid);
 
-        if (pTarget && pTarget->isAlive())
-            m_creature->SetTargetGuid(m_TargetGuid);
+        if (pTarget)
+        {
+            if (pTarget->isAlive())
+                m_creature->SetTargetGuid(m_TargetGuid);
+            else
+            {
+                pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
+                DespawnCreature(m_creature);
+            }
+        }
         else
             DespawnCreature(m_creature);
     }
