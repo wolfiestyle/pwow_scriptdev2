@@ -342,7 +342,7 @@ struct MANGOS_DLL_DECL npc_special_rsAI: public Scripted_NoMovementAI
 // Both
 #define TIMER_CLEAVE            15*IN_MILLISECONDS, 20*IN_MILLISECONDS
 #define TIMER_TAIL_LASH         30*IN_MILLISECONDS
-#define TIMER_DPS_CHECK         1*IN_MILLISECONDS
+#define TIMER_DPS_CHECK         5*IN_MILLISECONDS
 // Physical Halion
 #define TIMER_PHYSICAL_SPECIAL  40*IN_MILLISECONDS
 #define TIMER_FLAME_BREATH      19*IN_MILLISECONDS, 25*IN_MILLISECONDS
@@ -356,7 +356,7 @@ struct MANGOS_DLL_DECL npc_special_rsAI: public Scripted_NoMovementAI
 #define HALION_TE_TWIL_INC  "Your companion's efforts have forced Halion further into the Twilight realm!"
 #define HALION_TE_TWIL_DEC  "Your efforts have forced Halion further out of the Twilight realm!"
 
-#define DPS_CHECK_INTERVAL      5
+#define DPS_CHECK_INTERVAL      10
 
 struct MANGOS_DLL_DECL boss_halion_baseAI: public boss_ruby_sanctumAI
 {
@@ -439,6 +439,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
     void Reset()
     {
         m_bCanDie = false;
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         RemoveEncounterAuras(SPELL_TWILIGHT_REALM);
         m_creature->RemoveAllAuras();
         SummonMgr.UnsummonAll();
@@ -472,6 +473,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
     {
         if (data1 == MESSAGE_PHASE_3)
         {
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             Events.SetPhase(PHASE_3);
             DoCast(m_creature, SPELL_CORPOREALITY_50, true);
             if (Creature* pHalion = GET_CREATURE(DATA_HALION_T))
@@ -514,7 +516,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                     break;
                 case EVENT_PHYSICAL_SPECIAL:
                     DoScriptText(HALION_SPECIAL01, m_creature);
-                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1)) // dont target MT
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1)) // dont target MT (highest threat target)
                     {
                         float x, y, z;
                         pTarget->GetPosition(x, y, z);
@@ -528,7 +530,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                     DoCast(m_creature->getVictim(), SPELL_CLEAVE, false);
                     break;
                 case EVENT_COMBUSTION:
-                    if (Unit* pTarget  = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1)) // dont get tanks
+                    if (Unit* pTarget  = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1)) // dont get tank (highest threat target)
                         DoCast(pTarget, SPELL_FIERY_COMBUSTION, false);
                     break;
                 case EVENT_CLEAR_AURAS:
@@ -569,6 +571,7 @@ struct MANGOS_DLL_DECL boss_halion_physicalAI: public boss_halion_baseAI
                 SendScriptMessageTo(Controller, m_creature, MESSAGE_PHASE_2, 0);
             if (GameObject* pPortal = GET_GAMEOBJECT(DATA_PORTAL_TO_TWILIGHT_1))
                 pPortal->SetPhaseMask(1, true);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             DoScriptText(HALION_PHASE2, m_creature);
             DoCast(m_creature, SPELL_TWILIGHT_PHASING, false);
             Events.SetPhase(PHASE_TWILIGHT);
