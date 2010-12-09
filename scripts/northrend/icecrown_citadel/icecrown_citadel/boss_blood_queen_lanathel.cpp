@@ -182,6 +182,7 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
     void RemoveAuras()
     {
         RemoveEncounterAuras(-SPELL_BLOOD_MIRROR_MASTER, -SPELL_BLOOD_MIRROR_SLAVE, -SPELL_UNCONTROLLABLE_FRENZY);
+        RemoveEncounterAuras(-SPELL_ESSENCE_OF_THE_BLOODQUEEN, -SPELL_FRENZIED_BLOODTHIRST);
     }
 
     void UpdateAI(uint32 const uiDiff)
