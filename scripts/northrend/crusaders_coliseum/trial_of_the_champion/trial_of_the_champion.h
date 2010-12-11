@@ -1,6 +1,6 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
-* This program is free software licensed under GPL version 2
-* Please see the included DOCS/LICENSE.TXT for more information */
+ * This program is free software licensed under GPL version 2
+ * Please see the included DOCS/LICENSE.TXT for more information */
 
 #ifndef DEF_TOC_H
 #define DEF_TOC_H
@@ -12,7 +12,6 @@ enum
 {
     MAX_ENCOUNTER               = 3,
     MAX_CHAMPIONS               = 3,
-    MAX_MEMORY                  = 25,
 
     TYPE_GRAND_CHAMPIONS        = 0,
     TYPE_ARGENT_CHALLENGE       = 1,
@@ -84,7 +83,7 @@ enum
     GO_EADRIC_LOOT              = 195374,
     GO_EADRIC_LOOT_H            = 195375,
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H         = 195324
+    GO_PALETRESS_LOOT_H         = 195324,
 };
 
 // base class for all ToC5 bosses
@@ -109,4 +108,4 @@ CreatureAI* toc5_GetAI(Creature *pCreature)
     NewScript->GetAI = &toc5_GetAI<SC##AI>; \
     NewScript->RegisterSelf();
 
-#endif
+#endif // DEF_TOC_H

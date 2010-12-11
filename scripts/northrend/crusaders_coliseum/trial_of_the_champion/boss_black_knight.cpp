@@ -117,9 +117,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
     uint32 Phase_Delay;
     uint32 Summon_Ghoul;
 
-    bool phase1;
-    bool phase2;
-    bool phase3;
+    uint32 phase;
     bool ghoul;
 
     boss_black_knightAI(Creature* pCreature):
@@ -135,9 +133,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         Obliterate_Timer = 16000;
         Choke_Timer = 15000;
         Summon_Ghoul = 4000;
-        phase1 = true;      //FIXME: use one numeric value instead
-        phase2 = false;
-        phase3 = false;
+        phase = 1;
         ghoul = false;
         m_creature->SetDisplayId(29837);
         SetEquipmentSlots(false, EQUIP_SWORD, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
@@ -155,12 +151,12 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
-        if (uiDamage > m_creature->GetHealth() && !phase3)
+        if (uiDamage > m_creature->GetHealth() && phase != 3)
         {
             uiDamage = 0;
-            if (phase2)
+            if (phase == 2)
                 StartPhase3();
-            if (phase1)
+            if (phase == 1)
                 StartPhase2();
         }
     }
@@ -169,16 +165,16 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
     {
         if (!m_pInstance)
             return;
-        if (phase3)
+        if (phase == 3)
         {
             m_pInstance->SetData(TYPE_BLACK_KNIGHT, DONE);
         }
-        if (phase2 && !m_creature->isAlive())
+        if (phase == 2 && !m_creature->isAlive())
         {
             m_creature->Respawn();
             StartPhase3();
         }
-        if (phase1 && !m_creature->isAlive())
+        if (phase == 1 && !m_creature->isAlive())
         {
             m_creature->Respawn();
             StartPhase2();
@@ -187,9 +183,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 
     void StartPhase2()
     {
-        phase1 = false;
-        phase2 = true;
-        phase3 = false;
+        phase = 2;
         Plague_Strike_Timer = 14000;
         Icy_Touch_Timer = 12000;
         Obliterate_Timer = 18000;
@@ -200,9 +194,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
 
     void StartPhase3()
     {
-        phase1 = false;
-        phase2 = false;
-        phase3 = true;
+        phase = 3;
         Death_Timer = 5000;
         Mark_Timer = 9000;
         m_creature->SetHealthPercent(100.0f);
@@ -215,7 +207,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (Plague_Strike_Timer < diff && !phase3)
+        if (Plague_Strike_Timer < diff && phase != 3)
         {
             DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_PLAGUE_STRIKE));
             Plague_Strike_Timer = 10500;
@@ -223,7 +215,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Plague_Strike_Timer -= diff;  
 
-        if (Icy_Touch_Timer < diff && !phase3)
+        if (Icy_Touch_Timer < diff && phase != 3)
         {
             DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_ICY_TOUCH));
             Icy_Touch_Timer = 10000;
@@ -231,7 +223,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Icy_Touch_Timer -= diff;
 
-        if (Obliterate_Timer < diff && !phase3)
+        if (Obliterate_Timer < diff && phase != 3)
         {
             DoCast(m_creature->getVictim(), DIFFICULTY(SPELL_OBLITERATE));
             Obliterate_Timer = 11000;
@@ -239,7 +231,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Obliterate_Timer -= diff;
 
-        if (Choke_Timer < diff && phase1)
+        if (Choke_Timer < diff && phase == 1)
         {
             if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(m_creature->getVictim(), SPELL_CHOKE);
@@ -248,7 +240,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Choke_Timer -= diff;
 
-        if (Summon_Ghoul < diff && phase1 && !ghoul)
+        if (Summon_Ghoul < diff && phase == 1 && !ghoul)
         {
             if (uint32 minion_id = m_pInstance ? m_pInstance->GetData(DATA_BLACK_KNIGHT_MINION) : 0)
                 DoSpawnCreature(minion_id, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
@@ -257,7 +249,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Summon_Ghoul -= diff;
 
-        if (Mark_Timer < diff && phase3)
+        if (Mark_Timer < diff && phase == 3)
         {
             if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                 DoCast(target, SPELL_MARK);
@@ -266,7 +258,7 @@ struct MANGOS_DLL_DECL boss_black_knightAI: public boss_trial_of_the_championAI
         else
             Mark_Timer -= diff;
 
-        if (Death_Timer < diff && phase3)
+        if (Death_Timer < diff && phase == 3)
         {
             DoCast(m_creature, DIFFICULTY(SPELL_DEATH));
             Death_Timer = 3500;

@@ -37,10 +37,10 @@ struct MANGOS_DLL_DECL npc_toc5_announcerAI: public ScriptedAI
 {
     ScriptedInstance *m_pInstance;
 
-    npc_toc5_announcerAI(Creature* pCreature): ScriptedAI(pCreature)
+    npc_toc5_announcerAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        Reset();
     }
 
     void Reset()
@@ -86,9 +86,9 @@ struct MANGOS_DLL_DECL npc_toc5_announcerAI: public ScriptedAI
 
         if (m_pInstance->GetData(TYPE_GRAND_CHAMPIONS) == FAIL)
         {
-            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_1), 738.665771, 661.031433, 412.394623, 4.698702, TEMPSUMMON_MANUAL_DESPAWN, 0);
-            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_2), 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_MANUAL_DESPAWN, 0);
-            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_3), 754.360779, 660.816162, 412.395996, 4.698700, TEMPSUMMON_MANUAL_DESPAWN, 0);
+            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_1), 738.665771, 661.031433, 412.394623, 4.698702, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS);
+            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_2), 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS);
+            m_creature->SummonCreature(m_pInstance->GetData(DATA_CHAMPIONID_3), 754.360779, 660.816162, 412.395996, 4.698700, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS);
             m_pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
         }
 
@@ -102,7 +102,7 @@ struct MANGOS_DLL_DECL npc_toc5_announcerAI: public ScriptedAI
 
             if (m_pInstance->GetData(TYPE_ARGENT_CHALLENGE) == FAIL)
             {
-                m_creature->SummonCreature(m_pInstance->GetData(DATA_ARGENT_CHALLENGER), 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                m_creature->SummonCreature(m_pInstance->GetData(DATA_ARGENT_CHALLENGER), 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS);
                 m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, IN_PROGRESS);
             }
 
@@ -112,18 +112,12 @@ struct MANGOS_DLL_DECL npc_toc5_announcerAI: public ScriptedAI
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 else
                 {
-                    m_creature->SummonCreature(NPC_BLACK_KNIGHT, 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                    m_creature->SummonCreature(NPC_BLACK_KNIGHT, 746.864441, 660.918762, 411.695465, 4.698700, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7*DAY*IN_MILLISECONDS);
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
             }
         }
     }
-
-    /*void UpdateAI(const uint32 diff)
-    {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-    }*/
 };
 
 CreatureAI* GetAI_npc_toc5_announcer(Creature* pCreature)
@@ -152,10 +146,10 @@ bool GossipSelect_npc_toc5_announcer(Player* pPlayer, Creature* pCreature, uint3
 }
 
 boss_trial_of_the_championAI::boss_trial_of_the_championAI(Creature *pCreature):
-    ScriptedAI(pCreature)
+    ScriptedAI(pCreature),
+    m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+    m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty())
 {
-    m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-    m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
 }
 
 void AddSC_trial_of_the_champion()

@@ -82,16 +82,11 @@ struct MANGOS_DLL_DECL toc5_champion_baseAI: public boss_trial_of_the_championAI
     {
         if (!m_pInstance)
             return;
-        if (m_pInstance->GetData(TYPE_GRAND_CHAMPIONS) == DONE)
-            m_creature->ForcedDespawn();
-        else
-        {
-            for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; id++)
-                if (Creature *pTemp = GET_CREATURE(id))
-                    if (pTemp->isAlive())
-                        pTemp->SetInCombatWithZone();
-            m_pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
-        }
+        for (uint32 id = DATA_CHAMPION_BEGIN; id <= DATA_CHAMPION_END; ++id)
+            if (Creature *pTemp = GET_CREATURE(id))
+                if (pTemp->isAlive())
+                    pTemp->SetInCombatWithZone();
+        m_pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
     }
 
     void JustDied(Unit* pKiller)

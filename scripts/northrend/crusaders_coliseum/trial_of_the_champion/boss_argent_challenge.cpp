@@ -52,6 +52,8 @@ enum Spells
     SPELL_OLD_WOUNDS_H          = 67679,
 };
 
+#define MAX_MEMORY  25
+
 static const uint32 MemorySummons[MAX_MEMORY] = {
     MEMORY_ALGALON,
     MEMORY_ARCHIMONDE,
@@ -88,7 +90,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
     uint32 Hammer_Timer;
     uint32 Hammer_Dmg_Timer;
 
-    uint64 HammerTarget;
+    ObjectGuid HammerTarget;
 
     boss_eadricAI(Creature* pCreature):
         boss_trial_of_the_championAI(pCreature)
@@ -102,17 +104,14 @@ struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
         Radiance_Timer = 15000;
         Hammer_Timer = 40000;
         Hammer_Dmg_Timer = 45000;
-        HammerTarget = 0;
+        HammerTarget.Clear();
     }
 
     void Aggro(Unit *pWho)
     {
         if (!m_pInstance)
             return;
-        if (m_pInstance->GetData(TYPE_ARGENT_CHALLENGE) == DONE)
-            m_creature->ForcedDespawn();
-        else
-            m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, IN_PROGRESS);
+        m_pInstance->SetData(TYPE_ARGENT_CHALLENGE, IN_PROGRESS);
     }
 
     void JustDied(Unit *pKiller)
@@ -148,7 +147,7 @@ struct MANGOS_DLL_DECL boss_eadricAI: public boss_trial_of_the_championAI
             if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
             {
                 DoCast(target, SPELL_HAMMER_OF_JUSTICE);
-                HammerTarget = target->GetGUID();
+                HammerTarget = target->GetObjectGuid();
             }
             Hammer_Timer = 50000;
         }
@@ -176,8 +175,8 @@ struct MANGOS_DLL_DECL boss_paletressAI: public boss_trial_of_the_championAI
     uint32 Shield_Delay;
     uint32 Shield_Check;
 
-    bool summoned;
-    bool shielded;
+    bool summoned :1;
+    bool shielded :1;
 
     boss_paletressAI(Creature* pCreature):
         boss_trial_of_the_championAI(pCreature)
