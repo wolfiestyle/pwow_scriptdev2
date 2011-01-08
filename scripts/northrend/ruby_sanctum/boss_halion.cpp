@@ -119,8 +119,7 @@ enum Spells
     SPELL_METEOR_STRIKE_TARGET  = 74641,
     SPELL_METEOR_STRIKE_BLAST   = 74648,
     SPELL_TAIL_LASH             = 74531,
-    SPELL_FIERY_COMBUSTION      = 74562, // FIXME: add triggered spells, summon NPC with scale = stack amount
-                                         // add NPC script, fix spell radius based on creature scale 
+    SPELL_FIERY_COMBUSTION      = 74562,
 
     // Halion: Twilight Realm
     SPELL_TWILIGHT_DIVISION     = 75063,
@@ -128,8 +127,8 @@ enum Spells
     //SPELL_TAIL_LASH             = 74531,
     SPELL_DARK_BREATH           = 74806,
     SPELL_DUSK_SHROUD           = 75476,
-    SPELL_TWILIGHT_CUTTER       = 74768, // FIXME: make sure hit target is really standing between both orbs
-    SPELL_SOUL_CONSUMPTION      = 74792, // FIXME: same as fiery combustion
+    SPELL_TWILIGHT_CUTTER       = 74768,
+    SPELL_SOUL_CONSUMPTION      = 74792,
 
     // Aditional spells
     SPELL_COMBUSTION            = 74629, // TODO: fix the spell
@@ -157,7 +156,7 @@ enum Adds
     NPC_METEOR_STRIKE_BUNNY     = 40041, // the one who casts SPELL_METEOR_STRIKE summoned at (X,Y,Z) coords
     NPC_METEOR_STRIKE_FLAME     = 40042, // the one which leaves a trail of fire (this is a fire-patch on the ground)
 
-    NPC_SHADOW_ORB              = 40100, // 2(4 in heroic) of these are spawned 180 degrees of each other
+    NPC_SHADOW_ORB              = 40100, // 2 (4 in heroic) of these are spawned 180 degrees of each other
     NPC_COMBUSTION              = 40001,
     NPC_CONSUMPTION             = 40135,
 };

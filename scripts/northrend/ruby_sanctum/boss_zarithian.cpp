@@ -51,13 +51,13 @@ enum Spells
     SPELL_SUMMON_FLAMECALLER    = 74398,
 
     // flamecaller
-    SPELL_BLAST_NOVA    = 74392,
-    SPELL_LAVA_GOUT     = 74395,
+    SPELL_BLAST_NOVA            = 74392,
+    SPELL_LAVA_GOUT             = 74395,
 };
 
 enum Adds
 {
-    NPC_FLAMECALLER = 39814,
+    NPC_FLAMECALLER             = 39814,
 };
 
 #define TIMER_CLEAVE_ARMOR  15*IN_MILLISECONDS, 25*IN_MILLISECONDS
