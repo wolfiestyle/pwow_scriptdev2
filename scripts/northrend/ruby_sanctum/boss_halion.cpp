@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: boss_halion
-SD%Complete:
-SDComment: placeholder
+SD%Complete: 100%
+SDComment: 
 SDCategory: Ruby Sanctum
 EndScriptData */
 
@@ -131,8 +131,8 @@ enum Spells
     SPELL_SOUL_CONSUMPTION      = 74792,
 
     // Aditional spells
-    SPELL_COMBUSTION            = 74629, // TODO: fix the spell
-    SPELL_CONSUMPTION           = 74803, // TODO: fix the spell
+    SPELL_COMBUSTION            = 74629,
+    SPELL_CONSUMPTION           = 74803,
 };
 
 static uint32 const Corporeality [] =
