@@ -356,7 +356,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI: public ScriptedAI
 
     int Permissible(const Creature *creature)
     {
-        if (creature->GetCharmerGUID())
+        if (!creature->GetCharmerGuid().IsEmpty())
             return PERMIT_BASE_SPECIAL;
 
         return PERMIT_BASE_NO;
@@ -399,7 +399,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI: public ScriptedAI
         if (pOwner->GetTypeId() == TYPEID_PLAYER && m_creature->IsPet())
             static_cast<Player*>(pOwner)->RemoveGuardian(static_cast<Pet*>(m_creature));
         m_creature->RemoveFromWorld();
-        m_creature->SetOwnerGUID(NULL);
+        m_creature->SetOwnerGuid(ObjectGuid());
     }
     
     void UpdateAI(const uint32 diff)
@@ -816,7 +816,7 @@ struct MANGOS_DLL_DECL npc_scarlet_minerAI : public ScriptedAI
                         pGhoul->MonsterSay("Poppy?", LANG_UNIVERSAL, 0);
                     break;
                 }
-                pGhoul->SetOwnerGUID(pCaster->GetGUID());
+                pGhoul->SetOwnerGuid(pCaster->GetObjectGuid());
                 pGhoul->GetMotionMaster()->MoveFollow(pCaster, 5.0f, (M_PI_F/8)*urand(0,16));
             }
             else   // Sometimes summons a Scarlet Ghost

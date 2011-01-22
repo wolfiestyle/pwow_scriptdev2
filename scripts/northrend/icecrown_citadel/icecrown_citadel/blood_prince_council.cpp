@@ -237,7 +237,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
                     pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     if (Creature *Bomb = SummonMgr.SummonCreatureAt(pSumm, NPC_KINETIC_BOMB, TEMPSUMMON_TIMED_DESPAWN, MINUTE*IN_MILLISECONDS, 0.0f, 0.0f, 20.0f))
                     {
-                        Bomb->SetOwnerGUID(pSumm->GetGUID());
+                        Bomb->SetOwnerGuid(pSumm->GetObjectGuid());
                         Bomb->CastSpell(pSumm, SPELL_UNSTABLE, true);
                         Bomb->CastSpell(pSumm, SPELL_KINETIC_BOMB_VISUAL, true);
                     }

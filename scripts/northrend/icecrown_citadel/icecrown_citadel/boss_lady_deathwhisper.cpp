@@ -373,7 +373,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                             if (pSumm)
                             {
                                 pSumm->SetInCombatWithZone();
-                                pSumm->SetOwnerGUID(m_creature->GetGUID());
+                                pSumm->SetOwnerGuid(m_creature->GetObjectGuid());
                             }
                             IsFanatic = !IsFanatic;
                         }
@@ -392,7 +392,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                                 if (pSumm)
                                 {
                                     pSumm->SetInCombatWithZone();
-                                    pSumm->SetOwnerGUID(m_creature->GetGUID());
+                                    pSumm->SetOwnerGuid(m_creature->GetObjectGuid());
                                 }
                                 IsFanatic = !IsFanatic;
                             }
@@ -403,7 +403,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                         if (pSumm)
                         {
                             pSumm->SetInCombatWithZone();
-                            pSumm->SetOwnerGUID(m_creature->GetGUID());
+                            pSumm->SetOwnerGuid(m_creature->GetObjectGuid());
                         }
                     }
                     break;
@@ -495,7 +495,7 @@ struct MANGOS_DLL_DECL mob_deathwhisper_fanaticAI: public ScriptedAI, public Scr
 
     void SpellHit(Unit* pCaster, SpellEntry const* pSpell)
     {
-        if (!m_creature->GetOwnerGUID())
+        if (m_creature->GetOwnerGuid().IsEmpty())
             return;
         switch (pSpell->Id)
         {
@@ -571,7 +571,7 @@ struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public Sc
 
     void SpellHit(Unit* pCaster, SpellEntry const* pSpell)
     {
-        if (!m_creature->GetOwnerGUID())
+        if (m_creature->GetOwnerGuid().IsEmpty())
             return;
         switch (pSpell->Id)
         {

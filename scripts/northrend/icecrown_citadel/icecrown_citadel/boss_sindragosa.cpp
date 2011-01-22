@@ -160,7 +160,7 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
             if (Creature *IceTomb = SummonMgr.SummonCreatureAt(pWho, NPC_ICE_TOMB, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             {
                 IceTomb->setFaction(m_creature->getFaction());
-                IceTomb->SetCreatorGUID(pWho->GetGUID());
+                IceTomb->SetCreatorGuid(pWho->GetObjectGuid());
             }
     }
 
@@ -168,7 +168,7 @@ struct MANGOS_DLL_DECL boss_sindragosaAI: public boss_icecrown_citadelAI
     {
         if (pSumm && pSumm->GetEntry() == NPC_ICE_TOMB)
         {
-            if (Unit *IcedTarget = m_creature->GetMap()->GetUnit(pSumm->GetCreatorGUID()))
+            if (Unit *IcedTarget = m_creature->GetMap()->GetUnit(pSumm->GetCreatorGuid()))
             {
                 IcedTarget->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA);
                 IcedTarget->RemoveAurasDueToSpell(SPELL_ICE_TOMB_AURA2);

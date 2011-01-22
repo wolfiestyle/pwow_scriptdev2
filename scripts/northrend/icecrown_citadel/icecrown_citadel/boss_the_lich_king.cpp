@@ -247,12 +247,14 @@ static const float TerenasSummonPosition[3] = {510.7f, -2505.0f, 1060.8f};
 struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
-    std::list<uint64> PlayersInFrostmourne;
-    std::list<uint64> PlayersToInstakill;       // weird things happed when a player dies in a loading screen - delay it until they have arrived (server crash!)
     uint32 NumberOfHarvestsToApply;             // number of SPELL_HARVESTED_SOULs to cast on self upon player exit on heroic
     uint32 TalkTimer;
     uint32 TalkPhase;
     bool HasDoneIntro;
+
+    typedef std::list<ObjectGuid> GuidList;
+    GuidList PlayersInFrostmourne;
+    GuidList PlayersToInstakill;                // weird things happed when a player dies in a loading screen - delay it until they have arrived (server crash!)
 
     boss_the_lich_kingAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
@@ -423,7 +425,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
 
     void RemoveAllFrostmournePlayers(bool Kill, bool Attack = false)
     {
-        for (std::list<uint64>::const_iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
+        for (GuidList::const_iterator i = PlayersInFrostmourne.begin(); i!= PlayersInFrostmourne.end(); ++i)
         {
             if (Unit *UnitInFrostmourne = m_creature->GetMap()->GetUnit(*i))
             {
@@ -450,7 +452,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     if (PlayersInFrostmourne.empty())
                         if (Creature *Terenas = SummonMgr.SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSummonPosition[0], TerenasSummonPosition[1], TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))  // CHANGE THESE LOCS!!
                         {
-                            Terenas->SetOwnerGUID(m_creature->GetGUID());
+                            Terenas->SetOwnerGuid(m_creature->GetObjectGuid());
                             if (m_bIsHeroic)
                             {
                                 m_creature->MonsterMove(515.0f, CenterPosition[1], CenterPosition[2], 2000);
@@ -460,19 +462,19 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                                 if (Creature *SpritWarden = SummonMgr.SummonCreature(NPC_SPIRIT_WARDEN, TerenasSummonPosition[0] - 10.0f, TerenasSummonPosition[1] - 10.0f, TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))
                                 {
                                     Terenas->SetHealthPercent(50.0f);
-                                    SpritWarden->SetOwnerGUID(m_creature->GetGUID());
+                                    SpritWarden->SetOwnerGuid(m_creature->GetObjectGuid());
                                     SpritWarden->AddThreat(Terenas, 500000.0f);
                                     pCaster->getHostileRefManager().clearReferences();
                                 }
                         }
-                    PlayersInFrostmourne.push_back(pCaster->GetGUID());
+                    PlayersInFrostmourne.push_back(pCaster->GetObjectGuid());
                     break;
                 default:
                     break;
             }
             if (pSpell->SpellDifficultyId == 2296 && pCaster->GetTypeId() == TYPEID_PLAYER)    // player supposed to die inside frostmourne
             {
-                PlayersToInstakill.push_back(pCaster->GetGUID());   // could be still teleporting - put player on queue for killing (how wonderfully morbid)
+                PlayersToInstakill.push_back(pCaster->GetObjectGuid());   // could be still teleporting - put player on queue for killing (how wonderfully morbid)
                 if (!m_bIsHeroic)
                 {
                     SummonMgr.UnsummonAllWithId(NPC_TERENAS_MENETHIL_FROSTMOURNE);
@@ -531,7 +533,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         UpdateTalkPhases(uiDiff);
 
         // kill any players ready for killing
-        for (std::list<uint64>::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
+        for (GuidList::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
         {
             if (Unit *UnitToKill = m_creature->GetMap()->GetUnit(*i))
                 if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
@@ -992,7 +994,7 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
     void Aggro(Unit *pWho)
     {
         Unit* Creator = NULL;
-        if (Creator = m_creature->GetMap()->GetUnit(m_creature->GetCreatorGUID()))
+        if (Creator = m_creature->GetMap()->GetUnit(m_creature->GetCreatorGuid()))
             m_creature->SetDisplayId(Creator->GetDisplayId());
         BroadcastScriptMessageToEntry(m_creature, NPC_LICH_KING, 300.0f);
         SCHEDULE_EVENT(SOUL_SHRIEK);

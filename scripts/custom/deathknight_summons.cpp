@@ -11,7 +11,7 @@ struct MANGOS_DLL_DECL npc_bloodwormAI: public ScriptedAI
 
     npc_bloodwormAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        mOwner(m_creature->GetOwnerGUID())
+        mOwner(m_creature->GetOwnerGuid())
     {
     }
 

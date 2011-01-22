@@ -185,7 +185,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
         {
             if (Creature *Controller = SummonMgr.SummonCreatureAt(m_creature, NPC_INTRO_OUTRO_CONTROLLER))
             {
-                Controller->SetOwnerGUID(m_creature->GetGUID());
+                Controller->SetOwnerGuid(m_creature->GetObjectGuid());
                 Controller->SetVisibility(VISIBILITY_OFF);
                 SendScriptMessageTo(Controller, m_creature, MESSAGE_START_INTRO);
             }
@@ -243,7 +243,7 @@ struct MANGOS_DLL_DECL boss_deathbringer_saurfangAI: public boss_icecrown_citade
     {
         if (!pSummon || pSummon->GetEntry() != NPC_BLOOD_BEAST)
             return;
-        pSummon->SetOwnerGUID(m_creature->GetGUID());
+        pSummon->SetOwnerGuid(m_creature->GetObjectGuid());
         pSummon->CastSpell(pSummon, SPELL_RESISTANT_SKIN, true);
         pSummon->CastSpell(pSummon, SPELL_ADD_BLOOD_LINK, true);
         pSummon->SetInCombatWithZone();
