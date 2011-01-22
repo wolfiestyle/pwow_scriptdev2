@@ -26,4 +26,5 @@ EndScriptData */
 
 void AddSC_boss_krick_and_ick()
 {
+
 }

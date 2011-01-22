@@ -24,6 +24,19 @@ EndScriptData */
 #include "precompiled.h"
 #include "ulduar.h"
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1603079,
+    SAY_SLAY_1                          = -1603080,
+    SAY_SLAY_2                          = -1603081,
+    SAY_BERSERK                         = -1603082,
+    SAY_DEATH                           = -1603083,
+    EMOTE_SCREECH                       = -1603084,
+    EMOTE_DEFENDER                      = -1603085,
+};
+*/
+
 enum Spells
 {
     // Auriaya

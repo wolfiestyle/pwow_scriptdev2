@@ -24,6 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "pit_of_saron.h"
 
-void AddSC_boss_scourgelord_tyrannus()
+void AddSC_boss_tyrannus()
 {
+
 }

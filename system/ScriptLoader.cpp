@@ -291,7 +291,9 @@ extern void AddSC_npc_barrett_ramsey();
 extern void AddSC_boss_novos();                             //draktharon_keep
 extern void AddSC_boss_tharonja();
 extern void AddSC_boss_trollgore();
+extern void AddSC_instance_draktharon_keep();
 extern void AddSC_boss_colossus();                          //gundrak
+extern void AddSC_boss_eck();
 extern void AddSC_boss_galdarah();
 extern void AddSC_boss_moorabi();
 extern void AddSC_boss_sladran();
@@ -303,10 +305,11 @@ extern void AddSC_boss_falryn();                            //halls_of_reflectio
 extern void AddSC_boss_lich_king();
 extern void AddSC_boss_marwyn();
 extern void AddSC_instance_halls_of_reflection();
-extern void AddSC_boss_forgemaster_gafrost();               //pit_of_saron
+extern void AddSC_boss_gafrost();                           // ICC, pit_of_saron
 extern void AddSC_boss_krick_and_ick();
-extern void AddSC_boss_scourgelord_tyrannus();
+extern void AddSC_boss_tyrannus();
 extern void AddSC_instance_pit_of_saron();
+extern void AddSC_pit_of_saron();
 extern void AddSC_blood_prince_council();                   //icecrown_citadel
 extern void AddSC_boss_blood_queen_lanathel();
 extern void AddSC_boss_deathbringer_saurfang();
@@ -369,20 +372,20 @@ extern void AddSC_boss_maiden_of_grief();                   //Ulduar, halls_of_s
 extern void AddSC_boss_sjonnir();
 extern void AddSC_halls_of_stone();
 extern void AddSC_instance_halls_of_stone();
-extern void AddSC_boss_algalon();                           //ulduar
-extern void AddSC_boss_assembly_of_iron();
+extern void AddSC_boss_assembly_of_iron();                  //ulduar
+extern void AddSC_boss_algalon();
 extern void AddSC_boss_auriaya();
-extern void AddSC_boss_deconstructor();
+extern void AddSC_boss_flame_leviathan();
 extern void AddSC_boss_freya();
+extern void AddSC_boss_general_vezax();
 extern void AddSC_boss_hodir();
 extern void AddSC_boss_ignis();
 extern void AddSC_boss_kologarn();
-extern void AddSC_boss_flame_leviathan();
 extern void AddSC_boss_mimiron();
 extern void AddSC_boss_razorscale();
 extern void AddSC_boss_thorim();
-extern void AddSC_boss_vezax();
-extern void AddSC_boss_yoggsaron();
+extern void AddSC_boss_xt_002();
+extern void AddSC_boss_yogg_saron();
 extern void AddSC_instance_ulduar();
 extern void AddSC_ulduar_teleporter();
 extern void AddSC_boss_ingvar();                            //utgarde_keep
@@ -781,7 +784,9 @@ void AddScripts()
     AddSC_boss_novos();                                     //draktharon_keep
     AddSC_boss_tharonja();
     AddSC_boss_trollgore();
+    AddSC_instance_draktharon_keep();
     AddSC_boss_colossus();                                  //gundrak
+    AddSC_boss_eck();
     AddSC_boss_galdarah();
     AddSC_boss_moorabi();
     AddSC_boss_sladran();
@@ -793,10 +798,11 @@ void AddScripts()
     AddSC_boss_lich_king();
     AddSC_boss_marwyn();
     AddSC_instance_halls_of_reflection();
-    AddSC_boss_forgemaster_gafrost();                       //pit_of_saron
+    AddSC_boss_gafrost();                                   // ICC, pit_of_saron
     AddSC_boss_krick_and_ick();
-    AddSC_boss_scourgelord_tyrannus();
+    AddSC_boss_tyrannus();
     AddSC_instance_pit_of_saron();
+    AddSC_pit_of_saron();
     AddSC_blood_prince_council();                           //icecrown_citadel
     AddSC_boss_blood_queen_lanathel();
     AddSC_boss_deathbringer_saurfang();
@@ -859,20 +865,20 @@ void AddScripts()
     AddSC_boss_sjonnir();
     AddSC_halls_of_stone();
     AddSC_instance_halls_of_stone();
-    AddSC_boss_algalon();                                   //ulduar
-    AddSC_boss_assembly_of_iron();
+    AddSC_boss_assembly_of_iron();                          //ulduar
+    AddSC_boss_algalon();
     AddSC_boss_auriaya();
-    AddSC_boss_deconstructor();
+    AddSC_boss_flame_leviathan();
     AddSC_boss_freya();
+    AddSC_boss_general_vezax();
     AddSC_boss_hodir();
     AddSC_boss_ignis();
     AddSC_boss_kologarn();
-    AddSC_boss_flame_leviathan();
     AddSC_boss_mimiron();
     AddSC_boss_razorscale();
     AddSC_boss_thorim();
-    AddSC_boss_vezax();
-    AddSC_boss_yoggsaron();
+    AddSC_boss_xt_002();
+    AddSC_boss_yogg_saron();
     AddSC_instance_ulduar();
     AddSC_ulduar_teleporter();
     AddSC_boss_ingvar();                                    //utgarde_keep

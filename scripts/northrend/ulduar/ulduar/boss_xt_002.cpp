@@ -24,6 +24,24 @@ EndScriptData */
 #include "precompiled.h"
 #include "ulduar.h"
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1603045,
+    SAY_SLAY_1                          = -1603046,
+    SAY_SLAY_2                          = -1603047,
+    SAY_BERSERK                         = -1603048,
+    SAY_ADDS                            = -1603049,
+    SAY_DEATH                           = -1603050,
+    SAY_HEART_OPEN                      = -1603051,
+    SAY_HEART_CLOSE                     = -1603052,
+    SAY_TANCTRUM                        = -1603053,
+
+    EMOTE_HEART                         = -1603054,
+    EMOTE_REPAIR                        = -1603055,
+};
+*/
+
 enum Spells
 {
     SPELL_BERSERK               = 47008,
@@ -218,7 +236,7 @@ CreatureAI* GetAI_boss_deconstructor(Creature* pCreature)
     return new boss_deconstructorAI(pCreature);
 }
 
-void AddSC_boss_deconstructor()
+void AddSC_boss_xt_002()
 {
     Script *newscript;
 

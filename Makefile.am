@@ -356,7 +356,10 @@ scripts/northrend/crusaders_coliseum/trial_of_the_crusader/trial_of_the_crusader
 scripts/northrend/draktharon_keep/boss_novos.cpp \
 scripts/northrend/draktharon_keep/boss_tharonja.cpp \
 scripts/northrend/draktharon_keep/boss_trollgore.cpp \
+scripts/northrend/draktharon_keep/draktharon_keep.h \
+scripts/northrend/draktharon_keep/instance_draktharon_keep.cpp \
 scripts/northrend/gundrak/boss_colossus.cpp \
+scripts/northrend/gundrak/boss_eck.cpp \
 scripts/northrend/gundrak/boss_galdarah.cpp \
 scripts/northrend/gundrak/boss_moorabi.cpp \
 scripts/northrend/gundrak/boss_sladran.cpp \
@@ -377,6 +380,10 @@ scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/boss_scourgelord_ty
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/instance_pit_of_saron.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/pit_of_saron.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/pit_of_saron/pit_of_saron.h \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_bronjahm.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_devourer_of_souls.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/forge_of_souls.h \
+scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/instance_forge_of_souls.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/blood_prince_council.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_blood_queen_lanathel.cpp \
 scripts/northrend/icecrown_citadel/icecrown_citadel/boss_deathbringer_saurfang.cpp \

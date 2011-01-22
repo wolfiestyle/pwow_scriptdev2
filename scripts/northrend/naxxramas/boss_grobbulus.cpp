@@ -30,6 +30,11 @@ Enrages 26527*/
 #include "precompiled.h"
 #include "naxxramas.h"
 
+enum
+{
+    EMOTE_SPRAY_SLIME               = -1533021,
+};
+
 #define SPELL_POISONCLOUD         28240
 #define SPELL_SLIMESPRAY          28157
 #define SPELL_SLIMESPRAY_H        54364

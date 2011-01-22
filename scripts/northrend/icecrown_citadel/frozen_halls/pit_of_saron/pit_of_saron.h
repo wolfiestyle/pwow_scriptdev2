@@ -1,98 +1,76 @@
-#ifndef DEF_PIT_OF_SARON_H
-#define DEF_PIT_OF_SARON_H
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * This program is free software licensed under GPL version 2
+ * Please see the included DOCS/LICENSE.TXT for more information */
 
-#define GET_CREATURE(C)     (InstanceVar<uint64>(C, m_pInstance).getObject<Creature>())
-#define GET_GAMEOBJECT(G)   (InstanceVar<uint64>(G, m_pInstance).getObject<GameObject>())
-
-#define DIFF_SELECT(N, H)   (m_bIsHeroic ? H : N)
-
-// schedules a periodic event
-#define SCHEDULE_EVENT(EV, ...)   Events.ScheduleEvent(EVENT_##EV, TIMER_##EV, TIMER_##EV, ## __VA_ARGS__)
-#define SCHEDULE_EVENT_R(EV, ...) Events.ScheduleEventInRange(EVENT_##EV, TIMER_##EV, TIMER_##EV, ## __VA_ARGS__)
-
-#define IS_HORDE            (m_pInstance ? m_pInstance->GetData(DATA_FACTION) == HORDE : false)
+#ifndef DEF_ICECROWN_PIT_H
+#define DEF_ICECROWN_PIT_H
 
 enum
 {
-    MAX_ENCOUNTER           = 4,
+    MAX_ENCOUNTER                   = 3,
 
-    TYPE_GARFROST           = 0,
-    TYPE_ICK                = 1,
-    TYPE_KRICK              = 2,
-    TYPE_TYRANNUS           = 3,
+    TYPE_GARFROST                   = 0,
+    TYPE_KRICK                      = 1,
+    TYPE_TYRANNUS                   = 2,
 
-    // instance objects
+    NPC_TYRANNUS_INTRO              = 36794,
+    NPC_GARFROST                    = 36494,
+    NPC_KRICK                       = 36477,
+    NPC_ICK                         = 36476,
+    NPC_TYRANNUS                    = 36658,
+    NPC_RIMEFANG                    = 36661,
+    NPC_SINDRAGOSA                  = 37755,
 
-    // total count of guid values stored
-    DATA_GUID_MAX,
+    NPC_SYLVANAS_PART1              = 36990,
+    NPC_SYLVANAS_PART2              = 38189,
+    NPC_JAINA_PART1                 = 36993,
+    NPC_JAINA_PART2                 = 38188,
+    NPC_KILARA                      = 37583,
+    NPC_ELANDRA                     = 37774,
+    NPC_KORALEN                     = 37779,
+    NPC_KORLAEN                     = 37582,
+    NPC_CHAMPION_1_HORDE            = 37584,
+    NPC_CHAMPION_2_HORDE            = 37587,
+    NPC_CHAMPION_1_ALLIANCE         = 37496,
+    NPC_CHAMPION_2_ALLIANCE         = 37497,
 
-    // instance variables
-    DATA_FACTION = 100,
-
-    // creature entries
-    NPC_GARFROST            = 36494,
-    NPC_ICK                 = 36476,
-    NPC_KRICK               = 36477,
-    NPC_TYRANNUS            = 36658,
-
-    // gameobject entries
-
-    // achievement criteria IDs
-
-    // misc
-    FACTION_NEUTRAL         = 7,
-    FACTION_HOSTILE         = 14,
-    FACTION_FRIENDLY        = 35,
+    GO_ICEWALL                      = 201885,               // open after gafrost/krick
+    GO_HALLS_OF_REFLECT_PORT        = 201848,               // unlocked by jaina/sylvanas at last outro
 };
 
-//---------------------------------------------------------
-
-namespace pos {
-
-// helper for the script register process
-template <typename T>
-CreatureAI* GetAI(Creature *pCreature)
+class MANGOS_DLL_DECL instance_pit_of_saron : public ScriptedInstance
 {
-    return new T(pCreature);
-}
+    public:
+        instance_pit_of_saron(Map* pMap);
+        ~instance_pit_of_saron() {}
 
-#define REGISTER_SCRIPT(SC) \
-    newscript = new Script; \
-    newscript->Name = #SC; \
-    newscript->GetAI = &pos::GetAI<SC##AI>; \
-    newscript->RegisterSelf();
+        void Initialize();
 
-// get data_id from Creature or GameObject
-uint32 GetType(Creature*);
-uint32 GetType(GameObject*);
+        void OnCreatureCreate(Creature* pCreature);
+        void OnObjectCreate(GameObject* pGo);
 
-// check if group killed all previous bosses in progression order
-bool MeetsRequirementsForBoss(InstanceData* instance, uint32 boss_id);
+        void SetData(uint32 uiType, uint32 uiData);
+        uint32 GetData(uint32 uiType);
+        uint64 GetData64(uint32 uiData);
 
-} // namespace pos
+        const char* Save() { return strInstData.c_str(); }
+        void Load(const char* chrIn);
 
-// basic start point for bosses
-struct MANGOS_DLL_DECL boss_pit_of_saronAI: public ScriptedAI, public ScriptEventInterface
-{
-    ScriptedInstance *m_pInstance;
-    Difficulty m_Difficulty;
-    bool m_bIsHeroic;
-    InstanceVar<uint32> m_BossEncounter;
+    protected:
+        uint32 m_auiEncounter[MAX_ENCOUNTER];
+        std::string strInstData;
 
-    boss_pit_of_saronAI(Creature*);
+        // Creature GUIDs
+        uint64 m_uiTyrannusIntroGUID;
+        uint64 m_uiGarfrostGUID;
+        uint64 m_uiKrickGUID;
+        uint64 m_uiIckGUID;
+        uint64 m_uiTyrannusGUID;
+        uint64 m_uiRimefangGUID;
 
-    void Reset();
-
-    // check if boss has been pulled too far from its place
-    bool IsOutOfCombatArea() const;
-    // resets boss if pulled out of combat area
-    bool OutOfCombatAreaCheck();
-    // prevents combat with boss if group doesn't meet requirements
-    bool InstanceProgressionCheck();
-
-    // remove auras from all players in map
-    // if spellId is negative, removes with spell difficulty
-    void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);
+        // GameObject GUIDs
+        uint64 m_uiIcewallGUID;
+        uint64 m_uiHallsPortGUID;
 };
 
-#endif // DEF_PIT_OF_SARON_H
+#endif

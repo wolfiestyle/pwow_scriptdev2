@@ -24,6 +24,23 @@ EndScriptData */
 #include "precompiled.h"
 #include "ulduar.h"
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1603026,
+    SAY_SCORCH_1                        = -1603027,
+    SAY_SCORCH_2                        = -1603028,
+    SAY_SLAGPOT                         = -1603029,
+    SAY_ADDS                            = -1603030,
+    SAY_SLAY_1                          = -1603031,
+    SAY_SLAY_2                          = -1603032,
+    SAY_BERSERK                         = -1603033,
+    SAY_DEATH                           = -1603034,
+
+    EMOTE_FLAME_JETS                    = -1603035,
+};
+*/
+
 enum Spells
 {
     SPELL_FLAME_JETS        = 62680,
