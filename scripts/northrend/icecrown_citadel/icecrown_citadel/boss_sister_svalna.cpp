@@ -376,7 +376,7 @@ struct MANGOS_DLL_DECL boss_sister_svalnaAI: public boss_icecrown_citadelAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
                     {
                         m_creature->CastSpell(pTarget, SPELL_IMPALING_SPEAR_PLA, false);
-                        m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget->GetGUID(), true);
+                        m_creature->MonsterTextEmote("Sister Svalna has impaled $N!", pTarget, true);
                         if (Creature* Spear = m_creature->SummonCreature(NPC_IMPALING_SPEAR, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ()+1.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5*MINUTE*IN_MILLISECONDS))
                             SendScriptMessageTo(Spear, pTarget, EVENT_SPEAR);
                         Events.ScheduleEvent(EVENT_SHIELD, 0);

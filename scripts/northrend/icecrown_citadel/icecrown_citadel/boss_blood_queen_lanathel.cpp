@@ -341,7 +341,7 @@ struct MANGOS_DLL_DECL boss_blood_queen_lanathelAI: public boss_icecrown_citadel
                     DoScriptText(SAY_BLOODQUEEN_SPECIAL01, m_creature);
                     if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) //dont target tanks
                     {
-                        m_creature->MonsterTextEmote(SWARMING_SHADOWS_EMOTE, target->GetGUID(), true);
+                        m_creature->MonsterTextEmote(SWARMING_SHADOWS_EMOTE, target, true);
                         DoCast(target, SPELL_SWARMING_SHADOWS);
                     }                    
                     break;

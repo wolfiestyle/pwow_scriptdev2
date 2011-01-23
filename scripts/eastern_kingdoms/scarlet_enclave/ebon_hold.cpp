@@ -371,7 +371,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI: public ScriptedAI
         
         if(MovementType = POINT_MOTION_TYPE && Data == 1 && Stage == PHASE_FLYING)
         {
-            m_creature->MonsterWhisper("The Eye of Acherus is now in your control", pOwner->GetGUID(), true);
+            m_creature->MonsterWhisper("The Eye of Acherus is now in your control", pOwner, true);
             m_creature->CastSpell(m_creature, SPELL_EYE_FLIGHT_NORM, true);
             ((Player*)pOwner)->SetClientControl(m_creature, true);
             ((Player*)pOwner)->SetMover(m_creature);
@@ -413,7 +413,7 @@ struct MANGOS_DLL_DECL npc_eye_of_acherusAI: public ScriptedAI
         {
             case PHASE_START:
             {
-                m_creature->MonsterWhisper("The Eye of Acherus launches towards its destination", pOwner->GetGUID(), true);
+                m_creature->MonsterWhisper("The Eye of Acherus launches towards its destination", pOwner, true);
                 static_cast<Player*>(pOwner)->SetClientControl(m_creature, true);
                 m_creature->SetSpeedRate(MOVE_WALK, 8, true);
                 ((Player*)pOwner)->SetMover(m_creature);

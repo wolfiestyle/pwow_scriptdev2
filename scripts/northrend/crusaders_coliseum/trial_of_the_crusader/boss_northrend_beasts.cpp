@@ -288,7 +288,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
         if (pDreadScale && pDreadScale->isAlive())
         {
             pDreadScale->CastSpell(pDreadScale, SPELL_ENRAGE, true);
-            pDreadScale->MonsterTextEmote("As its companion perishes, Dreadscale becomes Enraged!", pDreadScale->GetGUID(), true);
+            pDreadScale->MonsterTextEmote("As its companion perishes, Dreadscale becomes Enraged!", NULL, true);
         }
     }
 
@@ -423,7 +423,7 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
         if (pAcidMaw && pAcidMaw->isAlive())
         {
             pAcidMaw->CastSpell(pAcidMaw, SPELL_ENRAGE, true);
-            pAcidMaw->MonsterTextEmote("As its companion perishes, Acidmaw becomes Enraged!", 0, true);
+            pAcidMaw->MonsterTextEmote("As its companion perishes, Acidmaw becomes Enraged!", NULL, true);
         }
     }
 
@@ -658,7 +658,7 @@ struct MANGOS_DLL_DECL boss_icehowlAI: public boss_trial_of_the_crusaderAI
                                 pTargetX = pTarget->GetPositionX();
                                 pTargetY = pTarget->GetPositionY();
                                 m_creature->SetFacingTo(m_creature->GetAngle(pTargetX, pTargetY));
-                                m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget->GetGUID(), true);
+                                m_creature->MonsterTextEmote("Icehowl glares at $N and lets out a bellowing roar!", pTarget, true);
                             }
                             Events.ScheduleEvent(EVENT_SPECIAL, 1000, 0, 0, 0, PMASK_SPECIAL);
                             m_uiStep++;
