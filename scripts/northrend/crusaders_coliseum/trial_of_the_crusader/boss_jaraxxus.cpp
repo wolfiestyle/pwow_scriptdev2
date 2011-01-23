@@ -29,6 +29,20 @@ EndContentData */
 #include "trial_of_the_crusader.h"
 #include "TemporarySummon.h"
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1649040,
+    SAY_SLAY_1                          = -1649041,
+    SAY_SLAY_2                          = -1649042,
+    SAY_DEATH                           = -1649043,
+    SAY_BERSERK                         = -1649044,
+    SAY_INCINERATE                      = -1649045,
+    SAY_MISTRESS                        = -1649046,
+    SAY_INFERNO                         = -1649047,
+};
+*/
+
 enum Spells
 {
     SPELL_BERSERK               = 64238,

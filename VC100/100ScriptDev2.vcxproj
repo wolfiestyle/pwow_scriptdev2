@@ -213,6 +213,7 @@
     <ClCompile Include="..\base\escort_ai.cpp" />
     <ClCompile Include="..\base\follower_ai.cpp" />
     <ClCompile Include="..\base\guard_ai.cpp" />
+    <ClCompile Include="..\base\pet_ai.cpp" />
     <ClCompile Include="..\scripts\battlegrounds\battleground.cpp" />
     <ClCompile Include="..\scripts\eastern_kingdoms\alterac_mountains.cpp" />
     <ClCompile Include="..\scripts\eastern_kingdoms\arathi_highlands.cpp" />
@@ -451,6 +452,8 @@
     <ClCompile Include="..\scripts\kalimdor\temple_of_ahnqiraj\instance_temple_of_ahnqiraj.cpp" />
     <ClCompile Include="..\scripts\kalimdor\temple_of_ahnqiraj\mob_anubisath_sentinel.cpp" />
     <ClCompile Include="..\scripts\kalimdor\wailing_caverns\instance_wailing_caverns.cpp" />
+    <ClCompile Include="..\scripts\kalimdor\zulfarrak\boss_zumrah.cpp" />
+    <ClCompile Include="..\scripts\kalimdor\zulfarrak\instance_zulfarrak.cpp" />
     <ClCompile Include="..\scripts\kalimdor\zulfarrak\zulfarrak.cpp" />
     <ClCompile Include="..\scripts\northrend\borean_tundra.cpp" />
     <ClCompile Include="..\scripts\northrend\dalaran.cpp" />
@@ -474,6 +477,9 @@
     <ClCompile Include="..\scripts\northrend\azjol-nerub\azjol-nerub\boss_hadronox.cpp" />
     <ClCompile Include="..\scripts\northrend\azjol-nerub\azjol-nerub\boss_krikthir.cpp" />
     <ClCompile Include="..\scripts\northrend\azjol-nerub\azjol-nerub\instance_azjol-nerub.cpp" />
+    <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\boss_grand_champions.cpp" />
+    <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\instance_trial_of_the_champion.cpp" />
+    <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\trial_of_the_champion.cpp" />
     <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_anubarak_trial.cpp" />
     <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_faction_champions.cpp" />
     <ClCompile Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_jaraxxus.cpp" />
@@ -611,6 +617,7 @@
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_lady_vashj.cpp" />
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_leotheras_the_blind.cpp" />
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_morogrim_tidewalker.cpp" />
+    <ClCompile Include="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_the_lurker_below.cpp" />
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\serpent_shrine\instance_serpent_shrine.cpp" />
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\steam_vault\boss_hydromancer_thespia.cpp" />
     <ClCompile Include="..\scripts\outland\coilfang_reservoir\steam_vault\boss_mekgineer_steamrigger.cpp" />
@@ -679,6 +686,7 @@
     <ClInclude Include="..\base\escort_ai.h" />
     <ClInclude Include="..\base\follower_ai.h" />
     <ClInclude Include="..\base\guard_ai.h" />
+    <ClInclude Include="..\base\pet_ai.h" />
     <ClInclude Include="..\scripts\eastern_kingdoms\blackrock_depths\blackrock_depths.h" />
     <ClInclude Include="..\scripts\eastern_kingdoms\blackrock_spire\blackrock_spire.h" />
     <ClInclude Include="..\scripts\eastern_kingdoms\deadmines\deadmines.h" />
@@ -706,8 +714,10 @@
     <ClInclude Include="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.h" />
     <ClInclude Include="..\scripts\kalimdor\temple_of_ahnqiraj\temple_of_ahnqiraj.h" />
     <ClInclude Include="..\scripts\kalimdor\wailing_caverns\wailing_caverns.h" />
+    <ClInclude Include="..\scripts\kalimdor\zulfarrak\zulfarrak.h" />
     <ClInclude Include="..\scripts\northrend\azjol-nerub\ahnkahet\ahnkahet.h" />
     <ClInclude Include="..\scripts\northrend\azjol-nerub\azjol-nerub\azjol-nerub.h" />
+    <ClInclude Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\trial_of_the_champion.h" />
     <ClInclude Include="..\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\trial_of_the_crusader.h" />
     <ClInclude Include="..\scripts\northrend\draktharon_keep\draktharon_keep.h" />
     <ClInclude Include="..\scripts\northrend\gundrak\gundrak.h" />

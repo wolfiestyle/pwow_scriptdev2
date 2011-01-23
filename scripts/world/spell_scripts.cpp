@@ -34,6 +34,7 @@ spell 47575
 spell 50706
 spell 45109
 spell 45111
+spell 39246
 EndContentData */
 
 #include "precompiled.h"
@@ -252,6 +253,17 @@ enum
     SAY_BLESS_3                         = -1000596,
     SAY_BLESS_4                         = -1000597,
     SAY_BLESS_5                         = -1000598,
+
+    // quest "The Big Bone Worm" 10930
+    SPELL_FUMPING                       = 39246,
+    SPELL_SUMMON_HAISHULUD              = 39248,
+    NPC_SAND_GNOME                      = 22483,
+    NPC_MATURE_BONE_SIFTER              = 22482,
+
+    // quest 12813, by item 40587
+    SPELL_DARKMENDER_TINCTURE           = 52741,
+    SPELL_SUMMON_CORRUPTED_SCARLET      = 54415,
+    NPC_CORPSES_RISE_CREDIT_BUNNY       = 29398,
 };
 
 bool EffectAuraDummy_spell_aura_dummy_npc(const Aura* pAura, bool bApply)
@@ -434,6 +446,24 @@ bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellE
                 if (pCreatureTarget->GetEntry() == NPC_SICKLY_GAZELLE && ((Player*)pCaster)->GetTeam() == HORDE)
                     pCreatureTarget->UpdateEntry(NPC_CURED_GAZELLE);
 
+                return true;
+            }
+            return true;
+        }
+        case SPELL_DARKMENDER_TINCTURE:
+        {
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                if (pCaster->GetTypeId() != TYPEID_PLAYER)
+                    return true;
+
+                // TODO: find/fix visual for effect, no related spells found doing this
+
+                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_SUMMON_CORRUPTED_SCARLET, true);
+
+                ((Player*)pCaster)->KilledMonsterCredit(NPC_CORPSES_RISE_CREDIT_BUNNY);
+
+                pCreatureTarget->ForcedDespawn();
                 return true;
             }
             return true;
@@ -669,6 +699,40 @@ bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellE
 
             pCreatureTarget->CastSpell(pCreatureTarget, SPELL_ENRAGE, true);
 
+            return true;
+        }
+        case SPELL_FUMPING:
+        {
+            if (uiEffIndex == EFFECT_INDEX_2)
+            {
+                switch(urand(0,2))
+                {
+                    case 0:
+                    {
+                        pCaster->CastSpell(pCreatureTarget, SPELL_SUMMON_HAISHULUD, true);
+                        break;
+                    }
+                    case 1:
+                    {
+                        for (int i = 0; i<2; ++i)
+                        {
+                            if (Creature* pSandGnome = pCaster->SummonCreature(NPC_SAND_GNOME, pCreatureTarget->GetPositionX(), pCreatureTarget->GetPositionY(), pCreatureTarget->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+                                pSandGnome->AI()->AttackStart(pCaster);
+                        }
+                        break;
+                    }
+                    case 2:
+                    {
+                        for (int i = 0; i<2; ++i)
+                        {
+                            if (Creature* pMatureBoneSifter = pCaster->SummonCreature(NPC_MATURE_BONE_SIFTER, pCreatureTarget->GetPositionX(), pCreatureTarget->GetPositionY(), pCreatureTarget->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+                                pMatureBoneSifter->AI()->AttackStart(pCaster);
+                        }
+                        break;
+                    }
+                }
+                pCreatureTarget->ForcedDespawn();
+            }
             return true;
         }
     }

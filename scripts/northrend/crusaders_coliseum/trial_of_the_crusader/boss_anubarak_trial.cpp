@@ -30,6 +30,19 @@ EndContentData */
 
 //evidently, azjol-nerub was merely a set-back
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1649064,
+    SAY_SLAY_1                          = -1649065,
+    SAY_SLAY_2                          = -1649066,
+    SAY_DEATH                           = -1649067,
+    SAY_BERSERK                         = -1649068,
+    SAY_SUBMERGE                        = -1649069,
+    SAY_LEECHING_SWARM                  = -1649070,
+};
+*/
+
 enum Spells
 {
     // Anub'arak

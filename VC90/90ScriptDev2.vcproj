@@ -380,6 +380,14 @@
 				RelativePath="..\base\guard_ai.h"
 				>
 			</File>
+			<File
+				RelativePath="..\base\pet_ai.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\base\pet_ai.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="scripts"
@@ -1623,7 +1631,19 @@
 					Name="zulfarrak"
 					>
 					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\boss_zumrah.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\instance_zulfarrak.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\kalimdor\zulfarrak\zulfarrak.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\zulfarrak.h"
 						>
 					</File>
 				</Filter>
@@ -2647,6 +2667,10 @@
 						</File>
 						<File
 							RelativePath="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_morogrim_tidewalker.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\outland\coilfang_reservoir\serpent_shrine\boss_the_lurker_below.cpp"
 							>
 						</File>
 						<File

@@ -30,6 +30,20 @@ EndContentData */
 #include "trial_of_the_crusader.h"
 #include "SpellMgr.h"
 
+/* TODO: merge this
+enum
+{
+    SAY_AGGRO                           = -1649056,
+    SAY_BERSERK                         = -1649057,
+    SAY_COLORSWITCH                     = -1649058,
+    SAY_DEATH                           = -1649059,
+    SAY_SLAY_1                          = -1649060,
+    SAY_SLAY_2                          = -1649061,
+    SAY_TO_BLACK                        = -1649062,
+    SAY_TO_WHITE                        = -1649063,
+};
+*/
+
 enum Spells
 {
     // Eydis Darkbane
@@ -121,6 +135,10 @@ enum Says
 // core should do this on apply/remove aura, but don't know that info
 #define AURA_STATE_DARK     AuraState(19)
 #define AURA_STATE_LIGHT    AuraState(22)
+
+/*######
+## boss_fjola
+######*/
 
 //fjola is the 'slave'
 struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
@@ -222,6 +240,10 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                 barrett->AI()->SummonedCreatureJustDied(m_creature);
     }
 };
+
+/*######
+## boss_eydis
+######*/
 
 //eydis is the 'master'
 struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI

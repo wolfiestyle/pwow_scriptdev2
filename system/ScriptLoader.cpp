@@ -242,6 +242,7 @@ extern void AddSC_mob_anubisath_sentinel();
 extern void AddSC_instance_temple_of_ahnqiraj();
 extern void AddSC_instance_wailing_caverns();               // Wailing Caverns
 extern void AddSC_zulfarrak();                              //zulfarrak
+extern void AddSC_instance_zulfarrak();
 
 extern void AddSC_ashenvale();
 extern void AddSC_azshara();
@@ -411,6 +412,7 @@ extern void AddSC_violet_hold();
 extern void AddSC_borean_tundra();
 extern void AddSC_dalaran();
 extern void AddSC_dragonblight();
+extern void AddSC_grizzly_hills();
 extern void AddSC_howling_fjord();
 extern void AddSC_icecrown();
 extern void AddSC_sholazar_basin();
@@ -445,6 +447,7 @@ extern void AddSC_boss_hydross_the_unstable();
 extern void AddSC_boss_lady_vashj();
 extern void AddSC_boss_leotheras_the_blind();
 extern void AddSC_boss_morogrim_tidewalker();
+extern void AddSC_boss_the_lurker_below();
 extern void AddSC_instance_serpentshrine_cavern();
 extern void AddSC_boss_hydromancer_thespia();               //CR, steam_vault
 extern void AddSC_boss_mekgineer_steamrigger();
@@ -735,6 +738,7 @@ void AddScripts()
     AddSC_instance_temple_of_ahnqiraj();
     AddSC_instance_wailing_caverns();                       // Wailing Caverns
     AddSC_zulfarrak();                                      //zulfarrak
+    AddSC_instance_zulfarrak();
 
     AddSC_ashenvale();
     AddSC_azshara();
@@ -904,6 +908,7 @@ void AddScripts()
     AddSC_borean_tundra();
     AddSC_dalaran();
     AddSC_dragonblight();
+    AddSC_grizzly_hills();
     AddSC_howling_fjord();
     AddSC_icecrown();
     AddSC_sholazar_basin();
@@ -938,6 +943,7 @@ void AddScripts()
     AddSC_boss_lady_vashj();
     AddSC_boss_leotheras_the_blind();
     AddSC_boss_morogrim_tidewalker();
+    AddSC_boss_the_lurker_below();
     AddSC_instance_serpentshrine_cavern();
     AddSC_boss_hydromancer_thespia();                       //CR, steam_vault
     AddSC_boss_mekgineer_steamrigger();

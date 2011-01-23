@@ -52,6 +52,21 @@ EndContentData */
 #define MAX_CASTER_RANGE            30.0f
 #define NORMAL_CASTER_RANGE         20.0f
 
+/* TODO: merge this
+enum
+{
+    SAY_GARROSH_PVP_A_SLAY_1            = -1649048,
+    SAY_GARROSH_PVP_A_SLAY_2            = -1649049,
+    SAY_GARROSH_PVP_A_SLAY_3            = -1649050,
+    SAY_GARROSH_PVP_A_SLAY_4            = -1649051,
+
+    SAY_VARIAN_PVP_H_SLAY_1             = -1649052,
+    SAY_VARIAN_PVP_H_SLAY_2             = -1649053,
+    SAY_VARIAN_PVP_H_SLAY_3             = -1649054,
+    SAY_VARIAN_PVP_H_SLAY_4             = -1649055,
+};
+*/
+
 enum Events
 {
     EVENT_CAST = 1,

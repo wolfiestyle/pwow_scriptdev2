@@ -31,6 +31,10 @@ EndContentData */
 #include "precompiled.h"
 #include "trial_of_the_crusader.h"
 
+/*######
+## boss_gormok
+######*/
+
 enum GormokSpells
 {
     // Gormok
@@ -188,6 +192,10 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI: public ScriptedAI, public ScriptEve
         DoMeleeAttackIfReady();
     }
 };
+
+/*######
+## boss_acidmaw
+######*/
 
 enum JormungarSpells
 {
@@ -380,6 +388,10 @@ struct MANGOS_DLL_DECL boss_acidmawAI: public boss_trial_of_the_crusaderAI
     }
 };
 
+/*######
+## boss_dreadscale
+######*/
+
 struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
 {
     bool m_bIsRooted;
@@ -514,6 +526,17 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI: public boss_trial_of_the_crusaderAI
 };
 
 #undef PHASE_TIMER
+
+/*######
+## boss_icehowl
+######*/
+
+/* TODO: merge this
+enum
+{
+    EMOTE_MASSIVE_CRASH                 = -1649039,
+};
+*/
 
 enum IcehowlSpells
 {
