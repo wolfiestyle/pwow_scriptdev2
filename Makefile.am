@@ -365,9 +365,6 @@ scripts/northrend/gundrak/boss_moorabi.cpp \
 scripts/northrend/gundrak/boss_sladran.cpp \
 scripts/northrend/gundrak/gundrak.h \
 scripts/northrend/gundrak/instance_gundrak.cpp \
-scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_bronjahm.cpp \
-scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/boss_devourer_of_souls.cpp \
-scripts/northrend/icecrown_citadel/frozen_halls/forge_of_souls/instance_forge_of_souls.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_falryn.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_lich_king.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_marwyn.cpp \
