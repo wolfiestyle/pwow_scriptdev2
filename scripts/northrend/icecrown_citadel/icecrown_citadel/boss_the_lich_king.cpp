@@ -547,6 +547,8 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     else
                         ++i;
                 }
+            if (PlayersInFrostmourne.empty() && m_bIsHeroic)               // all players have died, reset
+                EnterEvadeMode();
         }
 
         if (PlayersInFrostmourne.empty() && Events.GetPhase() == PHASE_FROSTMOURNE) // Just in case something strange happens
