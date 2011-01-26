@@ -150,3 +150,7 @@ void boss_halls_of_reflectionAI::RemoveEncounterAuras(int32 spellId_1, int32 spe
             pPlayer->RemoveAurasByDifficulty(-spellId_4);
     }
 }
+
+void AddSC_halls_of_reflection()
+{
+}

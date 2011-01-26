@@ -24,6 +24,6 @@ EndScriptData */
 #include "precompiled.h"
 #include "halls_of_reflection.h"
 
-void AddSC_boss_falryn()
+void AddSC_boss_falric()
 {
 }
