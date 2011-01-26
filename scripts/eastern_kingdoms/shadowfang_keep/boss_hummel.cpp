@@ -15,14 +15,14 @@
  */
 
 /* ScriptData
-SDName: Instance_Blackwing_Lair
+SDName: boss_hummel
 SD%Complete: 0
-SDComment:
-SDCategory: Blackwing Lair
+SDComment: Placeholder
+SDCategory: Shadowfang Keep
 EndScriptData */
 
 #include "precompiled.h"
 
-void AddSC_instance_blackwing_lair()
+void AddSC_boss_hummel()
 {
 }

@@ -830,7 +830,7 @@ struct MANGOS_DLL_DECL mob_valithria_add_nmAI: public Scripted_NoMovementAI
     }
 };
 
-void AddSC_boss_valithria()
+void AddSC_boss_valithria_dreamwalker()
 {
     Script *newscript;
 

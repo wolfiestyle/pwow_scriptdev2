@@ -23,3 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+
+void AddSC_gunship_battle()
+{
+}

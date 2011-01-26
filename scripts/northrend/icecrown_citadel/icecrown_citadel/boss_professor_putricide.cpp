@@ -329,7 +329,7 @@ struct MANGOS_DLL_DECL mob_putricide_addAI: public ScriptedAI
     }
 };
 
-void AddSC_boss_proffesor_putricide()
+void AddSC_boss_professor_putricide()
 {
     Script *newscript;
 

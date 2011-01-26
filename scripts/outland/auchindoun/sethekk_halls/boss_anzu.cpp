@@ -15,14 +15,14 @@
  */
 
 /* ScriptData
-SDName: Instance_Blackwing_Lair
+SDName: boss_anzu
 SD%Complete: 0
-SDComment:
-SDCategory: Blackwing Lair
+SDComment: Placeholder
+SDCategory: Auchindoun, Sethekk Halls
 EndScriptData */
 
 #include "precompiled.h"
 
-void AddSC_instance_blackwing_lair()
+void AddSC_boss_anzu()
 {
 }

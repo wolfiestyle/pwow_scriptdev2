@@ -85,6 +85,7 @@ scripts/eastern_kingdoms/blackrock_depths/blackrock_depths.cpp \
 scripts/eastern_kingdoms/blackrock_depths/blackrock_depths.h \
 scripts/eastern_kingdoms/blackrock_depths/boss_ambassador_flamelash.cpp \
 scripts/eastern_kingdoms/blackrock_depths/boss_anubshiah.cpp \
+scripts/eastern_kingdoms/blackrock_depths/boss_coren_direbrew.cpp \
 scripts/eastern_kingdoms/blackrock_depths/boss_emperor_dagran_thaurissan.cpp \
 scripts/eastern_kingdoms/blackrock_depths/boss_general_angerforge.cpp \
 scripts/eastern_kingdoms/blackrock_depths/boss_gorosh_the_dervish.cpp \
@@ -107,6 +108,7 @@ scripts/eastern_kingdoms/blackrock_spire/boss_shadow_hunter_voshgajin.cpp \
 scripts/eastern_kingdoms/blackrock_spire/boss_the_beast.cpp \
 scripts/eastern_kingdoms/blackrock_spire/boss_warmaster_voone.cpp \
 scripts/eastern_kingdoms/blackrock_spire/instance_blackrock_spire.cpp \
+scripts/eastern_kingdoms/blackwing_lair/blackwing_lair.h \
 scripts/eastern_kingdoms/blackwing_lair/boss_broodlord_lashlayer.cpp \
 scripts/eastern_kingdoms/blackwing_lair/boss_chromaggus.cpp \
 scripts/eastern_kingdoms/blackwing_lair/boss_ebonroc.cpp \
@@ -134,6 +136,7 @@ scripts/eastern_kingdoms/karazhan/boss_prince_malchezaar.cpp \
 scripts/eastern_kingdoms/karazhan/boss_shade_of_aran.cpp \
 scripts/eastern_kingdoms/karazhan/boss_terestian_illhoof.cpp \
 scripts/eastern_kingdoms/karazhan/bosses_opera.cpp \
+scripts/eastern_kingdoms/karazhan/chess_event.cpp \
 scripts/eastern_kingdoms/karazhan/instance_karazhan.cpp \
 scripts/eastern_kingdoms/karazhan/karazhan.cpp \
 scripts/eastern_kingdoms/karazhan/karazhan.h \
@@ -184,6 +187,7 @@ scripts/eastern_kingdoms/scholomance/boss_the_ravenian.cpp \
 scripts/eastern_kingdoms/scholomance/boss_vectus.cpp \
 scripts/eastern_kingdoms/scholomance/instance_scholomance.cpp \
 scripts/eastern_kingdoms/scholomance/scholomance.h \
+scripts/eastern_kingdoms/shadowfang_keep/boss_hummel.cpp \
 scripts/eastern_kingdoms/shadowfang_keep/instance_shadowfang_keep.cpp \
 scripts/eastern_kingdoms/shadowfang_keep/shadowfang_keep.cpp \
 scripts/eastern_kingdoms/shadowfang_keep/shadowfang_keep.h \
@@ -289,6 +293,9 @@ scripts/kalimdor/caverns_of_time/old_hillsbrad/boss_leutenant_drake.cpp \
 scripts/kalimdor/caverns_of_time/old_hillsbrad/instance_old_hillsbrad.cpp \
 scripts/kalimdor/caverns_of_time/old_hillsbrad/old_hillsbrad.cpp \
 scripts/kalimdor/caverns_of_time/old_hillsbrad/old_hillsbrad.h \
+scripts/kalimdor/dire_maul/dire_maul.cpp \
+scripts/kalimdor/dire_maul/dire_maul.h \
+scripts/kalimdor/dire_maul/instance_dire_maul.cpp \
 scripts/kalimdor/maraudon/boss_celebras_the_cursed.cpp \
 scripts/kalimdor/maraudon/boss_landslide.cpp \
 scripts/kalimdor/maraudon/boss_noxxion.cpp \
@@ -374,7 +381,7 @@ scripts/northrend/gundrak/boss_moorabi.cpp \
 scripts/northrend/gundrak/boss_sladran.cpp \
 scripts/northrend/gundrak/gundrak.h \
 scripts/northrend/gundrak/instance_gundrak.cpp \
-scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_falryn.cpp \
+scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_falric.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_lich_king.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/boss_marwyn.cpp \
 scripts/northrend/icecrown_citadel/frozen_halls/halls_of_reflection/halls_of_reflection.cpp \
@@ -447,7 +454,9 @@ scripts/northrend/obsidian_sanctum/obsidian_sanctum.h \
 scripts/northrend/ruby_sanctum/boss_halion.cpp \
 scripts/northrend/ruby_sanctum/boss_baltharus.cpp \
 scripts/northrend/ruby_sanctum/boss_saviana.cpp \
-scripts/northrend/ruby_sanctum/boss_zarithian.cpp \
+scripts/northrend/ruby_sanctum/boss_zarithrian.cpp \
+scripts/northrend/ruby_sanctum/instance_ruby_sanctum.cpp \
+scripts/northrend/ruby_sanctum/ruby_sanctum.h \
 scripts/northrend/ruby_sanctum/ruby_sanctum.cpp \
 scripts/northrend/ruby_sanctum/ruby_sanctum.h \
 scripts/northrend/ruby_sanctum/instance_ruby_sanctum.cpp \
@@ -492,6 +501,12 @@ scripts/northrend/utgarde_keep/utgarde_pinnacle/boss_svala.cpp \
 scripts/northrend/utgarde_keep/utgarde_pinnacle/boss_ymiron.cpp \
 scripts/northrend/utgarde_keep/utgarde_pinnacle/instance_utgarde_pinnacle.cpp \
 scripts/northrend/utgarde_keep/utgarde_pinnacle/utgarde_pinnacle.h \
+scripts/northrend/vault_of_archavon/boss_archavon.cpp \
+scripts/northrend/vault_of_archavon/boss_emalon.cpp \
+scripts/northrend/vault_of_archavon/boss_koralon.cpp \
+scripts/northrend/vault_of_archavon/boss_toravon.cpp \
+scripts/northrend/vault_of_archavon/instance_vault_of_archavon.cpp \
+scripts/northrend/vault_of_archavon/vault_of_archavon.h \
 scripts/northrend/violet_hold/boss_cyanigosa.cpp \
 scripts/northrend/violet_hold/boss_erekem.cpp \
 scripts/northrend/violet_hold/boss_ichoron.cpp \
@@ -514,8 +529,10 @@ scripts/outland/shattrath_city.cpp \
 scripts/outland/terokkar_forest.cpp \
 scripts/outland/zangarmarsh.cpp \
 scripts/outland/auchindoun/auchenai_crypts/boss_exarch_maladaar.cpp \
+scripts/outland/auchindoun/auchenai_crypts/boss_shirrak.cpp \
 scripts/outland/auchindoun/mana_tombs/boss_nexusprince_shaffar.cpp \
 scripts/outland/auchindoun/mana_tombs/boss_pandemonius.cpp \
+scripts/outland/auchindoun/sethekk_halls/boss_anzu.cpp \
 scripts/outland/auchindoun/sethekk_halls/boss_darkweaver_syth.cpp \
 scripts/outland/auchindoun/sethekk_halls/boss_tailonking_ikiss.cpp \
 scripts/outland/auchindoun/sethekk_halls/instance_sethekk_halls.cpp \
@@ -546,6 +563,7 @@ scripts/outland/coilfang_reservoir/serpent_shrine/boss_morogrim_tidewalker.cpp \
 scripts/outland/coilfang_reservoir/serpent_shrine/boss_the_lurker_below.cpp \
 scripts/outland/coilfang_reservoir/serpent_shrine/instance_serpent_shrine.cpp \
 scripts/outland/coilfang_reservoir/serpent_shrine/serpent_shrine.h \
+scripts/outland/coilfang_reservoir/slave_pens/boss_ahune.cpp \
 scripts/outland/coilfang_reservoir/steam_vault/boss_hydromancer_thespia.cpp \
 scripts/outland/coilfang_reservoir/steam_vault/boss_mekgineer_steamrigger.cpp \
 scripts/outland/coilfang_reservoir/steam_vault/boss_warlord_kalithresh.cpp \
@@ -587,7 +605,6 @@ scripts/outland/tempest_keep/the_eye/boss_void_reaver.cpp \
 scripts/outland/tempest_keep/the_eye/instance_the_eye.cpp \
 scripts/outland/tempest_keep/the_eye/the_eye.cpp \
 scripts/outland/tempest_keep/the_eye/the_eye.h \
-scripts/outland/tempest_keep/the_mechanar/boss_gatewatcher_gyrokill.cpp \
 scripts/outland/tempest_keep/the_mechanar/boss_gatewatcher_ironhand.cpp \
 scripts/outland/tempest_keep/the_mechanar/boss_nethermancer_sepethrea.cpp \
 scripts/outland/tempest_keep/the_mechanar/boss_pathaleon_the_calculator.cpp \

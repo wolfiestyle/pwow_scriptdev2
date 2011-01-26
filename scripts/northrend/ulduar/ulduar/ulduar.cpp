@@ -1,6 +1,21 @@
 #include "precompiled.h"
 #include "ulduar.h"
 
+/* TODO: merge this, maybe move teleporter code here */
+// Teleporter Gossip handled by SD2 because depending on Instance Data
+enum TeleporterGossipItems
+{
+    GOSSIP_ITEM_TELE_BASE_CAMP              = -3603000,
+    GOSSIP_ITEM_TELE_FORMATION_GROUNDS      = -3603001,
+    GOSSIP_ITEM_TELE_COLOSSAR_FORGE         = -3603002,
+    GOSSIP_ITEM_TELE_SCRAPYARD              = -3603003,
+    GOSSIP_ITEM_TELE_ANTECHAMBER            = -3603004,
+    GOSSIP_ITEM_TELE_WALKWAY                = -3603005,
+    GOSSIP_ITEM_TELE_CONSERVATORY           = -3603006,
+    GOSSIP_ITEM_TELE_SPARK_IMAGINATION      = -3603007,
+    GOSSIP_ITEM_TELE_YOGG_SARON             = -3603008,
+};
+
 bool IsOutOfCombatArea(Creature *pCreature)
 {
     if (pCreature->GetMapId() != 603)   // invalid check outside Ulduar
@@ -49,4 +64,8 @@ bool IsOutOfCombatArea(Creature *pCreature)
         default:
             return false;
     }
+}
+
+void AddSC_ulduar()
+{
 }

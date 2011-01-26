@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: boss_baltharus
 SD%Complete:
-SDComment: placeholder
+SDComment:
 SDCategory: Ruby Sanctum
 EndScriptData */
 

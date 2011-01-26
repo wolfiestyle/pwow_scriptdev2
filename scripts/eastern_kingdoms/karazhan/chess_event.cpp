@@ -15,14 +15,14 @@
  */
 
 /* ScriptData
-SDName: Instance_Blackwing_Lair
+SDName: chess_event
 SD%Complete: 0
-SDComment:
-SDCategory: Blackwing Lair
+SDComment: Placeholder
+SDCategory: Karazhan
 EndScriptData */
 
 #include "precompiled.h"
 
-void AddSC_instance_blackwing_lair()
+void AddSC_chess_event()
 {
 }

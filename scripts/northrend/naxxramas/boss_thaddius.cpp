@@ -485,6 +485,7 @@ CreatureAI* GetAI_boss_stalagg(Creature* pCreature)
 {
     return new boss_stalaggAI(pCreature);
 }
+
 void AddSC_boss_thaddius()
 {
     Script *newscript;

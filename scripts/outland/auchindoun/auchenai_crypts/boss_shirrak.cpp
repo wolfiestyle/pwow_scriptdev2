@@ -15,14 +15,14 @@
  */
 
 /* ScriptData
-SDName: Instance_Blackwing_Lair
+SDName: boss_shirrak
 SD%Complete: 0
-SDComment:
-SDCategory: Blackwing Lair
+SDComment: Placeholder
+SDCategory: Auchindoun, Auchenai Crypts
 EndScriptData */
 
 #include "precompiled.h"
 
-void AddSC_instance_blackwing_lair()
+void AddSC_boss_shirrak()
 {
 }

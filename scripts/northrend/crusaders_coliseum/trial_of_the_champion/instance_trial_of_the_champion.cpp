@@ -24,6 +24,12 @@ EndScriptData */
 #include "precompiled.h"
 #include "trial_of_the_champion.h"
 
+/* Trial of the Champion encounters:
+0 - Grand Champions
+1 - Argent Champion
+2 - Black Knight
+*/
+
 struct MANGOS_DLL_DECL instance_trial_of_the_champion : public ScriptedInstance
 {
     instance_trial_of_the_champion(Map* pMap) : ScriptedInstance(pMap) { Initialize(); }
