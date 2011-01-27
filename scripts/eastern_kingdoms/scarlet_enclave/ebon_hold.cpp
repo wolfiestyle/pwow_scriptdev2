@@ -517,7 +517,7 @@ enum IntoTheRealmOfShadows
     QUEST_INTO_THE_REALM_OF_SHADOWS     = 12687,
     SPELL_REALM_OF_SHADOWS              = 52275,
 };
-bool QuestChooseReward_npc_salanar_the_horseman(Player* pPlayer, Creature* pCreature, const Quest* pQuest, uint32 slot)
+bool QuestChooseReward_npc_salanar_the_horseman(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
 {
 	if (pQuest->GetQuestId() == QUEST_GRAND_THEFT_PALOMINO || pQuest->GetQuestId() == QUEST_INTO_THE_REALM_OF_SHADOWS)
 	{
@@ -3468,10 +3468,10 @@ void AddSC_ebon_hold()
     newscript->GetAI = &GetAI_npc_unworthy_initiate_anchor;
     newscript->RegisterSelf();
 
-    pNewScript = new Script;
-    pNewScript->Name = "go_acherus_soul_prison";
-    pNewScript->pGOUse = &GOUse_go_acherus_soul_prison;
-    pNewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "go_acherus_soul_prison";
+    newscript->pGOUse = &GOUse_go_acherus_soul_prison;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_eye_of_acherus";
@@ -3486,8 +3486,8 @@ void AddSC_ebon_hold()
 
    	newscript = new Script;
     newscript->Name = "npc_salanar_the_horseman";
-	newscript->pChooseReward = &QuestChooseReward_npc_salanar_the_horseman;
-	newscript->pQuestAccept = &QuestAccept_npc_salanar_the_horseman;
+    newscript->pQuestRewardedNPC = &QuestChooseReward_npc_salanar_the_horseman;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_salanar_the_horseman;
     newscript->GetAI = &GetAI_npc_salanar_the_horseman;
     newscript->RegisterSelf();
 
@@ -3515,7 +3515,7 @@ void AddSC_ebon_hold()
 
     newscript = new Script;
     newscript->Name = "go_plague_cauldron";
-    newscript->pGOHello = &GOHello_go_plague_cauldron;
+    newscript->pGOUse = &GOHello_go_plague_cauldron;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3523,11 +3523,11 @@ void AddSC_ebon_hold()
     newscript->GetAI = &GetAI_npc_persuade_scarlet;
     newscript->RegisterSelf();
 
-    pNewScript = new Script;
-    pNewScript->Name = "npc_koltira_deathweaver";
-    pNewScript->GetAI = &GetAI_npc_koltira_deathweaver;
-    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_koltira_deathweaver;
-    pNewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "npc_koltira_deathweaver";
+    newscript->GetAI = &GetAI_npc_koltira_deathweaver;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_koltira_deathweaver;
+    newscript->RegisterSelf();
     
     newscript = new Script;
     newscript->Name = "mob_high_inquisitor_valroth";

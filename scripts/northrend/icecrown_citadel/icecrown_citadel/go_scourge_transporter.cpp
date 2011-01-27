@@ -148,8 +148,8 @@ void AddSC_scourge_transporter()
 
     newscript = new Script;
     newscript->Name = "go_scourge_transporter";
-    newscript->pGOGossipHello = &GOHello_scourge_transporter;
-    newscript->pGOGossipSelect = &GOSelect_scourge_transporter;
+    newscript->pGossipHelloGO = &GOHello_scourge_transporter;
+    newscript->pGossipSelectGO = &GOSelect_scourge_transporter;
     newscript->RegisterSelf();
 
     newscript = new Script;
