@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -87,8 +87,8 @@ struct MANGOS_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
             case NPC_ASH: m_uiAshGUID = pCreature->GetGUID(); break;
             case NPC_ADA: m_uiAdaGUID = pCreature->GetGUID(); break;
             case NPC_FENRUS: m_uiFenrusGUID = pCreature->GetGUID(); break;
-            case NPC_VINCENT: 
-                m_uiVincentGUID = pCreature->GetGUID(); 
+            case NPC_VINCENT:
+                m_uiVincentGUID = pCreature->GetGUID();
                 //if Arugal has done the intro, make Vincent dead!
                 if (m_auiEncounter[4] == DONE)
                     pCreature->SetStandState(UNIT_STAND_STATE_DEAD);
@@ -232,7 +232,7 @@ struct MANGOS_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
         OUT_LOAD_INST_DATA(chrIn);
 
         std::istringstream loadStream(chrIn);
-        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3] 
+        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3]
             >> m_auiEncounter[4] >> m_auiEncounter[5];
 
         for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)

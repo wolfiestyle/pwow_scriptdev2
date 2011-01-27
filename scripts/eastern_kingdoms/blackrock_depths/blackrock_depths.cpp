@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -38,7 +38,7 @@ EndContentData */
 ## go_shadowforge_brazier
 ######*/
 
-bool GOHello_go_shadowforge_brazier(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_shadowforge_brazier(Player* pPlayer, GameObject* pGo)
 {
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData())
     {
@@ -156,7 +156,7 @@ struct MANGOS_DLL_DECL npc_grimstoneAI : public npc_escortAI
     {
 
     }
-    
+
     void DoGate(uint32 id, uint32 state)
     {
         if (GameObject* pGo = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(id)))
@@ -275,7 +275,7 @@ struct MANGOS_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     case 0:
                         // Shortly after spawn, start walking
                         //DoScriptText(-1000000, m_creature); // no more text on spawn
-                        DoGate(DATA_ARENA4, GO_STATE_READY);
+                        DoGate(GO_ARENA_4, GO_STATE_READY);
                         Start(false);
                         m_bCanWalk = true;
                         m_uiEventTimer = 0;
@@ -290,7 +290,7 @@ struct MANGOS_DLL_DECL npc_grimstoneAI : public npc_escortAI
                         break;
                     case 3:
                         // Open East Gate
-                        DoGate(DATA_ARENA1, GO_STATE_ACTIVE);
+                        DoGate(GO_ARENA_1, GO_STATE_ACTIVE);
                         m_uiEventTimer = 3000;
                         break;
                     case 4:
@@ -311,14 +311,14 @@ struct MANGOS_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     case 7:
                         // Summoned Mobs are dead, continue event
                         m_creature->SetVisibility(VISIBILITY_ON);
-                        DoGate(DATA_ARENA1, GO_STATE_READY);
+                        DoGate(GO_ARENA_1, GO_STATE_READY);
                         //DoScriptText(-1000000, m_creature); // after killed the mobs, no say here
                         m_bCanWalk = true;
                         m_uiEventTimer = 0;
                         break;
                     case 8:
                         // Open North Gate
-                        DoGate(DATA_ARENA2, GO_STATE_ACTIVE);
+                        DoGate(GO_ARENA_2, GO_STATE_ACTIVE);
                         m_uiEventTimer = 5000;
                         break;
                     case 9:
@@ -330,9 +330,9 @@ struct MANGOS_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     case 10:
                         // Boss dead
                         //if quest, complete
-                        DoGate(DATA_ARENA2, GO_STATE_READY);
-                        DoGate(DATA_ARENA3, GO_STATE_ACTIVE);
-                        DoGate(DATA_ARENA4, GO_STATE_ACTIVE);
+                        DoGate(GO_ARENA_2, GO_STATE_READY);
+                        DoGate(GO_ARENA_3, GO_STATE_ACTIVE);
+                        DoGate(GO_ARENA_4, GO_STATE_ACTIVE);
                         m_bCanWalk = true;
                         m_uiEventTimer = 0;
                         break;
@@ -518,12 +518,12 @@ bool GossipSelect_npc_kharan_mighthammer(Player* pPlayer, Creature* pCreature, u
 enum
 {
     FACTION_THORIUM_BROTHERHOOD               = 59,
-    
+
     ITEM_THRORIUM_BROTHERHOOD_CONTRACT        = 18628,
     ITEM_SULFURON_INGOT                       = 17203,
-    
+
     QUEST_A_BINDING_CONTRACT                  = 7604,
-    
+
     SPELL_CREATE_THORIUM_BROTHERHOOD_CONTRACT = 23059
 };
 
@@ -643,7 +643,7 @@ struct MANGOS_DLL_DECL npc_rocknotAI : public npc_escortAI
         {
             if (m_uiBreakKegTimer <= uiDiff)
             {
-                DoGo(DATA_GO_BAR_KEG,0);
+                DoGo(GO_BAR_KEG_SHOT, 0);
                 m_uiBreakKegTimer = 0;
                 m_uiBreakDoorTimer = 1000;
             }
@@ -655,11 +655,11 @@ struct MANGOS_DLL_DECL npc_rocknotAI : public npc_escortAI
         {
             if (m_uiBreakDoorTimer <= uiDiff)
             {
-                DoGo(DATA_GO_BAR_DOOR, 2);
-                DoGo(DATA_GO_BAR_KEG_TRAP, 0);              //doesn't work very well, leaving code here for future
+                DoGo(GO_BAR_DOOR, 2);
+                DoGo(GO_BAR_KEG_TRAP, 0);                   //doesn't work very well, leaving code here for future
                                                             //spell by trap has effect61, this indicate the bar go hostile
 
-                if (Creature* pTmp = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_PHALANX)))
+                if (Creature* pTmp = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_PHALANX)))
                     pTmp->setFaction(14);
 
                 // for later, this event(s) has alot more to it.
@@ -679,7 +679,7 @@ CreatureAI* GetAI_npc_rocknot(Creature* pCreature)
     return new npc_rocknotAI(pCreature);
 }
 
-bool ChooseReward_npc_rocknot(Player* pPlayer, Creature* pCreature, const Quest* pQuest, uint32 item)
+bool QuestRewarded_npc_rocknot(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
 
@@ -716,7 +716,7 @@ void AddSC_blackrock_depths()
 
     pNewScript = new Script;
     pNewScript->Name = "go_shadowforge_brazier";
-    pNewScript->pGOHello = &GOHello_go_shadowforge_brazier;
+    pNewScript->pGOUse = &GOUse_go_shadowforge_brazier;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;
@@ -749,6 +749,6 @@ void AddSC_blackrock_depths()
     pNewScript = new Script;
     pNewScript->Name = "npc_rocknot";
     pNewScript->GetAI = &GetAI_npc_rocknot;
-    pNewScript->pChooseReward = &ChooseReward_npc_rocknot;
+    pNewScript->pQuestRewardedNPC = &QuestRewarded_npc_rocknot;
     pNewScript->RegisterSelf();
 }

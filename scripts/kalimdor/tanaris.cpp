@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -613,14 +613,14 @@ void AddSC_tanaris()
     newscript = new Script;
     newscript->Name = "npc_oox17tn";
     newscript->GetAI = &GetAI_npc_oox17tn;
-    newscript->pQuestAccept = &QuestAccept_npc_oox17tn;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_oox17tn;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_steward_of_time";
     newscript->pGossipHello =  &GossipHello_npc_steward_of_time;
     newscript->pGossipSelect = &GossipSelect_npc_steward_of_time;
-    newscript->pQuestAccept =  &QuestAccept_npc_steward_of_time;
+    newscript->pQuestAcceptNPC =  &QuestAccept_npc_steward_of_time;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -632,6 +632,6 @@ void AddSC_tanaris()
     newscript = new Script;
     newscript->Name = "npc_tooga";
     newscript->GetAI = &GetAI_npc_tooga;
-    newscript->pQuestAccept = &QuestAccept_npc_tooga;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_tooga;
     newscript->RegisterSelf();
 }

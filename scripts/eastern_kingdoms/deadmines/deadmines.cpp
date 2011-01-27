@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "deadmines.h"
 
-bool GOHello_go_door_lever_dm(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_door_lever_dm(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
 
@@ -39,7 +39,7 @@ bool GOHello_go_door_lever_dm(Player* pPlayer, GameObject* pGo)
     return true;
 }
 
-bool GOHello_go_defias_cannon(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_defias_cannon(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
 
@@ -59,11 +59,11 @@ void AddSC_deadmines()
 
     newscript = new Script;
     newscript->Name = "go_door_lever_dm";
-    newscript->pGOHello = &GOHello_go_door_lever_dm;
+    newscript->pGOUse = &GOUse_go_door_lever_dm;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_defias_cannon";
-    newscript->pGOHello = &GOHello_go_defias_cannon;
+    newscript->pGOUse = &GOUse_go_defias_cannon;
     newscript->RegisterSelf();
 }

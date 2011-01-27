@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -785,7 +785,7 @@ enum
     EVENT_COOLDOWN                    = 30000,
 
     SAY_TORLOTH_DIALOGUE1             = -1000532,
-    SAY_TORLOTH_DIALOGUE2             = -1000533, 
+    SAY_TORLOTH_DIALOGUE2             = -1000533,
     SAY_TORLOTH_DIALOGUE3             = -1000534,
     SAY_ILLIDAN_DIALOGUE              = -1000535,
     SAY_ILLIDAN_SUMMON1               = -1000536,
@@ -825,7 +825,7 @@ static TorlothCinematic TorlothAnim[]=
     {SAY_ILLIDAN_DIALOGUE, LORD_ILLIDAN, 7000},
     {SAY_TORLOTH_DIALOGUE2, TORLOTH, 3000},
     {0, TORLOTH, 2000},                                  // Torloth stand
-    {SAY_TORLOTH_DIALOGUE3, TORLOTH, 1000}, 
+    {SAY_TORLOTH_DIALOGUE3, TORLOTH, 1000},
     {0, TORLOTH, 3000},
     {0, TORLOTH, 0}
 };
@@ -862,7 +862,7 @@ struct WaveData
 {
     uint8  uiSpawnCount;
     uint8  uiUsedSpawnPoint;
-    uint32 uiCreatureId; 
+    uint32 uiCreatureId;
     uint32 uiSpawnTimer;
     uint32 uiYellTimer;
     int32  iTextId;
@@ -949,7 +949,7 @@ struct MANGOS_DLL_DECL mob_torlothAI : public ScriptedAI
         {
             case 0:
                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                break; 
+                break;
             case 3:
                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                 break;
@@ -983,7 +983,7 @@ struct MANGOS_DLL_DECL mob_torlothAI : public ScriptedAI
         if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
             pPlayer->GroupEventHappens(QUEST_BATTLE_OF_THE_CRIMSON_WATCH, m_creature);
-        
+
             if (Creature* pLordIllidan = m_creature->GetMap()->GetCreature(m_uiLordIllidanGUID))
             {
                 DoScriptText(SAY_EVENT_COMPLETED, pLordIllidan, pPlayer);
@@ -1316,7 +1316,7 @@ struct MANGOS_DLL_DECL npc_lord_illidan_stormrageAI : public Scripted_NoMovement
         }
     }
 
-    void SummonedCreatureDespawn(Creature* pCreature) 
+    void SummonedCreatureDespawn(Creature* pCreature)
     {
         // decrement mob count
         --m_uiMobCount;
@@ -1480,7 +1480,7 @@ void AddSC_shadowmoon_valley()
 
     newscript = new Script;
     newscript->Name = "npc_karynaku";
-    newscript->pQuestAccept = &QuestAccept_npc_karynaku;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_karynaku;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1492,7 +1492,7 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_wilda";
     newscript->GetAI = &GetAI_npc_wilda;
-    newscript->pQuestAccept = &QuestAccept_npc_wilda;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_wilda;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1508,7 +1508,7 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_totem_of_spirits";
     newscript->GetAI = &GetAI_npc_totem_of_spirits;
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_totem_of_spirits;
+    newscript->pEffectDummyNPC = &EffectDummyCreature_npc_totem_of_spirits;
     newscript->pEffectAuraDummy = &EffectAuraDummy_npc_totem_of_spirits;
     newscript->RegisterSelf();
 
@@ -1519,6 +1519,6 @@ void AddSC_shadowmoon_valley()
 
     newscript = new Script;
     newscript->Name = "go_crystal_prison";
-    newscript->pGOQuestAccept = &GOQuestAccept_GO_crystal_prison;
+    newscript->pQuestAcceptGO = &GOQuestAccept_GO_crystal_prison;
     newscript->RegisterSelf();
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -537,7 +537,7 @@ struct MANGOS_DLL_DECL boss_kalecgos_humanoidAI : public ScriptedAI
     }
 };
 
-bool GOHello_go_spectral_rift(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_spectral_rift(Player* pPlayer, GameObject* pGo)
 {
     if (pGo->GetGoType() != GAMEOBJECT_TYPE_GOOBER)
         return true;
@@ -616,7 +616,7 @@ void AddSC_boss_kalecgos()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->pGOHello = &GOHello_go_spectral_rift;
+    newscript->pGOUse = &GOUse_go_spectral_rift;
     newscript->Name = "go_spectral_rift";
     newscript->RegisterSelf();
 }

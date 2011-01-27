@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -48,7 +48,7 @@ struct MANGOS_DLL_DECL boss_herodAI : public ScriptedAI
 
     bool m_bEnrage;
     bool m_bTraineeSay;
-    
+
     uint32 m_uiCleaveTimer;
     uint32 m_uiWhirlwindTimer;
 
@@ -56,7 +56,7 @@ struct MANGOS_DLL_DECL boss_herodAI : public ScriptedAI
     {
         m_bTraineeSay = false;
         m_bEnrage     = false;
-        
+
         m_uiCleaveTimer    = 12000;
         m_uiWhirlwindTimer = 45000;
     }

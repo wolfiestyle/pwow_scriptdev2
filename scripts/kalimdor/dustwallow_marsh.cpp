@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -168,7 +168,7 @@ struct MANGOS_DLL_DECL npc_restless_apparitionAI : public ScriptedAI
                 case 6: DoScriptText(SAY_RAND_7, m_creature); break;
                 case 7: DoScriptText(SAY_RAND_8, m_creature); break;
             }
- 
+
             m_uiTalk_Timer = 0;
         }
         else
@@ -863,7 +863,7 @@ void AddSC_dustwallow_marsh()
     pNewScript = new Script;
     pNewScript->Name = "npc_morokk";
     pNewScript->GetAI = &GetAI_npc_morokk;
-    pNewScript->pQuestAccept = &QuestAccept_npc_morokk;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_morokk;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;
@@ -875,13 +875,13 @@ void AddSC_dustwallow_marsh()
     pNewScript = new Script;
     pNewScript->Name = "npc_ogron";
     pNewScript->GetAI = &GetAI_npc_ogron;
-    pNewScript->pQuestAccept = &QuestAccept_npc_ogron;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_ogron;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;
     pNewScript->Name = "npc_private_hendel";
     pNewScript->GetAI = &GetAI_npc_private_hendel;
-    pNewScript->pQuestAccept = &QuestAccept_npc_private_hendel;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_private_hendel;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;

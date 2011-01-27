@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -317,7 +317,7 @@ CreatureAI* GetAI_npc_unworthy_initiate(Creature* pCreature)
     return new npc_unworthy_initiateAI(pCreature);
 }
 
-bool GOHello_go_acherus_soul_prison(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_acherus_soul_prison(Player* pPlayer, GameObject* pGo)
 {
     if (Creature* pAnchor = GetClosestCreatureWithEntry(pGo, NPC_ANCHOR, INTERACTION_DISTANCE))
         ((npc_unworthy_initiate_anchorAI*)pAnchor->AI())->NotifyMe(pPlayer);
@@ -3468,10 +3468,10 @@ void AddSC_ebon_hold()
     newscript->GetAI = &GetAI_npc_unworthy_initiate_anchor;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "go_acherus_soul_prison";
-    newscript->pGOHello = &GOHello_go_acherus_soul_prison;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "go_acherus_soul_prison";
+    pNewScript->pGOUse = &GOUse_go_acherus_soul_prison;
+    pNewScript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_eye_of_acherus";
@@ -3523,11 +3523,11 @@ void AddSC_ebon_hold()
     newscript->GetAI = &GetAI_npc_persuade_scarlet;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_koltira_deathweaver";
-    newscript->GetAI = &GetAI_npc_koltira_deathweaver;
-    newscript->pQuestAccept = &QuestAccept_npc_koltira_deathweaver;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_koltira_deathweaver";
+    pNewScript->GetAI = &GetAI_npc_koltira_deathweaver;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_koltira_deathweaver;
+    pNewScript->RegisterSelf();
     
     newscript = new Script;
     newscript->Name = "mob_high_inquisitor_valroth";

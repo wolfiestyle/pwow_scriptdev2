@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -334,12 +334,12 @@ void AddSC_ungoro_crater()
     pNewScript = new Script;
     pNewScript->Name = "npc_ame01";
     pNewScript->GetAI = &GetAI_npc_ame01;
-    pNewScript->pQuestAccept = &QuestAccept_npc_ame01;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_ame01;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;
     pNewScript->Name = "npc_ringo";
     pNewScript->GetAI = &GetAI_npc_ringo;
-    pNewScript->pQuestAccept = &QuestAccept_npc_ringo;
+    pNewScript->pQuestAcceptNPC = &QuestAccept_npc_ringo;
     pNewScript->RegisterSelf();
 }

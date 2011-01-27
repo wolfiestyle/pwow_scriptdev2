@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -374,19 +374,19 @@ void AddSC_thousand_needles()
     newscript = new Script;
     newscript->Name = "npc_kanati";
     newscript->GetAI = &GetAI_npc_kanati;
-    newscript->pQuestAccept = &QuestAccept_npc_kanati;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_kanati;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_lakota_windsong";
     newscript->GetAI = &GetAI_npc_lakota_windsong;
-    newscript->pQuestAccept = &QuestAccept_npc_lakota_windsong;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_lakota_windsong;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_paoka_swiftmountain";
     newscript->GetAI = &GetAI_npc_paoka_swiftmountain;
-    newscript->pQuestAccept = &QuestAccept_npc_paoka_swiftmountain;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_paoka_swiftmountain;
     newscript->RegisterSelf();
 
     newscript = new Script;

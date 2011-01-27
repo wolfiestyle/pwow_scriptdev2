@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -36,10 +36,10 @@ enum
     SPELL_SUMMON_SCARABS    = 26060,
     SPELL_SUMMON_OURO_MOUND = 26058,
     SPELL_SUMMON_OURO       = 26642,
-    
+
     SPELL_DIRTMOUND_PASSIVE = 26092,
     SPELL_SUBMERGE_VISUAL   = 26063,
-    
+
     NPC_OURO_SCARAB         = 15718,
     NPC_OURO_SPAWNER        = 15957,
     NPC_OURO_TRIGGER        = 15717

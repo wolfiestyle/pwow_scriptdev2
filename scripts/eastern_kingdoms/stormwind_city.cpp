@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -251,13 +251,13 @@ void AddSC_stormwind_city()
     newscript = new Script;
     newscript->Name = "npc_bartleby";
     newscript->GetAI = &GetAI_npc_bartleby;
-    newscript->pQuestAccept = &QuestAccept_npc_bartleby;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_bartleby;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_dashel_stonefist";
     newscript->GetAI = &GetAI_npc_dashel_stonefist;
-    newscript->pQuestAccept = &QuestAccept_npc_dashel_stonefist;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_dashel_stonefist;
     newscript->RegisterSelf();
 
     newscript = new Script;

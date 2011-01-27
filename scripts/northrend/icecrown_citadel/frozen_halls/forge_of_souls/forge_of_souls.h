@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -103,7 +103,6 @@ class MANGOS_DLL_DECL instance_forge_of_souls : public ScriptedInstance
         uint64 GetData64(uint32 uiData);
         void SetData64(uint32 uiType, uint64 uiData);
 
-        Player* GetPlayer();
         void OnPlayerEnter(Player* pPlayer);
         void ProcessEventNpcs(Player* pPlayer, bool bChanged);
         bool CheckAchievementCriteriaMeet(uint32 uiCriteriaId, Player const* pSource, Unit const* pTarget, uint32 uiMiscValue1 /* = 0*/);

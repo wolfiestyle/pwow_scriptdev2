@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -36,7 +36,7 @@ EndContentData */
 ## go_activation_crystal
 ######*/
 
-bool GOHello_go_activation_crystal(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_activation_crystal(Player* pPlayer, GameObject* pGo)
 {
     if (instance_violet_hold* pInstance = (instance_violet_hold*)pGo->GetInstanceData())
         pInstance->ProcessActivationCrystal(pPlayer);
@@ -389,12 +389,12 @@ void AddSC_violet_hold()
 
     newscript = new Script;
     newscript->Name = "go_activation_crystal";
-    newscript->pGOHello = &GOHello_go_activation_crystal;
+    newscript->pGOUse = &GOUse_go_activation_crystal;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_door_seal";
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_door_seal;
+    newscript->pEffectDummyNPC = &EffectDummyCreature_npc_door_seal;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -407,6 +407,6 @@ void AddSC_violet_hold()
     newscript = new Script;
     newscript->Name = "npc_teleportation_portal";
     newscript->GetAI = &GetAI_npc_teleportation_portal;
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_teleportation_portal;
+    newscript->pEffectDummyNPC = &EffectDummyCreature_npc_teleportation_portal;
     newscript->RegisterSelf();
 }

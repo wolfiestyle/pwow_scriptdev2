@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -87,7 +87,7 @@ struct MANGOS_DLL_DECL instance_blackfathom_deeps : public ScriptedInstance
 
             case 103015:    m_uiShrineOfGelihastGUID = pGo->GetGUID();  break;
             case 103016:    m_uiAltarOfTheDeepsGUID = pGo->GetGUID();   break;
-            
+
         }
     }
 
@@ -215,7 +215,7 @@ InstanceData* GetInstanceData_instance_blackfathom_deeps(Map* pMap)
     return new instance_blackfathom_deeps(pMap);
 }
 
-bool GOHello_go_fire_of_akumai(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_fire_of_akumai(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
 
@@ -242,6 +242,6 @@ void AddSC_instance_blackfathom_deeps()
 
     newscript = new Script;
     newscript->Name = "go_fire_of_akumai";
-    newscript->pGOHello = &GOHello_go_fire_of_akumai;
+    newscript->pGOUse = &GOUse_go_fire_of_akumai;
     newscript->RegisterSelf();
 }

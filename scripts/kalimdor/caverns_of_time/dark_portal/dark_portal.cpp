@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -298,7 +298,7 @@ struct MANGOS_DLL_DECL npc_time_riftAI : public ScriptedAI
         m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 10.0f, x, y, z);
         // uncomment the following if something doesn't work correctly, otherwise just delete
         // m_creature->UpdateAllowedPositionZ(x, y, z);
-        
+
         if (Unit *Summon = m_creature->SummonCreature(creature_entry, x, y, z, m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
         {
             if (Creature *temp = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_MEDIVH)))

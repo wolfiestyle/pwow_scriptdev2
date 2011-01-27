@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -7,18 +7,16 @@
 
 enum
 {
-    MAX_ENCOUNTER  = 6,
+    MAX_ENCOUNTER   = 6,
 
-    TYPE_ANACONDRA = 0,
-    TYPE_COBRAHN   = 1,
-    TYPE_PYTHAS    = 2,
-    TYPE_SERPENTIS = 3,
-    TYPE_DISCIPLE  = 4,
-    TYPE_MUTANOUS  = 5,
+    TYPE_ANACONDRA  = 0,
+    TYPE_COBRAHN    = 1,
+    TYPE_PYTHAS     = 2,
+    TYPE_SERPENTIS  = 3,
+    TYPE_DISCIPLE   = 4,
+    TYPE_MUTANUS    = 5,
 
-    DATA_NARALEX   = 6,
-
-    NPC_NARLEX     = 3679
+    NPC_NARALEX     = 3679,
 };
 
 class MANGOS_DLL_DECL instance_wailing_caverns : public ScriptedInstance

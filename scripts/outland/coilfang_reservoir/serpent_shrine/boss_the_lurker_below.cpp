@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -118,7 +118,7 @@ CreatureAI* GetAI_boss_the_lurker_below(Creature* pCreature)
 }
 
 // Cast the spell that should summon the Lurker-Below
-bool GOHello_go_strange_pool(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_strange_pool(Player* pPlayer, GameObject* pGo)
 {
     // There is some chance to fish The Lurker Below, sources are from 20s to 10minutes, average 5min => 20 tries, hence 5%
     if (urand(0,99) < 5)
@@ -147,6 +147,6 @@ void AddSC_boss_the_lurker_below()
 
     pNewScript = new Script;
     pNewScript->Name = "go_strange_pool";
-    pNewScript->pGOHello = &GOHello_go_strange_pool;
+    pNewScript->pGOUse = &GOUse_go_strange_pool;
     pNewScript->RegisterSelf();
 }

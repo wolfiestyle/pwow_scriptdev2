@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -1286,7 +1286,7 @@ bool GossipSelect_npc_prof_tailor(Player* pPlayer, Creature* pCreature, uint32 u
 # start menues for GO (engineering and leatherworking)
 ###*/
 
-/*bool GOHello_go_soothsaying_for_dummies(Player* pPlayer, GameObject* pGo)
+/*bool GOUse_go_soothsaying_for_dummies(Player* pPlayer, GameObject* pGo)
 {
     pPlayer->PlayerTalkClass->GetGossipMenu()->AddMenuItem(0,GOSSIP_LEARN_DRAGON, GOSSIP_SENDER_INFO, GOSSIP_ACTION_INFO_DEF, "", 0);
 
@@ -1335,7 +1335,7 @@ void AddSC_npc_professions()
 
     /*newscript = new Script;
     newscript->Name = "go_soothsaying_for_dummies";
-    newscript->pGOHello =  &GOHello_go_soothsaying_for_dummies;
+    newscript->pGOUse =  &GOUse_go_soothsaying_for_dummies;
     //newscript->pGossipSelect = &GossipSelect_go_soothsaying_for_dummies;
     newscript->RegisterSelf();*/
 }

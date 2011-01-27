@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -655,7 +655,7 @@ void AddSC_the_barrens()
     newscript = new Script;
     newscript->Name = "npc_gilthares";
     newscript->GetAI = &GetAI_npc_gilthares;
-    newscript->pQuestAccept = &QuestAccept_npc_gilthares;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_gilthares;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -682,6 +682,6 @@ void AddSC_the_barrens()
     newscript = new Script;
     newscript->Name = "npc_wizzlecranks_shredder";
     newscript->GetAI = &GetAI_npc_wizzlecranks_shredder;
-    newscript->pQuestAccept = &QuestAccept_npc_wizzlecranks_shredder;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_wizzlecranks_shredder;
     newscript->RegisterSelf();
 }

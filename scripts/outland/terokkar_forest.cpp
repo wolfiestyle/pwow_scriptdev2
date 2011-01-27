@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -872,7 +872,7 @@ CreatureAI* GetAI_npc_mana_bomb_exp_trigger(Creature* pCreature)
 ## go_mana_bomb
 ######*/
 
-bool GOHello_go_mana_bomb(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_mana_bomb(Player* pPlayer, GameObject* pGo)
 {
     if (Creature* pCreature = GetClosestCreatureWithEntry(pGo, NPC_MANA_BOMB_EXPL_TRIGGER, INTERACTION_DISTANCE))
     {
@@ -927,7 +927,7 @@ enum
     SAY_THANKS_4              = -1000593
 };
 
-bool GOHello_veil_skith_cage(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_veil_skith_cage(Player* pPlayer, GameObject* pGo)
 {
     if (pPlayer->GetQuestStatus(QUEST_MISSING_FRIENDS) == QUEST_STATUS_INCOMPLETE)
     {
@@ -996,7 +996,7 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name = "npc_akuno";
     newscript->GetAI = &GetAI_npc_akuno;
-    newscript->pQuestAccept = &QuestAccept_npc_akuno;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_akuno;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1014,7 +1014,7 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name = "npc_letoll";
     newscript->GetAI = &GetAI_npc_letoll;
-    newscript->pQuestAccept = &QuestAccept_npc_letoll;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_letoll;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1024,7 +1024,7 @@ void AddSC_terokkar_forest()
 
     newscript = new Script;
     newscript->Name = "go_mana_bomb";
-    newscript->pGOHello = &GOHello_go_mana_bomb;
+    newscript->pGOUse = &GOUse_go_mana_bomb;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1041,7 +1041,7 @@ void AddSC_terokkar_forest()
 
     newscript = new Script;
     newscript->Name = "go_veil_skith_cage";
-    newscript->pGOHello =  &GOHello_veil_skith_cage;
+    newscript->pGOUse = &GOUse_go_veil_skith_cage;
     newscript->RegisterSelf();
 
     newscript = new Script;
