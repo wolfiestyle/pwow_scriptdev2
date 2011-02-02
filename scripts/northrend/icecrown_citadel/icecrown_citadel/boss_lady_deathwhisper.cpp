@@ -626,13 +626,13 @@ struct MANGOS_DLL_DECL mob_deathwhisper_adherentAI: public ScriptedAI, public Sc
 
 struct MANGOS_DLL_DECL mob_vengeful_shadeAI: public ScriptedAI
 {
-    uint32 BlastTimer;
-    bool IsExploded;
+    uint32 m_BlastTimer;
+    bool m_HasExploded;
 
     mob_vengeful_shadeAI (Creature *pCreature):
         ScriptedAI(pCreature),
-        BlastTimer(5000),
-        IsExploded(false)
+        m_BlastTimer(5000),
+        m_HasExploded(false)
     {
     }
 
@@ -642,10 +642,11 @@ struct MANGOS_DLL_DECL mob_vengeful_shadeAI: public ScriptedAI
 
     void Explode()
     {
-        if (IsExploded)
+        if (m_HasExploded || !m_creature->getVictim())
             return;
-        DoCast(m_creature->getVictim(), SPELL_VENGEFUL_BLAST);
-        m_creature->ForcedDespawn(500);
+        m_HasExploded = true;
+        DoCast(m_creature->getVictim(), SPELL_VENGEFUL_BLAST, true);
+        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
     }
 
     void UpdateAI(uint32 const uiDiff)
@@ -653,13 +654,13 @@ struct MANGOS_DLL_DECL mob_vengeful_shadeAI: public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (BlastTimer < uiDiff)
+        if (m_BlastTimer < uiDiff)
         {
             Explode();
             return;
         }
         else
-            BlastTimer -= uiDiff;
+            m_BlastTimer -= uiDiff;
 
         if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 1.0f))
         {
