@@ -301,7 +301,9 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
 struct MANGOS_DLL_DECL mob_putricide_addAI: public ScriptedAI
 {
-    mob_putricide_addAI(Creature *pCreature): ScriptedAI(pCreature)
+    bool m_bBlewUp : 1;
+    mob_putricide_addAI(Creature *pCreature): ScriptedAI(pCreature),
+        m_bBlewUp(false)
     {
     }
 
@@ -320,8 +322,9 @@ struct MANGOS_DLL_DECL mob_putricide_addAI: public ScriptedAI
     {
         if (!pWho)
             return;
-        if (pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(pWho, 5.0f)) //&& (pWho->HasAuraByDifficulty(SPELL_VOLATILE_OOZE_ADHESIVE) || pWho->HasAuraByDifficulty(SPELL_GASEOUS_BLOAT)))
+        if (pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(pWho, 5.0f) && !m_bBlewUp) //&& (pWho->HasAuraByDifficulty(SPELL_VOLATILE_OOZE_ADHESIVE) || pWho->HasAuraByDifficulty(SPELL_GASEOUS_BLOAT)))
         {
+            m_bBlewUp = true;
             DoCast(pWho, m_creature->GetEntry() == NPC_GAS_CLOUD ? SPELL_EXPUNGE_GAS : SPELL_OOZE_ERUPTION, true);
             m_creature->ForcedDespawn(500);
         }

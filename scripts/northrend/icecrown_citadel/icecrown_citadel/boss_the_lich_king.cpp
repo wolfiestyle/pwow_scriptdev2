@@ -1086,10 +1086,13 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
 struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
 {
     uint32 UnfreezeTimer;
+    bool m_bBlewUp : 1;
 
+    // TODO: handle spirits depending on spawn position (Frostmourne - Frozen Throne) different behaviour expected.
     mob_vile_wicked_spiritAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        UnfreezeTimer(pCreature->GetEntry() == NPC_VILE_SPIRIT ? 15*IN_MILLISECONDS : urand(5, 15)*IN_MILLISECONDS)
+        UnfreezeTimer(pCreature->GetEntry() == NPC_VILE_SPIRIT ? 30*IN_MILLISECONDS : urand(5, 15)*IN_MILLISECONDS),// 30 seconds for normal spirits, 5-15 secs for frostmourne
+        m_bBlewUp(false)
     {
         m_creature->SetInCombatWithZone();
         m_creature->SetSplineFlags(SPLINEFLAG_NONE);
@@ -1102,8 +1105,9 @@ struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
     {
         if (!UnfreezeTimer)
         {
-            if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDist(pWho, INTERACTION_DISTANCE))
+            if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDist(pWho, INTERACTION_DISTANCE) && !m_bBlewUp)
             {
+                m_bBlewUp = true;
                 DoCast(pWho,  SPELL_SPIRIT_BURST, true);
                 m_creature->ForcedDespawn(1*IN_MILLISECONDS);
                 return;
