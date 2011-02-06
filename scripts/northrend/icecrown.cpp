@@ -130,6 +130,228 @@ bool GossipSelect_npc_dame_evniki_kapsalis(Player* pPlayer, Creature* pCreature,
         pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
     return true;
 }
+/*######
+## npc_Argent_Valiant
+######*/
+
+enum
+{
+    // Says
+    SAY_AGGRO = -1999900,
+
+    // Spells
+    SPELL_BUFF_DEFEND = 62719,        //Spell - Defend
+    SPELL_CHARGE = 63010,             //Spell - Charge
+    SPELL_SHIELD_BREAKER = 64590,     //Spell - Shield Breaker
+
+    FACTION_HOSTILE	= 128,           // Sets Faction to Enemy
+    FACTION_FRIENDLY= 35,            // Sets Faction to Friendly
+
+    // Events
+    EVENT_REBUFF = 1,
+    EVENT_SBREAKER,
+    EVENT_CHARGE_MOVE,
+    EVENT_CHARGE_MOVE_2,
+
+    // AreaIDs
+    AREA_CHAMPIONS_RING = 4669,
+    AREA_ASPIRANTS_RING = 4670, // not really used
+    AREA_VALIANTS_RING  = 4671,
+    AREA_ALLIANCE_RING  = 4672,
+    AREA_HORDE_RING     = 4673,
+
+    // NPCs
+    NPC_ARGENT_CHAMPION         = 33707,
+    NPC_STORMWIND_VALIANT       = 33564,    /* Stormwind Valiant */
+    NPC_IRONFORGE_VALIANT       = 33558,    /* Ironforge Valiant */
+    NPC_EXODAR_VALIANT          = 33562,    /* Exodar Valiant */
+    NPC_DARNASSUS_VALIANT       = 33559,    /* Darnassus Valiant */
+    NPC_GNOMEREGAN_VALIANT      = 33561,    /* Gnomeregan Valiant */
+
+    NPC_ORGRIMMAR_VALIANT       = 33306,    /* Orgrimmar Valiant */
+    NPC_UNDERCITY_VALIANT       = 33384,    /* Undercity Valiant */
+    NPC_SILVERMOON_VALIANT      = 33382,    /* Silvermoon Valiant */
+    NPC_THUNDERBLUFF_VALIANT    = 33383,    /* Thunder Bluff Valiant */
+    NPC_DARKSPEAR_VALIANT       = 33285,    /* Sen'jin Valiant */
+    // credit
+    ARGENT_VALIANT_QUEST_CREDIT = 33708,
+
+};
+
+#define GOSSIP_FIGHT "I'm Ready!"
+
+#define TIMER_REBUFF    5*IN_MILLISECONDS, 10*IN_MILLISECONDS
+#define TIMER_SBREAKER  8*IN_MILLISECONDS, 7*IN_MILLISECONDS
+#define TIMER_MOVE      10*IN_MILLISECONDS
+
+struct MANGOS_DLL_DECL npc_argent_valiantAI : public ScriptedAI, EventManager
+{
+    EventManager Events;
+    uint32 m_uiAreaID;
+
+    npc_argent_valiantAI(Creature* pCreature):
+        ScriptedAI(pCreature)
+    {
+        m_uiAreaID = m_creature->GetAreaId();
+        if (m_uiAreaID != AREA_ALLIANCE_RING &&
+            m_uiAreaID != AREA_HORDE_RING &&
+            m_uiAreaID != AREA_ASPIRANTS_RING ) // Argent Champion is standing outside the ring.
+            m_uiAreaID = AREA_VALIANTS_RING;
+
+        switch(pCreature->GetEntry())
+        {
+            case NPC_UNDERCITY_VALIANT:
+            case NPC_ORGRIMMAR_VALIANT:
+            case NPC_SILVERMOON_VALIANT:
+            case NPC_DARKSPEAR_VALIANT:
+            case NPC_THUNDERBLUFF_VALIANT:
+                m_uiAreaID = AREA_HORDE_RING;
+                break;
+            case NPC_GNOMEREGAN_VALIANT:
+            case NPC_IRONFORGE_VALIANT:
+            case NPC_DARNASSUS_VALIANT:
+            case NPC_EXODAR_VALIANT:
+            case NPC_STORMWIND_VALIANT:
+                m_uiAreaID = AREA_ALLIANCE_RING;
+                break;
+        }
+
+        if (m_uiAreaID == AREA_VALIANTS_RING)
+            pCreature->GetMotionMaster()->MovePoint(1, 8541.77f, 1084.1f, 556.374f);
+
+        pCreature->setFaction(FACTION_FRIENDLY);
+    }
+
+    void Reset()
+    {
+        Events.Reset();
+        m_creature->setFaction(FACTION_FRIENDLY);
+    }
+
+    void SpellHitTarget(Unit* pTarget, const SpellEntry* pSpellInfo)
+    {
+        if (pSpellInfo->Id == SPELL_SHIELD_BREAKER || pSpellInfo->Id == SPELL_CHARGE)
+        {
+            if (pTarget->HasAura(66482)) // player versions of "defend"
+                pTarget->RemoveAuraHolderFromStack(66482);
+            if (pTarget->HasAura(62552)) // player versions of "defend"
+                pTarget->RemoveAuraHolderFromStack(62552);
+        }
+    }
+
+    void SpellHit(Unit* pCaster, const SpellEntry* pSpellInfo)
+    {
+        if (pSpellInfo->Id == 64595 || pSpellInfo->Id == 62563) // player version of "shield breaker" and "charge"
+        {
+            if (m_creature->HasAura(SPELL_BUFF_DEFEND))
+                m_creature->RemoveAuraHolderFromStack(SPELL_BUFF_DEFEND);
+        }
+    }
+    void Aggro(Unit* pWho)
+    {
+        DoScriptText(SAY_AGGRO, m_creature, pWho);
+        DoCast(m_creature, SPELL_BUFF_DEFEND, true);
+        Events.ScheduleEvent(EVENT_REBUFF, TIMER_REBUFF);
+        Events.ScheduleEvent(EVENT_CHARGE_MOVE, 5*IN_MILLISECONDS, TIMER_MOVE);
+        Events.ScheduleEvent(EVENT_SBREAKER, TIMER_SBREAKER);
+    }
+
+    void JustDied(Unit* pSlayer)
+    {
+        if (m_creature->GetEntry() == NPC_ARGENT_CHAMPION)
+        if (pSlayer->GetTypeId() == TYPEID_PLAYER)
+            if (Player* pPlayer = ((Player*)pSlayer))
+            {
+                pPlayer->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
+            }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        // return since we have no target
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        // return if we go too far from our fighting ring
+        if (m_creature->GetAreaId() != m_uiAreaID)
+            EnterEvadeMode();
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+            case EVENT_REBUFF:
+                DoCast(m_creature, SPELL_BUFF_DEFEND, true);
+                break;
+            case EVENT_SBREAKER:
+                if (!m_creature->getVictim()->IsWithinDist(m_creature, 10.0f))
+                    DoCast(m_creature->getVictim(), SPELL_SHIELD_BREAKER, false);
+                break;
+            case EVENT_CHARGE_MOVE:
+            {
+                Unit* pTarget = m_creature->getVictim();
+                if (pTarget)
+                    DoStartNoMovement(pTarget);
+
+                float x, y, z;
+                pTarget->GetPosition(x, y, z);
+                float px, py, pz;
+                do
+                {
+                    pTarget->GetPosition(x, y, z);
+                    m_creature->GetRandomPoint(x, y, z, 20, px, py, pz);
+                }
+                while (m_creature->GetMap()->GetTerrain()->GetAreaId(px, py, pz) != m_uiAreaID);
+
+                m_creature->GetMotionMaster()->MovePoint(1, px, py, pz);
+                Events.ScheduleEvent(EVENT_CHARGE_MOVE_2, 2*IN_MILLISECONDS);
+                break;
+            }
+            case EVENT_CHARGE_MOVE_2:
+            {
+                // we assume we got to the spot    
+                Unit* pTarget = m_creature->getVictim();
+
+                if (m_creature->getVictim())
+                    DoStartMovement(m_creature->getVictim());
+
+                if (!m_creature->getVictim()->IsWithinDist(m_creature, 10.0f))
+                    DoCast(m_creature->getVictim(), SPELL_CHARGE, false);
+                break;
+            }
+            default:
+                break;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+CreatureAI* GetAI_npc_argent_valiant(Creature* pCreature)
+{
+    return new npc_argent_valiantAI(pCreature);
+}
+
+bool GossipSelect_npc_argent_valiant(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if (!pPlayer)
+        return false;
+
+    if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pCreature->setFaction(FACTION_HOSTILE);                //Set our faction to hostile towards all
+        pCreature->AI()->AttackStart(pPlayer);
+    }
+
+    return true;
+}
+
+bool GossipHello_npc_argent_valiant(Player* pPlayer, Creature* pCreature)
+{
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    pPlayer->SEND_GOSSIP_MENU(907, pCreature->GetGUID());
+    return true;
+}
 
 void AddSC_icecrown()
 {
@@ -145,5 +367,12 @@ void AddSC_icecrown()
     newscript->Name = "npc_dame_evniki_kapsalis";
     newscript->pGossipHello = &GossipHello_npc_dame_evniki_kapsalis;
     newscript->pGossipSelect = &GossipSelect_npc_dame_evniki_kapsalis;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_argent_valiant";
+    newscript->pGossipHello = &GossipHello_npc_argent_valiant;
+    newscript->pGossipSelect = &GossipSelect_npc_argent_valiant;
+    newscript->GetAI = &GetAI_npc_argent_valiant;
     newscript->RegisterSelf();
 }
