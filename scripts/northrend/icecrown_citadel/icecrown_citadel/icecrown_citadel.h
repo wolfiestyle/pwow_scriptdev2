@@ -111,6 +111,7 @@ enum
     NPC_ARNATH              = 37122,
     NPC_BRANDON             = 37123,
     NPC_CROK_SCOURGEBANE    = 37129,
+    NPC_LANATHEL_FAKE       = 38004,
 
     // gameobject entries
     GO_MARROWGAR_ENTRANCE   = 201857,

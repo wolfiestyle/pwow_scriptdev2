@@ -63,6 +63,10 @@ enum Spells
     SPELL_EMPOWERED_FLAMES_BUFF         = 71709,
     SPELL_FLAMES_VISUAL                 = 71706,
     SPELL_INVOCATION_OF_BLOOD_TALDARAM  = 70982,
+
+    // Event spells
+    SPELL_FEIGN_DEATH                   = 71598,
+
 };
 
 enum Npcs
@@ -78,6 +82,9 @@ enum Npcs
     // Taldaram
     NPC_BALL_OF_FLAMES                  = 38332,
     NPC_BALL_OF_INFERNO_FLAMES          = 38451,
+
+    // Displays
+    DISPLAY_KINETIC_BOMB                = 31095,
 };
 
 enum Says
@@ -129,6 +136,9 @@ enum Events
     // Messages
     MESSAGE_AGGRO,
     MESSAGE_DIE,
+    MESSAGE_HI,
+    MESSAGE_RAISE,
+    MESSAGE_STAND,
 };
 
 static const float CenterSummonPoint[3] = { 4658.3f, 2770.0f, 365.0f };
@@ -142,7 +152,6 @@ static const uint32 BossEntries[3]      = {NPC_VALANAR, NPC_KELESETH, NPC_TALDAR
 #define TIMER_SHOCK_VORTEX      16500, 21500
 #define TIMER_KINETIC_BOMB      24*IN_MILLISECONDS          // 2/3 bombs always up [wowwiki] so 60/2.5 sec timer.
 #define TIMER_VORTEX_DECAY      3*IN_MILLISECONDS
-#define TIMER_MOVE_KINETIC_BOMB 1*IN_MILLISECONDS
 
 // Keleseth
 #define TIMER_DARK_NUCLEUS      14*IN_MILLISECONDS
@@ -152,20 +161,87 @@ static const uint32 BossEntries[3]      = {NPC_VALANAR, NPC_KELESETH, NPC_TALDAR
 #define TIMER_GLITTERING_SPARKS 15*IN_MILLISECONDS          // guessed, cannot find any timer references
 #define TIMER_BALL_OF_FLAMES    20*IN_MILLISECONDS, 30*IN_MILLISECONDS
 
+struct MANGOS_DLL_DECL npc_crimsonhall_lanathelAI: public ScriptedAI, ScriptEventInterface
+{
+    uint32 m_uiTalkPhase;
+    uint32 m_uiTalkTimer;
+
+    npc_crimsonhall_lanathelAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        ScriptEventInterface(pCreature),
+        m_uiTalkPhase(0),
+        m_uiTalkTimer(0)
+    {
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    }
+
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
+    {
+        if (data1 == MESSAGE_HI)
+        {
+            DoScriptText(SAY_LANATHEL_INTRO1, m_creature);
+            m_uiTalkTimer = 14*IN_MILLISECONDS;
+            m_uiTalkPhase = 1;
+        }
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (m_uiTalkTimer)
+            if (m_uiTalkTimer <= uiDiff)
+            {
+                switch(m_uiTalkPhase)
+                {
+                case 1:
+                    DoScriptText(SAY_LANATHEL_INTRO2, m_creature);
+                    m_uiTalkTimer = 2*IN_MILLISECONDS;
+                    m_uiTalkPhase++;
+                    break;
+                case 2:
+                    BroadcastScriptMessageToEntry(m_creature, NPC_VALANAR, 30.0f, MESSAGE_RAISE, 0, false);
+                    BroadcastScriptMessageToEntry(m_creature, NPC_TALDARAM, 30.0f, MESSAGE_RAISE, 0, false);
+                    BroadcastScriptMessageToEntry(m_creature, NPC_KELESETH, 30.0f, MESSAGE_RAISE, 0, false);
+                    m_uiTalkTimer = 1*IN_MILLISECONDS;
+                    m_uiTalkPhase++;
+                    break;
+                case 3:
+                    BroadcastScriptMessageToEntry(m_creature, NPC_VALANAR, 30.0f, MESSAGE_STAND, 0, false);
+                    BroadcastScriptMessageToEntry(m_creature, NPC_TALDARAM, 30.0f, MESSAGE_STAND, 0, false);
+                    BroadcastScriptMessageToEntry(m_creature, NPC_KELESETH, 30.0f, MESSAGE_STAND, 0, false);
+                    m_uiTalkPhase = 0;
+                    m_uiTalkTimer = 0;
+                    break;
+                default:
+                    m_uiTalkPhase = 0;
+                    m_uiTalkTimer = 0;
+                    break;
+                }
+            }
+            else
+                m_uiTalkTimer -= uiDiff;
+    }
+};
+
 struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 {
     SummonManager SummonMgr;
     uint32 CurrInvocationBoss;
-    uint32 IntroTimer;
     bool HasDoneIntro;
 
     boss_valanar_ICCAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature),
         CurrInvocationBoss(0),
-        IntroTimer(0),
         HasDoneIntro(false)
     {
+        DoCast(pCreature, SPELL_FEIGN_DEATH, true);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         DoCast(pCreature, SPELL_INVOCATION_OF_BLOOD_VALANAR, true);
     }
 
@@ -177,13 +253,12 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && !IntroTimer && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
+        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER &&
             pWho->isTargetableForAttack() && icc::MeetsRequirementsForBoss(m_pInstance, TYPE_VALANAR))
-            if (Creature *Lanathel = GET_CREATURE(TYPE_LANATHEL))    
-            {
-                DoScriptText(SAY_LANATHEL_INTRO1, Lanathel);
-                IntroTimer = 14*IN_MILLISECONDS;
-            }
+        {
+            HasDoneIntro = true;
+            BroadcastScriptMessageToEntry(m_creature, NPC_LANATHEL_FAKE, 30.0f, MESSAGE_HI, 0, false);
+        }
 
         ScriptedAI::MoveInLineOfSight(pWho);
     }
@@ -266,6 +341,15 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
     {
         switch (data1)
         {
+            case MESSAGE_RAISE:
+                m_creature->RemoveAurasDueToSpell(SPELL_FEIGN_DEATH);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                return;
+            case MESSAGE_STAND:
+                m_creature->HandleEmote(EMOTE_ONESHOT_ROAR);
+                return;
             case MESSAGE_AGGRO:
                 m_creature->SetInCombatWithZone();
                 return;
@@ -294,19 +378,6 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (IntroTimer)
-            if (IntroTimer <= uiDiff)
-            {
-                if (Creature *Lanathel = GET_CREATURE(TYPE_LANATHEL))
-                {
-                    DoScriptText(SAY_LANATHEL_INTRO2, Lanathel);
-                    HasDoneIntro = true;
-                    IntroTimer = 0;
-                }
-            }
-            else
-                IntroTimer -= uiDiff;
-
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
@@ -333,12 +404,12 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
                 }
                 case EVENT_SHOCK_VORTEX:
                     if (m_creature->HasAura(SPELL_INVOCATION_OF_BLOOD_VALANAR))
-                        DoCast(m_creature->getVictim(), SPELL_EMPOWERED_SHOCK_VORTEX);
-                    else if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     {
-                        DoCast(Target, SPELL_SHOCK_VORTEX);
+                        DoCast(m_creature->getVictim(), SPELL_EMPOWERED_SHOCK_VORTEX);
                         DoScriptText(BOSSEMOTE_VALANAR_EMPOWERED_SHOCK_VORTEX, m_creature);
                     }
+                    else if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                        DoCast(Target, SPELL_SHOCK_VORTEX);
                     DoScriptText(SAY_VALANAR_SHOCK_VORTEX, m_creature);
                     break;
                 case EVENT_START_VORTEX:
@@ -363,16 +434,22 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
 
 struct MANGOS_DLL_DECL mob_kinetic_bombAI: public ScriptedAI
 {
-    uint32 MoveTimer;
     bool m_bIsHeroic;
+    bool m_bJustBlew : 1;
+    uint32 m_uiBlowCoolDown;
+    uint32 m_uiUpTicks;
 
     mob_kinetic_bombAI(Creature *pCreature): 
         ScriptedAI(pCreature),
-        MoveTimer(TIMER_MOVE_KINETIC_BOMB),
-        m_bIsHeroic(m_creature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || m_creature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+        m_bIsHeroic(m_creature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || m_creature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC),
+        m_bJustBlew(false),
+        m_uiBlowCoolDown(1000),
+        m_uiUpTicks(0)
     {
+        pCreature->SetDisplayId(DISPLAY_KINETIC_BOMB);
         DoCast(m_creature, SPELL_KINETIC_BOMB_VISUAL, true);
-        m_creature->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly? - tried with different flags, all same (Movement in Z axis choppy)
+        pCreature->SetSpeedRate(MOVE_FLIGHT, m_bIsHeroic ? 2.3f : 1.15f, true);
+        pCreature->SetSplineFlags(SPLINEFLAG_UNKNOWN7); //Fly? - tried with different flags, all same (Movement in Z axis choppy)
     }
 
     void Reset() {}
@@ -381,25 +458,38 @@ struct MANGOS_DLL_DECL mob_kinetic_bombAI: public ScriptedAI
     {
         DoCast(m_creature, SPELL_KINETIC_BOMB_VISUAL, true);
         uiDamage = 0;
-        m_creature->StopMoving();
-        m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 7.0f);
+        m_uiUpTicks += 4;
     }
+
+    void Aggro(Unit* pWho) {}
 
     void AttackedBy(Unit *pAttacker) {}
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (MoveTimer < uiDiff)
-            m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() - (m_bIsHeroic ? 1.0f : 0.5f));
-        else
-            MoveTimer -= uiDiff;
+        m_creature->StopMoving();
+        m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + ((m_uiUpTicks == 0)?(m_bIsHeroic ? -1.0f : -0.5f): 1.0f));
+        
+        if (m_uiUpTicks > 0)
+            m_uiUpTicks--;
 
         if (Unit* Owner = m_creature->GetOwner())
-            if (Owner->GetPositionZ() + 2.0f >= m_creature->GetPositionZ())
+            if (Owner->GetPositionZ() + 2.0f >= m_creature->GetPositionZ() && !m_bJustBlew)
             {
+                m_bJustBlew = true;
                 Owner->CastSpell(Owner, SPELL_KINETIC_BOMB_EXPLOSION, true);
-                m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 9.0f);
+                m_uiUpTicks+= 9;
             }
+
+        if (m_bJustBlew)
+        {
+            if (m_uiBlowCoolDown <= uiDiff)
+            {
+                m_bJustBlew = false;
+                m_uiBlowCoolDown = 1000;
+            }
+            else m_uiBlowCoolDown -= uiDiff;
+        }
     }
 };
 
@@ -411,6 +501,10 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature)
     {
+        DoCast(pCreature, SPELL_FEIGN_DEATH, true);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         SetCombatMovement(false);
     }
 
@@ -470,6 +564,15 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
     {
         switch (data1)
         {
+            case MESSAGE_RAISE:
+                m_creature->RemoveAurasDueToSpell(SPELL_FEIGN_DEATH);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                return;
+            case MESSAGE_STAND:
+                m_creature->HandleEmote(EMOTE_ONESHOT_ROAR);
+                return;
             case MESSAGE_AGGRO:
                 m_creature->SetInCombatWithZone();
                 return;
@@ -594,6 +697,10 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(pCreature)
     {
+        DoCast(pCreature, SPELL_FEIGN_DEATH, true);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
     }
 
     void Reset()
@@ -671,6 +778,15 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
     {
         switch (data1)
         {
+            case MESSAGE_RAISE:
+                m_creature->RemoveAurasDueToSpell(SPELL_FEIGN_DEATH);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                return;
+            case MESSAGE_STAND:
+                m_creature->HandleEmote(EMOTE_ONESHOT_ROAR);
+                return;
             case MESSAGE_AGGRO:
                 m_creature->SetInCombatWithZone();
                 return;
@@ -761,7 +877,7 @@ struct MANGOS_DLL_DECL mob_ball_of_flamesAI: public ScriptedAI
 void AddSC_blood_prince_council()
 {
     Script *newscript;
-
+    REGISTER_SCRIPT(npc_crimsonhall_lanathel);
     REGISTER_SCRIPT(boss_valanar_ICC);
     REGISTER_SCRIPT(boss_keleseth_ICC);
     REGISTER_SCRIPT(boss_taldaram_ICC);
