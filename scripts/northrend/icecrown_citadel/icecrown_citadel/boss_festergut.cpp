@@ -57,7 +57,7 @@ static const uint32 BlightSpells[3][2] =
 
 enum NPCS
 {
-    NPC_VILE_GAS_STALKER    = 38548, // dummy npc - used for blight target (might not be correct one)
+    NPC_VILE_GAS_STALKER    = 38548, // dummy npc - used for blight target (correct entry seems to be 36659)
 };
 
 enum Says
