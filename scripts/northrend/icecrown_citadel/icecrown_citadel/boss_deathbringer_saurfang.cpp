@@ -608,6 +608,7 @@ struct MANGOS_DLL_DECL mob_saurfang_intro_outro_controllerAI: public ScriptedAI,
                             if (GameObject* Door = GET_GAMEOBJECT(GO_SAURFANG_DOOR))
                                 Door->SetGoState(GO_STATE_READY);
                             TalkTimer = 7*IN_MILLISECONDS;
+                            break;
                         case 4:
                             if (Muradin)
                                 DoScriptText(SAY_MURADIN_ALLIANCE_INTRO3, Muradin);
