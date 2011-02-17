@@ -22,6 +22,7 @@ SDCategory: Icecrown Citadel
 EndScriptData */
 
 #include "precompiled.h"
+#include "Vehicle.h"
 #include "icecrown_citadel.h"
 
 enum Spells
@@ -31,15 +32,19 @@ enum Spells
     SPELL_BONE_SPIKE_GRAVEYARD  = 69057,
     SPELL_BONE_STORM            = 69076,
     SPELL_COLDFLAME_DAMAGE_AURA = 69145,
-    SPELL_IMPALED               = 69065,
+    SPELL_IMPALE_1              = 69062, // summon vehicle spell
+    SPELL_IMPALE_2              = 72669, // summon vehicle spell
+    SPELL_IMPALE_3              = 72670, // summon vehicle spell
+    SPELL_IMPALED               = 69065, // vehicle applies this aura at its summoner
 
     SPDIFF_BONE_SPIKE_GRAVEYARD = 1822,
 };
 
+const uint32 Impale[3] = {SPELL_IMPALE_1, SPELL_IMPALE_2, SPELL_IMPALE_3};
+
 enum Summons
 {
     NPC_COLDFLAME               = 36672,
-    NPC_BONE_SPIKE              = 38711,
 };
 
 enum Says
@@ -66,6 +71,9 @@ enum Events
     EVENT_BONE_STORM_STOP,
     EVENT_BONE_SPIKE_GRAVEYARD,
     EVENT_ENRAGE,
+
+    MESSAGE_DEAD,
+    MESSAGE_SUMMONED,
 };
 
 #define TIMER_BONE_SLICE            1*IN_MILLISECONDS
@@ -83,67 +91,69 @@ enum Events
 
 struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
 {
-    ObjectGuid m_TargetGuid;
     ScriptedInstance* m_pInstance;
     uint32 m_uiBonedTimer;
+    ObjectGuid m_Target;
 
     mob_bone_spikeAI(Creature *pCreature):
         Scripted_NoMovementAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
         m_uiBonedTimer(0)
     {
+        BroadcastScriptMessageToEntry(pCreature, NPC_MARROWGAR, 100.0f, MESSAGE_SUMMONED);
     }
 
     void Reset()
     {
         RemoveImpale();
+        m_Target.Clear();
     }
+
+    void ScriptMessage(WorldObject*, uint32, uint32){};
 
     void JustDied(Unit *pKiller)
     {
+        BroadcastScriptMessageToEntry(m_creature, NPC_MARROWGAR, 100.0f, MESSAGE_DEAD);
         RemoveImpale();
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (m_TargetGuid.IsEmpty())
-            return;
+        if (m_pInstance && m_pInstance->GetData(TYPE_MARROWGAR) != IN_PROGRESS) // make them despawn after encounter is over or in fail-case
+        {
+            RemoveImpale();
+            m_creature->ForcedDespawn(100);
+        }
 
         m_uiBonedTimer += uiDiff;
-        if (m_uiBonedTimer >= TIMER_BONED && m_pInstance->GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0) // just set it once
-            m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 1);
 
-        Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid);
-
-        if (pTarget)
-        {
-            if (pTarget->isAlive())
-                m_creature->SetTargetGuid(m_TargetGuid);
-            else
+        if (Unit* summoner = m_creature->GetVehicleKit()->GetPassenger(0)) // our passenger will get "impaled"
             {
-                pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
-                DespawnCreature(m_creature);
+                if (!summoner->HasAura(SPELL_IMPALED))
+                    m_creature->CastSpell(summoner, SPELL_IMPALED, true);
+                if (m_Target.IsEmpty())
+                    m_Target = summoner->GetObjectGuid();
             }
-        }
-        else
-            DespawnCreature(m_creature);
-    }
+        // if we had a passenger, but he died, we remove the "Impaled" aura (death persistant)
+        if (!m_Target.IsEmpty())
+            if (Unit* summoner = m_creature->GetMap()->GetUnit(m_Target))
+                if (!summoner->isAlive())
+                {
+                    // set achievement failed
+                    if (m_pInstance)
+                        m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 1);
+                    RemoveImpale();
+                }
 
-    void ScriptMessage(WorldObject* target, uint32 event_id, uint32 /*data2*/)
-    {
-        if (!target || !target->isType(TYPEMASK_UNIT) || event_id != EVENT_BONE_SPIKE_GRAVEYARD)
-            return;
-        m_TargetGuid = target->GetObjectGuid();
-        DoCast(static_cast<Unit*>(target), SPELL_IMPALED, true);
+        if (m_uiBonedTimer >= TIMER_BONED && m_pInstance && m_pInstance->GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0) // just set it once
+            m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 1);
     }
-
+    
     void RemoveImpale()
     {
-        if (m_TargetGuid.IsEmpty())
-            return;
-        if (Unit *pTarget = m_creature->GetMap()->GetUnit(m_TargetGuid))
-            pTarget->RemoveAurasDueToSpell(SPELL_IMPALED);
-        m_TargetGuid.Clear();
+        if (!m_Target.IsEmpty())
+            if (Unit* summoner = m_creature->GetMap()->GetUnit(m_Target))
+                summoner->RemoveAurasDueToSpell(SPELL_IMPALED);
     }
 };
 
@@ -173,6 +183,15 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
         ColdflameAttribs.clear();
         RemoveEncounterAuras(SPELL_IMPALED);
         boss_icecrown_citadelAI::Reset();
+    }
+
+    void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
+    {
+        // only the bone spikes should send messages to marrowgar
+        if (data1 == MESSAGE_SUMMONED)
+            SummonMgr.AddSummonToList(pSender->GetObjectGuid());
+        else if (data1 == MESSAGE_DEAD)
+            SummonMgr.RemoveSummonFromList(pSender->GetObjectGuid());
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -230,9 +249,10 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
                     break;
             }
             while (Target->HasAura(SPELL_IMPALED));
+            if (!Target) // prevent exploiting
+                Target = m_creature->getVictim();
             if (Target)
-                if (Creature *pSumm = SummonMgr.SummonCreatureAt(Target, NPC_BONE_SPIKE, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
-                    SendScriptMessageTo(pSumm, Target, EVENT_BONE_SPIKE_GRAVEYARD);
+                Target->CastSpell(Target, Impale[i], true);
         }
     }
 
