@@ -32,12 +32,14 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     std::string strInstData;
 
     uint64 m_uiSkadiDoorGUID;
+    uint32 m_uiSvalaAchievement;
 
     void Initialize()
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
         m_uiSkadiDoorGUID = 0;
+        m_uiSvalaAchievement = 0;
     }
 
     void OnObjectCreate(GameObject* pGo)
@@ -75,6 +77,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
             case TYPE_YMIRON:
                 m_auiEncounter[3] = uiData;
                 break;
+            case DATA_ACHIEVEMENT_SVALA:
+                m_uiSvalaAchievement = uiData;
+                break;
             default:
                 error_log("SD2: Instance Pinnacle: SetData = %u for type %u does not exist/not implemented.", uiType, uiData);
                 break;
@@ -110,6 +115,17 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
         }
 
         return 0;
+    }
+
+    bool CheckAchievementCriteriaMeet(uint32 criteria_id, const Player* src, const Unit* target, uint32 miscval1)
+    {
+        switch (criteria_id)
+        {
+            case CRITERIA_THE_INCREDIBLE_HULK:
+                return m_uiSvalaAchievement == 1;
+            default:
+                return false;
+        }
     }
 
     const char* Save()
