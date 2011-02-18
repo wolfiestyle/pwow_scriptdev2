@@ -23,6 +23,7 @@ enum
     NPC_WORGEN                      = 26683,
     NPC_JORMUNGAR                   = 26685,
     NPC_RHINO                       = 26686,
+    NPC_GORTOK                      = 26687,
 
     CRITERIA_THE_INCREDIBLE_HULK    = 7322,
 };
