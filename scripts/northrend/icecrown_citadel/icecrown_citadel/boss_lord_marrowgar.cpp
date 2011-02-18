@@ -40,7 +40,7 @@ enum Spells
     SPDIFF_BONE_SPIKE_GRAVEYARD = 1822,
 };
 
-const uint32 Impale[3] = {SPELL_IMPALE_1, SPELL_IMPALE_2, SPELL_IMPALE_3};
+uint32 const ImpaleSpells[3] = {SPELL_IMPALE_1, SPELL_IMPALE_2, SPELL_IMPALE_3};
 
 enum Summons
 {
@@ -89,11 +89,11 @@ enum Events
 #define COLDFLAME_STEP_DIST         6
 #define COLDFLAME_TOTAL_DIST        42
 
-struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public ScriptMessageInterface
+struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
 {
-    ScriptedInstance* m_pInstance;
-    uint32 m_uiBonedTimer;
+    ScriptedInstance *m_pInstance;
     ObjectGuid m_Target;
+    uint32 m_uiBonedTimer;
 
     mob_bone_spikeAI(Creature *pCreature):
         Scripted_NoMovementAI(pCreature),
@@ -109,8 +109,6 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
         m_Target.Clear();
     }
 
-    void ScriptMessage(WorldObject*, uint32, uint32){};
-
     void JustDied(Unit *pKiller)
     {
         BroadcastScriptMessageToEntry(m_creature, NPC_MARROWGAR, 100.0f, MESSAGE_DEAD);
@@ -122,7 +120,7 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
         if (m_pInstance && m_pInstance->GetData(TYPE_MARROWGAR) != IN_PROGRESS) // make them despawn after encounter is over or in fail-case
         {
             RemoveImpale();
-            m_creature->ForcedDespawn(100);
+            DespawnCreature(m_creature);
         }
 
         m_uiBonedTimer += uiDiff;
@@ -134,6 +132,7 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
                 if (m_Target.IsEmpty())
                     m_Target = summoner->GetObjectGuid();
             }
+
         // if we had a passenger, but he died, we remove the "Impaled" aura (death persistant)
         if (!m_Target.IsEmpty())
             if (Unit* summoner = m_creature->GetMap()->GetUnit(m_Target))
@@ -148,7 +147,7 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI, public Sc
         if (m_uiBonedTimer >= TIMER_BONED && m_pInstance && m_pInstance->GetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR) == 0) // just set it once
             m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 1);
     }
-    
+
     void RemoveImpale()
     {
         if (!m_Target.IsEmpty())
@@ -252,7 +251,7 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             if (!Target) // prevent exploiting
                 Target = m_creature->getVictim();
             if (Target)
-                Target->CastSpell(Target, Impale[i], true);
+                Target->CastSpell(Target, ImpaleSpells[i], true);
         }
     }
 
