@@ -66,8 +66,8 @@ enum Spells
 
     // Svala's spells
     SPELL_RITUAL_OF_SWORD       = 48276,
-    SPELL_RITUAL_STRIKE         = 48331, //careful with this spell.. dummy creature can aggro (?)
-    SPELL_CALL_FLAMES           = 48258, // spell sends script event (needs to be added to Database
+    SPELL_RITUAL_STRIKE         = 48331, // careful with this spell.. dummy creature can aggro (?)
+    SPELL_CALL_FLAMES           = 48258, // spell sends script event (needs to be added to Database)
     SPELL_SINISTER_STRIKE       = 15667,
     SPELL_SINISTER_STRIKE_H     = 59409,
     SPELL_RITUAL_PREPARATION    = 48267,
@@ -95,6 +95,7 @@ enum Events
     EVENT_KNOCK = 1,
     EVENT_DISEASE,
 };
+
 /*######
 ## boss_svala
 ######*/
@@ -384,6 +385,12 @@ struct MANGOS_DLL_DECL npc_scourge_hulkAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (m_creature->getVictim()->GetEntry() == NPC_SVALA_SORROW)
+        {
+            m_creature->AI()->EnterEvadeMode();
+            return;
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
