@@ -125,7 +125,8 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
 
         m_uiBonedTimer += uiDiff;
 
-        if (Unit* summoner = m_creature->GetVehicleKit()->GetPassenger(0)) // our passenger will get "impaled"
+        if (VehicleKit *vehicle = m_creature->GetVehicleKit())
+            if (Unit *summoner = vehicle->GetPassenger(0))  // our passenger will get "impaled"
             {
                 if (!summoner->HasAura(SPELL_IMPALED))
                     m_creature->CastSpell(summoner, SPELL_IMPALED, true);
