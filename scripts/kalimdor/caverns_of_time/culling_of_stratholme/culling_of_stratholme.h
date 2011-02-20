@@ -75,7 +75,7 @@ enum
     // Gameobjects
     GO_DOOR_BOOKCASE                = 188686,
     GO_DARK_RUNED_CHEST             = 190663,
-    GO_DARK_RUNED_CHEST_H          = 193597,
+    GO_DARK_RUNED_CHEST_H           = 193597,
 
     // World States
     WORLD_STATE_CRATES              = 3479,
