@@ -112,10 +112,12 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
 
     npc_gortok_controllerAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
-        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
-        m_uiBossesToSummon(m_bIsRegularMode ? 2 : 4)
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
+        if (m_pInstance)
+            if (m_pInstance->GetData(TYPE_GORTOK) != NOT_STARTED)
+                pCreature->ForcedDespawn(100);
+
         if (m_pInstance)
             m_pInstance->SetData(TYPE_GORTOK, IN_PROGRESS);
 
@@ -127,6 +129,9 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
 
         pCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
         pCreature->CastSpell(pCreature, SPELL_ORB_VISUAL, true);
+
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        m_uiBossesToSummon = m_bIsRegularMode ? 2 : 4;
 
         CreaturesUsed.reset();
         Events.ScheduleEvent(EVENT_BEGIN_MOVING, 5*IN_MILLISECONDS);
