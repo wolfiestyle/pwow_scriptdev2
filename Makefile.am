@@ -272,6 +272,11 @@ scripts/kalimdor/ungoro_crater.cpp \
 scripts/kalimdor/winterspring.cpp \
 scripts/kalimdor/blackfathom_deeps/blackfathom_deeps.h \
 scripts/kalimdor/blackfathom_deeps/instance_blackfathom_deeps.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_meathook.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_salramm.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_chronolord_epoch.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_infinite_corruptor.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_malganis.cpp \
 scripts/kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.h \
 scripts/kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp \
 scripts/kalimdor/caverns_of_time/culling_of_stratholme/instance_culling_of_stratholme.cpp \

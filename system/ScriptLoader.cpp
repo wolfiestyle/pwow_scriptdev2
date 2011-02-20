@@ -227,6 +227,11 @@ extern void AddSC_boss_lieutenant_drake();
 extern void AddSC_instance_old_hillsbrad();
 extern void AddSC_old_hillsbrad();
 extern void AddSC_culling_of_stratholme();                  // COT, culling_of_stratholme
+extern void AddSC_boss_meathook();
+extern void AddSC_boss_salramm();
+extern void AddSC_boss_chronolord_epoch();
+extern void AddSC_boss_infinite_corruptor();
+extern void AddSC_boss_malganis();
 extern void AddSC_instance_culling_of_stratholme();
 extern void AddSC_dire_maul();                              // dire_maul
 extern void AddSC_instance_dire_maul();
@@ -747,6 +752,11 @@ void AddScripts()
     AddSC_instance_old_hillsbrad();
     AddSC_old_hillsbrad();
     AddSC_culling_of_stratholme();                          // CoT, culling_of_stratholme
+    AddSC_boss_meathook();
+    AddSC_boss_salramm();
+    AddSC_boss_chronolord_epoch();
+    AddSC_boss_infinite_corruptor();
+    AddSC_boss_malganis();
     AddSC_instance_culling_of_stratholme();
     AddSC_dire_maul();                                      // dire_maul
     AddSC_instance_dire_maul();
