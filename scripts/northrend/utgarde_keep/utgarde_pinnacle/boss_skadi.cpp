@@ -25,7 +25,7 @@ EndScriptData */
 #include "Vehicle.h"
 #include "utgarde_pinnacle.h"
 
-enum
+enum Says
 {
     SAY_AGGRO                       = -1575019,
     SAY_DRAKEBREATH_1               = -1575020,
@@ -39,7 +39,10 @@ enum
     SAY_DEATH                       = -1575028,
     SAY_DRAKE_DEATH                 = -1575029,
     EMOTE_HARPOON_RANGE             = -1575030,
+};
 
+enum Spells
+{
     SPELL_CRUSH                     = 50234,
     SPELL_CRUSH_H                   = 59330,
 
@@ -62,7 +65,10 @@ enum
     NPC_YMIRJAR_WITCH_DOCTOR        = 26691,
     NPC_YMIRJAR_HARPOONER           = 26692,
     NPC_TRIGGER                     = 28351,
+};
 
+enum Events
+{
     EVENT_MOUNT_GRAUF = 1,
     EVENT_MOVE,
     EVENT_DESPAWN,
@@ -85,7 +91,7 @@ enum
 
 #define EMOTE_BREATH "Grauf takes a deep breath."
 
-static float SpawnLoc[4] = {468.931f, -513.555f, 104.723f};
+static float SpawnLoc[3] = {468.931f, -513.555f, 104.723f};
 
 static float Location[72][3] =
 {
