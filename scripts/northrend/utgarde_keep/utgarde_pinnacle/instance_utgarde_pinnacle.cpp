@@ -36,6 +36,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     uint64 m_uiSkadiDoorGUID;
     uint32 m_uiSvalaAchievement;
     uint32 m_uiSkadiAchievement;
+    uint32 m_uiYmironAchievement;
 
     void Initialize()
     {
@@ -45,6 +46,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
         m_uiSkadiDoorGUID = 0;
         m_uiSvalaAchievement = 0;
         m_uiSkadiAchievement = 0;
+        m_uiYmironAchievement = 0;
     }
 
     void OnObjectCreate(GameObject* pGo)
@@ -80,6 +82,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     {
         if (pCreature->GetEntry() == NPC_SKADI)
         {
+            if (instance->IsRegularDifficulty())
+                return;
+
             Map::PlayerList const &players = instance->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
@@ -116,6 +121,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
             case DATA_ACHIEVEMENT_SKADI_MY_GIRL:
                 m_uiSkadiAchievement = uiData;
                 break;
+            case DATA_ACHIEVEMENT_KINGS_BANE:
+                m_uiYmironAchievement = uiData;
+                break;
             default:
                 error_log("SD2: Instance Pinnacle: SetData = %u for type %u does not exist/not implemented.", uiType, uiData);
                 break;
@@ -148,6 +156,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
                 return m_auiEncounter[2];
             case TYPE_YMIRON:
                 return m_auiEncounter[3];
+            case DATA_ACHIEVEMENT_KINGS_BANE:
+                return m_uiYmironAchievement;
+                break;
         }
 
         return 0;
@@ -174,6 +185,8 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
                 return m_uiSvalaAchievement == 1;
             case CRITERIA_MY_GIRL:
                 return m_uiSkadiAchievement == 1;
+            case CRITERIA_KINGS_BANE:
+                return m_uiYmironAchievement == 1;
             default:
                 return false;
         }
