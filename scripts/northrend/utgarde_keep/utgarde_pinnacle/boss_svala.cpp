@@ -86,8 +86,7 @@ enum Spells
 
 enum Events
 {
-
-    EVENT_RITUAL    = 1,
+    EVENT_RITUAL = 1,
     EVENT_SINISTER_STRIKE,
     EVENT_CALL_FLAMES,
     EVENT_SUMMON_CHANNELERS,
@@ -300,7 +299,8 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 
         if (m_creature->getVictim()->GetEntry() == NPC_RITUAL_TARGET)
         {
-            m_creature->AI()->EnterEvadeMode();
+            EnterEvadeMode();
+            return;
         }
 
         Events.Update(uiDiff);
@@ -388,7 +388,7 @@ struct MANGOS_DLL_DECL npc_scourge_hulkAI : public ScriptedAI
 
         if (m_creature->getVictim()->GetEntry() == NPC_SVALA_SORROW)
         {
-            m_creature->AI()->EnterEvadeMode();
+            EnterEvadeMode();
             return;
         }
 
