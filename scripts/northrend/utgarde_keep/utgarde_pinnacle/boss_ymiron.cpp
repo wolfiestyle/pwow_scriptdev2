@@ -148,6 +148,9 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
 
         m_UsedSpirits.reset();
         Events.Reset();
+
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_YMIRON, NOT_STARTED);
     }
 
     void Aggro(Unit* pWho)
@@ -157,7 +160,10 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
         Events.ScheduleEvent(EVENT_DARK_SLASH, 7*IN_MILLISECONDS, 11*IN_MILLISECONDS);
         Events.ScheduleEvent(EVENT_FETID_ROT, 10*IN_MILLISECONDS, 13*IN_MILLISECONDS);
         if (m_pInstance) // we just started so we set achievement progress
+        {
             m_pInstance->SetData(DATA_ACHIEVEMENT_KINGS_BANE, 1);
+            m_pInstance->SetData(TYPE_YMIRON, IN_PROGRESS);
+        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -183,6 +189,9 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_YMIRON, DONE);
     }
 
     void JustSummoned(Creature* pSummon)
@@ -197,6 +206,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
             pSummon->CastSpell(pSummon, m_bIsRegularMode ? SPELL_SPIRIT_FOUNT : SPELL_SPIRIT_FOUNT_H, true);
         }
     }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())

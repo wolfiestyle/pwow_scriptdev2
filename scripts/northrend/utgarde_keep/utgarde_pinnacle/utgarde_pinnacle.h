@@ -23,6 +23,7 @@ enum
 
     GO_STASIS_GENERATOR             = 188593,
     GO_DOOR_SKADI                   = 192173,
+    GO_DOOR_YMIRON                  = 192174,
 
     NPC_FURBOLG                     = 26684,
     NPC_WORGEN                      = 26683,

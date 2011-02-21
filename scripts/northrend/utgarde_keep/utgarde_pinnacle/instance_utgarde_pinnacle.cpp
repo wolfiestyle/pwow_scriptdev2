@@ -34,6 +34,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     uint64 m_uiGraufGuid;
     uint64 m_uiSkadiGuid;
     uint64 m_uiSkadiDoorGUID;
+    uint64 m_uiYmironDoorGUID;
     uint32 m_uiSvalaAchievement;
     uint32 m_uiSkadiAchievement;
     uint32 m_uiYmironAchievement;
@@ -44,6 +45,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
         m_uiGraufGuid = 0;
         m_uiSkadiGuid = 0;
         m_uiSkadiDoorGUID = 0;
+        m_uiYmironDoorGUID = 0;
         m_uiSvalaAchievement = 0;
         m_uiSkadiAchievement = 0;
         m_uiYmironAchievement = 0;
@@ -57,6 +59,13 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
                 m_uiSkadiDoorGUID = pGo->GetGUID();
 
                 if (m_auiEncounter[2] == DONE)
+                    pGo->SetGoState(GO_STATE_ACTIVE);
+
+                break;
+            case GO_DOOR_YMIRON:
+                m_uiYmironDoorGUID = pGo->GetGUID();
+
+                if (m_auiEncounter[3] == DONE)
                     pGo->SetGoState(GO_STATE_ACTIVE);
 
                 break;
@@ -113,6 +122,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
                 m_auiEncounter[2] = uiData;
                 break;
             case TYPE_YMIRON:
+                if (uiData == DONE)
+                    DoUseDoorOrButton(m_uiYmironDoorGUID);
+
                 m_auiEncounter[3] = uiData;
                 break;
             case DATA_ACHIEVEMENT_SVALA:
