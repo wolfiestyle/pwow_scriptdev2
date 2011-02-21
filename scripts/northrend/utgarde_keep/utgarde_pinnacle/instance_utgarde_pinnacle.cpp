@@ -26,7 +26,7 @@ EndScriptData */
 
 struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 {
-    instance_pinnacle(Map* pMap) : ScriptedInstance(pMap) {Initialize();};
+    instance_pinnacle(Map* pMap) : ScriptedInstance(pMap) { Initialize(); }
 
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string strInstData;
@@ -41,7 +41,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 
     void Initialize()
     {
-        memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+        memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
         m_uiGraufGuid = 0;
         m_uiSkadiGuid = 0;
         m_uiSkadiDoorGUID = 0;
@@ -53,7 +53,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 
     void OnObjectCreate(GameObject* pGo)
     {
-        switch(pGo->GetEntry())
+        switch (pGo->GetEntry())
         {
             case GO_DOOR_SKADI:
                 m_uiSkadiDoorGUID = pGo->GetGUID();
@@ -74,7 +74,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 
     void OnCreatureCreate(Creature* pCreature)
     {
-        switch(pCreature->GetEntry())
+        switch (pCreature->GetEntry())
         {
             case NPC_GRAUF:
                 m_uiGraufGuid = pCreature->GetGUID();
@@ -97,7 +97,9 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
             Map::PlayerList const &players = instance->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
-                Player* pPlayer = itr->getSource();
+                Player *pPlayer = itr->getSource();
+                if (!pPlayer)
+                    continue;
                 pPlayer->StartTimedAchievementCriteria(ACHIEVEMENT_TIMED_TYPE_EVENT, TIMED_ACHIEVEMENT_EVENT_SKADI);
             }
         }
@@ -107,7 +109,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     {
         debug_log("SD2: Instance Pinnacle: SetData received for type %u with data %u", uiType, uiData);
 
-        switch(uiType)
+        switch (uiType)
         {
             case TYPE_SVALA:
                 m_auiEncounter[0] = uiData;
@@ -147,7 +149,8 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
             OUT_SAVE_INST_DATA;
 
             std::ostringstream saveStream;
-            saveStream << m_auiEncounter[0] << " " << m_auiEncounter[1] << " " << m_auiEncounter[2] << " " << m_auiEncounter[3];
+            for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
+                saveStream << m_auiEncounter[i] << ' ';
 
             strInstData = saveStream.str();
 
@@ -158,7 +161,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 
     uint32 GetData(uint32 uiType)
     {
-        switch(uiType)
+        switch (uiType)
         {
             case TYPE_SVALA:
                 return m_auiEncounter[0];
@@ -168,9 +171,12 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
                 return m_auiEncounter[2];
             case TYPE_YMIRON:
                 return m_auiEncounter[3];
+            case DATA_ACHIEVEMENT_SVALA:
+                return m_uiSvalaAchievement;
+            case DATA_ACHIEVEMENT_SKADI_MY_GIRL:
+                return m_uiSkadiAchievement;
             case DATA_ACHIEVEMENT_KINGS_BANE:
                 return m_uiYmironAchievement;
-                break;
         }
 
         return 0;
@@ -178,7 +184,7 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
 
     uint64 GetData64(uint32 uiType)
     {
-        switch(uiType)
+        switch (uiType)
         {
             case DATA_GRAUF:
                 return m_uiGraufGuid;
@@ -220,10 +226,11 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
         OUT_LOAD_INST_DATA(chrIn);
 
         std::istringstream loadStream(chrIn);
-        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3];
 
-        for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+        for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
         {
+            loadStream >> m_auiEncounter[i];
+
             if (m_auiEncounter[i] == IN_PROGRESS)
                 m_auiEncounter[i] = NOT_STARTED;
         }

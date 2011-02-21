@@ -26,11 +26,13 @@ EndScriptData */
 
 enum
 {
+    // script texts
     SAY_AGGRO               = -1575015,
     SAY_SLAY_1              = -1575016,
     SAY_SLAY_2              = -1575017,
     SAY_DEATH               = -1575018,
 
+    // spells
     SPELL_FREEZE_ANIM       = 16245,
 
     SPELL_IMPALE            = 48261,
@@ -68,6 +70,7 @@ enum
 
     NPC_GORTOK_CONTROLLER   = 25640, //TODO: find correct npc unused "target orb"
 
+    // events
     EVENT_BEGIN_MOVING = 1,
     EVENT_AWAKEN_SUBBOSS,
     EVENT_AWAKEN_GORTOK,
@@ -88,12 +91,20 @@ enum
     EVENT_GORE,
     EVENT_STOMP,
 
-    
+    // script messages
     MESSAGE_AWAKEN,
     MESSAGE_ACK,
     MESSAGE_WIPE,
     MESSAGE_DIED,
 };
+
+#define MAX_BEAST   4
+
+static uint32 const BeastEntry[MAX_BEAST] = {NPC_WORGEN, NPC_FURBOLG, NPC_JORMUNGAR, NPC_RHINO};
+
+typedef UNORDERED_MAP<uint32 /*entry*/, uint32 /*index*/> EntryToIndexMap;
+static EntryToIndexMap const BeastIndex = map_initializer<EntryToIndexMap>
+    (NPC_WORGEN, 0)(NPC_FURBOLG, 1)(NPC_JORMUNGAR, 2)(NPC_RHINO, 3);
 
 /*######
 ## npc_gortok_controller
@@ -101,25 +112,24 @@ enum
 
 struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public ScriptMessageInterface
 {
-    ScriptedInstance* m_pInstance;
-    uint32 m_uiBossesToSummon;
+    ScriptedInstance *m_pInstance;
     bool m_bIsRegularMode;
-    std::bitset<4> CreaturesUsed;
-    ObjectGuid Beast1Guid;
-    ObjectGuid Beast2Guid;
-    ObjectGuid Beast3Guid;
-    ObjectGuid Beast4Guid;
+    EventManager Events;
+    uint32 m_uiBossesToSummon;
+    std::bitset<MAX_BEAST> CreaturesUsed;
+    ObjectGuid BeastGuid[MAX_BEAST];
 
     npc_gortok_controllerAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        m_uiBossesToSummon(m_bIsRegularMode ? 2 : 4)
     {
-        if (m_pInstance)
-            if (m_pInstance->GetData(TYPE_GORTOK) != NOT_STARTED)
-                pCreature->ForcedDespawn(100);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_GORTOK, IN_PROGRESS);
+        if (m_pInstance && m_pInstance->GetData(TYPE_GORTOK) != NOT_STARTED)
+        {
+            pCreature->ForcedDespawn(100);
+            return;
+        }
 
         pCreature->SetSpeedRate(MOVE_WALK, 2.0f, true);
         pCreature->SetSpeedRate(MOVE_RUN, 2.0f, true);
@@ -130,14 +140,11 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
         pCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
         pCreature->CastSpell(pCreature, SPELL_ORB_VISUAL, true);
 
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        m_uiBossesToSummon = m_bIsRegularMode ? 2 : 4;
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_GORTOK, IN_PROGRESS);
 
-        CreaturesUsed.reset();
         Events.ScheduleEvent(EVENT_BEGIN_MOVING, 5*IN_MILLISECONDS);
     }
-
-    EventManager Events;
 
     void Reset()
     {
@@ -147,90 +154,50 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (m_pInstance)
-            if (m_pInstance->GetData(TYPE_GORTOK) == DONE)
-                m_creature->ForcedDespawn();
+        if (m_pInstance && m_pInstance->GetData(TYPE_GORTOK) == DONE)
+            m_creature->ForcedDespawn();
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-            case EVENT_BEGIN_MOVING:
-                m_creature->GetMotionMaster()->MovePoint(0, 276.068f, -451.88f, 113.172f);
-                Events.ScheduleEvent(EVENT_AWAKEN_SUBBOSS, 10*IN_MILLISECONDS);
-                break;
-            case EVENT_AWAKEN_SUBBOSS:
+                case EVENT_BEGIN_MOVING:
+                    m_creature->GetMotionMaster()->MovePoint(0, 276.068f, -451.88f, 113.172f);
+                    Events.ScheduleEvent(EVENT_AWAKEN_SUBBOSS, 10*IN_MILLISECONDS);
+                    break;
+                case EVENT_AWAKEN_SUBBOSS:
                 {
-                    int index;
-                    do 
+                    uint32 index;
+                    do
                     {
-                        index = urand(0,3);
+                        index = urand(0, MAX_BEAST-1);
                     } while (CreaturesUsed[index]); // true = used
-                    switch (index)
-                    {
-                        case 0: // Worgen
-                            BroadcastScriptMessageToEntry(m_creature, NPC_WORGEN, 50.0f, MESSAGE_AWAKEN);
-                            break;
-                        case 1: // Furbolg
-                            BroadcastScriptMessageToEntry(m_creature, NPC_FURBOLG, 50.0f, MESSAGE_AWAKEN);
-                            break;
-                        case 2: // Jormungar
-                            BroadcastScriptMessageToEntry(m_creature, NPC_JORMUNGAR, 50.0f, MESSAGE_AWAKEN);
-                            break;
-                        case 3: // Rhino
-                            BroadcastScriptMessageToEntry(m_creature, NPC_RHINO, 50.0f, MESSAGE_AWAKEN);
-                            break;
-                    }
+                    BroadcastScriptMessageToEntry(m_creature, BeastEntry[index], 50.0f, MESSAGE_AWAKEN);
                     CreaturesUsed[index] = true;
                     m_uiBossesToSummon--;
+                    break;
                 }
-                break;
-            case EVENT_AWAKEN_GORTOK:
-                BroadcastScriptMessageToEntry(m_creature, NPC_GORTOK, 50.0f, MESSAGE_AWAKEN);
-                break;
-            default:
-                break;
+                case EVENT_AWAKEN_GORTOK:
+                    BroadcastScriptMessageToEntry(m_creature, NPC_GORTOK, 50.0f, MESSAGE_AWAKEN);
+                    break;
+                default:
+                    break;
         }
     }
 
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
-        switch(pSender->GetEntry())
-        {
-            case NPC_WORGEN:
-                Beast1Guid = pSender->GetObjectGuid();
-                break;
-            case NPC_FURBOLG:
-                Beast2Guid = pSender->GetObjectGuid();
-                break;
-            case NPC_JORMUNGAR:
-                Beast3Guid = pSender->GetObjectGuid();
-                break;
-            case NPC_RHINO:
-                Beast4Guid = pSender->GetObjectGuid();
-                break;
-            default:
-                break;
-        }
+        uint32 index = map_find(BeastIndex, pSender->GetEntry(), MAX_BEAST);
+        if (index < MAX_BEAST)
+            BeastGuid[index] = pSender->GetObjectGuid();
 
         if (data1 == MESSAGE_WIPE)
         {
-            if (!Beast1Guid.IsEmpty())
-                if (Unit* pBeast = m_creature->GetMap()->GetUnit(Beast1Guid))
-                    if (!pBeast->isAlive())
-                        ((Creature*)pBeast)->Respawn();
-            if (!Beast2Guid.IsEmpty())
-                if (Unit* pBeast = m_creature->GetMap()->GetUnit(Beast2Guid))
-                    if (!pBeast->isAlive())
-                        ((Creature*)pBeast)->Respawn();
-            if (!Beast3Guid.IsEmpty())
-                if (Unit* pBeast = m_creature->GetMap()->GetUnit(Beast3Guid))
-                    if (!pBeast->isAlive())
-                        ((Creature*)pBeast)->Respawn();
-            if (!Beast4Guid.IsEmpty())
-                if (Unit* pBeast = m_creature->GetMap()->GetUnit(Beast4Guid))
-                    if (!pBeast->isAlive())
-                        ((Creature*)pBeast)->Respawn();
+            for (uint32 i = 0; i < MAX_BEAST; ++i)
+                if (!BeastGuid[i].IsEmpty())
+                    if (Creature *pBeast = m_creature->GetMap()->GetCreature(BeastGuid[i]))
+                        if (!pBeast->isAlive())
+                            pBeast->Respawn();
             m_creature->ForcedDespawn(100);
 
             if (m_pInstance)
@@ -239,18 +206,15 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
         else if (data1 == MESSAGE_ACK)
         {
             if (pSender->GetEntry() != NPC_GORTOK)
-                m_creature->CastSpell(pSender->GetPositionX(),pSender->GetPositionY(),pSender->GetPositionZ(), SPELL_AWAKEN_SUBBOSS, false);
-            else
-                m_creature->CastSpell((Unit*)pSender, SPELL_AWAKEN_GORTOK, false);
+                m_creature->CastSpell(pSender->GetPositionX(), pSender->GetPositionY(), pSender->GetPositionZ(), SPELL_AWAKEN_SUBBOSS, false);
+            else if (pSender->isType(TYPEMASK_UNIT))
+                m_creature->CastSpell(static_cast<Unit*>(pSender), SPELL_AWAKEN_GORTOK, false);
         }
         else if (data1 == MESSAGE_DIED)
         {
             if (pSender->GetEntry() == NPC_GORTOK)
                 return;
-            if (!m_uiBossesToSummon)
-                Events.ScheduleEvent(EVENT_AWAKEN_GORTOK, 5*IN_MILLISECONDS);
-            else
-                Events.ScheduleEvent(EVENT_AWAKEN_SUBBOSS, 5*IN_MILLISECONDS);
+            Events.ScheduleEvent(m_uiBossesToSummon ? EVENT_AWAKEN_SUBBOSS : EVENT_AWAKEN_GORTOK, 5*IN_MILLISECONDS);
         }
     }
 };
@@ -261,6 +225,13 @@ struct MANGOS_DLL_DECL npc_gortok_controllerAI : public ScriptedAI, public Scrip
 
 struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMessageInterface
 {
+    ScriptedInstance *m_pInstance;
+    EventManager Events;
+    bool m_bIsRegularMode :1;
+    bool m_bSpecialUsed :1;
+    bool m_bAwaken :1;
+    uint32 m_uiAwakeTimer;
+
     boss_gortok_beastsAI(Creature* pCreature):
         ScriptedAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
@@ -273,19 +244,11 @@ struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMe
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    EventManager Events;
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-    bool m_bSpecialUsed;
-    bool m_bAwaken;
-
-    uint32 m_uiAwakeTimer;
-
     void Reset()
     {
         m_bAwaken = false;
-        Events.Reset();
         m_bSpecialUsed = false;
+        Events.Reset();
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         BroadcastScriptMessageToEntry(m_creature, NPC_GORTOK_CONTROLLER, 100.0f, MESSAGE_WIPE);
     }
@@ -297,20 +260,22 @@ struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMe
 
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
-        switch(data1)
+        switch (data1)
         {
-        case MESSAGE_AWAKEN:
-            SendScriptMessageTo((Creature*)pSender, m_creature, MESSAGE_ACK, 0);
-            m_uiAwakeTimer = 7*IN_MILLISECONDS;
-            m_bAwaken = true;
-            break;
-        default:
-            break;
+            case MESSAGE_AWAKEN:
+                if (pSender->GetTypeId() == TYPEID_UNIT)
+                    SendScriptMessageTo(static_cast<Creature*>(pSender), m_creature, MESSAGE_ACK, 0);
+                m_uiAwakeTimer = 7*IN_MILLISECONDS;
+                m_bAwaken = true;
+                break;
+            default:
+                break;
         }
     }
+
     void Aggro(Unit* pWho)
     {
-        switch(m_creature->GetEntry())
+        switch (m_creature->GetEntry())
         {
             case NPC_WORGEN:
                 Events.ScheduleEventInRange(EVENT_ENRAGE_SOFT, 16*IN_MILLISECONDS, 24*IN_MILLISECONDS, 24*IN_MILLISECONDS, 29*IN_MILLISECONDS);
@@ -337,35 +302,48 @@ struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMe
     void UpdateAI(uint32 const uiDiff)
     {
         if (m_bAwaken)
-        if (m_uiAwakeTimer <= uiDiff)
         {
-            m_bAwaken = false;
-            m_creature->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            m_creature->SetInCombatWithZone();
+            if (m_uiAwakeTimer <= uiDiff)
+            {
+                m_bAwaken = false;
+                m_creature->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                m_creature->SetInCombatWithZone();
+            }
+            else
+                m_uiAwakeTimer -= uiDiff;
         }
-        else m_uiAwakeTimer -= uiDiff;
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (m_creature->GetEntry() == NPC_WORGEN && !m_bSpecialUsed && m_creature->GetHealthPercent() <= 20.0f)
-        {
-            m_bSpecialUsed = true;
-            DoCast(m_creature, SPELL_ENRAGE_HARD, true);
-        }
-
-        if (m_creature->GetEntry() == NPC_FURBOLG && !m_bSpecialUsed  && m_creature->GetHealthPercent() <= 30.0f)
-        {
-            m_bSpecialUsed = true;
-            DoCast(m_creature, SPELL_CRAZED, true);
-        }
-
-        if (m_creature->GetEntry() == NPC_JORMUNGAR && !m_bSpecialUsed  && m_creature->GetHealthPercent() <= 50.0f)
-        {
-            m_bSpecialUsed = true;
-            DoCast(m_creature, m_bIsRegularMode ? SPELL_ACID_SPLATTER : SPELL_ACID_SPLATTER_H, true);
-        }
+        if (!m_bSpecialUsed)
+            switch (m_creature->GetEntry())
+            {
+                case NPC_WORGEN:
+                    if (m_creature->GetHealthPercent() <= 20.0f)
+                    {
+                        m_bSpecialUsed = true;
+                        DoCast(m_creature, SPELL_ENRAGE_HARD, true);
+                    }
+                    break;
+                case NPC_FURBOLG:
+                    if (m_creature->GetHealthPercent() <= 30.0f)
+                    {
+                        m_bSpecialUsed = true;
+                        DoCast(m_creature, SPELL_CRAZED, true);
+                    }
+                    break;
+                case NPC_JORMUNGAR:
+                    if (m_creature->GetHealthPercent() <= 50.0f)
+                    {
+                        m_bSpecialUsed = true;
+                        DoCast(m_creature, m_bIsRegularMode ? SPELL_ACID_SPLATTER : SPELL_ACID_SPLATTER_H, true);
+                    }
+                    break;
+                default:
+                    break;
+            }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -396,8 +374,10 @@ struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMe
                     m_creature->CastSpell(m_creature->getVictim(), SPELL_STOMP, true);
                     break;
             }
+
         DoMeleeAttackIfReady();
     }
+
     void JustDied(Unit* pSlayer)
     {
         BroadcastScriptMessageToEntry(m_creature, NPC_GORTOK_CONTROLLER, 100.0f, MESSAGE_DIED);
@@ -410,38 +390,41 @@ struct MANGOS_DLL_DECL boss_gortok_beastsAI : public ScriptedAI, public ScriptMe
 
 struct MANGOS_DLL_DECL boss_gortokAI : public ScriptedAI, public ScriptMessageInterface
 {
-    boss_gortokAI(Creature* pCreature):ScriptedAI(pCreature)
-    {
-        m_uiAwakeTimer = 0;
-        m_bAwaken = false;
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    ScriptedInstance *m_pInstance;
     EventManager Events;
+    bool m_bIsRegularMode :1;
+    bool m_bAwaken :1;
     uint32 m_uiAwakeTimer;
-    bool m_bAwaken;
+
+    boss_gortokAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        m_bAwaken(false),
+        m_uiAwakeTimer(0)
+    {
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    }
 
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
-        switch(data1)
+        switch (data1)
         {
-        case MESSAGE_AWAKEN:
-            m_bAwaken = true;
-            m_uiAwakeTimer = 7*IN_MILLISECONDS;
-            SendScriptMessageTo((Creature*)pSender, m_creature, MESSAGE_ACK, 0);
-            break;
-        default:
-            break;
+            case MESSAGE_AWAKEN:
+                m_bAwaken = true;
+                m_uiAwakeTimer = 7*IN_MILLISECONDS;
+                if (pSender->GetTypeId() == TYPEID_UNIT)
+                    SendScriptMessageTo(static_cast<Creature*>(pSender), m_creature, MESSAGE_ACK, 0);
+                break;
+            default:
+                break;
         }
     }
 
     void Reset()
     {
         m_bAwaken = false;
+        m_uiAwakeTimer = 0;
         Events.Reset();
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         BroadcastScriptMessageToEntry(m_creature, NPC_GORTOK_CONTROLLER, 100.0f, MESSAGE_WIPE);
@@ -484,7 +467,8 @@ struct MANGOS_DLL_DECL boss_gortokAI : public ScriptedAI, public ScriptMessageIn
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 m_creature->SetInCombatWithZone();
             }
-            else m_uiAwakeTimer -= uiDiff;
+            else
+                m_uiAwakeTimer -= uiDiff;
         }
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
@@ -513,10 +497,12 @@ CreatureAI* GetAI_boss_gortok(Creature* pCreature)
 {
     return new boss_gortokAI(pCreature);
 }
+
 CreatureAI* GetAI_boss_gortok_beasts(Creature* pCreature)
 {
     return new boss_gortok_beastsAI(pCreature);
 }
+
 CreatureAI* GetAI_npc_gortok_controller(Creature* pCreature)
 {
     return new npc_gortok_controllerAI(pCreature);

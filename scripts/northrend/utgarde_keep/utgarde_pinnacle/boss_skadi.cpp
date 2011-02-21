@@ -174,29 +174,29 @@ static float Location[72][3] =
 };
 
 struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInterface
-{    
-    npc_graufAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
-    {
-        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    EventManager Events;
-    ObjectGuid m_GraufGuid;
-    SummonManager SummonMgr;
-
+{
+    ScriptedInstance *m_pInstance;
+    bool m_bIsRegularMode :1;
+    bool m_bSaidEmote :1;
+    bool m_bStarted :1;
     uint32 m_uiPassHitCount;
     uint32 m_uiTotalHitCount;
     uint32 m_uiWaypointId;
+    SummonManager SummonMgr;
+    EventManager Events;
+    ObjectGuid m_GraufGuid;
 
-    bool m_bIsRegularMode;
-    bool m_bSaidEmote;
-    bool m_bStarted;
+    npc_graufAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        SummonMgr(pCreature)
+    {
+        Reset();
+    }
 
     // TODO: core support for out of LoS casting... this spell doesnt hit if out of LoS + visual not showing up
-    void SpellHit(Unit* pDoneBy, const SpellEntry* pSpell)
+    void SpellHit(Unit* pDoneBy, SpellEntry const* pSpell)
     {
         if (pSpell->Id == SPELL_LAUNCH_HARPOON && Events.GetPhase() != PHASE_LANDED)
         {
@@ -246,7 +246,7 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
             // TODO : this should be handled on spellhit
             m_uiPassHitCount++;
             m_uiTotalHitCount++;
-            if (m_uiTotalHitCount >= 3 )
+            if (m_uiTotalHitCount >= 3)
             {
                 Events.SetPhase(PHASE_LANDED);
                 if (m_uiPassHitCount >= 3)
@@ -258,14 +258,16 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                 Events.ScheduleEvent(EVENT_DESPAWN_2, 2*IN_MILLISECONDS, 0, 0, 0, PMASK_LANDED);
             }
         }
-        else // we just work like an "echo"
+        else if (pSender->GetTypeId() == TYPEID_UNIT)   // we just work like an "echo"
+        {
             if (pSender->GetEntry() == NPC_SKADI)
-                SendScriptMessageTo((Creature*)pSender, m_creature, data1, data2);
-
+                SendScriptMessageTo(static_cast<Creature*>(pSender), m_creature, data1, data2);
+        }
     }
+
     void PassengerBoarded(Unit* pWho, int8 seat, bool apply)
     {
-        if (pWho->GetEntry() == NPC_SKADI && apply) // skadi mounts
+        if (apply && pWho->GetEntry() == NPC_SKADI) // skadi mounts
         {
             m_bStarted = true;
             Events.SetPhase(PHASE_MOUNTED);
@@ -282,9 +284,10 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                 m_pInstance->SetData(DATA_ACHIEVEMENT_SKADI_MY_GIRL, 0);
         }
     }
+
     void SpawnTrigger() // this summons the "frost breath"
     {
-        uint8 iStart = 0, iEnd = 0;
+        uint32 iStart = 0, iEnd = 0;
         switch (urand(0,1)) // left or right
         {
             case 0:
@@ -298,7 +301,7 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
             default:
                 break;
         }
-        for (uint32 i = iStart; i < iEnd; ++i)
+        for (uint32 i = iStart; i <= iEnd; ++i)
             SummonMgr.SummonCreature(NPC_TRIGGER, Location[i][0], Location[i][1], Location[i][2], 0, TEMPSUMMON_TIMED_DESPAWN, 10*IN_MILLISECONDS);
     }
 
@@ -323,9 +326,7 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                 }
             }
             else
-            {
                 m_bSaidEmote = false;
-            }
         }
 
         Events.Update(uiDiff);
@@ -343,15 +344,14 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                         bool wipe = true;
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            if (i->getSource()->isGameMaster())
+                            Unit *pPlayer = i->getSource();
+                            if (!pPlayer || !pPlayer->isTargetableForAttack())
                                 continue;
-                            if (Unit* pPlayer = i->getSource())
-                                if (pPlayer->isAlive())
-                                    if (pPlayer->IsWithinDist2d(397.017f, -511.496f, 150.0f))
-                                    {
-                                        wipe = false;
-                                        break;
-                                    }
+                            if (pPlayer->isAlive() && pPlayer->IsWithinDist2d(397.017f, -511.496f, 150.0f))
+                            {
+                                wipe = false;
+                                break;
+                            }
                         }
                         if (wipe)
                         {
@@ -362,48 +362,47 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                             EnterEvadeMode();
                         }
                     }
+                    break;
                 }
-                break;
                 case EVENT_DESPAWN:
                     if (m_creature->GetVehicleKit())
                         if (Unit* pSkadi = m_creature->GetVehicleKit()->GetPassenger(0))
-                            if (pSkadi)
-                                SendScriptMessageTo((Creature*)pSkadi, m_creature, MESSAGE_PHASE_2, 0);
+                            SendScriptMessageTo((Creature*)pSkadi, m_creature, MESSAGE_PHASE_2, 0);
                     m_creature->RemoveSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_FLYDEATH);
                     break;
                 case EVENT_DESPAWN_2:
-                    m_creature->DealDamage(m_creature,m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     break;
                 case EVENT_MOVE:
+                {
+                    uint32 m_uiMovementTimer;
+                    switch (m_uiWaypointId)
                     {
-                        uint32 m_uiMovementTimer;
-                        switch(m_uiWaypointId)
-                        {
-                            case 0:
-                                m_creature->MonsterMoveWithSpeed(Location[1][0], Location[1][1], Location[1][2], 5*IN_MILLISECONDS);
-                                m_uiMovementTimer = 5000;
-                                break;
-                            case 1:
-                                 m_creature->MonsterMoveWithSpeed(Location[2][0], Location[2][1], Location[2][2], 2*IN_MILLISECONDS);
-                                m_uiMovementTimer = 2000;
-                                break;
-                            case 2:
-                                m_creature->MonsterMoveWithSpeed(Location[3][0], Location[3][1], Location[3][2], 5*IN_MILLISECONDS);
-                                m_uiMovementTimer = 5000;
-                                break;
-                            case 3:
-                                m_creature->MonsterMoveWithSpeed(Location[4][0], Location[4][1], Location[4][2], 5*IN_MILLISECONDS);
-                                m_uiMovementTimer = 5000;
-                                break;
-                            case 4:
-                                m_creature->MonsterMoveWithSpeed(Location[5][0], Location[5][1], Location[5][2], 5*IN_MILLISECONDS);
-                                m_uiMovementTimer = 5000;
-                                break;
-                            case 5:
-                                m_creature->MonsterMoveWithSpeed(Location[69][0], Location[69][1], Location[69][2], 2500);
-                                if (Unit* pSkadi = m_creature->GetVehicleKit()->GetPassenger(0))
-                                switch(uint32 i = urand(0,2))
+                        case 0:
+                            m_creature->MonsterMoveWithSpeed(Location[1][0], Location[1][1], Location[1][2], 5*IN_MILLISECONDS);
+                            m_uiMovementTimer = 5000;
+                            break;
+                        case 1:
+                            m_creature->MonsterMoveWithSpeed(Location[2][0], Location[2][1], Location[2][2], 2*IN_MILLISECONDS);
+                            m_uiMovementTimer = 2000;
+                            break;
+                        case 2:
+                            m_creature->MonsterMoveWithSpeed(Location[3][0], Location[3][1], Location[3][2], 5*IN_MILLISECONDS);
+                            m_uiMovementTimer = 5000;
+                            break;
+                        case 3:
+                            m_creature->MonsterMoveWithSpeed(Location[4][0], Location[4][1], Location[4][2], 5*IN_MILLISECONDS);
+                            m_uiMovementTimer = 5000;
+                            break;
+                        case 4:
+                            m_creature->MonsterMoveWithSpeed(Location[5][0], Location[5][1], Location[5][2], 5*IN_MILLISECONDS);
+                            m_uiMovementTimer = 5000;
+                            break;
+                        case 5:
+                            m_creature->MonsterMoveWithSpeed(Location[69][0], Location[69][1], Location[69][2], 2500);
+                            if (Unit* pSkadi = m_creature->GetVehicleKit()->GetPassenger(0))
+                                switch (urand(0, 2))
                                 {
                                     case 0:
                                         DoScriptText(SAY_DRAKEBREATH_1, pSkadi);
@@ -415,35 +414,33 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                                         DoScriptText(SAY_DRAKEBREATH_3, pSkadi);
                                         break;
                                 }
-                                m_creature->MonsterTextEmote(EMOTE_BREATH, m_creature, true);
-                                m_uiMovementTimer = 2500;
-                                break;
-                            case 6:
-                                m_creature->MonsterMoveWithSpeed(Location[70][0], Location[70][1], Location[70][2], 2*IN_MILLISECONDS);
-                                m_uiMovementTimer = 2000;
-                                SpawnTrigger();
-                                break;
-                            case 7:
-                                m_creature->MonsterMoveWithSpeed(Location[71][0], Location[71][1], Location[71][2], 3*IN_MILLISECONDS);
-                                m_uiMovementTimer = 3000;
-                                break;
-                            case 8:
-                                m_creature->MonsterMoveWithSpeed(Location[71][0], Location[71][1], Location[71][2], 10*IN_MILLISECONDS);
-                                m_uiMovementTimer = 10*IN_MILLISECONDS;
-                                break;
-                            case 9:
-                                m_creature->MonsterMoveWithSpeed(Location[4][0], Location[4][1], Location[4][2], 5*IN_MILLISECONDS);
-                                m_uiWaypointId = 3;
-                                m_uiMovementTimer = 5000;
-                                break;
-                        }
-                        m_uiWaypointId++;
-                        if (m_uiMovementTimer)
-                        {
-                            Events.ScheduleEvent(EVENT_MOVE, m_uiMovementTimer, 0, 0, 0, PMASK_MOUNTED);
-                        }
-                    break;
+                            m_creature->MonsterTextEmote(EMOTE_BREATH, m_creature, true);
+                            m_uiMovementTimer = 2500;
+                            break;
+                        case 6:
+                            m_creature->MonsterMoveWithSpeed(Location[70][0], Location[70][1], Location[70][2], 2*IN_MILLISECONDS);
+                            m_uiMovementTimer = 2000;
+                            SpawnTrigger();
+                            break;
+                        case 7:
+                            m_creature->MonsterMoveWithSpeed(Location[71][0], Location[71][1], Location[71][2], 3*IN_MILLISECONDS);
+                            m_uiMovementTimer = 3000;
+                            break;
+                        case 8:
+                            m_creature->MonsterMoveWithSpeed(Location[71][0], Location[71][1], Location[71][2], 10*IN_MILLISECONDS);
+                            m_uiMovementTimer = 10*IN_MILLISECONDS;
+                            break;
+                        case 9:
+                            m_creature->MonsterMoveWithSpeed(Location[4][0], Location[4][1], Location[4][2], 5*IN_MILLISECONDS);
+                            m_uiWaypointId = 3;
+                            m_uiMovementTimer = 5000;
+                            break;
                     }
+                    m_uiWaypointId++;
+                    if (m_uiMovementTimer)
+                        Events.ScheduleEvent(EVENT_MOVE, m_uiMovementTimer, 0, 0, 0, PMASK_MOUNTED);
+                    break;
+                }
                 default:
                     break;
         }
@@ -456,24 +453,27 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
 
 struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInterface
 {
-    boss_skadiAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode :1;
+    bool m_bStarted :1;
     EventManager Events;
     SummonManager SummonMgr;
     ObjectGuid m_GraufGuid;
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-    bool m_bStarted;
+
+    boss_skadiAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        SummonMgr(pCreature)
+    {
+        Reset();
+    }
 
     void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
     {
         if (pSender->GetEntry() == NPC_GRAUF)
             m_GraufGuid = pSender->GetObjectGuid();
+
         if (data1 == MESSAGE_PHASE_2)
         {
             Events.SetPhase(PHASE_LANDED);
@@ -484,7 +484,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
             Events.ScheduleEvent(EVENT_CRUSH, 8*IN_MILLISECONDS, 8*IN_MILLISECONDS);
             Events.ScheduleEvent(EVENT_POISONED_SPEAR, 7*IN_MILLISECONDS, 11*IN_MILLISECONDS);
             Events.ScheduleEvent(EVENT_WHIRLWIND, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS);
-            m_creature->AI()->AttackStart(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0));
+            AttackStart(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0));
             m_creature->SetInCombatWithZone();
         }
     }
@@ -519,7 +519,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (pWho && pWho->GetTypeId() && !m_bStarted)
+        if (!m_bStarted && pWho && pWho->GetTypeId() == TYPEID_PLAYER)
         {
             m_bStarted = true;
 
@@ -542,7 +542,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
 
     void KilledUnit(Unit* pVictim)
     {
-        switch(urand(0, 2))
+        switch (urand(0, 2))
         {
             case 0: DoScriptText(SAY_KILL_1, m_creature); break;
             case 1: DoScriptText(SAY_KILL_2, m_creature); break;
@@ -554,7 +554,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
     {
         for (uint32 i = (m_bIsRegularMode? 5 : 6); i; --i)
         {
-            switch (urand(0,2))
+            switch (urand(0, 2))
             {
                 case 0: SummonMgr.SummonCreature(NPC_YMIRJAR_WARRIOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000); break;
                 case 1: SummonMgr.SummonCreature(NPC_YMIRJAR_WITCH_DOCTOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000); break;
@@ -562,6 +562,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
             }
         }
     }
+
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
@@ -588,15 +589,14 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
                         bool wipe = true;
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            if (i->getSource()->isGameMaster())
+                            Unit *pPlayer = i->getSource();
+                            if (!pPlayer || !pPlayer->isTargetableForAttack())
                                 continue;
-                            if (Unit* pPlayer = i->getSource())
-                                if (pPlayer->isAlive())
-                                    if (pPlayer->IsWithinDist2d(397.017f, -511.496f, 150.0f))
-                                    {
-                                        wipe = false;
-                                        break;
-                                    }
+                            if (pPlayer->isAlive() && pPlayer->IsWithinDist2d(397.017f, -511.496f, 150.0f))
+                            {
+                                wipe = false;
+                                break;
+                            }
                         }
                         if (wipe)
                         {
@@ -604,15 +604,13 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
                             EnterEvadeMode();
                         }
                     }
+                    break;
                 }
-                break;
                 case EVENT_MOUNT_GRAUF:
                     if (!m_GraufGuid.IsEmpty())
                         if (Unit* pGrauf = m_creature->GetMap()->GetUnit(m_GraufGuid))
-                        {
                             m_creature->EnterVehicle(pGrauf->GetVehicleKit(), 0);
-                        }
-                break;
+                    break;
                 case EVENT_SUMMON_WAVE:
                     SummonNextMobWave();
                     break;
@@ -647,7 +645,6 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
     }
 };
 
-
 bool GossipHello_go_harpoon_launcher(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData());
@@ -667,18 +664,6 @@ bool GossipHello_go_harpoon_launcher(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
-
-
-CreatureAI* GetAI_boss_skadi(Creature* pCreature)
-{
-    return new boss_skadiAI(pCreature);
-}
-
-CreatureAI* GetAI_npc_grauf(Creature* pCreature)
-{
-    return new npc_graufAI(pCreature);
-}
-
 bool AreaTrigger_at_skadi(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (ScriptedInstance* pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData()))
@@ -688,6 +673,16 @@ bool AreaTrigger_at_skadi(Player* pPlayer, AreaTriggerEntry const* pAt)
     }
 
     return false;
+}
+
+CreatureAI* GetAI_boss_skadi(Creature* pCreature)
+{
+    return new boss_skadiAI(pCreature);
+}
+
+CreatureAI* GetAI_npc_grauf(Creature* pCreature)
+{
+    return new npc_graufAI(pCreature);
 }
 
 void AddSC_boss_skadi()

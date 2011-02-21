@@ -105,23 +105,24 @@ enum Events
 
 struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 {
-    boss_svalaAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        m_bIsIntroDone = false;
-        Reset();
-    }
-
     ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    bool m_bIsRegularMode :1;
+    bool m_bIsIntroDone :1;
     EventManager Events;
     SummonManager SummonMgr;
     ObjectGuid p_Sacrifice;
-
-    bool m_bIsIntroDone;
     uint32 m_uiIntroTimer;
     uint32 m_uiIntroCount;
+
+    boss_svalaAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        m_bIsIntroDone(false),
+        SummonMgr(pCreature)
+    {
+        Reset();
+    }
 
     void Reset()
     {
@@ -153,24 +154,20 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* pWho)
     {
-        if (!m_bIsIntroDone)
+        if (!m_bIsIntroDone && m_pInstance && m_pInstance->GetData(TYPE_SVALA) == IN_PROGRESS)
         {
-            if (m_pInstance && m_pInstance->GetData(TYPE_SVALA) == IN_PROGRESS)
-            {
-                m_pInstance->SetData(TYPE_SVALA, SPECIAL);
+            m_pInstance->SetData(TYPE_SVALA, SPECIAL);
 
-                float fX, fY, fZ;
-                m_creature->GetClosePoint(fX, fY, fZ, m_creature->GetObjectBoundingRadius(), 16.0f, 0.0f);
+            float fX, fY, fZ;
+            m_creature->GetClosePoint(fX, fY, fZ, m_creature->GetObjectBoundingRadius(), 16.0f, 0.0f);
 
-                // we assume m_creature is spawned in proper location
-                SummonMgr.SummonCreature(NPC_ARTHAS_IMAGE, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
-            }
+            // we assume m_creature is spawned in proper location
+            SummonMgr.SummonCreature(NPC_ARTHAS_IMAGE, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
             return;
         }
 
         ScriptedAI::MoveInLineOfSight(pWho);
     }
-
 
     void Aggro(Unit* pWho)
     {
@@ -202,7 +199,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
+    void SpellHit(Unit* pCaster, SpellEntry const* pSpell)
     {
         if (pSpell->Id == SPELL_TRANSFORMING)
         {
@@ -215,7 +212,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 
     void KilledUnit(Unit* pVictim)
     {
-        switch(urand(0, 2))
+        switch (urand(0, 2))
         {
             case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
             case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
@@ -358,6 +355,7 @@ struct MANGOS_DLL_DECL npc_scourge_hulkAI : public ScriptedAI
 {
     ScriptedInstance* m_pInstance;
     EventManager Events;
+
     npc_scourge_hulkAI(Creature* pCreature):
         ScriptedAI(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
@@ -375,7 +373,7 @@ struct MANGOS_DLL_DECL npc_scourge_hulkAI : public ScriptedAI
         Events.ScheduleEventInRange(EVENT_DISEASE, TIMER_DISEASE, TIMER_DISEASE);
     }
 
-    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
         if (uiDamage > m_creature->GetHealth() && pDoneBy->GetEntry() == NPC_SVALA_SORROW)
             m_pInstance->SetData(DATA_ACHIEVEMENT_SVALA, 1);
@@ -396,36 +394,38 @@ struct MANGOS_DLL_DECL npc_scourge_hulkAI : public ScriptedAI
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-            case EVENT_KNOCK:
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_MIGHTY_BLOW, false);
-                break;
-            case EVENT_DISEASE:
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_VOLATILE_INFECTION, false);
-                break;
-            default:
-                break;
+                case EVENT_KNOCK:
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_MIGHTY_BLOW, false);
+                    break;
+                case EVENT_DISEASE:
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_VOLATILE_INFECTION, false);
+                    break;
+                default:
+                    break;
             }
+
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_boss_svala(Creature* pCreature)
-{
-    return new boss_svalaAI(pCreature);
-}
-CreatureAI* GetAI_npc_scourge_hulk(Creature* pCreature)
-{
-    return new npc_scourge_hulkAI(pCreature);
-}
-
 bool AreaTrigger_at_svala_intro(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
-    if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
+    if (ScriptedInstance* pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData()))
     {
         if (pInstance->GetData(TYPE_SVALA) == NOT_STARTED)
             pInstance->SetData(TYPE_SVALA, IN_PROGRESS);
     }
     return false;
+}
+
+CreatureAI* GetAI_boss_svala(Creature* pCreature)
+{
+    return new boss_svalaAI(pCreature);
+}
+
+CreatureAI* GetAI_npc_scourge_hulk(Creature* pCreature)
+{
+    return new npc_scourge_hulkAI(pCreature);
 }
 
 void AddSC_boss_svala()

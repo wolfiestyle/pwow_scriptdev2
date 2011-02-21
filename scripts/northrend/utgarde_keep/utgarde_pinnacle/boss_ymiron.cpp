@@ -35,7 +35,7 @@ enum Says
     SAY_SLAY_2                  = -1575037,
     SAY_SLAY_3                  = -1575038,
     SAY_SLAY_4                  = -1575039,
-    SAY_DEATH                   = -1575040
+    SAY_DEATH                   = -1575040,
 };
 
 enum Spells
@@ -70,16 +70,16 @@ enum Spells
 
 enum NPCs
 {
-    NPC_BJORN                          = 27303,
-    NPC_BJORN_VISUAL                   = 27304,
-    NPC_HALDOR                         = 27307,
-    NPC_HALDOR_VISUAL                  = 27310,
-    NPC_RANULF                         = 27308,
-    NPC_RANULF_VISUAL                  = 27311,
-    NPC_TORGYN                         = 27309,
-    NPC_TORGYN_VISUAL                  = 27312,
-    NPC_SPIRIT_FOUNT                   = 27339,
-    NPC_AVENGING_SPIRIT                = 27386,
+    NPC_BJORN                   = 27303,
+    NPC_BJORN_VISUAL            = 27304,
+    NPC_HALDOR                  = 27307,
+    NPC_HALDOR_VISUAL           = 27310,
+    NPC_RANULF                  = 27308,
+    NPC_RANULF_VISUAL           = 27311,
+    NPC_TORGYN                  = 27309,
+    NPC_TORGYN_VISUAL           = 27312,
+    NPC_SPIRIT_FOUNT            = 27339,
+    NPC_AVENGING_SPIRIT         = 27386,
 };
 
 enum Events
@@ -103,18 +103,21 @@ enum Categories
 
 struct ActiveBoatStruct
 {
-    uint32 npc, spell;
-    int32 say;
-    uint32 event_id, timer_1, timer_2; // Event to be scheduled after enabling the new "ability"
-    float MoveX,MoveY,MoveZ,SpawnX,SpawnY,SpawnZ,SpawnO;
+    NPCs npc;
+    Spells spell;
+    Says say;
+    Events event_id;
+    uint32 timer_1, timer_2;    // Event to be scheduled after enabling the new "ability"
+    float MoveX, MoveY, MoveZ;
+    float SpawnX, SpawnY, SpawnZ, SpawnO;
 };
 
-static ActiveBoatStruct ActiveBoat[4] =
+static ActiveBoatStruct const ActiveBoat[4] =
 {
-    {NPC_BJORN_VISUAL,  SPELL_KING_SPIRIT_01, SAY_SUMMON_BJORN,  EVENT_SPIRIT_FOUNT,   5*IN_MILLISECONDS, 0,381.546f, -314.362f, 104.756f, 370.841f, -314.426f, 107.995f, 6.232f}, // confirmed
-    {NPC_HALDOR_VISUAL, SPELL_KING_SPIRIT_02, SAY_SUMMON_HALDOR, EVENT_SPIRIT_STRIKE,  5*IN_MILLISECONDS, 5*IN_MILLISECONDS, 404.310f, -314.761f, 104.756f, 413.992f, -314.703f, 107.995f, 3.157f}, // confirmed
-    {NPC_RANULF_VISUAL, SPELL_KING_SPIRIT_03, SAY_SUMMON_RANULF, EVENT_SPIRIT_BURST,   5*IN_MILLISECONDS, 10*IN_MILLISECONDS,  404.379f, -335.335f, 104.756f, 413.594f, -335.408f, 107.995f, 3.157f},
-    {NPC_TORGYN_VISUAL, SPELL_KING_SPIRIT_04, SAY_SUMMON_TORGYN, EVENT_AVENGING_SPIRIT,5*IN_MILLISECONDS, 0,  380.813f, -335.069f, 104.756f, 369.994f, -334.771f, 107.995f, 6.232f},
+    {NPC_BJORN_VISUAL,  SPELL_KING_SPIRIT_01, SAY_SUMMON_BJORN,  EVENT_SPIRIT_FOUNT,    5*IN_MILLISECONDS, 0,                   381.546f, -314.362f, 104.756f, 370.841f, -314.426f, 107.995f, 6.232f}, // confirmed
+    {NPC_HALDOR_VISUAL, SPELL_KING_SPIRIT_02, SAY_SUMMON_HALDOR, EVENT_SPIRIT_STRIKE,   5*IN_MILLISECONDS, 5*IN_MILLISECONDS,   404.310f, -314.761f, 104.756f, 413.992f, -314.703f, 107.995f, 3.157f}, // confirmed
+    {NPC_RANULF_VISUAL, SPELL_KING_SPIRIT_03, SAY_SUMMON_RANULF, EVENT_SPIRIT_BURST,    5*IN_MILLISECONDS, 10*IN_MILLISECONDS,  404.379f, -335.335f, 104.756f, 413.594f, -335.408f, 107.995f, 3.157f},
+    {NPC_TORGYN_VISUAL, SPELL_KING_SPIRIT_04, SAY_SUMMON_TORGYN, EVENT_AVENGING_SPIRIT, 5*IN_MILLISECONDS, 0,                   380.813f, -335.069f, 104.756f, 369.994f, -334.771f, 107.995f, 6.232f},
 };
 
 /*######
@@ -123,27 +126,29 @@ static ActiveBoatStruct ActiveBoat[4] =
 
 struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
 {
-    boss_ymironAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
+    ScriptedInstance *m_pInstance;
+    bool m_bIsRegularMode;
     EventManager Events;
     SummonManager SummonMgr;
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
     std::bitset<4> m_UsedSpirits;
     uint32 m_uiPhase;
     uint32 m_uiCurrentBoat;
     bool m_bIsInTransitionPhase;
 
+    boss_ymironAI(Creature* pCreature):
+        ScriptedAI(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData())),
+        m_bIsRegularMode(pCreature->GetMap()->IsRegularDifficulty()),
+        SummonMgr(pCreature)
+    {
+        Reset();
+    }
+
     void Reset()
     {
         m_uiPhase = 1;
-        m_bIsInTransitionPhase = false;
         m_uiCurrentBoat = 0;
+        m_bIsInTransitionPhase = false;
         SummonMgr.UnsummonAll();
 
         m_UsedSpirits.reset();
@@ -168,7 +173,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
 
     void KilledUnit(Unit* pVictim)
     {
-        switch(urand(0, 3))
+        switch (urand(0, 3))
         {
             case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
             case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
@@ -181,11 +186,12 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
     {
         if (pSpell->Id == 48295 || pSpell->Id == 59302) // bane triggered (damage part)
         {
-            // if damage part of bane hits anything = achievement  failed
+            // if damage part of bane hits anything = achievement failed
             if (m_pInstance && m_pInstance->GetData(DATA_ACHIEVEMENT_KINGS_BANE) == 1)
                 m_pInstance->SetData(DATA_ACHIEVEMENT_KINGS_BANE, 0);
         }
     }
+
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
@@ -197,6 +203,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
     void JustSummoned(Creature* pSummon)
     {
         SummonMgr.AddSummonToList(pSummon->GetObjectGuid());
+
         if (pSummon->GetEntry() == NPC_SPIRIT_FOUNT)
         {
             pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -211,20 +218,19 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
-        if (m_creature->GetHealthPercent() <= (100.0f - (m_bIsRegularMode ? 33.0f : 20.0f)*m_uiPhase) && !m_bIsInTransitionPhase)
+
+        if (!m_bIsInTransitionPhase && m_creature->GetHealthPercent() <= (100.0f - (m_bIsRegularMode ? 33.0f : 20.0f) * m_uiPhase))
         {
             m_bIsInTransitionPhase = true;
             m_uiPhase++;
             m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature, SPELL_SCREAMS_OF_THE_DEAD, false);
-            if (m_creature->getVictim())
-                DoStartNoMovement(m_creature->getVictim());
-            uint32 index = 0;
+            DoStartNoMovement(m_creature->getVictim());
 
             for (uint32 i = 0; i < 4; i++)
             {
                 // on transition start, burn the previous boat
-                if (m_UsedSpirits[i] == true)
+                if (m_UsedSpirits[i])
                 {
                     if (Unit* pSumm = SummonMgr.GetFirstFoundSummonWithId(ActiveBoat[i].npc))
                     {
@@ -236,12 +242,15 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
                     }
                 }
             }
+
+            uint32 index;
             do
             {
                 index = urand(0,3);
             } while (m_UsedSpirits[index]);
             m_uiCurrentBoat = index;
             m_UsedSpirits[m_uiCurrentBoat] = true;
+
             Events.CancelEventsWithCategory(CATEGORY_GHOST); // Every time he uses a boat, he loses the abilities from previous boat
             Events.DelayEvents(8* IN_MILLISECONDS);
             Events.ScheduleEvent(EVENT_ACTIVATE_BOAT_1, 1*IN_MILLISECONDS);
@@ -252,39 +261,34 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
             switch (uiEventId)
             {
                 case EVENT_ACTIVATE_BOAT_1:
+                {
+                    m_creature->MonsterMoveWithSpeed(ActiveBoat[m_uiCurrentBoat].MoveX, ActiveBoat[m_uiCurrentBoat].MoveY, ActiveBoat[m_uiCurrentBoat].MoveZ, 2*IN_MILLISECONDS);
+                    DoScriptText(ActiveBoat[m_uiCurrentBoat].say, m_creature);
+                    Unit* pSummon = SummonMgr.SummonCreature(ActiveBoat[m_uiCurrentBoat].npc, 
+                        ActiveBoat[m_uiCurrentBoat].SpawnX, ActiveBoat[m_uiCurrentBoat].SpawnY,
+                        ActiveBoat[m_uiCurrentBoat].SpawnZ, ActiveBoat[m_uiCurrentBoat].SpawnO, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    if (pSummon)
                     {
-                        m_creature->MonsterMoveWithSpeed( ActiveBoat[m_uiCurrentBoat].MoveX, ActiveBoat[m_uiCurrentBoat].MoveY, ActiveBoat[m_uiCurrentBoat].MoveZ, 2*IN_MILLISECONDS);
-                        DoScriptText(ActiveBoat[m_uiCurrentBoat].say, m_creature);
-                        Unit* pSummon = SummonMgr.SummonCreature(ActiveBoat[m_uiCurrentBoat].npc, 
-                            ActiveBoat[m_uiCurrentBoat].SpawnX, ActiveBoat[m_uiCurrentBoat].SpawnY,
-                            ActiveBoat[m_uiCurrentBoat].SpawnZ, ActiveBoat[m_uiCurrentBoat].SpawnO, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                        if (pSummon)
-                        {
-                            pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                            pSummon->CastSpell(pSummon, ActiveBoat[m_uiCurrentBoat].spell, true);
-                        }
-                        Events.ScheduleEvent(EVENT_ACTIVATE_BOAT_2, 3*IN_MILLISECONDS);
+                        pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        pSummon->CastSpell(pSummon, ActiveBoat[m_uiCurrentBoat].spell, true);
                     }
+                    Events.ScheduleEvent(EVENT_ACTIVATE_BOAT_2, 3*IN_MILLISECONDS);
                     break;
+                }
                 case EVENT_ACTIVATE_BOAT_2:
+                    if (Unit* pSumm = SummonMgr.GetFirstFoundSummonWithId(ActiveBoat[m_uiCurrentBoat].npc))
                     {
-                        if (Unit* pSumm = SummonMgr.GetFirstFoundSummonWithId(ActiveBoat[m_uiCurrentBoat].npc))
-                        {
-                            pSumm->CastSpell(m_creature, SPELL_CHANNEL_SPIRIT_KING, true);
-                            m_creature->CastSpell(pSumm, SPELL_CHANNEL_KING_SPIRIT, true);
-                        }
-                        Events.ScheduleEvent(EVENT_ACTIVATE_BOAT_3, 5*IN_MILLISECONDS);
+                        pSumm->CastSpell(m_creature, SPELL_CHANNEL_SPIRIT_KING, true);
+                        m_creature->CastSpell(pSumm, SPELL_CHANNEL_KING_SPIRIT, true);
                     }
+                    Events.ScheduleEvent(EVENT_ACTIVATE_BOAT_3, 5*IN_MILLISECONDS);
                     break;
                 case EVENT_ACTIVATE_BOAT_3:
-                    {
-                        m_creature->InterruptNonMeleeSpells(true);
-                        m_bIsInTransitionPhase = false;
-                        if (m_creature->getVictim())
-                            DoStartMovement(m_creature->getVictim());
-                        Events.ScheduleEvent(ActiveBoat[m_uiCurrentBoat].event_id, ActiveBoat[m_uiCurrentBoat].timer_1, ActiveBoat[m_uiCurrentBoat].timer_2, 0, CATEGORY_GHOST);
-                        Events.RescheduleEvent(EVENT_BANE, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS); // Bane is cast 20 seconds after boat phase
-                    }
+                    m_creature->InterruptNonMeleeSpells(true);
+                    m_bIsInTransitionPhase = false;
+                    DoStartMovement(m_creature->getVictim());
+                    Events.ScheduleEvent(ActiveBoat[m_uiCurrentBoat].event_id, ActiveBoat[m_uiCurrentBoat].timer_1, ActiveBoat[m_uiCurrentBoat].timer_2, 0, CATEGORY_GHOST);
+                    Events.RescheduleEvent(EVENT_BANE, 20*IN_MILLISECONDS, 20*IN_MILLISECONDS); // Bane is cast 20 seconds after boat phase
                     break;
                 // Normal Abilities
                 case EVENT_BANE:
@@ -313,7 +317,8 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
                 default:
                     break;
             }
-        if (!m_bIsInTransitionPhase )
+
+        if (!m_bIsInTransitionPhase)
             DoMeleeAttackIfReady();
     }
 };
