@@ -258,8 +258,9 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
                 Events.ScheduleEvent(EVENT_DESPAWN_2, 2*IN_MILLISECONDS, 0, 0, 0, PMASK_LANDED);
             }
         }
-        // we just work like an "echo"
-        SendScriptMessageTo((Creature*)pSender, m_creature, data1, data2);
+        else // we just work like an "echo"
+            SendScriptMessageTo((Creature*)pSender, m_creature, data1, data2);
+
     }
     void PassengerBoarded(Unit* pWho, int8 seat, bool apply)
     {
@@ -651,11 +652,11 @@ bool GossipHello_go_harpoon_launcher(Player* pPlayer, GameObject* pGo)
     ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pPlayer->GetInstanceData());
     if (!m_pInstance)
         return false;
-    if (Creature* pGrauf = pGo->GetMap()->GetCreature(m_pInstance->GetData64(DATA_GRAUF)))
+    if (Creature* pGrauf = pPlayer->GetMap()->GetCreature(m_pInstance->GetData64(DATA_GRAUF)))
     {
         if (pGrauf->GetPositionX() > 500.0f && pGrauf->GetPositionY() < -490.0f)
         {
-            npc_graufAI* graufAI = dynamic_cast<npc_graufAI*>(pGrauf->AI());
+            npc_graufAI* graufAI = (npc_graufAI*)(pGrauf->AI());
             if (graufAI)
             {
                 graufAI->ScriptMessage(pPlayer, 1, 0);
