@@ -259,7 +259,8 @@ struct MANGOS_DLL_DECL npc_graufAI : public ScriptedAI, public ScriptMessageInte
             }
         }
         else // we just work like an "echo"
-            SendScriptMessageTo((Creature*)pSender, m_creature, data1, data2);
+            if (pSender->GetEntry() == NPC_SKADI)
+                SendScriptMessageTo((Creature*)pSender, m_creature, data1, data2);
 
     }
     void PassengerBoarded(Unit* pWho, int8 seat, bool apply)
@@ -656,11 +657,9 @@ bool GossipHello_go_harpoon_launcher(Player* pPlayer, GameObject* pGo)
     {
         if (pGrauf->GetPositionX() > 500.0f && pGrauf->GetPositionY() < -490.0f)
         {
-            npc_graufAI* graufAI = (npc_graufAI*)(pGrauf->AI());
+            npc_graufAI* graufAI = dynamic_cast<npc_graufAI*>(pGrauf->AI());
             if (graufAI)
-            {
                 graufAI->ScriptMessage(pPlayer, 1, 0);
-            }
         }
         // TODO - spell should ignore LoS and visual doesnt work unless target is close (in LoS)
         return false;
