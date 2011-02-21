@@ -115,6 +115,20 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
         RemoveImpale();
     }
 
+    void PassengerBoarded(Unit* pSummoner, int8 seat, bool apply)
+    {
+        if (!pSummoner)
+            return;
+
+        if (apply)
+        {
+            m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+1.0f);
+            if (m_Target.IsEmpty())
+                m_Target = pSummoner->GetObjectGuid();
+            m_creature->CastSpell(pSummoner, SPELL_IMPALED, true);
+        }
+    }
+
     void UpdateAI(uint32 const uiDiff)
     {
         if (m_pInstance && m_pInstance->GetData(TYPE_MARROWGAR) != IN_PROGRESS) // make them despawn after encounter is over or in fail-case
@@ -124,15 +138,6 @@ struct MANGOS_DLL_DECL mob_bone_spikeAI: public Scripted_NoMovementAI
         }
 
         m_uiBonedTimer += uiDiff;
-
-        if (VehicleKit *vehicle = m_creature->GetVehicleKit())
-            if (Unit *summoner = vehicle->GetPassenger(0))  // our passenger will get "impaled"
-            {
-                if (!summoner->HasAura(SPELL_IMPALED))
-                    m_creature->CastSpell(summoner, SPELL_IMPALED, true);
-                if (m_Target.IsEmpty())
-                    m_Target = summoner->GetObjectGuid();
-            }
 
         // if we had a passenger, but he died, we remove the "Impaled" aura (death persistant)
         if (!m_Target.IsEmpty())
