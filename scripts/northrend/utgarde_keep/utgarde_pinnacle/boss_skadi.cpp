@@ -556,9 +556,9 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI, public ScriptMessageInt
         {
             switch (urand(0,2))
             {
-                case 0: SummonMgr.SummonCreature(NPC_YMIRJAR_WARRIOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000); break;
-                case 1: SummonMgr.SummonCreature(NPC_YMIRJAR_WITCH_DOCTOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000); break;
-                case 2: SummonMgr.SummonCreature(NPC_YMIRJAR_HARPOONER, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000); break;
+                case 0: SummonMgr.SummonCreature(NPC_YMIRJAR_WARRIOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000); break;
+                case 1: SummonMgr.SummonCreature(NPC_YMIRJAR_WITCH_DOCTOR, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000); break;
+                case 2: SummonMgr.SummonCreature(NPC_YMIRJAR_HARPOONER, SpawnLoc[0]+rand()%5, SpawnLoc[1]+rand()%5, SpawnLoc[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000); break;
             }
         }
     }
