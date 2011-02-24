@@ -261,8 +261,7 @@ struct MANGOS_DLL_DECL npc_argent_valiantAI : public ScriptedAI, EventManager
         if (m_creature->GetEntry() == NPC_ARGENT_CHAMPION)
             if (Unit* realSlayer = pSlayer->GetCharmerOrOwnerOrSelf())
                 if (realSlayer->GetTypeId() == TYPEID_PLAYER)
-                    if (Player* pPlayer = ((Player*)pSlayer))
-                        pPlayer->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
+                    ((Player*))realSlayer)->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
     }
 
     void UpdateAI(const uint32 uiDiff)
