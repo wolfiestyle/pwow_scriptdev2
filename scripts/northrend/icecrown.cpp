@@ -259,11 +259,10 @@ struct MANGOS_DLL_DECL npc_argent_valiantAI : public ScriptedAI, EventManager
     void JustDied(Unit* pSlayer)
     {
         if (m_creature->GetEntry() == NPC_ARGENT_CHAMPION)
-        if (pSlayer->GetTypeId() == TYPEID_PLAYER)
-            if (Player* pPlayer = ((Player*)pSlayer))
-            {
-                pPlayer->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
-            }
+            if (Unit* realSlayer = pSlayer->GetCharmerOrOwnerOrSelf())
+                if (realSlayer->GetTypeId() == TYPEID_PLAYER)
+                    if (Player* pPlayer = ((Player*)pSlayer))
+                        pPlayer->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -340,7 +339,7 @@ bool GossipSelect_npc_argent_valiant(Player* pPlayer, Creature* pCreature, uint3
     {
         pPlayer->CLOSE_GOSSIP_MENU();
         pCreature->setFaction(FACTION_HOSTILE);                //Set our faction to hostile towards all
-        pCreature->AI()->AttackStart(pPlayer);
+        //pCreature->AI()->AttackStart(pPlayer);               // pPlayer may be unattackable (seat flags for horse mount make it that way)
     }
 
     return true;
