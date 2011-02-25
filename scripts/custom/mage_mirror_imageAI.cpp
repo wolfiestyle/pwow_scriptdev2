@@ -6,31 +6,29 @@ enum Spells
     SPELL_FROSTBOLT     = 59638,
 };
 
-struct MANGOS_DLL_DECL MirrorAI: public ScriptedAI
+struct MANGOS_DLL_DECL npc_mirror_imageAI: public ScriptedAI
 {
-    ObjectGuid m_PlayerGUID;
     uint32 m_FrostboltTimer;
     uint32 m_FireblastTimer;
 
-    MirrorAI(Creature* pCreature):
+    npc_mirror_imageAI(Creature* pCreature):
         ScriptedAI(pCreature)
     {
-        if (Player *pPlayer = GetPlayerAtMinimumRange(0.5f))    //FIXME: get owner player instead
-            m_PlayerGUID = pPlayer->GetObjectGuid();
         Reset();
     }
 
     void Reset()
     {
-        m_FrostboltTimer = urand(3000, 3500);
-        m_FireblastTimer = urand(6000, 6500);
+        m_FrostboltTimer = 0;
+        m_FireblastTimer = urand(3100, 3200);
     }
 
     void UpdateAI(uint32 const diff)
     {
-        if (!m_PlayerGUID.IsEmpty())
-            if (Unit *pPlayer = m_creature->GetMap()->GetUnit(m_PlayerGUID))
-                AttackStart(pPlayer->getAttackerForHelper());
+        if (Unit *owner = m_creature->GetOwner())
+            if (Unit *target = owner->getAttackerForHelper())
+                if (m_creature->Attack(target, false))
+                    Reset();
 
         if (!m_creature->getVictim())
             return;
@@ -38,7 +36,7 @@ struct MANGOS_DLL_DECL MirrorAI: public ScriptedAI
         if (m_FireblastTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FIREBLAST);
-            m_FireblastTimer = urand(6000, 6500);
+            m_FireblastTimer = urand(6100, 6200);
         }
         else
             m_FireblastTimer -= diff;
@@ -46,17 +44,16 @@ struct MANGOS_DLL_DECL MirrorAI: public ScriptedAI
         if (m_FrostboltTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FROSTBOLT);
-            m_FrostboltTimer = urand(3000, 3500);
+            m_FrostboltTimer = urand(3100, 3200);
         }
         else
             m_FrostboltTimer -= diff;
     }
-
 };
 
-CreatureAI* GetAI_mirror_image(Creature* pCreature)
+CreatureAI* GetAI_npc_mirror_image(Creature* pCreature)
 {
-    return new MirrorAI(pCreature);
+    return new npc_mirror_imageAI(pCreature);
 }
 
 void AddSC_Mirror_Image()
@@ -64,7 +61,7 @@ void AddSC_Mirror_Image()
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name = "mirror_imageAI";
-    newscript->GetAI = &GetAI_mirror_image;
+    newscript->Name = "npc_mirror_image";
+    newscript->GetAI = &GetAI_npc_mirror_image;
     newscript->RegisterSelf();
 }
