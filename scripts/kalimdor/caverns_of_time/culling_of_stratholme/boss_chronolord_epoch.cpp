@@ -71,7 +71,7 @@ void AddSC_boss_chronolord_epoch()
     Script* pNewScript;
 
     pNewScript = new Script;
-    pNewScript->Name = "boss_cronolord_epoch";
+    pNewScript->Name = "boss_chronolord_epoch";
     pNewScript->GetAI = &GetAI_boss_chronolord_epoch;
     pNewScript->RegisterSelf();
 }
