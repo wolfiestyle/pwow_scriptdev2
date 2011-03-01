@@ -3454,6 +3454,65 @@ CreatureAI* GetAI_npc_patchwerk(Creature *pCreature)
     return new npc_patchwerkAI(pCreature);
 }
 
+enum
+{
+    SPELL_VALKYR_REVIVE     = 51918,
+
+    EVENT_VALKYR_INIT = 1,
+    EVENT_VALKYR_RESS,
+    EVENT_VALKYR_DESPAWN,
+};
+
+struct MANGOS_DLL_DECL npc_valkyr_battle_maidenAI: public ScriptedAI
+{
+    EventManager Events;
+    Player *m_Target;
+
+    npc_valkyr_battle_maidenAI(Creature *pCreature):
+        ScriptedAI(pCreature),
+        m_Target(NULL)
+    {
+        Events.ScheduleEvent(EVENT_VALKYR_INIT, 0);
+        Events.ScheduleEvent(EVENT_VALKYR_RESS, 2*IN_MILLISECONDS);
+    }
+
+    void Reset() {}
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        Events.Update(uiDiff);
+        while (uint32 eventId = Events.ExecuteEvent())
+            switch (eventId)
+            {
+                case EVENT_VALKYR_INIT:
+                {
+                    ObjectGuid player_guid = m_creature->GetCreatorGuid();
+                    if (!player_guid.IsEmpty())
+                    {
+                        m_Target = m_creature->GetMap()->GetPlayer(player_guid);
+                        m_creature->SetTargetGuid(player_guid);
+                    }
+                    break;
+                }
+                case EVENT_VALKYR_RESS:
+                    if (m_Target)
+                        DoCast(m_Target, SPELL_VALKYR_REVIVE, false);
+                    Events.ScheduleEvent(EVENT_VALKYR_DESPAWN, 6*IN_MILLISECONDS);
+                    break;
+                case EVENT_VALKYR_DESPAWN:
+                    DespawnCreature(m_creature);
+                    break;
+                default:
+                    break;
+            }
+    }
+};
+
+CreatureAI* GetAI_npc_valkyr_battle_maiden(Creature *pCreature)
+{
+    return new npc_valkyr_battle_maidenAI(pCreature);
+}
+
 void AddSC_ebon_hold()
 {
     Script *newscript;
@@ -3554,5 +3613,10 @@ void AddSC_ebon_hold()
     newscript->GetAI = &GetAI_npc_highlord_darion_mograine;
     newscript->pGossipHello =  &GossipHello_npc_highlord_darion_mograine;
     newscript->pGossipSelect = &GossipSelect_npc_highlord_darion_mograine;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_valkyr_battle_maiden";
+    newscript->GetAI = &GetAI_npc_valkyr_battle_maiden;
     newscript->RegisterSelf();
 }
