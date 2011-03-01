@@ -239,10 +239,13 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_uiAnchorCheckTimer && m_uiAnchorCheckTimer < uiDiff)
-            SetAnchor();
-        else
-            m_uiAnchorCheckTimer -= uiDiff;
+        if (m_uiAnchorCheckTimer)
+        {
+            if (m_uiAnchorCheckTimer <= uiDiff)
+                SetAnchor();
+            else
+                m_uiAnchorCheckTimer -= uiDiff;
+        }
 
         if (m_uiPhase == PHASE_INACTIVE_OR_COMBAT)
         {
