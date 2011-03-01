@@ -48,12 +48,21 @@ struct MANGOS_DLL_DECL boss_infinite_corruptorAI : public ScriptedAI
 
     void JustReachedHome()
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_INFINITE_CORRUPTER, FAIL);
+        if (m_pInstance->GetData(TYPE_INFINITE_CORRUPTER) == FAIL)
+            m_creature->RemoveFromWorld();
     }
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (m_pInstance->GetData(TYPE_INFINITE_CORRUPTER) == FAIL)
+        {
+            if (m_creature->getVictim())
+                DoStartNoMovement(m_creature->getVictim());
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+        }
+        if (m_pInstance->GetData(TYPE_EPOCH_EVENT) != DONE) // prevent exploiting to get here
+            EnterEvadeMode();
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 

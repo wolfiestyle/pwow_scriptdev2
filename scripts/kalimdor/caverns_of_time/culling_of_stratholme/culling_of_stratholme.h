@@ -5,6 +5,8 @@
 #ifndef DEF_CULLING_OF_STRATHOLME_H
 #define DEF_CULLING_OF_STRATHOLME_H
 
+#define ENTRY -1595000
+
 enum
 {
     MAX_ENCOUNTER                   = 9,
@@ -49,7 +51,15 @@ enum
     NPC_BARTLEBY_BATTSON            = 27907,
     NPC_CRATES_BUNNY                = 30996,
 
+    // Grain Event Aditional NPCs
+    NPC_SILVIO_PERELLI              = 27876,
+    NPC_MARTHA_GOSLIN               = 27884,
+    NPC_SCRUFFY                     = 27892,
+
     // Intro Event NPCs
+    NPC_JAINA_PROUDMOORE            = 26497,
+    NPC_UTHER_THE_LIGHTBRINGER      = 26528,
+    NPC_KNIGHT_OF_THE_SILVER_HAND   = 28612,
     NPC_LORDAERON_FOOTMAN           = 27745,
     NPC_STRATHOLME_CITIZEN          = 28167,
     NPC_STRATHOLME_RESIDENT         = 28169,
@@ -66,11 +76,24 @@ enum
     NPC_EMERY_NEILL                 = 30570,
     NPC_EDWARD_ORRICK               = 31018,
     NPC_OLIVIA_ZENITH               = 31020,
+    NPC_SALRAMM_GHOUL               = 27733,
+    NPC_DEVOURING_GHOUL             = 28249,
+    NPC_ENRAGING_GHOUL              = 27729,
+    NPC_MASTER_NECROMANCER          = 27732,
+    NPC_CRYPT_FIEND                 = 27734,
+    NPC_TOMB_STALKER                = 28199,
+    NPC_PATCHWORK_CONSTRUCT         = 27736,
+    NPC_ACOLYTE                     = 27731,
 
     // Townhall Event NPCs
     NPC_AGIATED_STRATHOLME_CITIZEN  = 31126,
     NPC_AGIATED_STRATHOLME_RESIDENT = 31127,
     NPC_PATRICIA_O_REILLY           = 31028,
+    NPC_INFINITE_ADVERSARY          = 27742,
+    NPC_INFINITE_AGENT              = 27744,
+    NPC_INFINITE_HUNTER             = 27743,
+    NPC_TIME_RIFT_SMALL             = 28409,
+    NPC_TIME_RIFT_BIG               = 28439,
 
     // Gameobjects
     GO_DOOR_BOOKCASE                = 188686,
@@ -83,6 +106,17 @@ enum
     WORLD_STATE_WAVE                = 3504,
     WORLD_STATE_TIME                = 3932,
     WORLD_STATE_TIME_COUNTER        = 3931,
+
+    // misc
+    MALGANIS_KILL_CREDIT            = 58630,
+    MALGANIS_KILL_CREDIT_BUNNY      = 31006,
+
+    // positions
+    POSITION_FESTIVALS_LANE_GATE    = 0,
+    ELDERS_SQUARE_GATE              = 1,
+    KINGS_SQUARE_FOUNTAIN           = 2,
+    TOWN_HALL                       = 3,
+    MARKET_ROW_GATE                 = 4,
 
     // Areatrigger
     AREATRIGGER_INN                 = 5291,
@@ -119,6 +153,8 @@ class MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
 
         void OnCreatureCreate(Creature* pCreature);
         void OnObjectCreate(GameObject* pGo);
+        void OnCreatureDeath(Creature* pCreature);
+        void OnCreatureEnterCombat(Creature* pCreature);
 
         void SetData(uint32 uiType, uint32 uiData);
         uint32 GetData(uint32 uiType);
@@ -128,6 +164,7 @@ class MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
         void Load(const char* chrIn);
 
         void Update(uint32 uiDiff);
+        void SummonNextWave();
 
         void GetStratAgiatedCitizenList(std::list<uint64> &lList){ lList = m_lAgiatedCitizenGUIDList; };
         void GetStratAgiatedResidentList(std::list<uint64> &lList){ lList = m_lAgiatedResidentGUIDList; };
@@ -143,12 +180,13 @@ class MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
     protected:
         void OnPlayerEnter(Player* pPlayer);
         void UpdateQuestCredit();
-        void DoChromieHurrySpeech();
+        void DoChromieSpeech(int32 uiSpeech);
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string strInstData;
 
         uint8 m_uiGrainCrateCount;
+        uint32 m_uiWaveCount;
         uint32 m_uiRemoveCrateStateTimer;
         uint32 m_uiArthasRespawnTimer;
 
@@ -177,11 +215,16 @@ class MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
         uint64 m_uiMooreGUID;
         uint64 m_uiBattsonGUID;
 
+        uint64 m_uiPerelliGUID;
+        uint64 m_uiGoslinGUID;
+        uint64 m_uiScruffyGUID;
+
         uint64 m_uiOReillyGUID;
 
         std::list<uint64> m_luiCratesBunnyGUIDs;
         std::list<uint64> m_luiFootmanGUIDs;
         std::list<uint64> m_luiResidentGUIDs;
+        std::list<uint64> m_luiWaveAdds;
 
         std::list<uint64> m_lAgiatedCitizenGUIDList;
         std::list<uint64> m_lAgiatedResidentGUIDList;

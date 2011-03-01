@@ -26,13 +26,42 @@ EndScriptData */
 
 enum
 {
-    MAX_ARTHAS_SPAWN_POS = 5,
-    SAY_CHROMIE_HURRY    = -1000000                         // TODO
+    MAX_ARTHAS_SPAWN_POS     = 5,
+
+    SAY_CHROMIE_HURRY        = -1595124,
+    SAY_CHROMIE_START        = -1595123,
+    SAY_CHROMIE_FAIL         = -1595125,
+    SAY_CHROMIE_GRAIN        = -1595126,
+    SAY_CHROMIE_ONCLICK      = -1595127,
+
+    SAY_CRIER_FESTIVALS_LANE = -1595083,
+    SAY_CRIER_ELDERS_SQUARE  = -1595084,
+    SAY_CRIER_KINGS_SQUARE   = -1595085,
+    SAY_CRIER_TOWN_HALL      = -1595086,
+    SAY_CRIER_MARKET_ROW     = -1595087,
 };
 
 struct sSpawnLocation
 {
     float m_fX, m_fY, m_fZ, m_fO;
+};
+
+static uint32 yell[] = 
+{
+    SAY_CRIER_FESTIVALS_LANE,
+    SAY_CRIER_ELDERS_SQUARE,
+    SAY_CRIER_KINGS_SQUARE,
+    SAY_CRIER_TOWN_HALL,
+    SAY_CRIER_MARKET_ROW,
+};
+
+static sSpawnLocation m_aWaveSpawnLocs[] =
+{
+    {2171.61f, 1279.93f, 134.13f, 0.0f},  // POSITION_FESTIVALS_LANE_GATE
+    {2279.86f, 1143.45f, 138.73f, 1.96f}, // ELDERS_SQUARE_GATE
+    {2132.31f, 1353.78f, 132.57f, 6.08f}, // KINGS_SQUARE_FOUNTAIN
+    {2350.67f, 1217.02f, 131.12f, 4.50f}, // TOWN_HALL
+    {2220.24f, 1331.58f, 128.95f, 3.14f}, // MARKET_ROW_GATE
 };
 
 static sSpawnLocation m_aArthasSpawnLocs[] =                // need tuning
@@ -54,6 +83,7 @@ static sSpawnLocation m_aChromieSpawnLocs[] =               // need tuning, escp
 
 instance_culling_of_stratholme::instance_culling_of_stratholme(Map* pMap) : ScriptedInstance(pMap),
     m_uiGrainCrateCount(0),
+    m_uiWaveCount(0),
     m_uiRemoveCrateStateTimer(0),
     m_uiArthasRespawnTimer(0),
 
@@ -81,6 +111,10 @@ instance_culling_of_stratholme::instance_culling_of_stratholme(Map* pMap) : Scri
     m_uiMooreGUID(0),
     m_uiBattsonGUID(0),
 
+    m_uiPerelliGUID(0),
+    m_uiGoslinGUID(0),
+    m_uiScruffyGUID(0),
+
     m_uiOReillyGUID(0),
 
     m_uiDoorBookcaseGUID(0),
@@ -94,8 +128,202 @@ void instance_culling_of_stratholme::Initialize()
     memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 }
 
+void instance_culling_of_stratholme::OnCreatureDeath(Creature* pCreature)
+{
+    if (m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS || m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS)
+    {
+        switch(pCreature->GetEntry())
+        {
+            case NPC_SALRAMM_THE_FLESHCRAFTER:
+            case NPC_MEATHOOK:
+            case NPC_DEVOURING_GHOUL:
+            case NPC_ENRAGING_GHOUL:
+            case NPC_MASTER_NECROMANCER:
+            case NPC_CRYPT_FIEND:
+            case NPC_TOMB_STALKER:
+            case NPC_PATCHWORK_CONSTRUCT:
+            case NPC_ACOLYTE:
+                m_luiWaveAdds.remove(pCreature->GetGUID());
+                if (m_luiWaveAdds.empty())
+                    SummonNextWave();
+                break;
+        }
+    }
+    if (pCreature->GetEntry() == NPC_ARTHAS)
+        ArthasJustDied();
+}
+
+void instance_culling_of_stratholme::SummonNextWave()
+{
+    if (m_uiWaveCount < 10)
+        m_uiWaveCount++;
+    else
+        return;
+
+    DoUpdateWorldState(WORLD_STATE_WAVE, m_uiWaveCount);
+    uint32 loc = 0;
+    switch (urand(0,4))
+    {
+        case 0:
+            loc = POSITION_FESTIVALS_LANE_GATE;
+            break;
+        case 1:
+            loc = ELDERS_SQUARE_GATE;
+            break;
+        case 2:
+            loc = KINGS_SQUARE_FOUNTAIN;
+            break;
+        case 3:
+            loc = TOWN_HALL;
+            break;
+        case 4:
+            loc = MARKET_ROW_GATE;
+            break;    
+    }
+
+    if (m_uiWaveCount == 1)
+        loc = POSITION_FESTIVALS_LANE_GATE;
+
+    bool hard = instance->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC;
+
+    Unit* pArthas = instance->GetUnit(m_uiArthasGUID);
+    if (Unit* pCrier = instance->GetUnit(m_uiLordaeronCrierGUID))
+        pCrier->MonsterYellToZone(yell[loc], 0, NULL);
+    if (pArthas)
+    {
+        if (hard)
+        {
+            switch(m_uiWaveCount)
+            {
+                case 1: // 3 devouring
+                    for (uint32 i = 3; i ; --i)
+                        pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 2: // 1 devouring, 1 enraging, 1 necromancer
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_ENRAGING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 3: // 1 devouring, 1 enraging, 1 necromancer, 1 crypt fiend
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_ENRAGING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_CRYPT_FIEND, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 4: // 1 necromancer, 4 acolytes, 1 crypt fiend
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    for (uint32 i = 4; i ; --i)
+                        pArthas->SummonCreature(NPC_ACOLYTE, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                                m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_CRYPT_FIEND, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 5:
+                    pArthas->SummonCreature(NPC_MEATHOOK, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS, true);
+                    break;
+                case 6: // 1 devouring, 1 necromancer, 1 crypt fiend, 1 stalker
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_CRYPT_FIEND, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_TOMB_STALKER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 7: // 1 devouring, 2 enraging, 1 patchwork
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    for (uint32 i = 2; i ; --i)
+                        pArthas->SummonCreature(NPC_ENRAGING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                                m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_PATCHWORK_CONSTRUCT, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 8: // 1 devouring, 1 enraging, 1 necromancer, 1 patchwork
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_ENRAGING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_PATCHWORK_CONSTRUCT, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 9: // 1 devouring, 1 necromancer, 1 crypt fiend, 1 patchwork
+                    pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_MASTER_NECROMANCER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_CRYPT_FIEND, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    pArthas->SummonCreature(NPC_PATCHWORK_CONSTRUCT, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY ,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+                case 10:
+                    pArthas->SummonCreature(NPC_SALRAMM_THE_FLESHCRAFTER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY,
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS, true);
+                    break;
+            }
+        }
+        else
+        {
+            switch(m_uiWaveCount)
+            {
+                case 5:
+                    pArthas->SummonCreature(NPC_MEATHOOK,  m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY, 
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS, true);
+                    break;
+                case 10:
+                    pArthas->SummonCreature(NPC_SALRAMM_THE_FLESHCRAFTER, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY, 
+                            m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS, true);
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    for (uint32 i = 2; i ; --i)
+                        pArthas->SummonCreature(NPC_DEVOURING_GHOUL, m_aWaveSpawnLocs[loc].m_fX, m_aWaveSpawnLocs[loc].m_fY, 
+                                m_aWaveSpawnLocs[loc].m_fZ, m_aWaveSpawnLocs[loc].m_fO, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10*IN_MILLISECONDS, true);
+                    break;
+            }
+        }
+    }
+}
+
 void instance_culling_of_stratholme::OnCreatureCreate(Creature* pCreature)
 {
+    if (m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS || m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS)
+    {
+        switch(pCreature->GetEntry())
+        {
+            case NPC_SALRAMM_THE_FLESHCRAFTER:
+            case NPC_MEATHOOK:
+            case NPC_DEVOURING_GHOUL:
+            case NPC_ENRAGING_GHOUL:
+            case NPC_MASTER_NECROMANCER:
+            case NPC_CRYPT_FIEND:
+            case NPC_TOMB_STALKER:
+            case NPC_PATCHWORK_CONSTRUCT:
+            case NPC_ACOLYTE:
+                m_luiWaveAdds.push_back(pCreature->GetGUID());
+                break;
+        }
+    }
     switch(pCreature->GetEntry())
     {
         case NPC_CHROMIE_INN:                   m_uiChromieInnGUID = pCreature->GetGUID();      break;
@@ -118,6 +346,9 @@ void instance_culling_of_stratholme::OnCreatureCreate(Creature* pCreature)
         case NPC_JENA_ANDERSON:                 m_uiAndersonGUID = pCreature->GetGUID();        break;
         case NPC_MALCOM_MOORE:                  m_uiMooreGUID = pCreature->GetGUID();           break;
         case NPC_BARTLEBY_BATTSON:              m_uiBattsonGUID = pCreature->GetGUID();         break;
+        case NPC_SILVIO_PERELLI:                m_uiPerelliGUID = pCreature->GetGUID();         break;
+        case NPC_MARTHA_GOSLIN:                 m_uiGoslinGUID = pCreature->GetGUID();          break;
+        case NPC_SCRUFFY:                       m_uiScruffyGUID = pCreature->GetGUID();         break;
         case NPC_PATRICIA_O_REILLY:             m_uiOReillyGUID = pCreature->GetGUID();         break;
         case NPC_LORDAERON_CRIER:               m_uiLordaeronCrierGUID = pCreature->GetGUID();  break;
         case NPC_INFINITE_CORRUPTER:            m_uiCorrupterGUID = pCreature->GetGUID();       break;
@@ -127,7 +358,7 @@ void instance_culling_of_stratholme::OnCreatureCreate(Creature* pCreature)
 
         case NPC_STRATHOLME_CITIZEN:
         case NPC_STRATHOLME_RESIDENT:
-            if (m_auiEncounter[TYPE_ARTHAS_INTRO_EVENT] == DONE)
+            if (m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS || m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS)
                 pCreature->UpdateEntry(NPC_ZOMBIE);
             else
                 m_luiResidentGUIDs.push_back(pCreature->GetGUID());
@@ -137,6 +368,13 @@ void instance_culling_of_stratholme::OnCreatureCreate(Creature* pCreature)
     }
 }
 
+void instance_culling_of_stratholme::OnCreatureEnterCombat(Creature* pCreature)
+{
+    if ((m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS || m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS) &&
+       m_auiEncounter[TYPE_INFINITE_CORRUPTER] != IN_PROGRESS && m_auiEncounter[TYPE_INFINITE_CORRUPTER] != FAIL &&
+       m_auiEncounter[TYPE_INFINITE_CORRUPTER] != SPECIAL)
+        SetData(TYPE_INFINITE_CORRUPTER, IN_PROGRESS);
+}
 void instance_culling_of_stratholme::OnObjectCreate(GameObject* pGo)
 {
     switch(pGo->GetEntry())
@@ -166,9 +404,9 @@ void instance_culling_of_stratholme::UpdateQuestCredit()
     }
 }
 
-void instance_culling_of_stratholme::DoChromieHurrySpeech()
+void instance_culling_of_stratholme::DoChromieSpeech(int32 speech)
 {
-    if (Creature* pChromie = instance->GetCreature(m_uiChromieEntranceGUID))
+    if (Creature* pChromie = instance->GetCreature(m_uiChromieInnGUID))
     {
         Map::PlayerList const& players = instance->GetPlayers();
         if (!players.isEmpty())
@@ -176,7 +414,7 @@ void instance_culling_of_stratholme::DoChromieHurrySpeech()
             for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
                 if (Player* pPlayer = itr->getSource())
-                    DoScriptText(SAY_CHROMIE_HURRY, pChromie, pPlayer);
+                    pChromie->MonsterWhisper(speech, pPlayer);
             }
         }
     }
@@ -205,6 +443,8 @@ void instance_culling_of_stratholme::SetData(uint32 uiType, uint32 uiData)
                     SetData(TYPE_GRAIN_EVENT, DONE);
                 }
             }
+            else if (uiData == DONE)
+                DoChromieSpeech(SAY_CHROMIE_GRAIN);
             break;
         case TYPE_ARTHAS_INTRO_EVENT:
             m_auiEncounter[TYPE_ARTHAS_INTRO_EVENT] = uiData;
@@ -218,6 +458,8 @@ void instance_culling_of_stratholme::SetData(uint32 uiType, uint32 uiData)
                 SetData(TYPE_SALRAMM_EVENT, IN_PROGRESS);
             break;
         case TYPE_SALRAMM_EVENT:
+            if (uiData == IN_PROGRESS)
+                m_uiWaveCount = 6;
             m_auiEncounter[TYPE_SALRAMM_EVENT] = uiData;
             if (uiData == DONE)
                 DoUpdateWorldState(WORLD_STATE_WAVE, 0);    // Remove WaveCounter
@@ -229,7 +471,8 @@ void instance_culling_of_stratholme::SetData(uint32 uiType, uint32 uiData)
             m_auiEncounter[TYPE_MALGANIS_EVENT] = uiData;
             if (uiData == DONE)
             {
-                DoRespawnGameObject(m_uiDarkRunedChestGUID, 30*MINUTE);
+                if (GameObject* pGO = instance->GetGameObject(m_uiDarkRunedChestGUID))
+                    pGO->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
                 DoSpawnChromieIfNeeded();
             }
             break;
@@ -249,20 +492,23 @@ void instance_culling_of_stratholme::SetData(uint32 uiType, uint32 uiData)
             {
                 case IN_PROGRESS:
                     if (!m_auiEncounter[TYPE_INFINITE_CORRUPTER_TIME])
-                        SetData(TYPE_INFINITE_CORRUPTER_TIME, MINUTE*25*IN_MILLISECONDS);
+                        if (Unit* pChromie = instance->GetUnit(m_uiChromieEntranceGUID))
+                        {
+                            DoChromieSpeech(SAY_CHROMIE_START);
+                            SetData(TYPE_INFINITE_CORRUPTER_TIME, 25*MINUTE*IN_MILLISECONDS);
+                            pChromie->SummonCreature(NPC_TIME_RIFT_BIG,  2339.546f, 1255.318f, 132.756f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 26*MINUTE*IN_MILLISECONDS, true);
+                            pChromie->SummonCreature(NPC_INFINITE_CORRUPTER,  2336.318f, 1259.449f, 132.926f, 2.23f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS, true);
+                        }
                     DoUpdateWorldState(WORLD_STATE_TIME, 1);// Show Timer
                     break;
                 case DONE:
                     SetData(TYPE_INFINITE_CORRUPTER_TIME, 0);
                     break;
                 case SPECIAL:
-                    DoChromieHurrySpeech();
                     break;
                 case FAIL:
                     SetData(TYPE_INFINITE_CORRUPTER_TIME, 0);
-                    if (Creature* pCorrupter = instance->GetCreature(m_uiCorrupterGUID))
-                        if (pCorrupter->isAlive())
-                            pCorrupter->ForcedDespawn();
+                    DoChromieSpeech(SAY_CHROMIE_FAIL);
                     break;
             }
             break;
@@ -316,7 +562,7 @@ void instance_culling_of_stratholme::Load(const char* chrIn)
 
 void instance_culling_of_stratholme::OnPlayerEnter(Player* pPlayer)
 {
-    if (instance->GetPlayersCountExceptGMs() == 0)
+    if (instance->GetPlayersCountExceptGMs() != 0)
     {
         DoSpawnArthasIfNeeded();
         DoSpawnChromieIfNeeded();
@@ -328,9 +574,9 @@ void instance_culling_of_stratholme::OnPlayerEnter(Player* pPlayer)
             DoUpdateWorldState(WORLD_STATE_CRATES, 0);      // Remove Crates Counter
 
         if (m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS)
-            DoUpdateWorldState(WORLD_STATE_WAVE, 1);        // Add WaveCounter
+            DoUpdateWorldState(WORLD_STATE_WAVE, m_uiWaveCount);        // Add WaveCounter
         else if (m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS)
-            DoUpdateWorldState(WORLD_STATE_WAVE, 6);        // Add WaveCounter
+            DoUpdateWorldState(WORLD_STATE_WAVE, m_uiWaveCount);        // Add WaveCounter
         else
             DoUpdateWorldState(WORLD_STATE_WAVE, 0);        // Remove WaveCounter
 
@@ -383,6 +629,9 @@ uint64 instance_culling_of_stratholme::GetData64(uint32 uiData)
         case NPC_JENA_ANDERSON:            return m_uiAndersonGUID;
         case NPC_MALCOM_MOORE:             return m_uiMooreGUID;
         case NPC_BARTLEBY_BATTSON:         return m_uiBattsonGUID;
+        case NPC_SILVIO_PERELLI:           return m_uiPerelliGUID;
+        case NPC_MARTHA_GOSLIN:            return m_uiGoslinGUID;
+        case NPC_SCRUFFY:                  return m_uiScruffyGUID;
         case NPC_PATRICIA_O_REILLY:        return m_uiOReillyGUID;
         case GO_DOOR_BOOKCASE:             return m_uiDoorBookcaseGUID;
         default: return 0;
@@ -447,8 +696,8 @@ Creature* instance_culling_of_stratholme::GetStratIntroFootman()
         return NULL;
     else
     {
-        lFootmanList.sort(sortFromSouthToNorth);
-        return *lFootmanList.begin();
+        //lFootmanList.sort(sortFromSouthToNorth);
+        return urand(0,1) ? *lFootmanList.begin() : *lFootmanList.rbegin();
     }
 }
 
@@ -475,6 +724,7 @@ void instance_culling_of_stratholme::ArthasJustDied()
 void instance_culling_of_stratholme::DoSpawnArthasIfNeeded()
 {
     Creature* pArthas = instance->GetCreature(m_uiArthasGUID);
+
     if (pArthas && pArthas->isAlive())
         return;
 
@@ -524,8 +774,11 @@ void instance_culling_of_stratholme::Update(uint32 uiDiff)
         }
 
         // This part is needed for a small "hurry up guys" note, TODO, verify 20min
-        if (m_auiEncounter[TYPE_INFINITE_CORRUPTER] == IN_PROGRESS && m_auiEncounter[TYPE_INFINITE_CORRUPTER_TIME] <= 24*MINUTE*IN_MILLISECONDS)
+        if (m_auiEncounter[TYPE_INFINITE_CORRUPTER] == IN_PROGRESS && m_auiEncounter[TYPE_INFINITE_CORRUPTER_TIME] <= 5*MINUTE*IN_MILLISECONDS)
+        {
+            DoChromieSpeech(SAY_CHROMIE_HURRY);
             SetData(TYPE_INFINITE_CORRUPTER, SPECIAL);
+        }
     }
 
     // Small Timer, to remove Grain-Crate WorldState and Spawn Second Chromie
@@ -533,6 +786,9 @@ void instance_culling_of_stratholme::Update(uint32 uiDiff)
     {
         if (m_uiRemoveCrateStateTimer <= uiDiff)
         {
+            if (Creature* pCrier = instance->GetCreature(m_uiLordaeronCrierGUID))
+                pCrier->MonsterYellToZone(-1595088, 0, NULL);
+            DoChromieSpeech(SAY_CHROMIE_ONCLICK);
             DoUpdateWorldState(WORLD_STATE_CRATES, 0);
             DoSpawnChromieIfNeeded();
             m_uiRemoveCrateStateTimer = 0;
