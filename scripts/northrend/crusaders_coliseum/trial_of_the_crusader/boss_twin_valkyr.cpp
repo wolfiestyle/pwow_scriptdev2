@@ -169,7 +169,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
         SCHEDULE_EVENT_R(TWIN_SPIKE);
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(TOUCH);
-        DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
+        //DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
     }
 
