@@ -251,7 +251,7 @@ uint32 EventManager::ExecuteEvent()
 
 void SummonManager::AddSummonToList(ObjectGuid const& guid)
 {
-    if (!guid.IsCreature())
+    if (!guid.IsAnyTypeCreature())
         return;
     m_Summons.push_back(guid);
 }
