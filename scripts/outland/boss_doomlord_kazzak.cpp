@@ -84,7 +84,7 @@ struct MANGOS_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
     void KilledUnit(Unit* victim)
     {
         // When Kazzak kills a player (not pets/totems), he regens some health
-        if (victim->GetTypeId() != TYPEID_PLAYER)
+        if (victim && victim->GetTypeId() != TYPEID_PLAYER)
             return;
 
         DoCastSpellIfCan(m_creature,SPELL_CAPTURESOUL);
@@ -139,12 +139,12 @@ struct MANGOS_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         //MarkOfKazzak_Timer
         if (MarkOfKazzak_Timer < diff)
         {
-            Unit* victim = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
-            if (victim->GetPower(POWER_MANA))
-            {
-                DoCastSpellIfCan(victim, SPELL_MARKOFKAZZAK);
-                MarkOfKazzak_Timer = 20000;
-            }
+            if (Unit* victim = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (victim->GetPower(POWER_MANA))
+                {
+                    DoCastSpellIfCan(victim, SPELL_MARKOFKAZZAK);
+                    MarkOfKazzak_Timer = 20000;
+                }
         }else MarkOfKazzak_Timer -= diff;
 
         //Enrage_Timer
