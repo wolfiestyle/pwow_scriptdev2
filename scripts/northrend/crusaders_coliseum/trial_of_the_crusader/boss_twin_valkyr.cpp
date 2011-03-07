@@ -99,6 +99,7 @@ enum Events
     EVENT_TOUCH,
 
     MESSAGE_AGGRO,
+    MESSAGE_RESET,
 };
 
 enum Specials
@@ -159,13 +160,19 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
-        if (data1 == MESSAGE_AGGRO && !m_creature->isInCombat())
+        if (data1 == MESSAGE_AGGRO)
         {
+            if (m_creature->isInCombat())
+                return;
             // both are supposed to say it
             DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
             DoScriptText(SAY_TWIN_VALKYR_AGGRO, pSender);
             m_creature->SetInCombatWithZone();
         }
+        else if (data1 == MESSAGE_RESET)
+            EnterEvadeMode();
+        else
+            boss_trial_of_the_crusaderAI::ScriptMessage(pSender, data1, data2);
     }
 
     void DamageTaken(Unit *pDoneBy, uint32 &uiDamage)
@@ -177,8 +184,7 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
     void Aggro(Unit *pWho)
     {
         if (Creature* pEydis = GET_CREATURE(TYPE_EYDIS_DARKBANE))
-            if (!pEydis->isInCombat())
-                SendScriptMessageTo(pEydis, m_creature, MESSAGE_AGGRO);
+            SendScriptMessageTo(pEydis, m_creature, MESSAGE_AGGRO);
 
         DoCast(m_creature, SPELL_SURGE_OF_LIGHT);
         m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
@@ -203,9 +209,10 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
         {
-            if (m_creature->getVictim() && m_creature->getVictim()->GetEntry() == Darkbane->GetEntry())
+            if (m_creature->getVictim()->GetEntry() == Darkbane->GetEntry())
             {
                 EnterEvadeMode();
+                SendScriptMessageTo(Darkbane, m_creature, MESSAGE_RESET);
                 return;
             }
             uint32 eydis_health = Darkbane->GetHealth();
@@ -280,16 +287,21 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
     {
     }
 
-
     void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
     {
-        if (data1 == MESSAGE_AGGRO && !m_creature->isInCombat())
+        if (data1 == MESSAGE_AGGRO)
         {
+            if (m_creature->isInCombat())
+                return;
             // both are supposed to say it
             DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
             DoScriptText(SAY_TWIN_VALKYR_AGGRO, pSender);
             m_creature->SetInCombatWithZone();
         }
+        else if (data1 == MESSAGE_RESET)
+            EnterEvadeMode();
+        else
+            boss_trial_of_the_crusaderAI::ScriptMessage(pSender, data1, data2);
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)
@@ -324,8 +336,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
     void Aggro(Unit *pWho)
     {
         if (Creature* pFjola = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
-            if (!pFjola->isInCombat())
-                SendScriptMessageTo(pFjola, m_creature, MESSAGE_AGGRO);
+            SendScriptMessageTo(pFjola, m_creature, MESSAGE_AGGRO);
 
         DoCast(m_creature, SPELL_SURGE_OF_DARKNESS);
         m_creature->ModifyAuraState(AURA_STATE_DARK, true);
@@ -358,7 +369,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         if (!m_bSummoned)
         {
             m_bSummoned = true;
-            // spawn orbs on spawn
+            // summon orbs on spawn
             bool IsDark = false;
             for (int i=1; i<8; i+=2)
             {
@@ -374,9 +385,10 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
         if (Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
         {
-            if (m_creature->getVictim() && m_creature->getVictim()->GetEntry() == Lightbane->GetEntry())
+            if (m_creature->getVictim()->GetEntry() == Lightbane->GetEntry())
             {
                 EnterEvadeMode();
+                SendScriptMessageTo(Lightbane, m_creature, MESSAGE_RESET);
                 return;
             }
             uint32 fjola_health = Lightbane->GetHealth();
