@@ -97,6 +97,8 @@ enum Events
     EVENT_LIGHT_PACT,
     EVENT_DARK_PACT,
     EVENT_TOUCH,
+
+    MESSAGE_AGGRO,
 };
 
 enum Specials
@@ -155,6 +157,17 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
                 DarkAI->Reset();
     }
 
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
+    {
+        if (data1 == MESSAGE_AGGRO && !m_creature->isInCombat())
+        {
+            // both are supposed to say it
+            DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
+            DoScriptText(SAY_TWIN_VALKYR_AGGRO, pSender);
+            m_creature->SetInCombatWithZone();
+        }
+    }
+
     void DamageTaken(Unit *pDoneBy, uint32 &uiDamage)
     {
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
@@ -163,13 +176,16 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
+        if (Creature* pEydis = GET_CREATURE(TYPE_EYDIS_DARKBANE))
+            if (!pEydis->isInCombat())
+                SendScriptMessageTo(pEydis, m_creature, MESSAGE_AGGRO);
+
         DoCast(m_creature, SPELL_SURGE_OF_LIGHT);
         m_creature->ModifyAuraState(AURA_STATE_LIGHT, true);
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT_R(TWIN_SPIKE);
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(TOUCH);
-        //DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -187,6 +203,11 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
 
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
         {
+            if (m_creature->getVictim() && m_creature->getVictim()->GetEntry() == Darkbane->GetEntry())
+            {
+                EnterEvadeMode();
+                return;
+            }
             uint32 eydis_health = Darkbane->GetHealth();
             if (eydis_health < m_creature->GetHealth())
                 m_creature->SetHealth(eydis_health);
@@ -250,11 +271,25 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 {
     SummonManager SummonMgr;
     std::bitset<4> SpecialsUsed; //0=light vortex, 1= dark vortex, 2=light pact, 3=dark pact
+    bool m_bSummoned : 1;
 
     boss_eydisAI(Creature* pCreature):
         boss_trial_of_the_crusaderAI(pCreature),
-        SummonMgr(pCreature)
+        SummonMgr(pCreature),
+        m_bSummoned(false)
     {
+    }
+
+
+    void ScriptMessage(WorldObject *pSender, uint32 data1, uint32 data2)
+    {
+        if (data1 == MESSAGE_AGGRO && !m_creature->isInCombat())
+        {
+            // both are supposed to say it
+            DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
+            DoScriptText(SAY_TWIN_VALKYR_AGGRO, pSender);
+            m_creature->SetInCombatWithZone();
+        }
     }
 
     void SummonedCreatureJustDied(Creature *pSumm)
@@ -280,6 +315,7 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void Reset()
     {
+        m_bSummoned = false;
         SummonMgr.UnsummonAll();
         RemoveEncounterAuras();
         boss_trial_of_the_crusaderAI::Reset();
@@ -287,14 +323,9 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void Aggro(Unit *pWho)
     {
-        bool IsDark = false;
-        for (int i=1; i<8; i+=2)
-        {
-            float x, y;
-            GetPointOnCircle(x, y, 38.0f, i*M_PI/4, CENTER_X, CENTER_Y);
-            SummonMgr.SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, x, y, FLOOR_HEIGHT+2, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
-            IsDark = !IsDark;
-        }
+        if (Creature* pFjola = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
+            if (!pFjola->isInCombat())
+                SendScriptMessageTo(pFjola, m_creature, MESSAGE_AGGRO);
 
         DoCast(m_creature, SPELL_SURGE_OF_DARKNESS);
         m_creature->ModifyAuraState(AURA_STATE_DARK, true);
@@ -306,7 +337,6 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
         if (m_bIsHeroic)
             SCHEDULE_EVENT_R(TOUCH);
 
-        DoScriptText(SAY_TWIN_VALKYR_AGGRO, m_creature);
         m_BossEncounter = IN_PROGRESS;
     }
 
@@ -325,11 +355,30 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
 
     void UpdateAI(const uint32 uiDiff)
     {
+        if (!m_bSummoned)
+        {
+            m_bSummoned = true;
+            // spawn orbs on spawn
+            bool IsDark = false;
+            for (int i=1; i<8; i+=2)
+            {
+                float x, y;
+                GetPointOnCircle(x, y, 38.0f, i*M_PI/4, CENTER_X, CENTER_Y);
+                SummonMgr.SummonCreature(IsDark ? NPC_DARK_ESSENCE : NPC_LIGHT_ESSENCE, x, y, FLOOR_HEIGHT+2, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+                IsDark = !IsDark;
+            }
+        }
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
         {
+            if (m_creature->getVictim() && m_creature->getVictim()->GetEntry() == Lightbane->GetEntry())
+            {
+                EnterEvadeMode();
+                return;
+            }
             uint32 fjola_health = Lightbane->GetHealth();
             if (fjola_health < m_creature->GetHealth())
                 m_creature->SetHealth(fjola_health);
