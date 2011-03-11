@@ -12,7 +12,7 @@ enum
     MAX_ENCOUNTER                   = 9,
 
     TYPE_GRAIN_EVENT                = 0,                    // crates with plagued grain identified
-    TYPE_ARTHAS_INTRO_EVENT         = 1,                    // Arhas Speech and Walk to Gates and short intro with MalGanis
+    TYPE_ARTHAS_INTRO_EVENT         = 1,                    // Arthas Speech and Walk to Gates and short intro with MalGanis
     TYPE_MEATHOOK_EVENT             = 2,                    // Waves 1-5
     TYPE_SALRAMM_EVENT              = 3,                    // Waves 6-10
     TYPE_EPOCH_EVENT                = 4,                    // Townhall Event, Boss Killed
