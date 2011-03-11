@@ -372,9 +372,10 @@ void instance_culling_of_stratholme::OnCreatureEnterCombat(Creature* pCreature)
 {
     if ((m_auiEncounter[TYPE_MEATHOOK_EVENT] == IN_PROGRESS || m_auiEncounter[TYPE_SALRAMM_EVENT] == IN_PROGRESS) &&
        m_auiEncounter[TYPE_INFINITE_CORRUPTER] != IN_PROGRESS && m_auiEncounter[TYPE_INFINITE_CORRUPTER] != FAIL &&
-       m_auiEncounter[TYPE_INFINITE_CORRUPTER] != SPECIAL && instance->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC())
+       m_auiEncounter[TYPE_INFINITE_CORRUPTER] != SPECIAL && instance->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
         SetData(TYPE_INFINITE_CORRUPTER, IN_PROGRESS);
 }
+
 void instance_culling_of_stratholme::OnObjectCreate(GameObject* pGo)
 {
     switch(pGo->GetEntry())
