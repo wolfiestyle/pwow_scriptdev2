@@ -258,14 +258,10 @@ struct MANGOS_DLL_DECL boss_fjolaAI: public boss_trial_of_the_crusaderAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
+
         if (Creature *Darkbane = GET_CREATURE(TYPE_EYDIS_DARKBANE))
-        {
-            Darkbane->DealDamage(Darkbane, Darkbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }
-        // for some odd reason, SummonCreatureJustDied() is not called when using SetDeathState() + setHealth()...
-        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
-            if (barrett->AI())
-                barrett->AI()->SummonedCreatureJustDied(m_creature);
+            if (Darkbane->isAlive())
+                Darkbane->DealDamage(Darkbane, Darkbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
 };
 
@@ -470,14 +466,10 @@ struct MANGOS_DLL_DECL boss_eydisAI: public boss_trial_of_the_crusaderAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_TWIN_VALKYR_DEATH, m_creature);
+
         if (Creature *Lightbane = GET_CREATURE(TYPE_FJOLA_LIGHTBANE))
-        {
-            Lightbane->DealDamage(Lightbane, Lightbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }
-        // for some odd reason, SummonCreatureJustDied() is not called when using SetDeathState() + setHealth()...
-        if (Creature *barrett = GET_CREATURE(TYPE_BARRETT_RAMSEY))
-            if (barrett->AI())
-                barrett->AI()->SummonedCreatureJustDied(m_creature);
+            if (Lightbane->isAlive())
+                Lightbane->DealDamage(Lightbane, Lightbane->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
         SummonMgr.UnsummonAll();
         RemoveEncounterAuras();
