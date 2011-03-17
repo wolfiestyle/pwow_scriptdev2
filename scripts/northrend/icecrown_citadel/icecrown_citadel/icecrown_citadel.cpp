@@ -249,3 +249,33 @@ void boss_icecrown_citadelAI::RemoveEncounterAuras(int32 spellId_1, int32 spellI
             pPlayer->RemoveAurasByDifficulty(-spellId_4);
     }
 }
+
+void boss_icecrown_citadelAI::SendEncounterUnit(EncounterFrameType type, uint8 param1, uint8 param2)
+{
+    WorldPacket data(SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT, 4+8+1);
+    data << uint32(type);
+
+    switch (type)
+    {
+        case ENCOUNTER_FRAME_ADD:
+        case ENCOUNTER_FRAME_REMOVE:
+        case ENCOUNTER_FRAME_UNK2:
+            data << m_creature->GetPackGUID();
+            data << uint8(param1);
+            break;
+        case ENCOUNTER_FRAME_UNK3:
+        case ENCOUNTER_FRAME_UNK4:
+        case ENCOUNTER_FRAME_UNK6:
+            data << uint8(param1);
+            data << uint8(param2);
+            break;
+        case ENCOUNTER_FRAME_UNK5:
+            data << uint8(param1);
+            break;
+        case ENCOUNTER_FRAME_UNK7:
+        default:
+            break;
+    }
+
+    m_creature->GetMap()->SendToPlayers(&data);
+}

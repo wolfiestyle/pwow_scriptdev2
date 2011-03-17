@@ -206,6 +206,18 @@ enum TeleportLocations
     TP_MAX
 };
 
+enum EncounterFrameType
+{
+    ENCOUNTER_FRAME_ADD     = 0,
+    ENCOUNTER_FRAME_REMOVE  = 1,
+    ENCOUNTER_FRAME_UNK2    = 2,
+    ENCOUNTER_FRAME_UNK3    = 3,
+    ENCOUNTER_FRAME_UNK4    = 4,
+    ENCOUNTER_FRAME_UNK5    = 5,
+    ENCOUNTER_FRAME_UNK6    = 6,
+    ENCOUNTER_FRAME_UNK7    = 7,
+};
+
 //---------------------------------------------------------
 
 namespace icc {
@@ -255,6 +267,9 @@ struct MANGOS_DLL_DECL boss_icecrown_citadelAI: public ScriptedAI, public Script
     // remove auras from all players in map
     // if spellId is negative, removes with spell difficulty
     void RemoveEncounterAuras(int32 spellId_1, int32 spellId_2 = 0, int32 spellId_3 = 0, int32 spellId_4 = 0);
+
+    // for sending boss unit frames
+    void SendEncounterUnit(EncounterFrameType type, uint8 param1 = 0, uint8 param2 = 0);
 };
 
 #endif // DEF_ICECROWN_CITADEL_H

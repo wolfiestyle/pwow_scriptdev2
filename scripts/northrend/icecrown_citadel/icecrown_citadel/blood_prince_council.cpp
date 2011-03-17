@@ -277,6 +277,12 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
         SCHEDULE_EVENT(KINETIC_BOMB);
         if (m_bIsHeroic && pWho)
             DoCast(pWho, SPELL_SHADOW_PRISON);
+        SendEncounterUnit(ENCOUNTER_FRAME_ADD);
+    }
+
+    void JustReachedHome()
+    {
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void KilledUnit(Unit* pWho)
@@ -291,6 +297,7 @@ struct MANGOS_DLL_DECL boss_valanar_ICCAI: public boss_icecrown_citadelAI
         SummonMgr.UnsummonAll();
         m_BossEncounter = DONE;
         DoScriptText(SAY_VALANAR_DEATH, m_creature);
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void JustSummoned(Creature *pSumm)
@@ -523,6 +530,12 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(DARK_NUCLEUS);
         SCHEDULE_EVENT(SHADOW_LANCE);
+        SendEncounterUnit(ENCOUNTER_FRAME_ADD);
+    }
+
+    void JustReachedHome()
+    {
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void KilledUnit(Unit* pWho)
@@ -537,6 +550,7 @@ struct MANGOS_DLL_DECL boss_keleseth_ICCAI: public boss_icecrown_citadelAI
         SummonMgr.UnsummonAll();
         m_BossEncounter = DONE;
         DoScriptText(SAY_KELESETH_DEATH, m_creature);
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void JustSummoned(Creature *pSumm)
@@ -718,6 +732,12 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
         SCHEDULE_EVENT(BERSERK);
         SCHEDULE_EVENT(GLITTERING_SPARKS);
         SCHEDULE_EVENT_R(BALL_OF_FLAMES);
+        SendEncounterUnit(ENCOUNTER_FRAME_ADD);
+    }
+
+    void JustReachedHome()
+    {
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void JustSummoned(Creature *pSumm)
@@ -763,6 +783,7 @@ struct MANGOS_DLL_DECL boss_taldaram_ICCAI: public boss_icecrown_citadelAI
         SummonMgr.UnsummonAll();
         m_BossEncounter = DONE;
         DoScriptText(SAY_TALDARAM_DEATH, m_creature);
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage) 

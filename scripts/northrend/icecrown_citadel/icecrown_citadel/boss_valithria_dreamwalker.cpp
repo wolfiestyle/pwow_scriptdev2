@@ -202,6 +202,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             if (GameObject* Door = GET_GAMEOBJECT(DATA_VALITHRIA_DOOR_RIGHT_2))
                 Door->SetGoState(GO_STATE_READY);
         }
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
 
         boss_icecrown_citadelAI::Reset();
     }
@@ -238,6 +239,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             Events.RescheduleEvent(EVENT_BEGIN_FIGHT, 12500);
             Events.RescheduleEvent(EVENT_COMBAT_CHECK, 13*IN_MILLISECONDS, TIMER_COMBAT_CHECK);
             m_BossEncounter = IN_PROGRESS;
+            SendEncounterUnit(ENCOUNTER_FRAME_ADD);
         }
     }
 
@@ -251,6 +253,7 @@ struct MANGOS_DLL_DECL boss_valithriaAI: public boss_icecrown_citadelAI
             m_BossEncounter = NOT_STARTED;
             m_creature->Respawn();
         }
+        SendEncounterUnit(ENCOUNTER_FRAME_REMOVE);
     }
 
     void JustSummoned(Creature* pSummon)
