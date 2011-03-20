@@ -362,7 +362,7 @@ struct MANGOS_DLL_DECL boss_lady_deathwhisperAI: public boss_icecrown_citadelAI
                     DoScriptText(SAY_DOMINATE_MIND, m_creature);
                     break;
                 case EVENT_SUMMON_ADDS:
-                    if (m_bIs10Man)
+                    if (m_bIs10Man || (!m_bIs10Man && m_bIsHeroic && Events.GetPhase() == PHASE_TWO))
                     {
                         bool IsFanatic = LastSummonSideIsLeft;
                         for (uint32 i = 0; i < 3; i++)
