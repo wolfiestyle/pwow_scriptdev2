@@ -235,19 +235,32 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader: public ScriptedInstance
             case UPPER_BACK_PAIN_CRITERIA_H25:
                 return m_InstanceVars[DATA_ACHIEVEMENT_COUNTER] >= 4;
             case TRIBUTE_TO_SKILL_CRITERIA_10H1:
+                return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 25;
             case TRIBUTE_TO_SKILL_CRITERIA_25H1:
-                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 25;
+                return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 25;
             case TRIBUTE_TO_MAD_SKILL_CRITERIA_10H1:
+                return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 45;
             case TRIBUTE_TO_MAD_SKILL_CRITERIA_25H1:
-                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 45;
+                return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 45;
             case TRIBUTE_TO_INSANITY_CRITERIA_10H1:
+                return instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
+
             case TRIBUTE_TO_INSANITY_CRITERIA_25H1:
-            //case TRIBUTE_TO_DEDICATED_INSANITY:      //TODO: uncomment this line once the checks for gear get applied for every encounter
             case REALMFIRST_GRAND_CRUSADER_CRITERIA:
-                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
+                return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
+            //case TRIBUTE_TO_DEDICATED_INSANITY:      //TODO: uncomment these line once the checks for gear get applied for every encounter
+            //    return (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC) &&
+            //        m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50;
             case TRIBUTE_TO_IMMORTALITY_CRITERIA_25H:
             case TRIBUTE_TO_IMMORTALITY_CRITERIA_25A:
-                return m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50 && m_InstanceVars[DATA_IMMORTAL];
+                return instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC &&
+                    m_InstanceVars[DATA_ATTEMPT_COUNTER] >= 50 && m_InstanceVars[DATA_IMMORTAL];
             default:
                 return false;
         }
