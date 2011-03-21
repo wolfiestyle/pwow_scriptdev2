@@ -894,8 +894,8 @@ struct MANGOS_DLL_DECL npc_scarlet_miner_massacreAI : public npc_escortAI
     {
         if (i == 10)
         {
-            DoScriptText(SAY_MASSACRE_END,m_creature);
-            ((TemporarySummon*)m_creature)->UnSummon();
+            DoScriptText(SAY_MASSACRE_END, m_creature);
+            DespawnCreature(m_creature);
         }
     }
 };
@@ -943,8 +943,7 @@ struct MANGOS_DLL_DECL npc_mine_carAI : public ScriptedAI
         else 
         {
             pWho->setFaction(oldFaction);
-            if (TemporarySummon* tempSumm = dynamic_cast<TemporarySummon*>(m_creature))
-                tempSumm->UnSummon();
+            DespawnCreature(m_creature);
         }
     }
 
