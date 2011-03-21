@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Ebon_Hold
 SD%Complete: 100
-SDComment: Quest support: 12848, 12641, 12680, 12687, 12733, 12698, 12717, 12720, 12727, 12739, 12742 - 12750, 12754, 12801, 13166
+SDComment: Quest support: 12848, 12641, 12680, 12687, 12733, 12698, 12701, 12717, 12720, 12727, 12739, 12742 - 12750, 12754, 12801, 13166
 SDCategory: Ebon Hold
 EndScriptData */
 
@@ -32,6 +32,8 @@ mob_dark_rider_of_acherus
 npc_death_knight_initiate
 npc_scarlet_miner
 npc_scarlet_ghoul
+npc_scarlet_miner_massacre
+npc_mine_car
 go_plague_cauldron
 npc_persuade_scarlet
 npc_koltira_deathweaver
@@ -44,6 +46,7 @@ EndContentData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
+#include "TemporarySummon.h"
 
 /*######
 ## The Endless Hunger - 12848
@@ -864,6 +867,93 @@ struct MANGOS_DLL_DECL npc_scarlet_ghoulAI : public ScriptedAI
 CreatureAI* GetAI_npc_scarlet_ghoul(Creature* pCreature)
 {
     return new npc_scarlet_ghoulAI(pCreature);
+}
+
+/*#####
+## Massacre at Light's Point - 12701
+#####*/
+
+enum MassacreAtLightsPoint
+{
+    NPC_SCARLET_MINER   = 28841,
+    NPC_MINE_CAR        = 28817,
+
+    SAY_MASSACRE_START  = -1300579,
+    SAY_MASSACRE_END    = -1300580,
+
+    SPELL_DRAG_VISUAL   = 52465, // not working - breaks on movement
+};
+
+struct MANGOS_DLL_DECL npc_scarlet_miner_massacreAI : public npc_escortAI
+{
+    npc_scarlet_miner_massacreAI(Creature *pCreature) : npc_escortAI(pCreature) {}
+
+    void Reset() {}
+
+    void WaypointReached(uint32 i)
+    {
+        if (i == 10)
+        {
+            DoScriptText(SAY_MASSACRE_END,m_creature);
+            ((TemporarySummon*)m_creature)->UnSummon();
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_scarlet_miner_massacre(Creature* pCreature)
+{
+    return new npc_scarlet_miner_massacreAI(pCreature);
+}
+
+struct MANGOS_DLL_DECL npc_mine_carAI : public ScriptedAI
+{
+    uint32 oldFaction;
+
+    npc_mine_carAI(Creature* pCreature) : 
+    ScriptedAI(pCreature),
+    oldFaction(0)
+    {
+        m_creature->setFaction(35);
+
+        float x, y;
+        m_creature->GetNearPoint2D(x, y, CONTACT_DISTANCE, 0);
+        Creature* pMiner = m_creature->SummonCreature(NPC_SCARLET_MINER, x, y, m_creature->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
+        pMiner->setFaction(35);
+        pMiner->SetFacingToObject(m_creature);
+        //m_creature->CastSpell(pMiner, SPELL_DRAG_VISUAL, true);
+        m_creature->GetMotionMaster()->MoveFollow(pMiner, 1, M_PI_F);
+
+        DoScriptText(SAY_MASSACRE_START, pMiner);
+        if (npc_scarlet_miner_massacreAI* pEscortAI = dynamic_cast<npc_scarlet_miner_massacreAI*>(pMiner->AI()))
+            pEscortAI->Start();
+    }
+
+    void PassengerBoarded(Unit *pWho, int8 seat, bool apply)
+    {
+        if (!pWho)
+            return;
+
+        if (apply)
+        {
+            oldFaction = pWho->getFaction();
+            pWho->setFaction(35);
+            m_creature->setFaction(35);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
+        else 
+        {
+            pWho->setFaction(oldFaction);
+            if (TemporarySummon* tempSumm = dynamic_cast<TemporarySummon*>(m_creature))
+                tempSumm->UnSummon();
+        }
+    }
+
+    void Reset() {}
+};
+
+CreatureAI* GetAI_npc_mine_car(Creature* pCreature)
+{
+    return new npc_mine_carAI(pCreature);
 }
 
 /*#####
@@ -3573,6 +3663,16 @@ void AddSC_ebon_hold()
     newscript = new Script;
     newscript->Name = "npc_scarlet_ghoul";
     newscript->GetAI = &GetAI_npc_scarlet_ghoul;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_scarlet_miner_massacre";
+    newscript->GetAI = &GetAI_npc_scarlet_miner_massacre;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_mine_car";
+    newscript->GetAI = &GetAI_npc_mine_car;
     newscript->RegisterSelf();
 
     newscript = new Script;
