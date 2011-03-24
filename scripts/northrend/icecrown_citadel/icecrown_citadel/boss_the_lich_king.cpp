@@ -446,33 +446,28 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
     {
         if (pCaster)
         {
-            switch (pSpell->Id)
+            if (pSpell->Id == SPELL_HARVEST_SOUL_DUMMY)  // Teleport into frostmourne occured
             {
-                case SPELL_HARVEST_SOUL_DUMMY:  // Teleport into frostmourne occured
-                    if (PlayersInFrostmourne.empty())
-                        if (Creature *Terenas = SummonMgr.SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSummonPosition[0], TerenasSummonPosition[1], TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))  // CHANGE THESE LOCS!!
+                if (PlayersInFrostmourne.empty())
+                    if (Creature *Terenas = SummonMgr.SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSummonPosition[0], TerenasSummonPosition[1], TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))  // CHANGE THESE LOCS!!
+                    {
+                        Terenas->SetOwnerGuid(m_creature->GetObjectGuid());
+                        if (m_bIsHeroic)
                         {
-                            Terenas->SetOwnerGuid(m_creature->GetObjectGuid());
-                            if (m_bIsHeroic)
-                            {
-                                m_creature->MonsterMove(515.0f, CenterPosition[1], CenterPosition[2], 2000);
-                                Events.SetPhase(PHASE_FROSTMOURNE);
-                            }
-                            else
-                                if (Creature *SpritWarden = SummonMgr.SummonCreature(NPC_SPIRIT_WARDEN, TerenasSummonPosition[0] - 10.0f, TerenasSummonPosition[1] - 10.0f, TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))
-                                {
-                                    Terenas->SetHealthPercent(50.0f);
-                                    SpritWarden->SetOwnerGuid(m_creature->GetObjectGuid());
-                                    SpritWarden->AddThreat(Terenas, 500000.0f);
-                                    pCaster->getHostileRefManager().clearReferences();
-                                }
+                            m_creature->MonsterMove(515.0f, CenterPosition[1], CenterPosition[2], 2000);
+                            Events.SetPhase(PHASE_FROSTMOURNE);
                         }
-                    PlayersInFrostmourne.push_back(pCaster->GetObjectGuid());
-                    break;
-                default:
-                    break;
+                        else if (Creature *SpritWarden = SummonMgr.SummonCreature(NPC_SPIRIT_WARDEN, TerenasSummonPosition[0] - 10.0f, TerenasSummonPosition[1] - 10.0f, TerenasSummonPosition[2], 0.0f, TEMPSUMMON_DEAD_DESPAWN))
+                        {
+                            Terenas->SetHealthPercent(50.0f);
+                            SpritWarden->SetOwnerGuid(m_creature->GetObjectGuid());
+                            SpritWarden->AddThreat(Terenas, 500000.0f);
+                            pCaster->getHostileRefManager().clearReferences();
+                        }
+                    }
+                PlayersInFrostmourne.push_back(pCaster->GetObjectGuid());
             }
-            if (pSpell->SpellDifficultyId == 2296 && pCaster->GetTypeId() == TYPEID_PLAYER)    // player supposed to die inside frostmourne
+            else if (pSpell->SpellDifficultyId == 2296 && pCaster->GetTypeId() == TYPEID_PLAYER)    // player supposed to die inside frostmourne
             {
                 PlayersToInstakill.push_back(pCaster->GetObjectGuid());   // could be still teleporting - put player on queue for killing (how wonderfully morbid)
                 if (!m_bIsHeroic)
@@ -533,22 +528,23 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         UpdateTalkPhases(uiDiff);
 
         // kill any players ready for killing
-        for (GuidList::iterator i = PlayersToInstakill.begin(); i!= PlayersToInstakill.end(); )
+        for (GuidList::iterator i = PlayersToInstakill.begin(); i != PlayersToInstakill.end(); )
         {
-            if (Unit *UnitToKill = m_creature->GetMap()->GetUnit(*i))
-                if (UnitToKill->GetTypeId() == TYPEID_PLAYER)
+            if (Player *PlayerToKill = m_creature->GetMap()->GetPlayer(*i))
+                if (PlayerToKill->IsBeingTeleported())
                 {
-                    if (!static_cast<Player*>(UnitToKill)->IsBeingTeleported())
-                    {
-                        UnitToKill->CastSpell(UnitToKill, 72627, true);         // kills player
-                        PlayersInFrostmourne.remove(*i);
-                        i = PlayersToInstakill.erase(i);
-                    }
-                    else
-                        ++i;
+                    PlayerToKill->CastSpell(PlayerToKill, 72627, true);     // kills player
+                    PlayersInFrostmourne.remove(*i);
+                    i = PlayersToInstakill.erase(i);
                 }
-            if (PlayersInFrostmourne.empty() && m_bIsHeroic)               // all players have died, reset
+                else
+                    ++i;
+
+            if (m_bIsHeroic && PlayersInFrostmourne.empty())                // all players have died, reset
+            {
                 EnterEvadeMode();
+                return;
+            }
         }
 
         if (PlayersInFrostmourne.empty() && Events.GetPhase() == PHASE_FROSTMOURNE) // Just in case something strange happens
@@ -635,9 +631,8 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                         Events.ScheduleEvent(EVENT_HARVEST_SOUL_HEROIC_TELE, TIMER_HARVEST_SOUL_HEROIC_TELE);
                         DoCast(m_creature->getVictim(), SPELL_HARVEST_SOULS);
                     }
-                    else
-                        if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
-                            DoCast(Target, SPELL_HARVEST_SOUL);
+                    else if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
+                        DoCast(Target, SPELL_HARVEST_SOUL);
                     DoScriptText(SAY_HARVEST_SOUL, m_creature);
                     break;
                 case EVENT_HARVEST_SOUL_HEROIC_TELE:
@@ -694,7 +689,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     DoCast(m_creature, SPELL_SUMMON_ICE_SPHERE);
                     break;
                 case EVENT_QUAKE:
-                    m_creature->CastSpell(m_creature, SPELL_QUAKE,false);
+                    m_creature->CastSpell(m_creature, SPELL_QUAKE, false);
                     Events.SetCooldown(5*IN_MILLISECONDS, COOLDOWN_TRANSITION_PHASE);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     Events.ScheduleEvent(EVENT_DROP_EDGES, 5*IN_MILLISECONDS);
@@ -968,7 +963,7 @@ struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI
 
     void JustDied(Unit *pKiller)
     {
-        m_creature->ForcedDespawn();
+        DespawnCreature(m_creature);
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -976,7 +971,7 @@ struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI
         if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDist(pWho, INTERACTION_DISTANCE))
         {
             DoCast(pWho, SPELL_ICE_BURST, true);
-            m_creature->ForcedDespawn();
+            DespawnCreature(m_creature);
             return;
         }
         ScriptedAI::MoveInLineOfSight(pWho);
@@ -995,8 +990,7 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
 
     void Aggro(Unit *pWho)
     {
-        Unit* Creator = NULL;
-        if (Creator = m_creature->GetMap()->GetUnit(m_creature->GetCreatorGuid()))
+        if (Unit* Creator = m_creature->GetMap()->GetUnit(m_creature->GetCreatorGuid()))
             m_creature->SetDisplayId(Creator->GetDisplayId());
         BroadcastScriptMessageToEntry(m_creature, NPC_LICH_KING, 300.0f);
         SCHEDULE_EVENT(SOUL_SHRIEK);
@@ -1022,6 +1016,7 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
     }
 };
 
+//TODO: this must be rewritten using vehicles!
 struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public ScriptEventInterface
 {
     ObjectGuid PrisonerGuid;
@@ -1086,7 +1081,7 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
 struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
 {
     uint32 UnfreezeTimer;
-    bool m_bBlewUp : 1;
+    bool m_bBlewUp :1;
 
     // TODO: handle spirits depending on spawn position (Frostmourne - Frozen Throne) different behaviour expected.
     mob_vile_wicked_spiritAI(Creature* pCreature):
@@ -1105,10 +1100,10 @@ struct MANGOS_DLL_DECL mob_vile_wicked_spiritAI: public ScriptedAI
     {
         if (!UnfreezeTimer)
         {
-            if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDist(pWho, INTERACTION_DISTANCE) && !m_bBlewUp)
+            if (pWho && pWho->GetTypeId() == TYPEID_PLAYER && !m_bBlewUp && m_creature->IsWithinDist(pWho, INTERACTION_DISTANCE))
             {
                 m_bBlewUp = true;
-                DoCast(pWho,  SPELL_SPIRIT_BURST, true);
+                DoCast(pWho, SPELL_SPIRIT_BURST, true);
                 m_creature->ForcedDespawn(1*IN_MILLISECONDS);
                 return;
             }
@@ -1158,7 +1153,8 @@ struct MANGOS_DLL_DECL mob_terenas_menethilAI: public ScriptedAI
             Events.ScheduleEvent(EVENT_SUMMON_FROSTMOURNE_SPIRITS, 0);
             Events.ScheduleEvent(EVENT_SUMMON_FROSTMOURNE_SPIRITS, TIMER_SUMMON_FROSTMOURNE_SPIRITS);
             SCHEDULE_EVENT(TELEPORT_OUT);
-        }else
+        }
+        else
             Events.ScheduleEvent(EVENT_TALK, (1+7+13)*IN_MILLISECONDS);
     }
 
