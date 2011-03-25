@@ -558,7 +558,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         for (GuidList::iterator i = PlayersToInstakill.begin(); i != PlayersToInstakill.end(); )
         {
             if (Player *PlayerToKill = m_creature->GetMap()->GetPlayer(*i))
-                if (PlayerToKill->IsBeingTeleported())
+                if (!PlayerToKill->IsBeingTeleported())
                 {
                     PlayerToKill->CastSpell(PlayerToKill, 72627, true);     // kills player
                     PlayersInFrostmourne.remove(*i);
