@@ -28,6 +28,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "icecrown_citadel.h"
+#include "Vehicle.h"
 
 enum Spells
 {
@@ -82,9 +83,13 @@ enum Spells
     SPELL_DARK_HUNGER_HEAL              = 69384,
     // valkyr
     SPELL_WINGS_OF_THE_DAMNED           = 74352,
+    SPELL_SOUL_LEECH                    = 73783,
     // Ice sphere
-    SPELL_ICE_PULSE                     = 69099,    // not working - cannot move while casting spell
-    SPELL_ICE_BURST                     = 69108,
+    SPELL_ICE_SPHERE_VISUAL             = 69090,
+    SPELL_ICE_PULSE_LINK                = 69091,
+    SPELL_ICE_PULSE_BOLT                = 69092,
+    SPELL_ICE_PULSE_DAMAGE              = 69099,    // casted by target on impact
+    SPELL_ICE_BURST                     = 69108,    // casted on proximity
     // Shambling horror
     SPELL_SHOCKWAVE                     = 72149,
     SPELL_ENRAGE                        = 72143,
@@ -185,6 +190,10 @@ enum Events
     EVENT_TELEPORT_OUT,
     EVENT_SUMMON_FROSTMOURNE_SPIRITS,
     EVENT_TALK,
+    // Val'kyr
+    EVENT_START_MOVING,
+    EVENT_SOUL_LEECH,
+    EVENT_MOVE_AGAIN,
 };
 
 enum Cooldowns
@@ -368,9 +377,14 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                     pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     break;
                 case NPC_VALKYR_SHADOWGUARD:
-                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 1))
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 2)) // dont get tanks
                        SendScriptMessageTo(pSumm, Target);
                     pSumm->SetInCombatWithZone();
+                    break;
+                case NPC_ICE_SPHERE:
+                    if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                       SendScriptMessageTo(pSumm, Target);
+                    pSumm->SetInCombatWithZone();                    
                     break;
                 case NPC_TERENAS_MENETHIL_FROSTMOURNE:  // Friendly summons
                 case NPC_TERENAS_MENETHIL_OUTRO:
@@ -412,8 +426,24 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
         DoStartNoMovement(m_creature->getVictim());
         m_creature->MonsterMove(CenterPosition[0], CenterPosition[1], CenterPosition[2], TIMER_REMORSELESS_WINTER);
         if (Events.GetPhase() != PHASE_TRANSITION_ONE)
+        {
             if (GameObject* Platform = GET_GAMEOBJECT(DATA_LICHKING_PLATFORM))
                 Platform->DamageTaken(m_creature, 100000); //Rebuild platform
+            if (m_bIsHeroic) // on second transition, all Val'kyr are killed
+            {
+                std::list<ObjectGuid> summons = SummonMgr.GetSummonList();
+                for (std::list<ObjectGuid>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
+                {
+                    if (Creature* pSumm = m_creature->GetMap()->GetCreature(*itr))
+                    {
+                        if (pSumm->GetEntry() != NPC_VALKYR_SHADOWGUARD)
+                            continue;
+
+                        SendScriptMessageTo(pSumm, m_creature, 0, 0);
+                    }
+                }
+            }
+        }
         if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
             Wind->SetGoState(GO_STATE_ACTIVE);
         Events.ScheduleEvent(EVENT_REMORSELESS_WINTER, TIMER_REMORSELESS_WINTER);
@@ -645,6 +675,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                             continue;
                         if (pPlayer->isAlive() && pPlayer->HasAuraByDifficulty(SPELL_HARVEST_SOULS))
                         {
+                            pPlayer->RemoveAurasByDifficulty(SPELL_HARVEST_SOULS);
                             pPlayer->CastSpell(pPlayer, SPELL_HARVEST_SOUL_TELEPORT, true);
                             pPlayer->CastSpell(m_creature, SPELL_HARVEST_SOUL_DUMMY, true);
                         }
@@ -952,18 +983,51 @@ struct MANGOS_DLL_DECL mob_shambling_horrorAI: public ScriptedAI
     }
 };
 
-struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI
+
+#define TIMER_PULSE     3*IN_MILLISECONDS
+
+struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI, ScriptMessageInterface
 {
     mob_ice_sphereAI(Creature* pCreature):
         ScriptedAI(pCreature)
     {
+        Reset();
     }
 
-    void Reset() {}
+    ObjectGuid pTargetGUID;
+    uint32 m_uiPulseTimer;
+
+    void Reset()
+    {
+        m_uiPulseTimer = 0;
+        m_creature->CastSpell(m_creature, SPELL_ICE_SPHERE_VISUAL, true);
+    }
+
+    void ScriptMessage(WorldObject* pSender, uint32 data1, uint32 data2)
+    { // targetted player will send this one (similar to Val'kyr mechanic)
+        if (pSender && pSender->GetTypeId() == TYPEID_PLAYER)
+        {
+            Player* pTar = (Player*)pSender;
+            pTargetGUID = pSender->GetObjectGuid();
+            m_creature->AddThreat(pTar, 90000.0f); // add threat so we follow someone
+            m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
+            m_creature->CastSpell(pTar, SPELL_ICE_PULSE_LINK, true);
+            m_creature->GetMotionMaster()->MoveChase(pTar, 0.0f, 0.0f);
+            m_uiPulseTimer = TIMER_PULSE;
+        }
+    }
 
     void JustDied(Unit *pKiller)
     {
         DespawnCreature(m_creature);
+    }
+
+    void SpellHitTarget(Unit* pVictim, const SpellEntry* pSpell)
+    {
+        if (pSpell->Id == SPELL_ICE_PULSE_BOLT)
+        {
+            pVictim->CastSpell(pVictim, GetSpellIdWithDifficulty(SPELL_ICE_PULSE_DAMAGE, m_creature->GetMap()->GetDifficulty()), true);
+        }
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -975,6 +1039,27 @@ struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI
             return;
         }
         ScriptedAI::MoveInLineOfSight(pWho);
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (pTargetGUID.IsEmpty())
+            DespawnCreature(m_creature);
+
+        if (!m_creature->HasAura(SPELL_ICE_SPHERE_VISUAL))
+            m_creature->CastSpell(m_creature, SPELL_ICE_SPHERE_VISUAL, true);
+
+        if (m_uiPulseTimer && m_uiPulseTimer <= uiDiff)
+        {
+            if (Unit* pTar = m_creature->GetMap()->GetUnit(pTargetGUID))
+            {
+                m_creature->CastSpell(pTar, SPELL_ICE_PULSE_BOLT, true);
+                m_uiPulseTimer = TIMER_PULSE;
+            }
+        } else m_uiPulseTimer -= uiDiff;
     }
 };
 
@@ -1016,65 +1101,127 @@ struct MANGOS_DLL_DECL mob_raging_spiritAI: public ScriptedAI, public ScriptEven
     }
 };
 
-//TODO: this must be rewritten using vehicles!
 struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public ScriptEventInterface
 {
     ObjectGuid PrisonerGuid;
+    ScriptedInstance* m_pInstance;
+    float m_fx, m_fy, m_fz;
+    bool m_bIsHeroic :1;
+    bool m_bStartedFlying :1;
 
     mob_valkyr_shadowguardAI(Creature* pCreature):
         ScriptedAI(pCreature),
-        ScriptEventInterface(pCreature)
+        ScriptEventInterface(pCreature),
+        m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData())),
+        m_bIsHeroic(pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+
     {
         // prevent it from moving too fast
-        pCreature->SetSpeedRate(MOVE_WALK, 0.7f, true);
-        pCreature->SetSpeedRate(MOVE_RUN, 0.7f, true);
-        pCreature->SetSpeedRate(MOVE_FLIGHT, 0.7f, true);
-        DoCast(m_creature, SPELL_WINGS_OF_THE_DAMNED);
+        pCreature->SetSpeedRate(MOVE_WALK, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_RUN, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_RUN_BACK, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_SWIM, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_SWIM_BACK, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_TURN_RATE, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_FLIGHT, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_FLIGHT_BACK, 0.4f, true);
+        pCreature->SetSpeedRate(MOVE_PITCH_RATE, 0.4f, true);
+        DoCast(pCreature, SPELL_WINGS_OF_THE_DAMNED);
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_UNK_2); // make it flap its wings :D
+        pCreature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
+        pCreature->AddSplineFlag(SPLINEFLAG_FLYING);
+        SetCombatMovement(false);
     }
 
-    void Reset() {}
+    void Reset()
+    {
+        m_bStartedFlying = false;
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        DoStartNoMovement(pWho);
+    }
 
     void ScriptMessage(WorldObject *pSender, uint32, uint32)
     {
         if (pSender && pSender->GetTypeId() == TYPEID_PLAYER)
             PrisonerGuid = pSender->GetObjectGuid();
+        else
+            DespawnCreature(m_creature);
+
         Unit* Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid);
         if (Prisoner)
         {
-            DoStartNoMovement(Prisoner);
+            m_creature->GetMotionMaster()->MoveIdle();
+            m_creature->StopMoving();
             float x, y, z;
             Prisoner->GetPosition(x, y, z);
-            m_creature->NearTeleportTo(x, y, z, Prisoner->GetOrientation(), false);
+            m_creature->MonsterMoveWithSpeed(x, y, z + 4.0f, 1*IN_MILLISECONDS);
+
+            if (m_creature->GetVehicleKit())
+                Prisoner->EnterVehicle(m_creature->GetVehicleKit(), 0);
+
+            Events.ScheduleEvent(EVENT_START_MOVING, 1*IN_MILLISECONDS);
         }
-        float Angle, x, y;
-        Angle = m_creature->GetAngle(CenterPosition[0], CenterPosition[1]);
-        if (Angle < M_PI_F/4 && Angle > 7*M_PI_F/4)
-            Angle = 3*M_PI_F/2;
-        Angle += M_PI_F;
-        GetPointOnCircle(x, y, 80.0f, Angle, CenterPosition[0], CenterPosition[1]);
-        m_creature->GetMotionMaster()->MovePoint(0, x, y, m_creature->GetPositionZ());
     }
 
-    void MoveInLineOfSight(Unit *pWho) {}
+    void MoveInLineOfSight(Unit *pWho){}
 
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (!m_creature->IsWithinDist2d(CenterPosition[0], CenterPosition[1], 75.0f))
+        if (!m_creature->IsWithinDist2d(CenterPosition[0], CenterPosition[1], 88.0f))
         {
+            if (m_creature->GetVehicleKit() && m_creature->GetVehicleKit()->GetPassenger(0))
+                m_creature->GetVehicleKit()->RemoveAllPassengers();
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, 0, false);
             return;
         }
 
-        if (Unit *Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid))
+        if (m_bIsHeroic)
         {
-            m_creature->SetTargetGuid(PrisonerGuid);
-            Prisoner->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(),
-                m_creature->GetPositionZ(), Prisoner->GetOrientation(), false);
-            //Prisoner->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+            if (!m_bStartedFlying && m_creature->GetHealthPercent() <= 50.0f)
+            {
+                m_bStartedFlying = true;
+
+                if (m_creature->GetVehicleKit() && m_creature->GetVehicleKit()->GetPassenger(0))
+                    m_creature->GetVehicleKit()->RemoveAllPassengers();
+
+                DoStartNoMovement(m_creature->getVictim());
+                m_creature->MonsterMoveWithSpeed(505.093f, -2124.19f, 1060.56f, 7*IN_MILLISECONDS);
+
+                Events.ScheduleEvent(EVENT_SOUL_LEECH, 10*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+            }
         }
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+                case EVENT_SOUL_LEECH:
+                    m_creature->CastSpell(m_creature->getVictim(), SPELL_SOUL_LEECH, false);
+                    break;
+                case EVENT_START_MOVING:
+                {
+                    float Angle;
+                    Angle = m_creature->GetAngle(CenterPosition[0], CenterPosition[1]);
+                    if (Angle < M_PI_F/4 && Angle > 7*M_PI_F/4)
+                        Angle = 3*M_PI_F/2;
+                    Angle += M_PI_F;
+                    GetPointOnCircle(m_fx, m_fy, 90.0f, Angle, CenterPosition[0], CenterPosition[1]);
+                    m_creature->GetMotionMaster()->MovePoint(0, m_fx, m_fy, m_creature->GetPositionZ()+3.0f);
+                    Events.ScheduleEvent(EVENT_MOVE_AGAIN, 1*IN_MILLISECONDS);
+                    break;
+                }
+                case EVENT_MOVE_AGAIN:
+                    m_creature->GetMotionMaster()->MovePoint(0, m_fx, m_fy, m_creature->GetPositionZ()+3.0f);
+                    break;
+                default:
+                    break;
+            }
     }
 };
 
