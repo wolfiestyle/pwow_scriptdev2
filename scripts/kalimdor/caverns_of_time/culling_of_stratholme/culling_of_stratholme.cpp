@@ -2006,13 +2006,13 @@ bool GossipHello_npc_chromie(Player *pPlayer, Creature *pCreature)
             case NPC_CHROMIE_INN:
                 if (m_pInstance->GetData(TYPE_GRAIN_EVENT) != DONE)
                 {
-                    if (pPlayer->GetQuestRewardStatus(QUEST_DISPELLING_ILLUSIONS) && !pPlayer->HasItemCount(ITEM_ARCANE_DISRUPTOR, 1))
+                    if (!pPlayer->HasItemCount(ITEM_ARCANE_DISRUPTOR, 1))
                         pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_INN_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 }
                 pPlayer->SEND_GOSSIP_MENU(TEXT_ID_INN_1, pCreature->GetGUID());
                 break;
             case NPC_CHROMIE_ENTRANCE:
-                if (m_pInstance->GetData(TYPE_GRAIN_EVENT) == DONE && m_pInstance->GetData(TYPE_ARTHAS_INTRO_EVENT) == NOT_STARTED /*&& pPlayer->GetQuestRewardStatus(QUEST_A_ROYAL_ESCORT)*/)
+                if (m_pInstance->GetData(TYPE_GRAIN_EVENT) == DONE && m_pInstance->GetData(TYPE_ARTHAS_INTRO_EVENT) == NOT_STARTED)
                     pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ENTRANCE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 pPlayer->SEND_GOSSIP_MENU(TEXT_ID_ENTRANCE_1, pCreature->GetGUID());
                 break;
