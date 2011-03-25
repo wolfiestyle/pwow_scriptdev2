@@ -215,7 +215,8 @@ struct MANGOS_DLL_DECL boss_lord_marrowgarAI: public boss_icecrown_citadelAI
             return;
         if (GameObject* Door = GET_GAMEOBJECT(DATA_MARROWGAR_DOOR_ENTRANCE))
             Door->SetGoState(GO_STATE_READY);
-        m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 0); // reset achievement check on engage
+        if (m_pInstance)
+            m_pInstance->SetData(DATA_ACHIEVEMENT_CHECK_MARROWGAR, 0);  // reset achievement check on engage
         DoScriptText(SAY_AGGRO, m_creature);
         SCHEDULE_EVENT_R(COLDFLAME);
         SCHEDULE_EVENT(BONE_SPIKE_GRAVEYARD);
