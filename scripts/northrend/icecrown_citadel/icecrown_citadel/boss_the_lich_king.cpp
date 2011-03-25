@@ -17,10 +17,7 @@
 /* ScriptData
 SDName: boss_the_lich_king
 SD%Complete: 80%
-SDComment: Various platfrom transformations not working,
-           Valkyr Shadowguards not working,
-           Frostmourne room looks terrible,
-           Ice Spheres don't have a 'beam' to the targeted player,
+SDComment: Frostmourne room looks terrible,
            players can release after 10% outro,
            creature templates missing for 39190 (Wicked Spirits) - replaced with Vile Spirits.
 SDCategory: Icecrown Citadel
