@@ -381,7 +381,7 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 case NPC_ICE_SPHERE:
                     if (Unit *Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                        SendScriptMessageTo(pSumm, Target);
-                    pSumm->SetInCombatWithZone();                    
+                    pSumm->SetInCombatWithZone();
                     break;
                 case NPC_TERENAS_MENETHIL_FROSTMOURNE:  // Friendly summons
                 case NPC_TERENAS_MENETHIL_OUTRO:
@@ -428,17 +428,10 @@ struct MANGOS_DLL_DECL boss_the_lich_kingAI: public boss_icecrown_citadelAI
                 Platform->DamageTaken(m_creature, 100000); //Rebuild platform
             if (m_bIsHeroic) // on second transition, all Val'kyr are killed
             {
-                std::list<ObjectGuid> summons = SummonMgr.GetSummonList();
-                for (std::list<ObjectGuid>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
-                {
-                    if (Creature* pSumm = m_creature->GetMap()->GetCreature(*itr))
-                    {
-                        if (pSumm->GetEntry() != NPC_VALKYR_SHADOWGUARD)
-                            continue;
-
-                        SendScriptMessageTo(pSumm, m_creature, 0, 0);
-                    }
-                }
+                std::deque<Creature*> valkyrs;
+                SummonMgr.GetAllSummonsWithId(valkyrs, NPC_VALKYR_SHADOWGUARD);
+                for (std::deque<Creature*>::const_iterator itr = valkyrs.begin(); itr != valkyrs.end(); ++itr)
+                    SendScriptMessageTo(*itr, m_creature, 0, 0);
             }
         }
         if (GameObject *Wind = GET_GAMEOBJECT(DATA_LICHKING_FROSTY_WIND))
@@ -985,14 +978,14 @@ struct MANGOS_DLL_DECL mob_shambling_horrorAI: public ScriptedAI
 
 struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI, ScriptMessageInterface
 {
+    ObjectGuid pTargetGUID;
+    uint32 m_uiPulseTimer;
+
     mob_ice_sphereAI(Creature* pCreature):
         ScriptedAI(pCreature)
     {
         Reset();
     }
-
-    ObjectGuid pTargetGUID;
-    uint32 m_uiPulseTimer;
 
     void Reset()
     {
@@ -1056,7 +1049,9 @@ struct MANGOS_DLL_DECL mob_ice_sphereAI: public ScriptedAI, ScriptMessageInterfa
                 m_creature->CastSpell(pTar, SPELL_ICE_PULSE_BOLT, true);
                 m_uiPulseTimer = TIMER_PULSE;
             }
-        } else m_uiPulseTimer -= uiDiff;
+        }
+        else
+            m_uiPulseTimer -= uiDiff;
     }
 };
 
@@ -1110,8 +1105,8 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
         ScriptedAI(pCreature),
         ScriptEventInterface(pCreature),
         m_pInstance(dynamic_cast<ScriptedInstance*>(m_creature->GetInstanceData())),
-        m_bIsHeroic(pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
-
+        m_bIsHeroic(pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_HEROIC || pCreature->GetMap()->GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC),
+        m_bStartedFlying(false)
     {
         // prevent it from moving too fast
         pCreature->SetSpeedRate(MOVE_WALK, 0.4f, true);
@@ -1145,10 +1140,12 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
         if (pSender && pSender->GetTypeId() == TYPEID_PLAYER)
             PrisonerGuid = pSender->GetObjectGuid();
         else
+        {
             DespawnCreature(m_creature);
+            return;
+        }
 
-        Unit* Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid);
-        if (Prisoner)
+        if (Unit* Prisoner = m_creature->GetMap()->GetUnit(PrisonerGuid))
         {
             m_creature->GetMotionMaster()->MoveIdle();
             m_creature->StopMoving();
@@ -1163,7 +1160,7 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
         }
     }
 
-    void MoveInLineOfSight(Unit *pWho){}
+    void MoveInLineOfSight(Unit *pWho) {}
 
     void UpdateAI(const uint32 uiDiff)
     {
