@@ -118,7 +118,8 @@ instance_culling_of_stratholme::instance_culling_of_stratholme(Map* pMap) : Scri
     m_uiOReillyGUID(0),
 
     m_uiDoorBookcaseGUID(0),
-    m_uiDarkRunedChestGUID(0)
+    m_uiDarkRunedChestGUID(0),
+    m_uiCityGateGUID(0)
 {
     Initialize();
 }
@@ -389,6 +390,9 @@ void instance_culling_of_stratholme::OnObjectCreate(GameObject* pGo)
         case GO_DARK_RUNED_CHEST_H:
             m_uiDarkRunedChestGUID = pGo->GetGUID();
             break;
+        case GO_CITY_GATE:
+            m_uiCityGateGUID = pGo->GetGUID();
+            break;
     }
 }
 
@@ -474,6 +478,8 @@ void instance_culling_of_stratholme::SetData(uint32 uiType, uint32 uiData)
             {
                 if (GameObject* pGO = instance->GetGameObject(m_uiDarkRunedChestGUID))
                     pGO->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
+                if (GameObject* pGO = instance->GetGameObject(m_uiCityGateGUID))
+                    pGO->SetGoState(GO_STATE_ACTIVE);
                 DoSpawnChromieIfNeeded();
             }
             break;

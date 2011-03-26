@@ -1341,12 +1341,6 @@ struct MANGOS_DLL_DECL npc_arthas_csAI: public npc_escortAI, public ScriptMessag
                 m_uiTalkTimer = 2*IN_MILLISECONDS;
                 SetEscortPaused(true);
                 break;
-            case 49:
-                m_creature->SetFacingTo(2.16f);
-                m_uiTalkPhase = 65;
-                m_uiTalkTimer = 0;
-                SetEscortPaused(true);
-                break;
         }
     }
     void UpdateAI(uint32 const uiDiff)
@@ -1385,11 +1379,13 @@ struct MANGOS_DLL_DECL npc_arthas_csAI: public npc_escortAI, public ScriptMessag
                     if (Unit* pSumm = SummonMgr.GetFirstFoundSummonWithId(NPC_STRATHOLME_CITIZEN))
                     {
                         m_creature->SetFacingToObject(pSumm);
+                        pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                         pSumm->MonsterMoveWithSpeed(2089.191f, 1278.218f, 140.79f, 2*IN_MILLISECONDS);
                         DoScriptText(SAY_CITIZEN_GATES_01, pSumm);
                     }
                     if (Unit* pSumm = SummonMgr.GetFirstFoundSummonWithId(NPC_STRATHOLME_RESIDENT))
                     {
+                        pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                         pSumm->MonsterMoveWithSpeed(2092.647f, 1278.791f, 140.121f, 2*IN_MILLISECONDS);
                     }
                     m_uiTalkTimer = 2*IN_MILLISECONDS;
@@ -1498,7 +1494,10 @@ struct MANGOS_DLL_DECL npc_arthas_csAI: public npc_escortAI, public ScriptMessag
                     for (std::list<ObjectGuid>::iterator itr = summons.begin(); itr != summons.end(); ++itr)
                     {
                         if (Unit* pSumm = m_creature->GetMap()->GetUnit(*itr))
+                        {
+                            pSumm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                             pSumm->SetFacingToObject(m_creature);
+                        }
                     }
                     m_uiTalkTimer = 1*IN_MILLISECONDS;
                     break;
@@ -1619,20 +1618,20 @@ struct MANGOS_DLL_DECL npc_arthas_csAI: public npc_escortAI, public ScriptMessag
                     break;
                 // outro
                 case 60:
-                   SetEscortPaused(false);
+                   m_creature->MonsterMoveWithSpeed(2291.93f, 1509.89f, 130.92f, 4*IN_MILLISECONDS);
                    SetRun(true);
-                   m_uiTalkPhase = 0;
+                   m_uiTalkTimer = 2*IN_MILLISECONDS;
                    break;
-                case 65:
+                case 61:
                    DoScriptText(SAY_MALGANIS_ARTHAS_OUTRO_01, m_creature);
-                   m_uiTalkTimer = 13*IN_MILLISECONDS;
+                   m_uiTalkTimer = 7*IN_MILLISECONDS;
                    break;
-                case 66:
+                case 62:
                    m_creature->SetFacingTo(5.268f);
                    DoScriptText(SAY_MALGANIS_ARTHAS_OUTRO_02, m_creature);
-                   m_uiTalkTimer = 15*IN_MILLISECONDS;
+                   m_uiTalkTimer = 13*IN_MILLISECONDS;
                    break;
-                case 67: // handle credits
+                case 63: // handle credits
                 {
                     Map::PlayerList const& players = m_pInstance->instance->GetPlayers();
                     if (!players.isEmpty())
@@ -1647,13 +1646,14 @@ struct MANGOS_DLL_DECL npc_arthas_csAI: public npc_escortAI, public ScriptMessag
                         }
                     }
                     m_pInstance->SetData(TYPE_MALGANIS_EVENT, DONE); //spawns chest for loot and summons chromie
-                   m_uiTalkTimer = 5*IN_MILLISECONDS;
-                   break;
+                    m_uiTalkTimer = 5*IN_MILLISECONDS;
+                    break;
                 }
-                case 68:
+                case 64:
                    m_uiTalkPhase = 0;
                    break;
                 default:
+                   m_uiTalkPhase = 0;
                     break;
             }
             if (m_uiTalkPhase)

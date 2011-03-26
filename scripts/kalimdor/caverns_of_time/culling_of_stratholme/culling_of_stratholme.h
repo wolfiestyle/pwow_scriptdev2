@@ -99,6 +99,7 @@ enum
     GO_DOOR_BOOKCASE                = 188686,
     GO_DARK_RUNED_CHEST             = 190663,
     GO_DARK_RUNED_CHEST_H           = 193597,
+    GO_CITY_GATE                    = 191788,
 
     // World States
     WORLD_STATE_CRATES              = 3479,
@@ -231,6 +232,7 @@ class MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
 
         uint64 m_uiDoorBookcaseGUID;
         uint64 m_uiDarkRunedChestGUID;
+        uint64 m_uiCityGateGUID;
 };
 
 #endif
