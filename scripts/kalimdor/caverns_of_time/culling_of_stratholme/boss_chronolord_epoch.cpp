@@ -24,20 +24,66 @@ EndScriptData */
 #include "precompiled.h"
 #include "culling_of_stratholme.h"
 
+enum Says
+{
+    SAY_EPOCH_TIMEWARP_01   = ENTRY  - 148,
+    SAY_EPOCH_TIMEWARP_02   = ENTRY  - 149,
+    SAY_EPOCH_TIMEWARP_03   = ENTRY  - 150,
+    SAY_EPOCH_SLAY_01       = ENTRY  - 151,
+    SAY_EPOCH_SLAY_02       = ENTRY  - 152,
+    SAY_EPOCH_SLAY_03       = ENTRY  - 153,
+    SAY_EPOCH_DEATH         = ENTRY  - 154,
+};
+
+enum Spells
+{
+    SPELL_CURSE_OF_EXERTION = 52772,
+    SPELL_TIME_STOP         = 58848,
+    SPELL_TIME_WARP         = 52766,
+
+    SPELL_WOUNDING_STRIKE_H = 58830,
+    SPELL_WOUNDING_STRIKE   = 52771,
+};
+
+enum Events
+{
+    EVENT_CURSE_OF_EXERTION = 1,
+    EVENT_TIME_STOP,
+    EVENT_TIME_WARP,
+    EVENT_WOUNDING_STRIKE,
+};
+
+#define TIMER_CURSE 10*IN_MILLISECONDS
+#define TIMER_WARP  13*IN_MILLISECONDS
+#define TIMER_WOUNDING_STRIKE  5*IN_MILLISECONDS
+#define TIMER_TIME_STOP 20*IN_MILLISECONDS
+
 struct MANGOS_DLL_DECL boss_chronolord_epochAI : public ScriptedAI
 {
+    ScriptedInstance* m_pInstance;
+    EventManager Events;
+    bool m_bIsRegularMode;
+
     boss_chronolord_epochAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
+    void Aggro(Unit* pWho)
+    {
+        Events.ScheduleEvent(EVENT_CURSE_OF_EXERTION, TIMER_CURSE, TIMER_CURSE);
+        Events.ScheduleEvent(EVENT_TIME_WARP, TIMER_WARP, TIMER_WARP);
+        Events.ScheduleEvent(EVENT_WOUNDING_STRIKE, TIMER_WOUNDING_STRIKE, TIMER_WOUNDING_STRIKE);
+        if (!m_bIsRegularMode)
+            Events.ScheduleEvent(EVENT_TIME_STOP, TIMER_TIME_STOP, TIMER_TIME_STOP);
+    }
 
     void Reset()
     {
+        Events.Reset();
     }
 
     void JustDied(Unit* pKiller)
@@ -56,6 +102,24 @@ struct MANGOS_DLL_DECL boss_chronolord_epochAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        Events.Update(uiDiff);
+        while (uint32 uiEventId = Events.ExecuteEvent())
+            switch (uiEventId)
+            {
+            case EVENT_CURSE_OF_EXERTION:
+                m_creature->CastSpell(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0), SPELL_CURSE_OF_EXERTION, true);
+                break;
+            case EVENT_TIME_WARP: // AoE
+                m_creature->CastSpell(m_creature, SPELL_TIME_WARP, true);
+                break;
+            case EVENT_WOUNDING_STRIKE:
+                m_creature->CastSpell(m_creature->getVictim(), m_bIsRegularMode ? SPELL_WOUNDING_STRIKE : SPELL_WOUNDING_STRIKE_H, true);
+                break;
+            case EVENT_TIME_STOP: //AoE
+                m_creature->CastSpell(m_creature, SPELL_TIME_STOP, true);
+                break;
+            }
 
         DoMeleeAttackIfReady();
     }
