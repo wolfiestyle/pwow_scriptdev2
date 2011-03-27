@@ -1151,12 +1151,12 @@ struct MANGOS_DLL_DECL mob_valkyr_shadowguardAI: public ScriptedAI, public Scrip
             m_creature->StopMoving();
             float x, y, z;
             Prisoner->GetPosition(x, y, z);
-            m_creature->MonsterMoveWithSpeed(x, y, z + 4.0f, 1*IN_MILLISECONDS);
+            m_creature->MonsterMoveWithSpeed(x, y, z + 4.0f, 5*IN_MILLISECONDS);
 
             if (m_creature->GetVehicleKit())
                 Prisoner->EnterVehicle(m_creature->GetVehicleKit(), 0);
 
-            Events.ScheduleEvent(EVENT_START_MOVING, 1*IN_MILLISECONDS);
+            Events.ScheduleEvent(EVENT_START_MOVING, 5*IN_MILLISECONDS);
         }
     }
 
