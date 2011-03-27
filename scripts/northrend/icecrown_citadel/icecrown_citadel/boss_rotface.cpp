@@ -129,7 +129,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         m_BossEncounter = NOT_STARTED;
         Events.Reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4356.7f, 3265.5f, 389.4f);
+            Putricide->AI()->EnterEvadeMode();
         if (GameObject* Door = GET_GAMEOBJECT(DATA_ROTFACE_DOOR))
             Door->SetGoState(GO_STATE_ACTIVE);
         //boss_icecrown_citadelAI::Reset();
@@ -148,7 +148,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
             SCHEDULE_EVENT(VILE_GAS);
         Events.ScheduleEvent(EVENT_MUTATED_INFECTION, TIMER_MUTATED_INFECTION);
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4416.1f, 3190.5f, 389.4f);
+            Putricide->MonsterMoveWithSpeed(4416.1f, 3190.5f, 389.4f, 2*IN_MILLISECONDS);
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         DoScriptText(SAY_DEATH1, m_creature);
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
-            Putricide->GetMotionMaster()->MoveTargetedHome();
+            Putricide->AI()->EnterEvadeMode();
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
         }
     }
@@ -206,6 +206,12 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
+
+        if (m_creature->getVictim()->GetEntry() == NPC_PUTRICIDE)
+        {
+            EnterEvadeMode();
+            Reset();
+        }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())
@@ -269,14 +275,43 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                     break;
                 }
                 case EVENT_VILE_GAS:
+                {
                     if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
                     {
-                        Unit *Target = GetPlayerAtMinimumRange(14);
+                        Map* pMap = m_creature->GetMap();
+
+                        Unit* Target = NULL;
+                        if (pMap && pMap->IsDungeon())
+                        {
+                            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                            std::vector<Unit*> ranged_players;
+
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                            {
+                                Unit* pPlayer = i->getSource();
+                                if (pPlayer->GetTypeId() != TYPEID_PLAYER)
+                                    continue;
+
+                                if (pPlayer->GetDistance2d(m_creature) > 10.0f)
+                                    ranged_players.push_back(pPlayer);
+                            }
+                            // check amount of players on melee / range
+                            // if there is enough ranged players, the vile gas will be casted 
+                            // on range only, otherwise it will hit randomly any member (including melee)
+                            if (ranged_players.size() < (m_bIs10Man ? 3 : 8))
+                                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+                            else
+                            {
+                                std::random_shuffle(ranged_players.begin(), ranged_players.end());
+                                Target = ranged_players[0];
+                            }
+                        }
                         if (!Target)
-                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0);
+                            Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                         if (Target)
-                        Putricide->CastSpell(Target, SPELL_VILE_GAS, false);
+                            Putricide->CastSpell(Target, SPELL_VILE_GAS, false);
                     }
+                }
                 default:
                     break;
             }
@@ -363,6 +398,14 @@ struct MANGOS_DLL_DECL mob_rotface_oozeAI: public ScriptedAI, public ScriptEvent
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (m_creature->getVictim()->GetEntry() == NPC_PUTRICIDE)
+            if (Creature* Rotface = GET_CREATURE(TYPE_ROTFACE))
+                if (Rotface->getVictim())
+                {
+                    m_creature->getThreatManager().clearReferences();
+                    m_creature->AddThreat(Rotface->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), 20000.0f);
+                }
 
         Events.Update(uiDiff);
         while (uint32 uiEventId = Events.ExecuteEvent())

@@ -144,12 +144,20 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void Aggro(Unit* pWho)
     {
+        if (m_bIsHeroic && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
+        {
+            SetCombatMovement(false);
+            return;
+        }
         if (InstanceProgressionCheck())
             return;
+
+        SetCombatMovement(true);
         Events.SetPhase(PHASE_ONE);
         LastSummonSideIsOrange = true;
         m_BossEncounter = IN_PROGRESS;
         SCHEDULE_EVENT(BERSERK);
+
         if (m_bIsHeroic)
             SCHEDULE_EVENT(UNBOUND_PLAGUE);
         SCHEDULE_EVENT(UNSTABLE_EXPERIMENT, 0, 0, PMASK_ONE);
@@ -251,6 +259,9 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void UpdateAI(uint32 const uiDiff)
     {
+        if (m_pInstance && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
+            return;
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
             return;
 
