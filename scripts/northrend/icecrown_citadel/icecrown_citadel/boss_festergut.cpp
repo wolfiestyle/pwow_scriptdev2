@@ -155,8 +155,8 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         DoScriptText(SAY_DEATH1, m_creature);
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
-            Putricide->AI()->EnterEvadeMode();
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
+            Putricide->AI()->EnterEvadeMode();
         }
     }
 
@@ -207,7 +207,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         if (m_creature->getVictim()->GetEntry() == NPC_PUTRICIDE)
         {
             EnterEvadeMode();
-            Reset();
+            return;
         }
 
         Events.Update(uiDiff);

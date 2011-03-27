@@ -180,8 +180,8 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         DoScriptText(SAY_DEATH1, m_creature);
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
-            Putricide->AI()->EnterEvadeMode();
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
+            Putricide->AI()->EnterEvadeMode();
         }
     }
 
@@ -210,7 +210,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         if (m_creature->getVictim()->GetEntry() == NPC_PUTRICIDE)
         {
             EnterEvadeMode();
-            Reset();
+            return;
         }
 
         Events.Update(uiDiff);
@@ -279,17 +279,17 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                     if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
                     {
                         Map* pMap = m_creature->GetMap();
-
                         Unit* Target = NULL;
                         if (pMap && pMap->IsDungeon())
                         {
                             Map::PlayerList const &PlayerList = pMap->GetPlayers();
                             std::vector<Unit*> ranged_players;
+                            ranged_players.reserve(PlayerList.getSize());
 
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             {
                                 Unit* pPlayer = i->getSource();
-                                if (pPlayer->GetTypeId() != TYPEID_PLAYER)
+                                if (!pPlayer || pPlayer->GetTypeId() != TYPEID_PLAYER)
                                     continue;
 
                                 if (pPlayer->GetDistance2d(m_creature) > 10.0f)
@@ -298,19 +298,15 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
                             // check amount of players on melee / range
                             // if there is enough ranged players, the vile gas will be casted 
                             // on range only, otherwise it will hit randomly any member (including melee)
-                            if (ranged_players.size() < (m_bIs10Man ? 3 : 8))
-                                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
-                            else
-                            {
-                                std::random_shuffle(ranged_players.begin(), ranged_players.end());
-                                Target = ranged_players[0];
-                            }
+                            if (ranged_players.size() >= (m_bIs10Man ? 3 : 8))
+                                Target = ranged_players[urand(0, ranged_players.size()-1)];
                         }
                         if (!Target)
                             Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                         if (Target)
                             Putricide->CastSpell(Target, SPELL_VILE_GAS, false);
                     }
+                    break;
                 }
                 default:
                     break;

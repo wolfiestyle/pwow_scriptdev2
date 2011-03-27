@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void Aggro(Unit* pWho)
     {
-        if (m_bIsHeroic && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
+        if (m_pInstance && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
         {
             SetCombatMovement(false);
             return;
