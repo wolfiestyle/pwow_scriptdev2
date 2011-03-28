@@ -52,6 +52,7 @@ include/sc_utility.h \
 scripts/battlegrounds/battleground.cpp \
 scripts/custom/deathknight_summons.cpp \
 scripts/custom/mage_mirror_imageAI.cpp \
+scripts/custom/mall_scripts.cpp \
 scripts/custom/npc_acherus_taxi.cpp \
 scripts/custom/npc_wyrmresttempel_taxi.cpp \
 scripts/custom/training_dummies.cpp \

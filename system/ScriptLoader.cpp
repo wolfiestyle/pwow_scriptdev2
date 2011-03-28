@@ -13,6 +13,7 @@ extern void AddSC_npc_wyrmresttempel_taxi(); //Taxi for Wyrmrest Temple
 extern void AddSC_Mirror_Image();
 extern void AddSC_npc_training_dummy();
 extern void AddSC_deathknight_summons();
+extern void AddSC_mall_scripts();
 
 // examples
 extern void AddSC_example_creature();
@@ -538,6 +539,7 @@ void AddScripts()
     AddSC_Mirror_Image();
     AddSC_npc_training_dummy();
     AddSC_deathknight_summons();
+    AddSC_mall_scripts();
 
     // examples
     AddSC_example_creature();
