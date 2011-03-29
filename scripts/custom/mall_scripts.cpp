@@ -4,7 +4,7 @@ static char const PortalErrorStr[] = "Mall portal requires 1 vote per day to ena
 
 bool GOUse_mall_portal(Player* pPlayer, GameObject* pGo)
 {
-    if (pPlayer->HasVoted())
+    if (pPlayer->isGameMaster() || pPlayer->HasVoted())
         pPlayer->TeleportTo(35, -98.015, 149.835, -40.382, 3.093);
     else
     {
