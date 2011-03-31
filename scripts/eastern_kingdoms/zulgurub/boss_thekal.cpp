@@ -237,7 +237,8 @@ struct MANGOS_DLL_DECL boss_thekalAI : public ScriptedAI
             }
         }
 
-        DoMeleeAttackIfReady();
+        if (m_creature->getVictim())                        // TODO - use correct check here, this only prevents crash
+            DoMeleeAttackIfReady();
     }
 };
 
@@ -297,6 +298,7 @@ struct MANGOS_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
         }else BloodLust_Timer -= diff;
 
         //Casting Greaterheal to Thekal or Zath if they are in meele range.
+        // TODO - why this range check?
         if (GreaterHeal_Timer < diff)
         {
             if (m_pInstance)
@@ -373,7 +375,8 @@ struct MANGOS_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
             FakeDeath = true;
         }
 
-        DoMeleeAttackIfReady();
+        if (!FakeDeath)
+            DoMeleeAttackIfReady();
     }
 };
 
@@ -505,7 +508,8 @@ struct MANGOS_DLL_DECL mob_zealot_zathAI : public ScriptedAI
             FakeDeath = true;
         }
 
-        DoMeleeAttackIfReady();
+        if (!FakeDeath)
+            DoMeleeAttackIfReady();
     }
 };
 

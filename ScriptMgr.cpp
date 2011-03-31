@@ -226,12 +226,7 @@ void Script::RegisterSelf(bool bReportError)
 MANGOS_DLL_EXPORT
 char const* GetScriptLibraryVersion()
 {
-    static std::string version;
-
-    if (version.empty())
-        version = strSD2Version + _FULLVERSION;
-
-    return version.c_str();
+    return strSD2Version.c_str();
 }
 
 MANGOS_DLL_EXPORT

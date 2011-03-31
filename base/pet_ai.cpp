@@ -49,7 +49,7 @@ void ScriptedPetAI::AttackedBy(Unit* pAttacker)
         return;
 
     if (m_creature->GetCharmInfo() && !m_creature->GetCharmInfo()->HasReactState(REACT_PASSIVE) &&
-        m_creature->canReachWithAttack(pAttacker))
+        m_creature->CanReachWithMeleeAttack(pAttacker))
         AttackStart(pAttacker);
 }
 
@@ -71,18 +71,6 @@ void ScriptedPetAI::ResetPetCombat()
 
     debug_log("SD2: ScriptedPetAI reset pet combat and stop attack.");
     Reset();
-}
-
-void ScriptedPetAI::DoMeleeAttackIfReady()
-{
-    if (m_creature->isAttackReady())
-    {
-        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), ATTACK_DISTANCE))
-        {
-            m_creature->AttackerStateUpdate(m_creature->getVictim());
-            m_creature->resetAttackTimer();
-        }
-    }
 }
 
 void ScriptedPetAI::UpdatePetAI(const uint32 uiDiff)

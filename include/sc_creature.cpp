@@ -81,15 +81,7 @@ void ScriptedAI::UpdateAI(const uint32 uiDiff)
     if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         return;
 
-    if (m_creature->isAttackReady())
-    {
-        //If we are within range melee the target
-        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), ATTACK_DISTANCE))
-        {
-            m_creature->AttackerStateUpdate(m_creature->getVictim());
-            m_creature->resetAttackTimer();
-        }
-    }
+    DoMeleeAttackIfReady();
 }
 
 void ScriptedAI::EnterEvadeMode()
@@ -125,20 +117,6 @@ void ScriptedAI::DoStartNoMovement(Unit* pVictim)
 
     m_creature->GetMotionMaster()->MoveIdle();
     m_creature->StopMoving();
-}
-
-void ScriptedAI::DoMeleeAttackIfReady(float fDistance)
-{
-    //Make sure our attack is ready before checking distance
-    if (m_creature->isAttackReady())
-    {
-        //If we are within range melee the target
-        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), fDistance))
-        {
-            m_creature->AttackerStateUpdate(m_creature->getVictim());
-            m_creature->resetAttackTimer();
-        }
-    }
 }
 
 void ScriptedAI::DoStopAttack()
