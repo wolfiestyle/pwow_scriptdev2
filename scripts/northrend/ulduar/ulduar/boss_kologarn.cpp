@@ -217,7 +217,7 @@ struct MANGOS_DLL_DECL boss_kologarnAI: public Scripted_NoMovementAI
                     break;
             }
 
-        DoMeleeAttackIfReady(KOLOGARN_ATTACK_DISTANCE);
+        DoMeleeAttackIfReady();
     }
 };
 
