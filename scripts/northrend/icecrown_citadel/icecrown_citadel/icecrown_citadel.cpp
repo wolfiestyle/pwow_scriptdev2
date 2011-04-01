@@ -202,17 +202,6 @@ bool boss_icecrown_citadelAI::InstanceProgressionCheck()
     if (!icc::MeetsRequirementsForBoss(m_pInstance, m_BossEncounter.getDataId()))
     {
         EnterEvadeMode();
-        // teleport offending players outside instance
-        std::deque<Player*> players;
-        Map::PlayerList const &plist = m_creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator i = plist.begin(); i != plist.end(); ++i)
-        {
-            Unit *pPlayer = i->getSource();
-            if (pPlayer && pPlayer->GetTypeId() == TYPEID_PLAYER)
-                players.push_back(static_cast<Player*>(pPlayer));
-        }
-        for (std::deque<Player*>::const_iterator i = players.begin(); i != players.end(); ++i)
-            (*i)->TeleportToHomebind();
         return true;
     }
 
