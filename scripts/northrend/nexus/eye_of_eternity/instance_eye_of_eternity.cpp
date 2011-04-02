@@ -29,12 +29,10 @@ struct MANGOS_DLL_DECL instance_eye_of_eternity : public ScriptedInstance
     instance_eye_of_eternity(Map* pMap) : ScriptedInstance(pMap)
     {
         Initialize();
-        m_bIsRegularMode = pMap->IsRegularDifficulty();
     }
 
-    std::string strInstData;
-    bool m_bIsRegularMode;
-    uint32 m_uiEncounter[ENCOUNTERS];
+    //std::string strInstData;
+    uint32 m_auiEncounter[MAX_ENCOUNTER];
 
     uint64 m_uiMalygosGUID;
     uint64 m_uiAlexstraszaGiftGUID;
@@ -42,46 +40,69 @@ struct MANGOS_DLL_DECL instance_eye_of_eternity : public ScriptedInstance
     void Initialize()
     {
         m_uiMalygosGUID = 0;
+        m_uiAlexstraszaGiftGUID = 0;
 
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
-            m_uiEncounter[i] = NOT_STARTED;
+        memset(m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
     void OnCreatureCreate(Creature* pCreature)
     {
-        switch(pCreature->GetEntry())
+        switch (pCreature->GetEntry())
         {
-            case 28859: m_uiMalygosGUID    = pCreature->GetGUID(); break;
+            case NPC_MALYGOS:
+                m_uiMalygosGUID = pCreature->GetGUID();
+                break;
+            default:
+                break;
         }
     }
 
     void OnObjectCreate(GameObject* pGo)
     {
-        switch(pGo->GetEntry())
+        switch (pGo->GetEntry())
         {
-            case 193905: if (m_bIsRegularMode) m_uiAlexstraszaGiftGUID = pGo->GetGUID(); break;
-            case 193967: if (!m_bIsRegularMode) m_uiAlexstraszaGiftGUID = pGo->GetGUID(); break;
+            case GO_MALYGOS_LOOT_10:
+            case GO_MALYGOS_LOOT_25:
+                m_uiAlexstraszaGiftGUID = pGo->GetGUID();
+                break;
+            default:
+                break;
         }
     }
 
     void SetData(uint32 uiType, uint32 uiData)
     {
+        switch (uiType)
+        {
+            case TYPE_MALYGOS:
+                m_auiEncounter[uiType] = uiData;
+            default:
+                break;
+        }
     }
 
     uint32 GetData(uint32 uiType)
     {
-        return 0;
+        switch (uiType)
+        {
+            case TYPE_MALYGOS:
+                return m_auiEncounter[uiType];
+            default:
+                return 0;
+        }
     }
 
     uint64 GetData64(uint32 uiData)
     {
-        switch(uiData)
+        switch (uiData)
         {
-            case DATA_MALYGOS:                  return m_uiMalygosGUID;
-            case DATA_ALEXSTRASZAGIFT:          return m_uiAlexstraszaGiftGUID;
+            case TYPE_MALYGOS:
+                return m_uiMalygosGUID;
+            case DATA_MALYGOS_LOOT:
+                return m_uiAlexstraszaGiftGUID;
+            default:
+                return 0;
         }
-
-        return 0;
     }
 };
 

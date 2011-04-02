@@ -24,33 +24,38 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_eye_of_eternity.h"
 
-#define SPELL_ARCANE_BREATH           56272
-#define SPELL_ARCANE_BREATH_H         60072
-#define SPELL_VORTEX                  56105
-#define SPELL_ARCANE_PULSE            57432
-#define SPELL_ARCANE_STORM            61693
-#define SPELL_ARCANE_STORM_H          61694
-#define SPELL_STATIC_FIELD            57430
-#define SPELL_SURGE_OF_POWER          56505
-#define SPELL_SURGE_OF_POWER_H        57407
-#define SPELL_DEEP_BREATH             0
-#define SPELL_DEEP_BREATH_H           0
-#define SPELL_ENRAGE                  0
+enum Spells
+{
+    SPELL_ARCANE_BREATH         = 56272,
+    SPELL_ARCANE_BREATH_H       = 60072,
+    SPELL_VORTEX                = 56105,
+    SPELL_ARCANE_PULSE          = 57432,
+    SPELL_ARCANE_STORM          = 61693,
+    SPELL_ARCANE_STORM_H        = 61694,
+    SPELL_STATIC_FIELD          = 57430,
+    SPELL_SURGE_OF_POWER        = 56505,
+    SPELL_SURGE_OF_POWER_H      = 57407,
+    //SPELL_DEEP_BREATH           = 0,
+    //SPELL_DEEP_BREATH_H         = 0,
+    //SPELL_ENRAGE                = 0,
+};
 
-#define NPC_POWER_SPARK               30084
-#define NPC_NEXUS_LORD                30245
-#define NPC_SCION_OF_ETERNITY         30249
+enum Npcs
+{
+    NPC_POWER_SPARK             = 30084,
+    NPC_NEXUS_LORD              = 30245,
+    NPC_SCION_OF_ETERNITY       = 30249,
+};
 
-#define SUMMON_X                      754.055786 + rand()%61 - 30
-#define SUMMON_Y                      1301.669922 + rand()%61 - 30
-#define SUMMON_Z                      266.170898 + rand()%61 - 30
-
+#define SUMMON_X                (754.055786f + (rand()%61 - 30))
+#define SUMMON_Y                (1301.669922f + (rand()%61 - 30))
+#define SUMMON_Z                (266.170898f + (rand()%61 - 30))
 
 struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
 {
     boss_malygosAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
@@ -58,7 +63,8 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-    uint8 phase;
+    uint32 m_uiPhase;
+
     uint32 Enrage_Timer;
     uint32 ArcaneBreath_Timer;
     uint32 ArcaneStorm_Timer;
@@ -68,42 +74,35 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     uint32 StaticField_Timer;
     uint32 ArcanePulse_Timer;
     uint32 SurgeOfPower_Timer;
+
     uint64 NexusLord_GUID[2];
     uint64 ScionOfEternity_GUID[2];
-    uint64 AlexstraszaGiftGUID;
-    bool Phase2_Summons;
 
     void Reset() 
     {
-        phase = 1;
-        Enrage_Timer = 600000;        //10 minutes
-        ArcaneBreath_Timer = 40000;   //40 seconds
-        ArcaneStorm_Timer = 15000;    //15 seconds
-        Vortex_Timer = 90000;         //90 seconds
-        PowerSpark_Timer = 30000;     //30 seconds
-        DeepBreath_Timer = 40000;     //40 seconds
-        StaticField_Timer = 15000;    //15 seconds
-        ArcanePulse_Timer = 30000;    //30 seconds
-        SurgeOfPower_Timer = 40000;   //40 seconds
-        AlexstraszaGiftGUID = 0;
-        for (uint8 i=0;i<2;i++)
-            NexusLord_GUID[i] = 0;
-        for (uint8 i=0;i<2;i++)
-            ScionOfEternity_GUID[i] = 0;
+        m_uiPhase = 1;
+        Enrage_Timer = 10*MINUTE*IN_MILLISECONDS;
+        ArcaneBreath_Timer = 40*IN_MILLISECONDS;
+        ArcaneStorm_Timer = 15*IN_MILLISECONDS;
+        Vortex_Timer = 90*IN_MILLISECONDS;
+        PowerSpark_Timer = 30*IN_MILLISECONDS;
+        DeepBreath_Timer = 40*IN_MILLISECONDS;
+        StaticField_Timer = 15*IN_MILLISECONDS;
+        ArcanePulse_Timer = 30*IN_MILLISECONDS;
+        SurgeOfPower_Timer = 40*IN_MILLISECONDS;
+
+        std::fill_n(NexusLord_GUID, 2, 0);
+        std::fill_n(ScionOfEternity_GUID, 2, 0);
 
         //Remove flags
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void JustDied(Unit* pKiller)
     {
         if (m_pInstance)
-        {
-            AlexstraszaGiftGUID = m_pInstance->GetData64(DATA_ALEXSTRASZAGIFT);
-            if (AlexstraszaGiftGUID)
-                m_pInstance->DoRespawnGameObject(AlexstraszaGiftGUID);
-        }
+            if (uint64 AlexstraszaGiftGUID = m_pInstance->GetData64(DATA_MALYGOS_LOOT))
+                m_pInstance->DoRespawnGameObject(AlexstraszaGiftGUID, 7*DAY);
     }
 
     void UpdateAI(const uint32 diff)
@@ -112,10 +111,10 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             return;
 
         //Phase 1
-        if (phase == 1)
+        if (m_uiPhase == 1)
         {
             //Change phase
-            if ((int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) <= 50)
+            if (m_creature->GetHealthPercent() <= 50.0f)
             {
                 //Set Motion
                 //m_creature->GetMotionMaster()->Clear(false);
@@ -126,23 +125,25 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 //Summon creatures
-                for (uint8 i=0;i<2;i++)
+                for (uint32 i = 0; i < 2; ++i)
                 {
                     Creature* pSummon = m_creature->SummonCreature(NPC_NEXUS_LORD,SUMMON_X,SUMMON_Y,SUMMON_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
+                    if (!pSummon)
+                        continue;
                     NexusLord_GUID[i] = pSummon->GetGUID();
-                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        pSummon->TauntApply(target);
+                    pSummon->SetInCombatWithZone();
                 }
-                for (uint8 i=0;i<2;i++)
+                for (uint32 i = 0; i < 2; ++i)
                 {
                     Creature* pSummon = m_creature->SummonCreature(NPC_SCION_OF_ETERNITY,SUMMON_X,SUMMON_Y,SUMMON_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
+                    if (!pSummon)
+                        continue;
                     ScionOfEternity_GUID[i] = pSummon->GetGUID();
-                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-                        pSummon->TauntApply(target);
+                    pSummon->SetInCombatWithZone();
                 }
 
                 //Set to phase 2 and terminate phase 1
-                phase = 2;
+                m_uiPhase = 2;
                 return;
             }
 
@@ -151,61 +152,73 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             {
                 DoCast(m_creature, SPELL_VORTEX);
 
-                Vortex_Timer = 90000;
-            }else Vortex_Timer -= diff;
+                Vortex_Timer = 90*IN_MILLISECONDS;
+            }
+            else
+                Vortex_Timer -= diff;
 
             //Arcane Breath timer
             if (ArcaneBreath_Timer < diff)
             {
                 DoCast(m_creature, m_bIsRegularMode ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
     
-                ArcaneBreath_Timer = 40000;
-            }else ArcaneBreath_Timer -= diff;
+                ArcaneBreath_Timer = 40*IN_MILLISECONDS;
+            }
+            else
+                ArcaneBreath_Timer -= diff;
 
             //Power Spark timer
             if (PowerSpark_Timer < diff)
             {
                 Creature* pSummon = m_creature->SummonCreature(NPC_POWER_SPARK,SUMMON_X,SUMMON_Y,SUMMON_Z,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-                pSummon->GetMotionMaster()->Clear(false);
-                pSummon->GetMotionMaster()->MoveFollow(m_creature,0,0);
+                if (pSummon)
+                {
+                    DoStartNoMovement(m_creature);
+                    pSummon->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
+                }
 
-                PowerSpark_Timer = 30000;
-            }else PowerSpark_Timer -= diff;
+                PowerSpark_Timer = 30*IN_MILLISECONDS;
+            }
+            else
+                PowerSpark_Timer -= diff;
 
             //Arcane Storm timer
             if (ArcaneStorm_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
     
-                ArcaneStorm_Timer = 15000;
-            }else ArcaneStorm_Timer -= diff;
+                ArcaneStorm_Timer = 15*IN_MILLISECONDS;
+            }
+            else
+                ArcaneStorm_Timer -= diff;
         }
 
         //Phase 2
-        if (phase == 2)
+        if (m_uiPhase == 2)
         {
             //Change phase
+            bool Phase2_Summons = false;
+            for (uint32 i = 0; i < 2; ++i)
             {
-                Phase2_Summons = false;
-                for (uint8 i=0;i<2;i++)
-                {
-                    if (Creature* pSummon = m_creature->GetMap()->GetCreature(NexusLord_GUID[i]))
-                        if (pSummon->isAlive())
-                            Phase2_Summons = true;
-                }
-                for (uint8 i=0;i<2;i++)
-                {
-                    if (Creature* pSummon = m_creature->GetMap()->GetCreature(ScionOfEternity_GUID[i]))
-                        if (pSummon->isAlive())
-                            Phase2_Summons = true;
-                }
-                if (!Phase2_Summons)
-                {
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    phase = 3;
-                    return;
-                }
+                if (Creature* pSummon = m_creature->GetMap()->GetCreature(NexusLord_GUID[i]))
+                    if (pSummon->isAlive())
+                    {
+                        Phase2_Summons = true;
+                        break;
+                    }
+                if (Creature* pSummon = m_creature->GetMap()->GetCreature(ScionOfEternity_GUID[i]))
+                    if (pSummon->isAlive())
+                    {
+                        Phase2_Summons = true;
+                        break;
+                    }
+            }
+            if (!Phase2_Summons)
+            {
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                m_uiPhase = 3;
+                return;
             }
 
             //Deep Breath timer
@@ -214,48 +227,58 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             {
                 DoCast(m_creature, m_bIsRegularMode ? SPELL_DEEP_BREATH : SPELL_DEEP_BREATH_H);
     
-                DeepBreath_Timer = 40000;
-            }else DeepBreath_Timer -= diff;
+                DeepBreath_Timer = 40*IN_MILLISECONDS;
+            }
+            else
+                DeepBreath_Timer -= diff;
             */
 
             //Arcane Storm timer
             if (ArcaneStorm_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
     
-                ArcaneStorm_Timer = 15000;
-            }else ArcaneStorm_Timer -= diff;
+                ArcaneStorm_Timer = 15*IN_MILLISECONDS;
+            }
+            else
+                ArcaneStorm_Timer -= diff;
         }
 
         //Phase 3
-        if (phase == 3)
+        if (m_uiPhase == 3)
         {
             //Surge of Power timer
             if (SurgeOfPower_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, m_bIsRegularMode ? SPELL_SURGE_OF_POWER : SPELL_SURGE_OF_POWER_H);
     
-                SurgeOfPower_Timer = 40000;
-            }else SurgeOfPower_Timer -= diff;
+                SurgeOfPower_Timer = 40*IN_MILLISECONDS;
+            }
+            else
+                SurgeOfPower_Timer -= diff;
 
             //Arcane Pulse timer
             if (ArcanePulse_Timer < diff)
             {
                 DoCast(m_creature, SPELL_ARCANE_PULSE);
     
-                ArcanePulse_Timer = 30000;
-            }else ArcanePulse_Timer -= diff;
+                ArcanePulse_Timer = 30*IN_MILLISECONDS;
+            }
+            else
+                ArcanePulse_Timer -= diff;
 
             //Static Field timer
             if (StaticField_Timer < diff)
             {
-                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
                     DoCast(target, SPELL_STATIC_FIELD);
     
-                StaticField_Timer = 15000;
-            }else StaticField_Timer -= diff;
+                StaticField_Timer = 15*IN_MILLISECONDS;
+            }
+            else
+                StaticField_Timer -= diff;
         }
 
         //Enrage timer
@@ -264,8 +287,10 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_ENRAGE);
     
-            Enrage_Timer = 600000;
-        }else Enrage_Timer -= diff;
+            Enrage_Timer = 10*MINUTE*IN_MILLISECONDS;
+        }
+        else
+            Enrage_Timer -= diff;
         */
 
         DoMeleeAttackIfReady();
@@ -279,20 +304,15 @@ CreatureAI* GetAI_boss_malygos(Creature* pCreature)
 
 bool GOHello_go_TheFocusingIris(Player* pPlayer, GameObject* pGO)
 {
-    if (ScriptedInstance* m_pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
-    {
-        uint64 MalygosGUID = m_pInstance->GetData64(DATA_MALYGOS);
-        if (MalygosGUID)
-        {
-			if (Creature* Malygos = pGO->GetMap()->GetCreature(MalygosGUID))
-			{
-				Malygos->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
-				Malygos->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-				Malygos->TauntApply(pPlayer);
-			}
-        }
-    }
-    return false;
+    if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pGO->GetInstanceData()))
+        if (uint64 MalygosGUID = m_pInstance->GetData64(TYPE_MALYGOS))
+            if (Creature* Malygos = pGO->GetMap()->GetCreature(MalygosGUID))
+            {
+                Malygos->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                Malygos->SetInCombatWithZone();
+            }
+
+    return true;
 }
 
 void AddSC_boss_malygos()

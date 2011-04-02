@@ -2,10 +2,16 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#define ENCOUNTERS    1
-
 enum
 {
-    DATA_MALYGOS         = 1,
-    DATA_ALEXSTRASZAGIFT = 2
+    MAX_ENCOUNTER           = 1,
+
+    TYPE_MALYGOS            = 0,
+
+    DATA_MALYGOS_LOOT,
+
+    NPC_MALYGOS             = 28859,
+
+    GO_MALYGOS_LOOT_10      = 193905,
+    GO_MALYGOS_LOOT_25      = 193967,
 };
