@@ -201,6 +201,7 @@ bool boss_icecrown_citadelAI::InstanceProgressionCheck()
 {
     if (!icc::MeetsRequirementsForBoss(m_pInstance, m_BossEncounter.getDataId()))
     {
+        DoStartNoMovement(m_creature);
         EnterEvadeMode();
         return true;
     }

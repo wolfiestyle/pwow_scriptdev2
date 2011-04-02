@@ -129,7 +129,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         m_BossEncounter = NOT_STARTED;
         Events.Reset();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->AI()->EnterEvadeMode();
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 0);
         if (GameObject* Door = GET_GAMEOBJECT(DATA_ROTFACE_DOOR))
             Door->SetGoState(GO_STATE_ACTIVE);
         //boss_icecrown_citadelAI::Reset();
@@ -148,7 +148,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
             SCHEDULE_EVENT(VILE_GAS);
         Events.ScheduleEvent(EVENT_MUTATED_INFECTION, TIMER_MUTATED_INFECTION);
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4416.1f, 3190.5f, 389.4f, 2*IN_MILLISECONDS);
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 2);
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL boss_rotfaceAI: public boss_icecrown_citadelAI
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
-            Putricide->AI()->EnterEvadeMode();
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 0);
         }
     }
 

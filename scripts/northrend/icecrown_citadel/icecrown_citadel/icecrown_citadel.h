@@ -191,6 +191,9 @@ enum
     CRITERIA_MARROWGAR_BONED_10H    = 13393,
     CRITERIA_MARROWGAR_BONED_25     = 12962,
     CRITERIA_MARROWGAR_BONED_25H    = 13394,
+
+    // shared between bosses
+    MESSAGE_PUTRICIDE           = 1000,
 };
 
 enum TeleportLocations

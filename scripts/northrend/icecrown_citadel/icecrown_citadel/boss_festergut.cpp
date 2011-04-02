@@ -113,7 +113,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         CurrBlightStrength = 0;
         SummonMgr.UnsummonAll();
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->AI()->EnterEvadeMode();
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 0);
         if (GameObject* Door = GET_GAMEOBJECT(DATA_FESTERGUT_DOOR))
             Door->SetGoState(GO_STATE_ACTIVE);
         boss_icecrown_citadelAI::Reset();
@@ -127,7 +127,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
             GasTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         CurrBlightStrength = 0;
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
-            Putricide->MonsterMoveWithSpeed(4300.9f, 3192.2f, 389.4f, 2*IN_MILLISECONDS);
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 1);
         if (GameObject* Door = GET_GAMEOBJECT(DATA_FESTERGUT_DOOR))
             Door->SetGoState(GO_STATE_READY);
         SCHEDULE_EVENT(BERSERK);
@@ -156,7 +156,7 @@ struct MANGOS_DLL_DECL boss_festergutAI: public boss_icecrown_citadelAI
         if (Creature *Putricide = GET_CREATURE(TYPE_PUTRICIDE))
         {
             DoScriptText(SAY_PUTRICIDE_DEATH2, Putricide);
-            Putricide->AI()->EnterEvadeMode();
+            SendScriptMessageTo(Putricide, m_creature, MESSAGE_PUTRICIDE, 0);
         }
     }
 

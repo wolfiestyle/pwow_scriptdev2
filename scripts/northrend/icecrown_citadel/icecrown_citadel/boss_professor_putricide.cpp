@@ -127,12 +127,14 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
     SummonManager SummonMgr;
     bool LastSummonSideIsOrange :1;
     bool HasDoneIntro :1;
+    bool m_bDisableCombat :1;   // prevent intro and combat during Rotface/Festergut encounter
 
     boss_proffesor_putricideAI(Creature* pCreature):
         boss_icecrown_citadelAI(pCreature),
         SummonMgr(m_creature),
         LastSummonSideIsOrange(true),
-        HasDoneIntro(false)
+        HasDoneIntro(false),
+        m_bDisableCombat(false)
     {
     }
 
@@ -142,13 +144,45 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
         boss_icecrown_citadelAI::Reset();
     }
 
+    void ScriptMessage(WorldObject* pSender, uint32 msg, uint32 param)
+    {
+        if (msg == MESSAGE_PUTRICIDE)
+            switch (param)
+            {
+                case 0:     // reset boss
+                    EnterEvadeMode();
+                    // combat re-enabled when reaching home position
+                    break;
+                case 1:     // from Festergut
+                    m_bDisableCombat = true;
+                    DoStartNoMovement(m_creature);
+                    m_creature->MonsterMoveWithSpeed(4300.9f, 3192.2f, 389.4f, 2*IN_MILLISECONDS);
+                    break;
+                case 2:     // from Rotface
+                    m_bDisableCombat = true;
+                    DoStartNoMovement(m_creature);
+                    m_creature->MonsterMoveWithSpeed(4416.1f, 3190.5f, 389.4f, 2*IN_MILLISECONDS);
+                    break;
+                default:
+                    break;
+            }
+        else
+            boss_icecrown_citadelAI::ScriptMessage(pSender, msg, param);
+    }
+
+    void JustReachedHome()
+    {
+        m_bDisableCombat = false;
+    }
+
     void Aggro(Unit* pWho)
     {
-        if (m_pInstance && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
+        if (m_bDisableCombat)
         {
             SetCombatMovement(false);
             return;
         }
+
         if (InstanceProgressionCheck())
             return;
 
@@ -169,7 +203,7 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (!HasDoneIntro && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->GetPositionZ() > FLOOR_HEIGHT - 1 && pWho->isTargetableForAttack())   // prevent intro on Rotface/Festergut encounter
+        if (!HasDoneIntro && !m_bDisableCombat && pWho && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack())
         {
             HasDoneIntro = true;
             DoScriptText(SAY_AIRLOCK, m_creature);
@@ -259,7 +293,7 @@ struct MANGOS_DLL_DECL boss_proffesor_putricideAI: public boss_icecrown_citadelA
 
     void UpdateAI(uint32 const uiDiff)
     {
-        if (m_pInstance && (m_pInstance->GetData(TYPE_ROTFACE) == IN_PROGRESS || m_pInstance->GetData(TYPE_FESTERGUT) == IN_PROGRESS))
+        if (m_bDisableCombat)
             return;
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || OutOfCombatAreaCheck())
