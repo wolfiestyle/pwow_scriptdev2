@@ -64,7 +64,7 @@ struct MANGOS_DLL_DECL boss_moroesAI : public ScriptedAI
     boss_moroesAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_bFirstTime = true;
-        m_pInstance  = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance  = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
@@ -221,7 +221,10 @@ struct MANGOS_DLL_DECL boss_moroesAI : public ScriptedAI
             return;
 
         if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
             EnterEvadeMode();
+            return;
+        }
 
         if (!m_bEnrage && m_creature->GetHealthPercent() < 30.0f)
         {
@@ -334,7 +337,7 @@ struct MANGOS_DLL_DECL boss_moroes_guestAI : public ScriptedAI
     {
         memset(&m_auiGuestGUID, 0, sizeof(m_auiGuestGUID));
 
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         AcquireGUID();
         Reset();
     }
@@ -378,15 +381,6 @@ struct MANGOS_DLL_DECL boss_moroes_guestAI : public ScriptedAI
 
         return m_creature;
     }
-
-    // TODO double check this design! - with momentarily system DoMeleeAttackIfReady is called before the spells are handled
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
-            EnterEvadeMode();
-
-        DoMeleeAttackIfReady();
-    }
 };
 
 enum
@@ -420,7 +414,11 @@ struct MANGOS_DLL_DECL boss_baroness_dorothea_millstipeAI : public boss_moroes_g
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiMindFlay_Timer < uiDiff)
         {
@@ -451,6 +449,8 @@ struct MANGOS_DLL_DECL boss_baroness_dorothea_millstipeAI : public boss_moroes_g
         }
         else
             m_uiShadowWordPain_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -482,7 +482,11 @@ struct MANGOS_DLL_DECL boss_baron_rafe_dreugerAI : public boss_moroes_guestAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiSealOfCommand_Timer < uiDiff)
         {
@@ -508,6 +512,8 @@ struct MANGOS_DLL_DECL boss_baron_rafe_dreugerAI : public boss_moroes_guestAI
         }
         else
             m_uiHammerOfJustice_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -542,7 +548,11 @@ struct MANGOS_DLL_DECL boss_lady_catriona_von_indiAI : public boss_moroes_guestA
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiPowerWordShield_Timer < uiDiff)
         {
@@ -577,6 +587,8 @@ struct MANGOS_DLL_DECL boss_lady_catriona_von_indiAI : public boss_moroes_guestA
         }
         else
             m_uiDispelMagic_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -611,7 +623,11 @@ struct MANGOS_DLL_DECL boss_lady_keira_berrybuckAI : public boss_moroes_guestAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiDivineShield_Timer < uiDiff)
         {
@@ -644,6 +660,8 @@ struct MANGOS_DLL_DECL boss_lady_keira_berrybuckAI : public boss_moroes_guestAI
         }
         else
             m_uiCleanse_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -675,7 +693,11 @@ struct MANGOS_DLL_DECL boss_lord_robin_darisAI : public boss_moroes_guestAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiHamstring_Timer < uiDiff)
         {
@@ -700,6 +722,8 @@ struct MANGOS_DLL_DECL boss_lord_robin_darisAI : public boss_moroes_guestAI
         }
         else
             m_uiWhirlWind_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -734,7 +758,11 @@ struct MANGOS_DLL_DECL boss_lord_crispin_ferenceAI : public boss_moroes_guestAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        boss_moroes_guestAI::UpdateAI(uiDiff);
+        if (m_pInstance && !m_pInstance->GetData(TYPE_MOROES))
+        {
+            EnterEvadeMode();
+            return;
+        }
 
         if (m_uiDisarm_Timer < uiDiff)
         {
@@ -765,6 +793,8 @@ struct MANGOS_DLL_DECL boss_lord_crispin_ferenceAI : public boss_moroes_guestAI
         }
         else
             m_uiShieldWall_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
     }
 };
 
