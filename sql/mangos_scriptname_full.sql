@@ -135,7 +135,7 @@ UPDATE creature_template SET ScriptName='npc_tabard_vendor' WHERE entry=28776;
 UPDATE creature_template SET ScriptName='npc_locksmith' WHERE entry IN (29665,29725,29728);
 
 /* SPELL */
-UPDATE creature_template SET ScriptName='spell_dummy_npc' WHERE entry IN (16880,1200,26616,26643,16518,25793,25758,25752,25792,25753,26421,26841,27808,27122,28068,12298,12296,24918,17326,17654,16847,18879,26270,26268,30146,25084,25085,32149,22105,29330,29338,29329);
+UPDATE creature_template SET ScriptName='spell_dummy_npc' WHERE entry IN (16880,1200,26616,26643,16518,25793,25758,25752,25792,25753,26421,26841,27808,27122,28068,12298,12296,24918,17326,17654,16847,18879,26270,26268,30146,25084,25085,32149,22105,29330,29338,29329,28465,28600);
 UPDATE gameobject_template SET ScriptName='spell_dummy_go' WHERE entry IN (181616,186949);
 
 /*  */
@@ -293,6 +293,7 @@ UPDATE creature_template SET ScriptName='boss_high_interrogator_gerstahn' WHERE 
 UPDATE creature_template SET ScriptName='boss_magmus' WHERE entry=9938;
 UPDATE creature_template SET ScriptName='mob_phalanx' WHERE entry=9502;
 UPDATE creature_template SET ScriptName='npc_grimstone' WHERE entry=10096;
+UPDATE creature_template SET ScriptName='npc_theldren_trigger' WHERE entry=16079;
 UPDATE creature_template SET ScriptName='npc_lokhtos_darkbargainer' WHERE entry=12944;
 UPDATE creature_template SET ScriptName='npc_kharan_mighthammer' WHERE entry=9021;
 UPDATE creature_template SET ScriptName='npc_rocknot' WHERE entry=9503;
@@ -1214,6 +1215,8 @@ UPDATE gameobject_template SET ScriptName='go_activation_crystal' WHERE entry=19
 UPDATE creature_template SET ScriptName='npc_door_seal' WHERE entry=30896;
 UPDATE creature_template SET ScriptName='npc_sinclari' WHERE entry=30658;
 UPDATE creature_template SET ScriptName='npc_teleportation_portal' WHERE entry IN (31011,30679,32174);
+UPDATE creature_template SET ScriptName='boss_ichoron' WHERE entry IN (29313,32234);
+UPDATE creature_template SET ScriptName='boss_erekem' WHERE entry IN (29315,32226);
 
 /* WAILING CAVERNS */
 UPDATE instance_template SET ScriptName='instance_wailing_caverns' WHERE map=43;
