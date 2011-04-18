@@ -155,13 +155,14 @@ enum
 
     // AreaIDs
     AREA_CHAMPIONS_RING = 4669,
-    AREA_ASPIRANTS_RING = 4670, // not really used
+    AREA_ASPIRANTS_RING = 4670,
     AREA_VALIANTS_RING  = 4671,
     AREA_ALLIANCE_RING  = 4672,
     AREA_HORDE_RING     = 4673,
 
     // NPCs
     NPC_ARGENT_CHAMPION         = 33707,
+    NPC_ARGENT_VALIANT          = 33448,
     NPC_STORMWIND_VALIANT       = 33564,    /* Stormwind Valiant */
     NPC_IRONFORGE_VALIANT       = 33558,    /* Ironforge Valiant */
     NPC_EXODAR_VALIANT          = 33562,    /* Exodar Valiant */
@@ -174,7 +175,10 @@ enum
     NPC_THUNDERBLUFF_VALIANT    = 33383,    /* Thunder Bluff Valiant */
     NPC_DARKSPEAR_VALIANT       = 33285,    /* Sen'jin Valiant */
     // credit
+    // The Valiant's Challenge
     ARGENT_VALIANT_QUEST_CREDIT = 33708,
+    // The Aspirant's Challenge
+    ARGENT_ASPIRANT_QUEST_CREDIT = 38595,
 
 };
 
@@ -258,10 +262,10 @@ struct MANGOS_DLL_DECL npc_argent_valiantAI : public ScriptedAI, EventManager
 
     void JustDied(Unit* pSlayer)
     {
-        if (m_creature->GetEntry() == NPC_ARGENT_CHAMPION)
+        if (m_creature->GetEntry() == NPC_ARGENT_CHAMPION || m_creature->GetEntry() == NPC_ARGENT_VALIANT)
             if (Unit* realSlayer = pSlayer->GetCharmerOrOwnerOrSelf())
                 if (realSlayer->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)realSlayer)->KilledMonsterCredit(ARGENT_VALIANT_QUEST_CREDIT, m_creature->GetGUID());
+                    ((Player*)realSlayer)->KilledMonsterCredit((m_creature->GetEntry() == NPC_ARGENT_CHAMPION) ? ARGENT_VALIANT_QUEST_CREDIT : ARGENT_ASPIRANT_QUEST_CREDIT, m_creature->GetGUID());
     }
 
     void UpdateAI(const uint32 uiDiff)
