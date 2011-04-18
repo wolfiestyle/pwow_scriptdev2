@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2011 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2011 ScriptDev2 <http://www.scriptdev2.com/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,7 +25,8 @@ EndScriptData */
 #include "wailing_caverns.h"
 
 instance_wailing_caverns::instance_wailing_caverns(Map* pMap) : ScriptedInstance(pMap),
-    m_uiNaralexGUID(0)
+    m_uiNaralexGUID(0),
+    m_uiDiscipleGUID(0)
 {
     Initialize();
 }

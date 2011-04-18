@@ -584,9 +584,9 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1000559,'I\'d rather die fighting than live like a slave.',0,0,0,0,'exhausted vrykul SAY_RAND_ATTACK2'),
 (-1000560,'Enough! I will teach you some manners, wench!',0,0,0,0,'exhausted vrykul SAY_RAND_ATTACK3'),
 
-(-1000561,'My wounds are grave. Forgive my slow pace but my injuries won''t allow me to walk any faster.',0,0,0,0,'SAY_CORPORAL_KEESHAN_1'),
+(-1000561,'My wounds are grave. Forgive my slow pace but my injuries won\'t allow me to walk any faster.',0,0,0,0,'SAY_CORPORAL_KEESHAN_1'),
 (-1000562,'Ah, fresh air, at last! I need a moment to rest.',0,0,0,0,'SAY_CORPORAL_KEESHAN_2'),
-(-1000563,'The Blackrock infestation is thick in these parts. I will do my best to keep the pace. Let''s go!',0,0,0,0,'SAY_CORPORAL_KEESHAN_3'),
+(-1000563,'The Blackrock infestation is thick in these parts. I will do my best to keep the pace. Let\'s go!',0,0,0,0,'SAY_CORPORAL_KEESHAN_3'),
 (-1000564,'Marshal Marris, sir. Corporal Keeshan of the 12th Sabre Regiment returned from battle and reporting for duty!',0,0,0,0,'SAY_CORPORAL_KEESHAN_4'),
 (-1000565,'Brave adventurer, thank you for rescuing me! I am sure Marshal Marris will reward your kind deed.',0,0,0,0,'SAY_CORPORAL_KEESHAN_5'),
 
@@ -674,10 +674,21 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1000629,'<cough> <cough> Damsel in distress over here!',0,0,0,0,'isla starmane - SAY_ISLA_PERIODIC_1'),
 (-1000630,'Hello? Help?',0,0,0,0,'isla starmane - SAY_ISLA_PERIODIC_2'),
-(-1000631,'Don''t leave me in here! Cause if you do I will find you!',0,0,0,0,'isla starmane - SAY_ISLA_PERIODIC_3'),
-(-1000632,'Ok, let''s get out of here!',0,0,0,0,'isla starmane - SAY_ISLA_START'),
-(-1000633,'You sure you''re ready? Take a moment.',0,0,0,0,'isla starmane - SAY_ISLA_WAITING'),
-(-1000634,'Alright, let''s do this!',0,0,0,0,'isla starmane - SAY_ISLA_LEAVE_BUILDING');
+(-1000631,'Don\'t leave me in here! Cause if you do I will find you!',0,0,0,0,'isla starmane - SAY_ISLA_PERIODIC_3'),
+(-1000632,'Ok, let\'s get out of here!',0,0,0,0,'isla starmane - SAY_ISLA_START'),
+(-1000633,'You sure you\'re ready? Take a moment.',0,0,0,0,'isla starmane - SAY_ISLA_WAITING'),
+(-1000634,'Alright, let\'s do this!',0,0,0,0,'isla starmane - SAY_ISLA_LEAVE_BUILDING'),
+
+(-1000635,'So then we too are cursed?',0,0,0,0,'ancient vrykul SAY_VRYKUL_CURSED'),
+(-1000636,'%s points to the infant.',0,2,0,0,'ancient vrykul EMOTE_VRYKUL_POINT'),
+(-1000637,'%s sobs.',0,2,0,0,'ancient vrykul EMOTE_VRYKUL_SOB'),
+(-1000638,'The gods have forsaken us! We must dispose of it before Ymiron is notified!',0,0,0,0,'ancient vrykul SAY_VRYKUL_DISPOSE'),
+(-1000639,'NO! You cannot! I beg of you! It is our child!',0,0,0,0,'ancient vrykul SAY_VRYKUL_BEG'),
+(-1000640,'Then what are we to do, wife? The others cannot find out. Should they learn of this aberration, we will all be executed.',0,0,0,0,'ancient vrykul SAY_VRYKUL_WHAT'),
+(-1000641,'I... I will hide it. I will hide it until I find it a home, far away from here...',0,0,0,0,'ancient vrykul SAY_VRYKUL_HIDE'),
+
+(-1000642,'It\'s a female.',0,5,0,0,'leopard icepaw SAY_ITS_FEMALE'),
+(-1000643,'It\'s an angry male!',0,5,0,0,'leopard icepaw SAY_ITS_MALE');
 
 -- -1 033 000 SHADOWFANG KEEP
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -720,7 +731,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1043002,'These caverns were once a temple of promise for regrowth in the Barrens. Now, they are the halls of nightmares.',0,0,0,0,'Disciple of Naralex - SAY_FIRST_CORNER'),
 (-1043003,'Come. We must continue. There is much to be done before we can pull Naralex from his nightmare.',0,0,0,0,'Disciple of Naralex - SAY_CONTINUE'),
 (-1043004,'Within this circle of fire I must cast the spell to banish the spirits of the slain Fanglords.',0,0,0,0,'Disciple of Naralex - SAY_CIRCLE_BANISH'),
-(-1043005,'The caverns have been purified. To Naralex''s chamber we go!',0,0,0,0,'Disciple of Naralex - SAY_PURIFIED'),
+(-1043005,'The caverns have been purified. To Naralex\'s chamber we go!',0,0,0,0,'Disciple of Naralex - SAY_PURIFIED'),
 (-1043006,'Beyond this corridor, Naralex lies in fitful sleep. Let us go awaken him before it is too late.',0,0,0,0,'Disciple of Naralex - SAY_NARALEX_CHAMBER'),
 (-1043007,'Protect me brave souls as I delve into the Emerald Dream to rescue Naralex and put an end to this corruption!',0,1,0,0,'Disciple of Naralex - SAY_BEGIN_RITUAL'),
 (-1043008,'%s begins to perform the awakening ritual on Naralex.',0,2,0,0,'Disciple of Naralex - EMOTE_RITUAL_BEGIN'),
@@ -943,8 +954,8 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1309020,'PRIDE HERALDS THE END OF YOUR WORLD. COME, MORTALS! FACE THE WRATH OF THE SOULFLAYER!',8414,1,0,0,'hakkar SAY_AGGRO'),
 (-1309021,'Fleeing will do you no good, mortals!',0,1,0,0,'hakkar SAY_FLEEING'),
-(-1309022,'You dare set foot upon Hakkari holy ground? Minions of Hakkar, destroy the infidels!',0,1,0,0,'hakkar SAY_MINION_DESTROY'),
-(-1309023,'Minions of Hakkar, hear your God. The sanctity of this temple has been compromised. Invaders encroach upon holy ground! The Altar of Blood must be protected. Kill them all!',0,1,0,0,'hakkar SAY_PROTECT_ALTAR'),
+(-1309022,'You dare set foot upon Hakkari holy ground? Minions of Hakkar, destroy the infidels!',0,6,0,0,'hakkar SAY_MINION_DESTROY'),
+(-1309023,'Minions of Hakkar, hear your God. The sanctity of this temple has been compromised. Invaders encroach upon holy ground! The Altar of Blood must be protected. Kill them all!',0,6,0,0,'hakkar SAY_PROTECT_ALTAR'),
 
 (-1309024,'%s goes into a rage after seeing his raptor fall in battle!',0,2,0,0,'mandokir EMOTE_RAGE');
 
@@ -958,7 +969,16 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1329004,'An Ash\'ari Crystal has fallen! Stay true to the Lich King, my brethren, and attempt to resummon it.',0,6,0,0,'thuzadin acolyte SAY_ANNOUNCE_ZIGGURAT_1'),
 (-1329005,'One of the Ash\'ari Crystals has been destroyed! Slay the intruders!',0,6,0,0,'thuzadin acolyte SAY_ANNOUNCE_ZIGGURAT_2'),
 (-1329006,'An Ash\'ari Crystal has been toppled! Restore the ziggurat before the Necropolis is vulnerable!',0,6,0,0,'thuzadin acolyte SAY_ANNOUNCE_ZIGGURAT_3'),
-(-1329007,'The Ash\'ari Crystals have been destroyed! The Slaughterhouse is vulnerable!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RIVENDARE');
+(-1329007,'The Ash\'ari Crystals have been destroyed! The Slaughterhouse is vulnerable!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RIVENDARE'),
+
+(-1329008,'Intruders at the Service Gate! Lord Rivendare must be warned!',0,6,0,0,'barthilas SAY_WARN_BARON'),
+(-1329009,'Intruders! More pawns of the Argent Dawn, no doubt. I already count one of their number among my prisoners. Withdraw from my domain before she is executed!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RUN_START'),
+(-1329010,'You\'re still here? Your foolishness is amusing! The Argent Dawn wench needn\'t suffer in vain. Leave at once and she shall be spared!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RUN_10_MIN'),
+(-1329011,'I shall take great pleasure in taking this poor wretch\'s life! It\'s not too late, she needn\'t suffer in vain. Turn back and her death shall be merciful!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RUN_5_MIN'),
+(-1329012,'May this prisoner\'s death serve as a warning. None shall defy the Scourge and live!',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RUN_FAIL'),
+(-1329013,'So you see fit to toy with the Lich King\'s creations? Ramstein, be sure to give the intruders a proper greeting.',0,6,0,0,'baron rivendare SAY_ANNOUNCE_RAMSTEIN'),
+(-1329014,'Time to take matters into my own hands. Come. Enter my domain and challenge the might of the Scourge!',0,6,0,0,'baron rivendare SAY_UNDEAD_DEFEAT'),
+(-1329015,'You did it... you\'ve slain Baron Rivendare! The Argent Dawn shall hear of your valiant deeds!',0,0,0,0,'ysida SAY_EPILOGUE');
 
 -- -1 349 000 MARAUDON
 
@@ -995,6 +1015,9 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1409022,'My flame! Please don\'t take away my flame... ',8042,1,0,0,'ragnaros SAY_ARRIVAL4_MAJ');
 
 -- -1 429 000 DIRE MAUL
+INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
+(-1429000,'The demon is loose! Quickly we must restrain him!',0,6,0,0,'highborne summoner SAY_FREE_IMMOLTHAR'),
+(-1429001,'Who dares disrupt the sanctity of Eldre\'Thalas? Face me, cowards!',0,6,0,0,'prince tortheldrin SAY_KILL_IMMOLTHAR');
 
 -- -1 469 000 BLACKWING LAIR
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -3197,7 +3220,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 -- -1 649 000 TRIAL OF THE CRUSADER
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
-(-1649000,'Welcome champions, you have heard the call of the argent crusade and you have boldly answered. It is here in the crusaders coliseum that you will face your greatest challenges. Those of you who survive the rigors of the coliseum will join the Argent Crusade on it''s marsh to ice crown citadel.',16036,1,0,0,'tirion SAY_TIRION_RAID_INTRO_LONG'),
+(-1649000,'Welcome champions, you have heard the call of the argent crusade and you have boldly answered. It is here in the crusaders coliseum that you will face your greatest challenges. Those of you who survive the rigors of the coliseum will join the Argent Crusade on it\'s marsh to ice crown citadel.',16036,1,0,0,'tirion SAY_TIRION_RAID_INTRO_LONG'),
 (-1649001,'Welcome to the trials of the crusader. Only the most powerful combatants of azeroth are allowed to undergo these trials. You are among the worthy few.',16053,1,0,0,'tirion SAY_RAID_TRIALS_INTRO'),
 
 (-1649002,'Hailing from the deepest, darkest carverns of the storm peaks, Gormok the Impaler! Battle on, heroes!',16038,1,0,0,'tirion SAY_TIRION_BEAST_1'),
@@ -3213,26 +3236,26 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1649011,'Prepare for oblivion!',16269,1,0,0,'wilfred SAY_WILFRED_JARAXXUS_INTRO_2'),
 (-1649012,'Ah ha! Behold the absolute power of Wilfred Fizzlebang, master summoner! You are bound to ME, demon!',16270,1,0,0,'wilfred SAY_WILFRED_JARAXXUS_INTRO_3'),
 (-1649013,'Trifling gnome, your arrogance will be your undoing!',16143,1,0,0,'jaraxxus SAY_JARAXXUS_JARAXXAS_INTRO_1'),
-(-1649014,'But I''m in charge her-',16271,1,0,0,'wilfred SAY_WILFRED_DEATH'),
+(-1649014,'But I\'m in charge her-',16271,1,0,0,'wilfred SAY_WILFRED_DEATH'),
 (-1649015,'Quickly, heroes! Destroy the demon lord before it can open a portal to its twisted demonic realm!',16044,1,0,0,'tirion SAY_TIRION_JARAXXUS_INTRO_2'),
 (-1649016,'The loss of Wilfred Fizzlebang, while unfortunate, should be a lesson to those that dare dabble in dark magic. Alas, you are victorious and must now face the next challenge.',16045,1,0,0,'tirion SAY_TIRION_JARAXXUS_EXIT_1'),
 (-1649017,'Treacherous Alliance dogs! You summon a demon lord against warriors of the Horde!? Your deaths will be swift!',16021,1,0,0,'garrosh SAY_GARROSH_JARAXXUS_EXIT_1'),
-(-1649018,'The Alliance doesn''t need the help of a demon lord to deal with Horde filth. Come, pig!',16064,1,0,0,'varian SAY_VARIAN_JARAXXUS_SLAY'),
+(-1649018,'The Alliance doesn\'t need the help of a demon lord to deal with Horde filth. Come, pig!',16064,1,0,0,'varian SAY_VARIAN_JARAXXUS_SLAY'),
 (-1649019,'Everyone, calm down! Compose yourselves! There is no conspiracy at play here. The warlock acted on his own volition - outside of influences from the Alliance. The tournament must go on!',16046,1,0,0,'tirion SAY_TIRION_JARAXXUS_EXIT_2'),
 
-(-1649020,'The next battle will be against the Argent Crusade''s most powerful knights! Only by defeating them will you be deemed worthy...',16047,1,0,0,'tirion SAY_TIRION_PVP_INTRO_1'),
+(-1649020,'The next battle will be against the Argent Crusade\'s most powerful knights! Only by defeating them will you be deemed worthy...',16047,1,0,0,'tirion SAY_TIRION_PVP_INTRO_1'),
 (-1649021,'The Horde demands justice! We challenge the Alliance. Allow us to battle in place of your knights, paladin. We will show these dogs what it means to insult the Horde!',16023,1,0,0,'garrosh SAY_GARROSH_PVP_A_INTRO_1'),
 (-1649022,'Our honor has been besmirched! They make wild claims and false accusations against us. I demand justice! Allow my champions to fight in place of your knights, Tirion. We challenge the Horde!',16066,1,0,0,'varian SAY_VARIAN_PVP_H_INTRO_1'),
 (-1649023,'Very well, I will allow it. Fight with honor!',16048,1,0,0,'tirion SAY_TIRION_PVP_INTRO_2'),
 (-1649024,'Fight for the glory of the Alliance, heroes! Honor your king and your people!',16065,1,0,0,'varian SAY_VARIAN_PVP_A_INTRO_2'),
-(-1649025,'Show them no mercy, Horde champions! LOK''TAR OGAR!',16022,1,0,0,'garrosh SAY_GARROSH_PVP_H_INTRO_2'),
+(-1649025,'Show them no mercy, Horde champions! LOK\'TAR OGAR!',16022,1,0,0,'garrosh SAY_GARROSH_PVP_H_INTRO_2'),
 (-1649026,'Glory to the alliance.',16067,1,0,0,'varian SAY_VARIAN_PVP_A_WIN'),
 (-1649027,'That was just a taste of what the future brings. FOR THE HORDE!',16024,1,0,0,'garrosh SAY_GARROSH_PVP_H_WIN'),
 (-1649028,'A shallow and tragic victory. We are weaker as a whole from the losses suffered today. Who but the Lich King could benefit from such foolishness? Great warriors have lost their lives. And for what? The true threat looms ahead - the Lich King awaits us all in death.',16049,1,0,0,'tirion SAY_TIRION_PVP_WIN'),
 
-(-1649029,'Only by working together will you overcome the final challenge. From the depths of Icecrown come two of the Scourge''s most powerful lieutenants: fearsome val''kyr, winged harbingers of the Lich King!',16050,1,0,0,'tirion SAY_TIRION_TWINS_INTRO'),
+(-1649029,'Only by working together will you overcome the final challenge. From the depths of Icecrown come two of the Scourge\'s most powerful lieutenants: fearsome val\'kyr, winged harbingers of the Lich King!',16050,1,0,0,'tirion SAY_TIRION_TWINS_INTRO'),
 (-1649030,'Let the games begin!',16037,1,0,0,'tirion SAY_RAID_INTRO_SHORT'),
-(-1649031,'Not even the lich king''s most powerful minions could stand against the alliance. All hail our victors.',16068,1,0,0,'varian SAY_VARIAN_TWINS_A_WIN'),
+(-1649031,'Not even the lich king\'s most powerful minions could stand against the alliance. All hail our victors.',16068,1,0,0,'varian SAY_VARIAN_TWINS_A_WIN'),
 (-1649032,'Do you still question the might of the Horde, paladin? We will take on all comers!',16025,1,0,0,'garrosh SAY_GARROSH_TWINS_H_WIN'),
 (-1649033,'A mighty blow has been dealt to the Lich King! You have proven yourselves able bodied champions of the Argent Crusade. Together we will strike at Icecrown Citadel and destroy what remains of the Scourge! There is no challenge that we cannot face united!',16051,1,0,0,'tirion SAY_TIRION_TWINS_WIN'),
 
@@ -3256,7 +3279,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1649048,'Weakling!',16017,1,0,0,'garrosh SAY_GARROSH_PVP_A_SLAY_1'),
 (-1649049,'Pathetic!',16018,1,0,0,'garrosh SAY_GARROSH_PVP_A_SLAY_2'),
 (-1649050,'Overpowered.',16019,1,0,0,'garrosh SAY_GARROSH_PVP_A_SLAY_3'),
-(-1649051,'Lok''tar!',16020,1,0,0,'garrosh SAY_GARROSH_PVP_A_SLAY_4'),
+(-1649051,'Lok\'tar!',16020,1,0,0,'garrosh SAY_GARROSH_PVP_A_SLAY_4'),
 (-1649052,'Hah!',16060,1,0,0,'varian SAY_VARIAN_PVP_H_SLAY_1'),
 (-1649053,'Hardly a challenge!',16061,1,0,0,'varian SAY_VARIAN_PVP_H_SLAY_2'),
 (-1649054,'Worthless scrub.',16062,1,0,0,'varian SAY_VARIAN_PVP_H_SLAY_3'),
@@ -4852,7 +4875,7 @@ INSERT INTO script_waypoint VALUES
 (20129, 25, -8375.42,-4250.41, -205.14,5000, '');
 
 DELETE FROM script_waypoint WHERE entry=20415;
-INSERT INTO script_waypoint VALUES 
+INSERT INTO script_waypoint VALUES
 (20415, 0, 2488.77, 2184.89, 104.64, 0, ""),
 (20415, 1, 2478.72, 2184.77, 98.58, 0, ""),
 (20415, 2, 2473.52, 2184.71, 99.00, 0, ""),
@@ -5436,5 +5459,26 @@ INSERT INTO script_waypoint VALUES
 (3678, 40, 27.174, 201.064, -72.31, 0, ''),
 (3678, 41, -41.114, 204.149, -78.94, 0, '');
 
--- EOF
+DELETE FROM script_waypoint WHERE entry=5644;
+INSERT INTO script_waypoint (entry, pointid, location_x, location_y, location_z, waittime, point_comment) VALUES
+(5644, 1, -339.679, 1752.04, 139.482, 0, ''),
+(5644, 2, -328.957, 1734.95, 139.327, 0, ''),
+(5644, 3, -338.29, 1731.36, 139.327, 0, ''),
+(5644, 4, -350.747, 1731.12, 139.338, 0, ''),
+(5644, 5, -365.064, 1739.04, 139.376, 0, ''),
+(5644, 6, -371.105, 1746.03, 139.374, 0, ''),
+(5644, 7, -383.141, 1738.62, 138.93, 0, ''),
+(5644, 8, -390.445, 1733.98, 136.353, 0, ''),
+(5644, 9, -401.368, 1726.77, 131.071, 0, ''),
+(5644, 10, -416.016, 1721.19, 129.807, 0, ''),
+(5644, 11, -437.139, 1709.82, 126.342, 0, ''),
+(5644, 12, -455.83, 1695.61, 119.305, 0, ''),
+(5644, 13, -459.862, 1687.92, 116.059, 0, ''),
+(5644, 14, -463.565, 1679.1, 111.653, 0, ''),
+(5644, 15, -461.485, 1670.94, 109.033, 0, ''),
+(5644, 16, -471.786, 1647.34, 102.862, 0, ''),
+(5644, 17, -477.146, 1625.69, 98.342, 0, ''),
+(5644, 18, -475.815, 1615.815, 97.07, 0, ''),
+(5644, 19, -474.329, 1590.01, 94.4982, 0, '');
 
+-- EOF
