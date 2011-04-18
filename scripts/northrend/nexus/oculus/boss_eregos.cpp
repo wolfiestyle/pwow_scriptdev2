@@ -84,6 +84,9 @@ enum Events
 #define TIMER_SUMMON_DRAKES         30*IN_MILLISECONDS, 30*IN_MILLISECONDS
 #define TIMER_COLOR_CHECK           2*IN_MILLISECONDS,  2*IN_MILLISECONDS
 
+// just to prevent lag
+#define MAX_DRAGON_COUNT 15
+
 struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
 {
     ScriptedInstance* m_pInstance;
@@ -134,6 +137,13 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
 
         CacheOfEregosGUID = 0;
         SpotlightGUID = 0;
+    }
+
+    void SummonedCreatureJustDied(Creature* pSumm)
+    {
+        if (!pSumm)
+            return;
+        SummonMgr.RemoveSummonFromList(pSumm->GetObjectGuid());
     }
 
     void Aggro(Unit* who)
@@ -290,6 +300,8 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
                 DoCast(m_creature,SPELL_PLANAR_ANOMALIES, true);
                 break;
             case EVENT_SUMMON_DRAKES:
+                if (SummonMgr.GetSummonCount(NPC_DRAGON) > MAX_DRAGON_COUNT)
+                    break;
                 for ( int i = 0 ; i < 3 ; i++ )
                 {
                     //DoCast(m_creature, SPELL_SUMMON_DRAKE, true); // summoned @ ground position
