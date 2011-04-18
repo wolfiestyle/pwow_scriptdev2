@@ -4,26 +4,22 @@
 
 enum
 {
+    MAX_ENCOUNTER           = 4,
+
     TYPE_DRAKOS             = 0,
     TYPE_VAROS              = 1,
     TYPE_UROM               = 2,
     TYPE_EREGOS             = 3,
-    TYPE_ROBOTS             = 4,
 
-    DATA_MAX_ENCOUNTER,
-
-    DATA_DRAKOS             = 1,
-    DATA_VAROS              = 2,
-    DATA_UROM               = 3,
-    DATA_EREGOS             = 4,
-    DATA_SPOTLIGHT          = 5,
-    DATA_CACHE_OF_EREGOS    = 6,
-    DATA_ETERNOS            = 7,
-    DATA_VERDISA            = 8,
-    DATA_BELGARISTRASZ      = 9,
-    DATA_RUBY_VOID          = 10,
-    DATA_EMERALD_VOID       = 11,
-    DATA_AMBER_VOID         = 12,
+    DATA_ROBOTS,
+    DATA_SPOTLIGHT,
+    DATA_CACHE_OF_EREGOS,
+    DATA_ETERNOS,
+    DATA_VERDISA,
+    DATA_BELGARISTRASZ,
+    DATA_RUBY_VOID,
+    DATA_EMERALD_VOID,
+    DATA_AMBER_VOID,
 
     NPC_ROBOT           = 27641,
     NPC_BALGAR_IMAGE    = 28012,

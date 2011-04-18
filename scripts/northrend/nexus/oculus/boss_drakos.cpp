@@ -104,7 +104,7 @@ struct MANGOS_DLL_DECL boss_drakosAI : public ScriptedAI
 
     boss_drakosAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
@@ -130,7 +130,7 @@ struct MANGOS_DLL_DECL boss_drakosAI : public ScriptedAI
     {
         if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
-            switch(urand(0, 2))
+            switch (urand(0, 2))
             {
                 case 0:
                     DoScriptText(SAY_KILL_1, m_creature);
@@ -209,7 +209,7 @@ struct MANGOS_DLL_DECL boss_drakosAI : public ScriptedAI
                     Events.ScheduleEvent(EVENT_SUMMON, 2*IN_MILLISECONDS);
                     Events.ScheduleEvent(EVENT_SUMMON, 3*IN_MILLISECONDS);
                     Events.ScheduleEvent(EVENT_SUMMON, 4*IN_MILLISECONDS);
-                    DoCast(m_creature,SPELL_MAGIC_PULL);
+                    DoCast(m_creature, SPELL_MAGIC_PULL);
                     break;
                 case EVENT_SUMMON:
                 {
@@ -236,7 +236,7 @@ struct MANGOS_DLL_DECL npc_unstable_sphereAI : public ScriptedAI
 {
     npc_unstable_sphereAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         Reset();
     }
 
@@ -328,9 +328,9 @@ struct MANGOS_DLL_DECL npc_belgaristraszAI : public ScriptedAI, ScriptMessageInt
                 {
                     case 1:
                     {
-                        std::list<GameObject*> m_pGameObjects;
-                        GetGameObjectListWithEntryInGrid(m_pGameObjects, m_creature, GO_DRAGON_CAGE_DOOR, DEFAULT_VISIBILITY_INSTANCE);
-                        for (std::list<GameObject*>::const_iterator itr = m_pGameObjects.begin(); itr != m_pGameObjects.end(); ++itr)
+                        std::list<GameObject*> go_list;
+                        GetGameObjectListWithEntryInGrid(go_list, m_creature, GO_DRAGON_CAGE_DOOR, DEFAULT_VISIBILITY_INSTANCE);
+                        for (std::list<GameObject*>::const_iterator itr = go_list.begin(); itr != go_list.end(); ++itr)
                         {
                             (*itr)->SetGoState(GO_STATE_ACTIVE);
                         }
@@ -359,7 +359,7 @@ struct MANGOS_DLL_DECL npc_belgaristraszAI : public ScriptedAI, ScriptMessageInt
                         m_uiTalkTimer = 5*IN_MILLISECONDS;
                         break;
                     case 4:
-                        if (Unit* pVaros = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_VAROS)))
+                        if (Unit* pVaros = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_VAROS)))
                             pVaros->MonsterYellToZone(SAY_VAROS_SPAWN, 0, NULL);
                         m_creature->PlayDirectSound(13648);
                         m_uiTalkPhase = 0;
@@ -385,7 +385,7 @@ struct MANGOS_DLL_DECL npc_belgaristraszAI : public ScriptedAI, ScriptMessageInt
                         m_uiTalkTimer = 4*IN_MILLISECONDS;
                         break;
                     case 12:
-                        if (Unit* Eregos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_EREGOS)))
+                        if (Unit* Eregos = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(TYPE_EREGOS)))
                             Eregos->MonsterYellToZone(SAY_EREGOS_SPAWN, 0, NULL);
                         m_creature->PlayDirectSound(13622);
                         m_uiTalkPhase = 0;
@@ -396,7 +396,9 @@ struct MANGOS_DLL_DECL npc_belgaristraszAI : public ScriptedAI, ScriptMessageInt
                         m_uiTalkTimer = 0;
                         break;
                 }
-            } else m_uiTalkTimer -= uiDiff;
+            }
+            else
+                m_uiTalkTimer -= uiDiff;
         }
     }
 };
@@ -445,6 +447,7 @@ enum Gossips
     GOSSIP_A_A_T    = 13256,
     GOSSIP_U_A_A_T  = 13257,
 };
+
 bool GossipHello_oculus_drake_handler(Player *pPlayer, Creature *pCreature)
 {
     if (pCreature->isQuestGiver() && pCreature->GetEntry() == NPC_BALGAR_IMAGE)
@@ -467,7 +470,6 @@ bool GossipHello_oculus_drake_handler(Player *pPlayer, Creature *pCreature)
             return true;
         }
     }
-
 
     if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
     {
@@ -537,7 +539,7 @@ bool GossipSelect_oculus_drake_handler(Player* pPlayer, Creature* pCreature, uin
     switch (pCreature->GetEntry())
     {
         case NPC_VERDISA:
-            switch(uiAction)
+            switch (uiAction)
             {
                 case GOSSIP_ACTION_INFO_DEF + 2: // R_T_E
                     if (Item* pItem = pPlayer->StoreNewItemInInventorySlot(EMERALD_ESSENCE, 1))
@@ -571,7 +573,7 @@ bool GossipSelect_oculus_drake_handler(Player* pPlayer, Creature* pCreature, uin
             }
             break;
         case NPC_BALGARISTRASZ:
-            switch(uiAction)
+            switch (uiAction)
             {
                 case GOSSIP_ACTION_INFO_DEF + 1: // what next?
                     if (ScriptedInstance* m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData()))
@@ -622,7 +624,7 @@ bool GossipSelect_oculus_drake_handler(Player* pPlayer, Creature* pCreature, uin
             }
             break;
         case NPC_ETERNOS:
-            switch(uiAction)
+            switch (uiAction)
             {
                 case GOSSIP_ACTION_INFO_DEF + 12: // R_T_A
                     if (Item* pItem = pPlayer->StoreNewItemInInventorySlot(AMBER_ESSENCE, 1))
@@ -662,7 +664,6 @@ bool GossipSelect_oculus_drake_handler(Player* pPlayer, Creature* pCreature, uin
 #define PLATFORM_X  996.5733f
 #define PLATFORM_Y  1051.945f
 #define PLATFORM_Z  359.5285f
-
 
 bool GO_use_oculus_inner_portal(Player* pPlayer, GameObject* pGo)
 {

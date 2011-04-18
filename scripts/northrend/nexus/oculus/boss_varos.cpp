@@ -117,7 +117,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
 
     boss_varosAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
@@ -126,10 +126,10 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
-        if(m_pInstance)
+        if (m_pInstance)
            m_pInstance->SetData(TYPE_VAROS, IN_PROGRESS);
 
-        if(Creature* Dragon = SummonMgr.SummonCreature(NPC_AZURE_CAPTAIN, (m_creature->GetPositionX()-45)+rand()%90, (m_creature->GetPositionY()-45)+rand()%90, m_creature->GetPositionZ() + 30.0f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 100))
+        if (Creature* Dragon = SummonMgr.SummonCreature(NPC_AZURE_CAPTAIN, (m_creature->GetPositionX()-45)+rand()%90, (m_creature->GetPositionY()-45)+rand()%90, m_creature->GetPositionZ() + 30.0f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 100))
         {
            Dragon->AddSplineFlag(SPLINEFLAG_FLYING);
            Dragon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -145,22 +145,22 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
     {
         MinOrb = MinOrb+2;
         MaxOrb = MaxOrb+2;
-        if(MinOrb > 8)
+        if (MinOrb > 8)
            MinOrb = 1;
-        if(MaxOrb > 8)
+        if (MaxOrb > 8)
            MaxOrb = 2;
 
         std::list<Creature*> m_pSpheres;
         GetCreatureListWithEntryInGrid(m_pSpheres, m_creature, NPC_VAROS_CORE, DEFAULT_VISIBILITY_INSTANCE);
 
-        if(!m_pSpheres.empty())
-           for(std::list<Creature*>::iterator iter = m_pSpheres.begin(); iter != m_pSpheres.end(); ++iter)
+        if (!m_pSpheres.empty())
+           for (std::list<Creature*>::iterator iter = m_pSpheres.begin(); iter != m_pSpheres.end(); ++iter)
            {
-              for(uint8 i = 1; i < 9; i++)
-                 if((i <= MaxOrb && i >= MinOrb) || (MinOrb == 7 && (i <= MaxOrb || i >= MinOrb)))
-                    if((*iter)->GetPositionX() > Regions[i].x1 && (*iter)->GetPositionX() < Regions[i].x2)
-                       if((*iter)->GetPositionY() > Regions[i].y1 && (*iter)->GetPositionY() < Regions[i].y2)
-                          if(SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CORE_MISSILE))
+              for (uint8 i = 1; i < 9; i++)
+                 if ((i <= MaxOrb && i >= MinOrb) || (MinOrb == 7 && (i <= MaxOrb || i >= MinOrb)))
+                    if ((*iter)->GetPositionX() > Regions[i].x1 && (*iter)->GetPositionX() < Regions[i].x2)
+                       if ((*iter)->GetPositionY() > Regions[i].y1 && (*iter)->GetPositionY() < Regions[i].y2)
+                          if (SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CORE_MISSILE))
                           {
                              pTempSpell->EffectImplicitTargetA[0] = TARGET_EFFECT_SELECT;
                              pTempSpell->EffectImplicitTargetB[0] = 0;
@@ -179,15 +179,15 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
         std::list<Creature*> m_pSpheres;
         GetCreatureListWithEntryInGrid(m_pSpheres, m_creature, NPC_VAROS_CORE, DEFAULT_VISIBILITY_INSTANCE);
 
-        if(!m_pSpheres.empty())
-            for(std::list<Creature*>::iterator iter = m_pSpheres.begin(); iter != m_pSpheres.end(); ++iter)
+        if (!m_pSpheres.empty())
+            for (std::list<Creature*>::iterator iter = m_pSpheres.begin(); iter != m_pSpheres.end(); ++iter)
             {
-                for(uint8 i = 1; i < 9; i++)
-                    if((i <= MaxOrb && i >= MinOrb) || (MinOrb == 7 && (i <= MaxOrb || i >= MinOrb)))
-                        if((*iter)->GetPositionX() > Regions[i].x1 && (*iter)->GetPositionX() < Regions[i].x2)
-                            if((*iter)->GetPositionY() > Regions[i].y1 && (*iter)->GetPositionY() < Regions[i].y2)
+                for (uint8 i = 1; i < 9; i++)
+                    if ((i <= MaxOrb && i >= MinOrb) || (MinOrb == 7 && (i <= MaxOrb || i >= MinOrb)))
+                        if ((*iter)->GetPositionX() > Regions[i].x1 && (*iter)->GetPositionX() < Regions[i].x2)
+                            if ((*iter)->GetPositionY() > Regions[i].y1 && (*iter)->GetPositionY() < Regions[i].y2)
                             {
-                                if(SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ENERGIZE_CORES_TRIGGER_1))
+                                if (SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ENERGIZE_CORES_TRIGGER_1))
                                 {
                                     pTempSpell->EffectImplicitTargetA[0] = TARGET_EFFECT_SELECT;
                                     pTempSpell->EffectImplicitTargetB[0] = 0;
@@ -198,17 +198,17 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
                                     (*iter)->CastSpell(m_creature, pTempSpell, true);
                                 }
 
-                                if(i == MinOrb)
+                                if (i == MinOrb)
                                     angle01 = m_creature->GetAngle((*iter));
-                                if(i == MaxOrb)
+                                if (i == MaxOrb)
                                     angle02 = m_creature->GetAngle((*iter));
 
                                 Map *map = m_creature->GetMap();
-                                if(map->IsDungeon())
+                                if (map->IsDungeon())
                                 {
                                     Map::PlayerList const &PlayerList = map->GetPlayers();
 
-                                    if(PlayerList.isEmpty())
+                                    if (PlayerList.isEmpty())
                                         return;
 
                                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
@@ -216,11 +216,11 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
                                         if (i->getSource()->isAlive())
                                         {
                                             float pAngle = m_creature->GetAngle(i->getSource());
-                                            if(angle01 < angle02)
-                                                if(pAngle < angle02 && pAngle > angle01)
+                                            if (angle01 < angle02)
+                                                if (pAngle < angle02 && pAngle > angle01)
                                                     DoEnergy(i->getSource());
-                                            if(angle01 > angle02)
-                                                if(pAngle < angle02 || pAngle > angle01)
+                                            if (angle01 > angle02)
+                                                if (pAngle < angle02 || pAngle > angle01)
                                                     DoEnergy(i->getSource());
                                         }
                                     }
@@ -231,7 +231,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
 
     void DoEnergy(Unit* pTarget)
     {
-        if(SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(m_bIsRegularMode ? SPELL_ENERGIZE_CORES_N : SPELL_ENERGIZE_CORES_H))
+        if (SpellEntry* pTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(m_bIsRegularMode ? SPELL_ENERGIZE_CORES_N : SPELL_ENERGIZE_CORES_H))
         {
             pTempSpell->EffectImplicitTargetA[0] = TARGET_EFFECT_SELECT;
             pTempSpell->EffectImplicitTargetB[0] = 0;
@@ -275,12 +275,12 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
         SummonMgr.UnsummonAll();
         Events.Reset();
 
-        if(m_pInstance)
+        if (m_pInstance)
         {
             if (m_creature->isAlive())
                 m_pInstance->SetData(TYPE_VAROS, NOT_STARTED);
 
-            if(m_pInstance->GetData(TYPE_ROBOTS) == 0)
+            if (m_pInstance->GetData(DATA_ROBOTS) == 0)
             {
                 m_creature->RemoveAllAuras();
                 m_creature->InterruptNonMeleeSpells(false);
@@ -296,7 +296,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        if(pSummoned->GetEntry() == NPC_BEAM)
+        if (pSummoned->GetEntry() == NPC_BEAM)
         {
             pSummoned->setFaction(14);
             pSummoned->SetDisplayId(11686);
@@ -305,14 +305,14 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
             pSummoned->CastSpell(pSummoned, SPELL_BEAM_DMG_AURA, false);
             pSummoned->SetInCombatWithZone();
 
-            if(Unit* pTarget = pSummoned->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+            if (Unit* pTarget = pSummoned->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
             {
                 pSummoned->AddThreat(pTarget, 100000.0f);
                 pSummoned->AI()->AttackStart(pTarget);
             }
 
-            if(m_pInstance)
-                if(Creature* Dragon = SummonMgr.GetFirstFoundSummonWithId(NPC_AZURE_CAPTAIN))
+            if (m_pInstance)
+                if (Creature* Dragon = SummonMgr.GetFirstFoundSummonWithId(NPC_AZURE_CAPTAIN))
                 {
                     Dragon->GetMotionMaster()->MovementExpired(false);
                     Dragon->GetMotionMaster()->Clear(false);
@@ -323,7 +323,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_bStarted && m_pInstance && m_pInstance->GetData(TYPE_ROBOTS) == 0 && m_pInstance->GetData(TYPE_DRAKOS) == DONE)
+        if (!m_bStarted && m_pInstance && m_pInstance->GetData(DATA_ROBOTS) == 0 && m_pInstance->GetData(TYPE_DRAKOS) == DONE)
         {
             m_bStarted = true;
             m_creature->RemoveAllAuras();
@@ -340,16 +340,16 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
                 case EVENT_CHEAT_CHECK:
                 {
                     Map* map = m_creature->GetMap();
-                    if(map && map->IsDungeon())
+                    if (map && map->IsDungeon())
                     {
                         Map::PlayerList const &PlayerList = map->GetPlayers();
 
-                        if(PlayerList.isEmpty())
+                        if (PlayerList.isEmpty())
                             return;
 
-                        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            if(i->getSource()->isAlive() && i->getSource()->GetVehicle())
+                            if (i->getSource()->isAlive() && i->getSource()->GetVehicle())
                             {
                                 EnterEvadeMode();
                                 break;
@@ -359,7 +359,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
                     break;
                 }
                 case EVENT_MOVE_CAPTAIN:
-                    if(Creature* pCaptain = SummonMgr.GetFirstFoundSummonWithId(NPC_AZURE_CAPTAIN))
+                    if (Creature* pCaptain = SummonMgr.GetFirstFoundSummonWithId(NPC_AZURE_CAPTAIN))
                     {
                         pCaptain->GetMotionMaster()->MovementExpired(false);
                         pCaptain->GetMotionMaster()->Clear(false);

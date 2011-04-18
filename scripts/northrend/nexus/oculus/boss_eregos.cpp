@@ -108,7 +108,7 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
 
     boss_eregosAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
@@ -166,20 +166,20 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
     void CheckDrakeColors()
     {
         Map* map = m_creature->GetMap();
-        if(map && map->IsDungeon())
+        if (map && map->IsDungeon())
         {
             Map::PlayerList const &PlayerList = map->GetPlayers();
 
-            if(PlayerList.isEmpty())
+            if (PlayerList.isEmpty())
                 return;
 
-            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                if(Player* pPlayer = i->getSource())
+                if (Player* pPlayer = i->getSource())
                     if (VehicleKit* pVeh = pPlayer->GetVehicle())
                         if (Unit* pDrake = pVeh->GetBase())
                         {
-                            switch(pDrake->GetEntry())
+                            switch (pDrake->GetEntry())
                             {
                                 case NPC_RUBY_DRAKE*10:
                                     m_uiRed++;
@@ -255,15 +255,15 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
             Events.ScheduleEvent(EVENT_PLANAR_SHIFT, 0);
         }
 
-        if(m_creature->GetDistance2d(m_creature->getVictim()) > 35.0f && !m_bIsMove)
+        if (m_creature->GetDistance2d(m_creature->getVictim()) > 35.0f && !m_bIsMove)
         {
            m_bIsMove = true;
            SetCombatMovement(m_bIsMove);
-           if(Unit* pTarget = m_creature->getVictim())
+           if (Unit* pTarget = m_creature->getVictim())
               m_creature->GetMotionMaster()->MoveChase(pTarget);
         }
 
-        if(m_creature->GetDistance2d(m_creature->getVictim()) < 20.0f && m_bIsMove)
+        if (m_creature->GetDistance2d(m_creature->getVictim()) < 20.0f && m_bIsMove)
         {
            m_bIsMove = false;
            SetCombatMovement(m_bIsMove);
@@ -276,50 +276,52 @@ struct MANGOS_DLL_DECL boss_eregosAI : public ScriptedAI
         while (uint32 uiEventId = Events.ExecuteEvent())
             switch (uiEventId)
             {
-            case EVENT_DRAKE_COLOR_CHECK:
-                CheckDrakeColors();
-                break;
-            case EVENT_ARCANE_BARRAGE:
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ARCANE_BARRAGE_N : SPELL_ARCANE_BARRAGE_H);
-                break;
-            case EVENT_ARCANE_VOLLEY:
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ARCANE_VOLLEY_N : SPELL_ARCANE_VOLLEY_H);
-                break;
-            case EVENT_PLANAR_SHIFT:
-                m_creature->MonsterTextEmote(EMOTE_PLANAR_SHIFT, m_creature, true);
-                Events.DelayEvents(18*IN_MILLISECONDS);
-                m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_creature,SPELL_PLANAR_SHIFT, false);
-                Events.ScheduleEvent(EVENT_ENRAGED_ASSAULT, 19*IN_MILLISECONDS);
-                Events.ScheduleEvent(EVENT_PLANAR_ANOMALITIES, 2*IN_MILLISECONDS);
-                break;
-            case EVENT_ENRAGED_ASSAULT:
-                DoCast(m_creature,SPELL_ENRAGED_ASSAULT, true);
-                break;
-            case EVENT_PLANAR_ANOMALITIES:
-                DoCast(m_creature,SPELL_PLANAR_ANOMALIES, true);
-                break;
-            case EVENT_SUMMON_DRAKES:
-                if (SummonMgr.GetSummonCount(NPC_DRAGON) > MAX_DRAGON_COUNT)
+                case EVENT_DRAKE_COLOR_CHECK:
+                    CheckDrakeColors();
                     break;
-                for ( int i = 0 ; i < 3 ; i++ )
-                {
-                    //DoCast(m_creature, SPELL_SUMMON_DRAKE, true); // summoned @ ground position
-                    Unit* pSumm =  SummonMgr.SummonCreature(NPC_DRAGON, m_creature->GetPositionX() - 5 + urand(0, 10), m_creature->GetPositionY() - 5 + urand(0, 10),
-                        m_creature->GetPositionZ() - 5 + urand(0, 10), 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                    if (Unit* pPlayer = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                case EVENT_ARCANE_BARRAGE:
+                    DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ARCANE_BARRAGE_N : SPELL_ARCANE_BARRAGE_H);
+                    break;
+                case EVENT_ARCANE_VOLLEY:
+                    DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ARCANE_VOLLEY_N : SPELL_ARCANE_VOLLEY_H);
+                    break;
+                case EVENT_PLANAR_SHIFT:
+                    m_creature->MonsterTextEmote(EMOTE_PLANAR_SHIFT, m_creature, true);
+                    Events.DelayEvents(18*IN_MILLISECONDS);
+                    m_creature->InterruptNonMeleeSpells(false);
+                    DoCast(m_creature, SPELL_PLANAR_SHIFT, false);
+                    Events.ScheduleEvent(EVENT_ENRAGED_ASSAULT, 19*IN_MILLISECONDS);
+                    Events.ScheduleEvent(EVENT_PLANAR_ANOMALITIES, 2*IN_MILLISECONDS);
+                    break;
+                case EVENT_ENRAGED_ASSAULT:
+                    DoCast(m_creature, SPELL_ENRAGED_ASSAULT, true);
+                    break;
+                case EVENT_PLANAR_ANOMALITIES:
+                    DoCast(m_creature, SPELL_PLANAR_ANOMALIES, true);
+                    break;
+                case EVENT_SUMMON_DRAKES:
+                    if (SummonMgr.GetSummonCount(NPC_DRAGON) > MAX_DRAGON_COUNT)
+                        break;
+                    for (int i = 0 ; i < 3 ; i++)
                     {
-                        if (pPlayer->GetVehicle())
-                            if (Unit* pDrake = pPlayer->GetVehicle()->GetBase())
-                            {
-                                pSumm->AddThreat(pDrake, 10000.0f);
-                                pSumm->GetMotionMaster()->MoveIdle();
-                                pSumm->StopMoving();
-                                pSumm->GetMotionMaster()->MoveChase(pDrake, 20.0f);
-                            }
+                        //DoCast(m_creature, SPELL_SUMMON_DRAKE, true); // summoned @ ground position
+                        Unit* pSumm =  SummonMgr.SummonCreature(NPC_DRAGON, m_creature->GetPositionX() - 5 + urand(0, 10), m_creature->GetPositionY() - 5 + urand(0, 10),
+                            m_creature->GetPositionZ() - 5 + urand(0, 10), 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                        if (Unit* pPlayer = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM_PLAYER, 0))
+                        {
+                            if (pPlayer->GetVehicle())
+                                if (Unit* pDrake = pPlayer->GetVehicle()->GetBase())
+                                {
+                                    pSumm->AddThreat(pDrake, 10000.0f);
+                                    pSumm->GetMotionMaster()->MoveIdle();
+                                    pSumm->StopMoving();
+                                    pSumm->GetMotionMaster()->MoveChase(pDrake, 20.0f);
+                                }
+                        }
                     }
-                }
-                break;
+                    break;
+                default:
+                    break;
             }
 
         DoMeleeAttackIfReady();

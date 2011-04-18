@@ -103,7 +103,7 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
 
     boss_uromAI(Creature* pCreature) : ScriptedAI(pCreature), SummonMgr(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = dynamic_cast<ScriptedInstance*>(pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         pCreature->GetMotionMaster()->MoveIdle();
         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PASSIVE);
@@ -129,13 +129,13 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
     bool VehicleCheck()
     {
         Map *map = m_creature->GetMap();
-        if(map->IsDungeon())
+        if (map->IsDungeon())
         {
            Map::PlayerList const &PlayerList = map->GetPlayers();
 
-           for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+           for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
            {
-              if(i->getSource()->isAlive() && i->getSource()->GetVehicle())
+              if (i->getSource()->isAlive() && i->getSource()->GetVehicle())
                   return true;
            }
         }
@@ -153,7 +153,7 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
             if (pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack()
                 && pWho->IsWithinDist(m_creature, 30.0f) && !VehicleCheck() && !SummonMgr.GetSummonCount())
             {
-                switch(m_uiPhase)
+                switch (m_uiPhase)
                 {
                     case 0:
                         m_bIsIntro = true;
@@ -220,7 +220,7 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
 
     void AttackStart(Unit* pWho)
     {
-        if(m_uiPhase < 3)
+        if (m_uiPhase < 3)
             return;
         ScriptedAI::AttackStart(pWho);
     }
@@ -292,7 +292,7 @@ struct MANGOS_DLL_DECL boss_uromAI : public ScriptedAI
                     m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->StopMoving();
                     DoStartNoMovement(m_creature->getVictim());
-                    DoCast(m_creature,SPELL_TELEPORT);
+                    DoCast(m_creature, SPELL_TELEPORT);
                     Events.DelayEvents(9*IN_MILLISECONDS);
                     Events.ScheduleEvent(EVENT_EXPLOSION, 1*IN_MILLISECONDS);
                     break;
