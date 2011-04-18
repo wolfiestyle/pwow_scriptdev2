@@ -263,7 +263,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
         DoScriptText(urand(0,1) ? SAY_KILL_1 : SAY_KILL_2, m_creature);
     }
 
-    void Reset() 
+    void Reset()
     {
         if (m_bStarted != true)
             m_bStarted = false;
@@ -367,7 +367,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
                     }
                     break;
                 case EVENT_SUMMON_CAPTAIN:
-                {           
+                {
                     DoCast(m_creature, SPELL_SUMMON_BEAM, true);
                     uint8 uiText = urand(0, 2);
                     Events.ScheduleEvent(EVENT_MOVE_CAPTAIN, 15*IN_MILLISECONDS);
@@ -410,7 +410,7 @@ struct MANGOS_DLL_DECL boss_varosAI : public ScriptedAI
     void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
     {
         if (m_creature->HasAura(SPELL_ARCANE_SHIELD))
-            uiDamage = 0;            
+            uiDamage = 0;
     }
 };
 
