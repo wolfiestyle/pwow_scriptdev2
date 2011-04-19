@@ -16,10 +16,17 @@
 
 /* ScriptData
 SDName: Boss_Thaddius
-SD%Complete: 90%
-SDComment: PLEASE VERIFY
+SD%Complete: 85
+SDComment: Magnetic Pull, Tesla-Chains, Polaritiy-Shift missing (core!)
 SDCategory: Naxxramas
 EndScriptData */
+
+/* ContentData
+boss_thaddius
+npc_tesla_coil
+boss_stalagg
+boss_feugen
+EndContentData */
 
 #include "precompiled.h"
 #include "naxxramas.h"
@@ -31,477 +38,743 @@ enum
     SAY_STAL_SLAY                 = -1533024,
     SAY_STAL_DEATH                = -1533025,
 
-    SPELL_POWERSURGE              = 28134,
-    H_SPELL_POWERSURGE            = 54529,
-
     //Feugen
     SAY_FEUG_AGGRO                = -1533026,
     SAY_FEUG_SLAY                 = -1533027,
     SAY_FEUG_DEATH                = -1533028,
 
-    SPELL_STATICFIELD             = 28135,
-    H_SPELL_STATICFIELD           = 54528,
 
-    //both
-    SPELL_MAGNETICPULL            = 28338,
+    // Tesla Coils
+    EMOTE_LOSING_LINK               = -1533149,
+    EMOTE_TESLA_OVERLOAD            = -1533150,
 
     //Thaddus
-    SAY_GREET                     = -1533029,
-    SAY_AGGRO1                    = -1533030,
-    SAY_AGGRO2                    = -1533031,
-    SAY_AGGRO3                    = -1533032,
-    SAY_SLAY                      = -1533033,
-    SAY_ELECT                     = -1533034,
-    SAY_DEATH                     = -1533035,
-    SAY_SCREAM1                   = -1533036,
-    SAY_SCREAM2                   = -1533037,
-    SAY_SCREAM3                   = -1533038,
-    SAY_SCREAM4                   = -1533039,
+    SAY_AGGRO_1                     = -1533030,
+    SAY_AGGRO_2                     = -1533031,
+    SAY_AGGRO_3                     = -1533032,
+    SAY_SLAY                        = -1533033,
+    SAY_ELECT                       = -1533034,
+    SAY_DEATH                       = -1533035,
+    // Background screams in Instance if Thaddius still alive, needs general support most likely
+    SAY_SCREAM1                     = -1533036,
+    SAY_SCREAM2                     = -1533037,
+    SAY_SCREAM3                     = -1533038,
+    SAY_SCREAM4                     = -1533039,
+    EMOTE_POLARITY_SHIFT            = -1533151,
 
-    SPELL_BALL_LIGHTNING          = 28299,
+    // Thaddius Spells
+    SPELL_THADIUS_SPAWN             = 28160,
+    SPELL_THADIUS_LIGHTNING_VISUAL  = 28136,
+    SPELL_BALL_LIGHTNING            = 28299,
+    SPELL_CHAIN_LIGHTNING           = 28167,
+    SPELL_CHAIN_LIGHTNING_H         = 54531,
+    SPELL_POLARITY_SHIFT            = 28089,
+    SPELL_BESERK                    = 27680,
+    SPELL_CLEAR_CHARGES             = 63133,                // TODO NYI, cast on death, most likely to remove remaining buffs
 
-    SPELL_CHARGE_POSITIVE_DMGBUFF = 29659,
-    SPELL_CHARGE_POSITIVE_NEARDMG = 28059,
+    // Stalagg & Feugen Spells
+    //SPELL_WARSTOMP                  = 28125,              // Not used in Wotlk Version
+    SPELL_MAGNETIC_PULL_A           = 28338,
+    SPELL_MAGNETIC_PULL_B           = 54517,                // used by Feugen (wotlk)
+    SPELL_STATIC_FIELD              = 28135,
+    SPELL_STATIC_FIELD_H            = 54528,
+    SPELL_POWERSURGE_H              = 28134,
+    SPELL_POWERSURGE                = 54529,
 
-    SPELL_CHARGE_NEGATIVE_DMGBUFF = 29660,
-    SPELL_CHARGE_NEGATIVE_NEARDMG = 28084,
+    // Tesla Spells
+    SPELL_FEUGEN_CHAIN              = 28111,
+    SPELL_STALAGG_CHAIN             = 28096,
+    SPELL_SHOCK_OVERLOAD            = 28159,
+    SPELL_SHOCK                     = 28099,
+ };
 
-    SPELL_POLARITY_SHIFT          = 28089,           //The above are a result of this
+/************
+** boss_thaddius
+************/
 
-    SPELL_CHAIN_LIGHTNING         = 28167,
-    H_SPELL_CHAIN_LIGHTNING       = 54531,
-
-    SPELL_BESERK                  = 26662,
-
-    //generic
-    C_TESLA_COIL                  = 16218                   //the coils (emotes "Tesla Coil overloads!")
-};
-
-struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
+// Actually this boss behaves like a NoMovement Boss (SPELL_BALL_LIGHTNING) - but there are some movement packages used, unknown what this means!
+struct MANGOS_DLL_DECL boss_thaddiusAI : public Scripted_NoMovementAI
 {
-    boss_thaddiusAI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_thaddiusAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+
         Reset();
     }
 
-    ScriptedInstance* m_pInstance;
+    instance_naxxramas* m_pInstance;
     bool m_bIsRegularMode;
 
-    uint32 ChainLightning_Timer;                            //Timer for Chain Lightning
-    uint32 PolarityShift_Timer;                             //Timer for Polarity Shift
-    uint32 BallLightning_Timer;                             //Timer for Ball Lightning
-    uint32 BerserkerEnrage_Timer;                           //Timer for Berserker Enrage
-    uint32 Screams_Timer;                                   //Timer for Screams
-    bool greet;                                             //Check for SAY_GREET
+    uint32 m_uiPolarityShiftTimer;
+    uint32 m_uiChainLightningTimer;
+    uint32 m_uiBallLightningTimer;
+    uint32 m_uiBerserkTimer;
 
     void Reset()
     {
-        ChainLightning_Timer = 15000;                       //15 seconds
-        PolarityShift_Timer = 30000;                        //30 seconds
-        BallLightning_Timer = 5000;                         //5 seconds
-        BerserkerEnrage_Timer = 360000;                     //6 minutes
-        Screams_Timer = (rand()%30+15)*1000;                //15-44 seconds
-        greet = true;
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_THADDIUS, NOT_STARTED);
+        m_uiPolarityShiftTimer = 15*IN_MILLISECONDS;
+        m_uiChainLightningTimer = 8*IN_MILLISECONDS;
+        m_uiBallLightningTimer = 1*IN_MILLISECONDS;
+        m_uiBerserkTimer = 6*MINUTE*IN_MILLISECONDS;
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
-        //Return since boss is locked
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-            return;
-
-        //Say some stuff
-        switch(rand()%3)
+        switch (urand(0,2))
         {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
+            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
+            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
+            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
         }
 
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_THADDIUS, IN_PROGRESS);
+        // Make Attackable
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void EnterEvadeMode()
     {
-        //Return since boss is locked
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-            return;
-
-        if (greet && m_creature->IsWithinDistInMap(who, 60.0f) && who->GetTypeId() == TYPEID_PLAYER)
+        if (m_pInstance)
         {
-            //Say some stuff
-            DoScriptText(SAY_GREET, m_creature);
-            greet = false;
+            m_pInstance->SetData(TYPE_THADDIUS, FAIL);
+
+            // Respawn Adds:
+            Creature* pFeugen  = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_FEUGEN));
+            Creature* pStalagg = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_STALAGG));
+            if (pFeugen)
+            {
+                pFeugen->ForcedDespawn();
+                pFeugen->Respawn();
+            }
+            if (pStalagg)
+            {
+                pStalagg->ForcedDespawn();
+                pStalagg->Respawn();
+            }
         }
 
-        ScriptedAI::MoveInLineOfSight(who);
+        // Reset
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+        // Delay reloading of CreatureAddon until Reached home for proper handling
+        // Also note that m_creature->LoadCreatureAddon(); must _not_ be called before m_creature->GetMotionMaster()->MoveTargetedHome();
+        // Done this way, because MoveTargetHome ensures proper positioning (orientation)
+        m_creature->RemoveAllAuras();
+        m_creature->DeleteThreatList();
+        m_creature->CombatStop(true);
+
+        if (m_creature->isAlive())
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+
+        m_creature->SetLootRecipient(NULL);
+
+        Reset();
     }
 
-    void KilledUnit()
+    void JustReachedHome()
     {
-        //Say some stuff
+        m_creature->LoadCreatureAddon();
+    }
+
+    void KilledUnit(Unit* pVictim)
+    {
+        if (pVictim->GetTypeId() != TYPEID_PLAYER)
+            return;
+
         DoScriptText(SAY_SLAY, m_creature);
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* pKiller)
     {
-        //Say some stuff
         DoScriptText(SAY_DEATH, m_creature);
 
         if (m_pInstance)
+        {
             m_pInstance->SetData(TYPE_THADDIUS, DONE);
+
+            // Force Despawn of Adds
+            Creature* pFeugen  = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_FEUGEN));
+            Creature* pStalagg = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_STALAGG));
+
+            if (pFeugen)
+                pFeugen->ForcedDespawn();
+            if (pStalagg)
+                pStalagg->ForcedDespawn();
+        }
     }
 
-
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 uiDiff)
     {
-        //Return since boss is locked
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        if (!m_pInstance)
             return;
 
-        //Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Spell Chain Lightning timer
-        if (ChainLightning_Timer < diff)
+        // Berserk
+        if (m_uiBerserkTimer < uiDiff)
         {
-            //Cast spell on our current target.
-            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
-				DoCast(target, m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING : H_SPELL_CHAIN_LIGHTNING);
-
-            ChainLightning_Timer = 15000;
-        }
-        else 
-            ChainLightning_Timer -= diff;
-
-        //Spell Polarity Shift timer
-        if (PolarityShift_Timer < diff)
-        {
-            //Cast spell on our current target.
-            DoCast(m_creature->getVictim(),SPELL_POLARITY_SHIFT);
-
-            PolarityShift_Timer = 30000;
+            if (DoCastSpellIfCan(m_creature, SPELL_BESERK) == CAST_OK)                  // allow combat movement?
+                m_uiBerserkTimer = 10*MINUTE*IN_MILLISECONDS;
         }
         else
-            PolarityShift_Timer -= diff;
+            m_uiBerserkTimer -= uiDiff;
 
-        //Spell Ball Lightning timer
-        if (BallLightning_Timer < diff)
+        // Polarity Shift
+        if (m_uiPolarityShiftTimer < uiDiff)
         {
-            if (!m_creature->IsWithinDist(m_creature->getVictim(),ATTACK_DISTANCE))
+            if (DoCastSpellIfCan(m_creature, SPELL_POLARITY_SHIFT, CAST_INTERRUPT_PREVIOUS) == CAST_OK)
             {
-                //Cast spell on our current target.
-                DoCast(m_creature->getVictim(),SPELL_BALL_LIGHTNING);
+                DoScriptText(SAY_ELECT, m_creature);
+                DoScriptText(EMOTE_POLARITY_SHIFT, m_creature);
+                m_uiPolarityShiftTimer = 30*IN_MILLISECONDS;
             }
-
-            BallLightning_Timer = 5000;
         }
         else
-            BallLightning_Timer -= diff;
+            m_uiPolarityShiftTimer -= uiDiff;
 
-        //Spell Berserker Enrage timer
-        if (BerserkerEnrage_Timer < diff)
+        // Chain Lightning
+        if (m_uiChainLightningTimer < uiDiff)
         {
-            //Cast spell on self.
-            DoCast(m_creature,SPELL_BESERK);
-
-            //Cast our beserk spell agian in 12 seconds if we didn't kill everyone
-            BerserkerEnrage_Timer = 12000;
+            Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
+            if (pTarget && DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING : SPELL_CHAIN_LIGHTNING_H) == CAST_OK)
+                m_uiChainLightningTimer = 15*IN_MILLISECONDS;
         }
         else
-            BerserkerEnrage_Timer -= diff;
+            m_uiChainLightningTimer -= uiDiff;
 
-        //Screams timer
-        if (Screams_Timer < diff)
+        // Ball Lightning if target not in melee range
+        // TODO: Verify, likely that the boss should attack any enemy in melee range before starting to cast
+        if (!m_creature->CanReachWithMeleeAttack(m_creature->getVictim()))
         {
-            //Say some stuff
-            switch(rand()%4)
+            if (m_uiBallLightningTimer < uiDiff)
             {
-                case 0: DoScriptText(SAY_SCREAM1,m_creature); break;
-                case 1: DoScriptText(SAY_SCREAM2,m_creature); break;
-                case 2: DoScriptText(SAY_SCREAM3,m_creature); break;
-                case 3: DoScriptText(SAY_SCREAM4,m_creature); break;
+                if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_BALL_LIGHTNING) == CAST_OK)
+                    m_uiBallLightningTimer = 1*IN_MILLISECONDS;
             }
-
-            Screams_Timer = (rand()%30+15)*1000;
+            else
+                m_uiBallLightningTimer -= uiDiff;
         }
         else
-            Screams_Timer -= diff;
-
-        DoMeleeAttackIfReady();
+            DoMeleeAttackIfReady();
     }
 };
 
-struct MANGOS_DLL_DECL boss_feugenAI : public ScriptedAI
-{
-    boss_feugenAI(Creature* pCreature) : ScriptedAI(pCreature) 
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-
-    uint32 StaticField_Timer;                               //Timer for Static Field
-    uint32 MagneticPull_Timer;                              //Timer for Magnetic Pull
-    uint32 Resurrect_Timer;                                 //Timer for Resurrection
-
-    uint64 StalaggGUID;
-    uint64 ThaddiusGUID;
-
-    void Reset()
-    {
-        StaticField_Timer = 3000;                           //3 seconds
-        MagneticPull_Timer = 30000;                         //30 seconds
-        Resurrect_Timer = 5000;                             //5 seconds
-
-        StalaggGUID = 0;
-        ThaddiusGUID = 0;
-    }
-
-    void Aggro(Unit *who)
-    {
-        DoScriptText(SAY_FEUG_AGGRO, m_creature);
-    }
-
-    void KilledUnit()
-    {
-        //Say some stuff
-        DoScriptText(SAY_FEUG_SLAY, m_creature);
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        //Say some stuff
-        DoScriptText(SAY_FEUG_DEATH, m_creature);
-
-        //Unlock Thaddius
-        if (StalaggGUID && ThaddiusGUID)
-        {
-            Creature* Stalagg = m_creature->GetMap()->GetCreature(StalaggGUID);
-            Creature* Thaddius = m_creature->GetMap()->GetCreature(ThaddiusGUID);
-            if(Stalagg && !Stalagg->isAlive() && Thaddius)
-            {
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
-            }
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (m_pInstance)
-        {
-            if (!StalaggGUID)
-                StalaggGUID = m_pInstance->GetData64(NPC_STALAGG);
-            if (!ThaddiusGUID)
-                ThaddiusGUID = m_pInstance->GetData64(NPC_THADDIUS);
-        }
-
-        //Respawn Stalagg after 5 seconds
-        if (StalaggGUID)
-        {
-            Creature* Stalagg = m_creature->GetMap()->GetCreature(StalaggGUID);
-            if (Stalagg && !Stalagg->isAlive())
-            {
-                if (Resurrect_Timer < diff)
-                {
-                    Stalagg->Respawn();
-                    Stalagg->AI()->EnterEvadeMode();
-
-                    Resurrect_Timer = 5000;
-                }else Resurrect_Timer -= diff;
-            }
-        }
-
-        //Return since we have no target
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        //Spell Static Field timer
-        if (StaticField_Timer < diff)
-        {
-            //Cast spell on our current target.
-			DoCast(m_creature, m_bIsRegularMode ? SPELL_STATICFIELD : H_SPELL_STATICFIELD);
-
-            StaticField_Timer = 3000;
-        }else StaticField_Timer -= diff;
-
-        //Spell Magnetic Pull timer
-		/*
-        if (MagneticPull_Timer < diff)
-        {
-            //Cast spell on our current target.
-            DoCast(m_creature->getVictim(),SPELL_MAGNETICPULL);
-
-            MagneticPull_Timer = 30000;
-        }else MagneticPull_Timer -= diff;
-		*/
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-struct MANGOS_DLL_DECL boss_stalaggAI : public ScriptedAI
-{
-    boss_stalaggAI(Creature* pCreature) : ScriptedAI(pCreature) 
-    {
-        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
-    bool m_bIsRegularMode;
-
-    uint32 PowerSurge_Timer;                                //Timer for Static Field
-    uint32 MagneticPull_Timer;                              //Timer for Magnetic Pull
-    uint32 Resurrect_Timer;                                 //Timer for Resurrection
-
-    uint64 FeugenGUID;
-    uint64 ThaddiusGUID;
-
-    void Reset()
-    {
-        PowerSurge_Timer = 15000;                           //15 seconds
-        MagneticPull_Timer = 30000;                         //30 seconds
-        Resurrect_Timer = 5000;                             //5 seconds
-
-        FeugenGUID = 0;
-        ThaddiusGUID = 0;
-    }
-
-    void Aggro(Unit *who)
-    {
-        DoScriptText(SAY_STAL_AGGRO, m_creature);
-    }
-
-    void KilledUnit()
-    {
-        //Say some stuff
-        DoScriptText(SAY_STAL_SLAY, m_creature);
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        //Say some stuff
-        DoScriptText(SAY_STAL_DEATH, m_creature);
-
-        //Unlock Thaddius
-        if (FeugenGUID && ThaddiusGUID)
-        {
-            Creature* Feugen = m_creature->GetMap()->GetCreature(FeugenGUID);
-            Creature* Thaddius = m_creature->GetMap()->GetCreature(ThaddiusGUID);
-            if(Feugen && !Feugen->isAlive() && Thaddius)
-            {
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-                Thaddius->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_6);
-            }
-        }
-    }
-
-    //*** HANDLED FUNCTION ***
-    //Update AI is called Every single map update (roughly once every 100ms if a player is within the grid)
-    void UpdateAI(const uint32 diff)
-    {
-        if (m_pInstance)
-        {
-            if (!FeugenGUID)
-                FeugenGUID = m_pInstance->GetData64(NPC_FEUGEN);
-            if (!ThaddiusGUID)
-                ThaddiusGUID = m_pInstance->GetData64(NPC_THADDIUS);
-        }
-
-        //Respawn Feugen after 5 seconds
-        if (FeugenGUID)
-        {
-            Creature* Feugen = m_creature->GetMap()->GetCreature(FeugenGUID);
-            if (Feugen && !Feugen->isAlive())
-            {
-                if (Resurrect_Timer < diff)
-                {
-                    Feugen->Respawn();
-                    Feugen->AI()->EnterEvadeMode();
-
-                    Resurrect_Timer = 5000;
-                }else Resurrect_Timer -= diff;
-            }
-        }
-
-        //Return since we have no target
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        //Spell Power Surge timer
-        if (PowerSurge_Timer < diff)
-        {
-            //Cast spell on self.
-			DoCast(m_creature, m_bIsRegularMode ? SPELL_POWERSURGE : H_SPELL_POWERSURGE);
-
-            PowerSurge_Timer = 15000;
-        }else PowerSurge_Timer -= diff;
-
-        //Spell Magnetic Pull timer
-		/*
-        if (MagneticPull_Timer < diff)
-        {
-            //Cast spell on our current target.
-            DoCast(m_creature->getVictim(),SPELL_MAGNETICPULL);
-
-            MagneticPull_Timer = 30000;
-        }else MagneticPull_Timer -= diff;
-		*/
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-//This is the GetAI method used by all scripts that involve AI
-//It is called every time a new creature using this script is created
 CreatureAI* GetAI_boss_thaddius(Creature* pCreature)
 {
     return new boss_thaddiusAI(pCreature);
 }
 
-CreatureAI* GetAI_boss_feugen(Creature* pCreature)
+bool EffectDummyNPC_spell_thaddius_encounter(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
-    return new boss_feugenAI(pCreature);
+    switch (uiSpellId)
+    {
+        case SPELL_SHOCK_OVERLOAD:
+            if (uiEffIndex == EFFECT_INDEX_0)
+            {
+                // Only do something to Thaddius, and on the first hit.
+                if (pCreatureTarget->GetEntry() != NPC_THADDIUS || !pCreatureTarget->HasAura(SPELL_THADIUS_SPAWN))
+                    return true;
+                // remove Stun and then Cast
+                pCreatureTarget->RemoveAurasDueToSpell(SPELL_THADIUS_SPAWN);
+                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_THADIUS_LIGHTNING_VISUAL, false);
+            }
+            return true;
+        case SPELL_THADIUS_LIGHTNING_VISUAL:
+            if (uiEffIndex == EFFECT_INDEX_0 && pCreatureTarget->GetEntry() == NPC_THADDIUS)
+            {
+                if (instance_naxxramas* pInstance = (instance_naxxramas*)pCreatureTarget->GetInstanceData())
+                {
+                    if (Player* pPlayer = pInstance->GetPlayerInMap(true, false))
+                        pCreatureTarget->AI()->AttackStart(pPlayer);
+                }
+            }
+            return true;
+    }
+    return false;
 }
+
+/************
+** npc_tesla_coil
+************/
+
+struct MANGOS_DLL_DECL npc_tesla_coilAI : public Scripted_NoMovementAI
+{
+    npc_tesla_coilAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
+        m_uiSetupTimer = 1*IN_MILLISECONDS;
+        m_uiOverloadTimer = 0;
+        m_bReapply = false;
+        Reset();
+    }
+
+    instance_naxxramas* m_pInstance;
+    bool m_bToFeugen;
+    bool m_bReapply;
+
+    uint32 m_uiSetupTimer;
+    uint32 m_uiOverloadTimer;
+
+    void Reset() {}
+    void AttackStart(Unit* pWho) {}
+    void MoveInLineOfSight(Unit* pWho) {}
+
+    bool SetupChain()
+    {
+        // Check, if instance_ script failed or encounter finished
+        if (!m_pInstance || m_pInstance->GetData(TYPE_THADDIUS) == DONE)
+            return true;
+
+        GameObject* pNoxTeslaFeugen  = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_CONS_NOX_TESLA_FEUGEN));
+        GameObject* pNoxTeslaStalagg = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_CONS_NOX_TESLA_STALAGG));
+
+        // Try again, till Tesla GOs are spawned
+        if (!pNoxTeslaFeugen || !pNoxTeslaStalagg)
+            return false;
+
+        m_bToFeugen = m_creature->GetDistanceOrder(pNoxTeslaFeugen, pNoxTeslaStalagg);
+
+        return true;
+
+        /* TODO Uncomment when Chain spells are proper implemented
+         * if (DoCastSpellIfCan(m_creature, m_bToFeugen ? SPELL_FEUGEN_CHAIN : SPELL_STALAGG_CHAIN) == CAST_OK)
+         *    return true;
+         *
+         * return false;
+         */
+    }
+
+    void ReApplyChain(uint32 uiEntry)
+    {
+        if (uiEntry)                                        // called from Stalagg/Feugen with their entry
+        {
+            // Only apply chain to own add
+            if ((uiEntry == NPC_FEUGEN && !m_bToFeugen) || (uiEntry == NPC_STALAGG && m_bToFeugen))
+                return;
+
+            m_bReapply = true;                              // Reapply Chains on next tick
+        }
+        else                                                // if called from next tick, needed because otherwise the spell doesn't bind
+        {
+            m_bReapply = false;
+            m_creature->InterruptNonMeleeSpells(true);
+            GameObject* pGo = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(m_bToFeugen ? GO_CONS_NOX_TESLA_FEUGEN : GO_CONS_NOX_TESLA_STALAGG));
+
+            if (pGo && pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON && pGo->getLootState() == GO_ACTIVATED)
+                pGo->ResetDoorOrButton();
+
+            // TODO Uncomment when chain spells are proper implemented
+            // DoCastSpellIfCan(m_creature, m_bToFeugen ? SPELL_FEUGEN_CHAIN : SPELL_STALAGG_CHAIN);
+        }
+    }
+
+    void SetOverloading()
+    {
+        m_uiOverloadTimer = 14*IN_MILLISECONDS;             // it takes some time to overload and activate Thaddius
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_uiOverloadTimer && !m_uiSetupTimer && !m_bReapply)
+            return;                                         // Nothing to do this tick
+
+        if (m_uiSetupTimer)
+        {
+            if (m_uiSetupTimer <= uiDiff)
+            {
+                if (SetupChain())
+                    m_uiSetupTimer = 0;
+                else
+                    m_uiSetupTimer = 5*IN_MILLISECONDS;
+            }
+            else
+                m_uiSetupTimer -= uiDiff;
+        }
+
+        if (m_uiOverloadTimer)
+        {
+            if (m_uiOverloadTimer <=  uiDiff)
+            {
+                m_uiOverloadTimer = 0;
+                DoCastSpellIfCan(m_creature,  SPELL_SHOCK_OVERLOAD, CAST_INTERRUPT_PREVIOUS);
+                DoScriptText(EMOTE_TESLA_OVERLOAD, m_creature);
+                m_pInstance->DoUseDoorOrButton(m_pInstance->GetData64(m_bToFeugen ? GO_CONS_NOX_TESLA_FEUGEN : GO_CONS_NOX_TESLA_STALAGG));
+            }
+            else
+                m_uiOverloadTimer -= uiDiff;
+        }
+
+        if (m_bReapply)
+            ReApplyChain(0);
+    }
+};
+
+CreatureAI* GetAI_npc_tesla_coil(Creature* pCreature)
+{
+    return new npc_tesla_coilAI(pCreature);
+}
+
+/************
+** boss_thaddiusAddsAI - Superclass for Feugen & Stalagg
+************/
+
+struct MANGOS_DLL_DECL boss_thaddiusAddsAI : public ScriptedAI
+{
+    boss_thaddiusAddsAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (instance_naxxramas*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+
+        Reset();
+    }
+
+    instance_naxxramas* m_pInstance;
+    bool m_bIsRegularMode;
+
+    bool m_bFakeDeath;
+    bool m_bBothDead;
+
+    uint32 m_uiHoldTimer;
+    //uint32 m_uiWarStompTimer;
+    uint32 m_uiReviveTimer;
+
+    void Reset()
+    {
+        m_bFakeDeath = false;
+        m_bBothDead = false;
+
+        m_uiReviveTimer = 5*IN_MILLISECONDS;
+        m_uiHoldTimer = 2*IN_MILLISECONDS;
+        //m_uiWarStompTimer = urand(8*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+
+        // We might Reset while faking death, so undo this
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetHealth(m_creature->GetMaxHealth());
+        m_creature->SetStandState(UNIT_STAND_STATE_STAND);
+    }
+
+    Creature* GetOtherAdd()                                 // For Stalagg returns pFeugen, for Feugen returns pStalagg
+    {
+        switch (m_creature->GetEntry())
+        {
+            case NPC_FEUGEN:  return m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_STALAGG));
+            case NPC_STALAGG: return m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_FEUGEN));
+            default:
+                return NULL;
+        }
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        if (!m_pInstance)
+            return;
+
+        m_pInstance->SetData(TYPE_THADDIUS, IN_PROGRESS);
+
+        if (Creature* pOtherAdd = GetOtherAdd())
+        {
+            if (!pOtherAdd->isInCombat())
+                pOtherAdd->AI()->AttackStart(pWho);
+        }
+    }
+
+    void JustRespawned()
+    {
+        Reset();                                            // Needed to reset the flags properly
+
+        std::list<uint64> lTeslaGUIDList;
+        if (!m_pInstance)
+            return;
+
+        m_pInstance->GetThadTeslaCreatures(lTeslaGUIDList);
+        if (lTeslaGUIDList.empty())
+            return;
+
+        for (std::list<uint64>::const_iterator itr = lTeslaGUIDList.begin(); itr != lTeslaGUIDList.end(); itr++)
+        {
+            if (Creature* pTesla = m_pInstance->instance->GetCreature(*itr))
+            {
+                if (npc_tesla_coilAI* pTeslaAI = dynamic_cast<npc_tesla_coilAI*> (pTesla->AI()))
+                    pTeslaAI->ReApplyChain(m_creature->GetEntry());
+            }
+        }
+    }
+
+    void JustReachedHome()
+    {
+        if (!m_pInstance)
+            return;
+
+        if (Creature* pOther = GetOtherAdd())
+        {
+            if (boss_thaddiusAddsAI* pOtherAI = dynamic_cast<boss_thaddiusAddsAI*> (pOther->AI()))
+            {
+                if (pOtherAI->IsCountingDead())
+                {
+                    pOther->ForcedDespawn();
+                    pOther->Respawn();
+                }
+            }
+        }
+
+        // Reapply Chains if needed
+        if (!m_creature->HasAura(SPELL_FEUGEN_CHAIN) && !m_creature->HasAura(SPELL_STALAGG_CHAIN))
+            JustRespawned();
+
+        m_pInstance->SetData(TYPE_THADDIUS, FAIL);
+    }
+
+    void Revive()
+    {
+        DoResetThreat();
+        PauseCombatMovement();
+        Reset();
+    }
+
+    bool IsCountingDead()
+    {
+        return m_bFakeDeath || m_creature->isDead();
+    }
+
+    void PauseCombatMovement()
+    {
+        SetCombatMovement(false);
+        m_uiHoldTimer = 1500;
+    }
+
+    virtual void UpdateAddAI(const uint32 uiDiff) {}        // Used for Add-specific spells
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (m_bBothDead)                                    // This is the case while fighting Thaddius
+            return;
+
+        if (m_bFakeDeath)
+        {
+            if (m_uiReviveTimer < uiDiff)
+            {
+                if (Creature* pOther = GetOtherAdd())
+                {
+                    if (boss_thaddiusAddsAI* pOtherAI = dynamic_cast<boss_thaddiusAddsAI*> (pOther->AI()))
+                    {
+                        if (!pOtherAI->IsCountingDead())    // Raid was to slow to kill the second add
+                            Revive();
+                        else
+                        {
+                            m_bBothDead = true;             // Now both adds are counting dead
+                            pOtherAI->m_bBothDead = true;
+                            // Set both Teslas to overload
+                            std::list<uint64> lTeslaGUIDList;
+                            m_pInstance->GetThadTeslaCreatures(lTeslaGUIDList);
+                            for (std::list<uint64>::const_iterator itr = lTeslaGUIDList.begin(); itr != lTeslaGUIDList.end(); itr++)
+                            {
+                                if (Creature* pTesla = m_pInstance->instance->GetCreature(*itr))
+                                {
+                                    if (npc_tesla_coilAI* pTeslaAI = dynamic_cast<npc_tesla_coilAI*> (pTesla->AI()))
+                                        pTeslaAI->SetOverloading();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+                m_uiReviveTimer -= uiDiff;
+            return;
+        }
+
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_uiHoldTimer)                                  // A short timer preventing combat movement after revive
+        {
+            if (m_uiHoldTimer <= uiDiff)
+            {
+                SetCombatMovement(true);
+                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                m_uiHoldTimer = 0;
+            }
+            else
+                m_uiHoldTimer -= uiDiff;
+        }
+
+        /*  Doesn't happen in wotlk version any more
+        if (m_uiWarStompTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, SPELL_WARSTOMP) == CAST_OK)
+                m_uiWarStompTimer = urand(8*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+        }
+        else
+            m_uiWarStompTimer -= uiDiff;*/
+
+        UpdateAddAI(uiDiff);                    // For Add Specific Abilities
+
+        DoMeleeAttackIfReady();
+    }
+
+    void DamageTaken(Unit* pKiller, uint32& uiDamage)
+    {
+        if (uiDamage < m_creature->GetHealth())
+            return;
+
+        // Prevent glitch if in fake death
+        if (m_bFakeDeath)
+        {
+            uiDamage = 0;
+            return;
+        }
+
+        // prevent death
+        uiDamage = 0;
+        m_bFakeDeath = true;
+
+        m_creature->InterruptNonMeleeSpells(false);
+        m_creature->SetHealth(0);
+        m_creature->StopMoving();
+        m_creature->ClearComboPointHolders();
+        m_creature->RemoveAllAurasOnDeath();
+        m_creature->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
+        m_creature->ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->ClearAllReactives();
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveIdle();
+        m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+
+        JustDied(pKiller);                                  // Texts
+    }
+};
+
+/************
+** boss_stalagg
+************/
+
+struct MANGOS_DLL_DECL boss_stalaggAI : public boss_thaddiusAddsAI
+{
+    boss_stalaggAI(Creature* pCreature) : boss_thaddiusAddsAI(pCreature)
+    {
+        Reset();
+    }
+    uint32 m_uiPowerSurgeTimer;
+
+    void Reset()
+    {
+        boss_thaddiusAddsAI::Reset();
+        m_uiPowerSurgeTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        DoScriptText(SAY_STAL_AGGRO, m_creature);
+        boss_thaddiusAddsAI::Aggro(pWho);
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+       DoScriptText(SAY_STAL_DEATH, m_creature);
+    }
+
+    void KilledUnit(Unit* pVictim)
+    {
+        if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            DoScriptText(SAY_STAL_SLAY, m_creature);
+    }
+
+    void UpdateAddAI(const uint32 uiDiff)
+    {
+        if (m_uiPowerSurgeTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_POWERSURGE : SPELL_POWERSURGE_H) == CAST_OK)
+                m_uiPowerSurgeTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
+        }
+        else
+            m_uiPowerSurgeTimer -= uiDiff;
+    }
+};
 
 CreatureAI* GetAI_boss_stalagg(Creature* pCreature)
 {
     return new boss_stalaggAI(pCreature);
 }
 
+/************
+** boss_feugen
+************/
+
+struct MANGOS_DLL_DECL boss_feugenAI : public boss_thaddiusAddsAI
+{
+    boss_feugenAI(Creature* pCreature) : boss_thaddiusAddsAI(pCreature)
+    {
+        Reset();
+    }
+    uint32 m_uiStaticFieldTimer;
+    uint32 m_uiMagneticPullTimer;                                       // TODO, missing
+
+    void Reset()
+    {
+        boss_thaddiusAddsAI::Reset();
+        m_uiStaticFieldTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
+        m_uiMagneticPullTimer = 20*IN_MILLISECONDS;
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        DoScriptText(SAY_FEUG_AGGRO, m_creature);
+        boss_thaddiusAddsAI::Aggro(pWho);
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        DoScriptText(SAY_FEUG_DEATH, m_creature);
+    }
+
+    void KilledUnit(Unit* pVictim)
+    {
+        if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            DoScriptText(SAY_FEUG_SLAY, m_creature);
+    }
+
+    void UpdateAddAI(const uint32 uiDiff)
+    {
+        if (m_uiStaticFieldTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_STATIC_FIELD : SPELL_STATIC_FIELD_H) == CAST_OK)
+                m_uiStaticFieldTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
+        }
+        else
+            m_uiStaticFieldTimer -= uiDiff;
+    }
+};
+
+CreatureAI* GetAI_boss_feugen(Creature* pCreature)
+{
+    return new boss_feugenAI(pCreature);
+}
+
 void AddSC_boss_thaddius()
 {
-    Script *newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "boss_thaddius";
-    newscript->GetAI = &GetAI_boss_thaddius;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "boss_thaddius";
+    pNewScript->GetAI = &GetAI_boss_thaddius;
+    pNewScript->pEffectDummyNPC = &EffectDummyNPC_spell_thaddius_encounter;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "boss_feugen";
-    newscript->GetAI = &GetAI_boss_feugen;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "boss_stalagg";
+    pNewScript->GetAI = &GetAI_boss_stalagg;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "boss_stalagg";
-    newscript->GetAI = &GetAI_boss_stalagg;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "boss_feugen";
+    pNewScript->GetAI = &GetAI_boss_feugen;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "npc_tesla_coil";
+    pNewScript->GetAI = &GetAI_npc_tesla_coil;
+    pNewScript->pEffectDummyNPC = &EffectDummyNPC_spell_thaddius_encounter;
+    pNewScript->RegisterSelf();
 }

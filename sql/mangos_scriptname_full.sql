@@ -22,8 +22,10 @@ INSERT INTO scripted_areatrigger VALUES
 (5285,'at_aldurthar_gate'),
 (5286,'at_aldurthar_gate'),
 (5287,'at_aldurthar_gate');
-DELETE FROM scripted_areatrigger WHERE entry=4112;
-INSERT INTO scripted_areatrigger VALUES (4112,'at_naxxramas');
+DELETE FROM scripted_areatrigger WHERE entry IN (4112, 4113);
+INSERT INTO scripted_areatrigger VALUES
+(4112,'at_naxxramas'),
+(4113,'at_naxxramas');
 DELETE FROM scripted_areatrigger WHERE entry=5108;
 INSERT INTO scripted_areatrigger VALUES (5108,'at_stormwright_shelf');
 DELETE FROM scripted_areatrigger WHERE entry IN (3546, 3547, 3548, 3549, 3550, 3552);
@@ -60,9 +62,6 @@ UPDATE creature_template SET ScriptName='mob_dementeddruids' WHERE entry=15260;
 
 /* GO */
 UPDATE gameobject_template SET ScriptName='go_cat_figurine' WHERE entry=13873;
-UPDATE gameobject_template SET ScriptName='go_northern_crystal_pylon' WHERE entry=164955;
-UPDATE gameobject_template SET ScriptName='go_western_crystal_pylon' WHERE entry=164956;
-UPDATE gameobject_template SET ScriptName='go_eastern_crystal_pylon' WHERE entry=164957;
 UPDATE gameobject_template SET ScriptName='go_barov_journal' WHERE entry=180794;
 UPDATE gameobject_template SET ScriptName='go_ethereum_prison' WHERE entry BETWEEN 184418 AND 184431;
 UPDATE gameobject_template SET ScriptName='go_ethereum_stasis' WHERE entry BETWEEN 185465 AND 185467;
@@ -793,7 +792,6 @@ UPDATE creature_template SET ScriptName='npc_skorn_whitecloud' WHERE entry=3052;
 
 /* NAGRAND */
 UPDATE creature_template SET ScriptName='mob_lump' WHERE entry=18351;
-UPDATE creature_template SET ScriptName='mob_sunspring_villager' WHERE entry=18240;
 UPDATE creature_template SET ScriptName='npc_altruis_the_sufferer' WHERE entry=18417;
 UPDATE creature_template SET ScriptName='npc_greatmother_geyah' WHERE entry=18141;
 UPDATE creature_template SET ScriptName='npc_lantresor_of_the_blade' WHERE entry=18261;
@@ -819,9 +817,10 @@ UPDATE creature_template SET ScriptName='boss_rivendare_naxx' WHERE entry=30549;
 UPDATE creature_template SET ScriptName='boss_patchwerk' WHERE entry=16028;
 UPDATE creature_template SET ScriptName='boss_grobbulus' WHERE entry=15931;
 UPDATE creature_template SET ScriptName='boss_gluth' WHERE entry=15932;
--- UPDATE creature_template SET ScriptName='boss_thaddius' WHERE entry=15928;
--- UPDATE creature_template SET ScriptName='boss_stalagg' WHERE entry=15929;
--- UPDATE creature_template SET ScriptName='boss_feugen' WHERE entry=15930;
+UPDATE creature_template SET ScriptName='boss_thaddius' WHERE entry=15928;
+UPDATE creature_template SET ScriptName='boss_stalagg' WHERE entry=15929;
+UPDATE creature_template SET ScriptName='boss_feugen' WHERE entry=15930;
+UPDATE creature_template SET ScriptName='npc_tesla_coil' WHERE entry=16218;
 UPDATE creature_template SET ScriptName='boss_sapphiron' WHERE entry=15989;
 UPDATE creature_template SET ScriptName='boss_kelthuzad' WHERE entry=15990;
 
